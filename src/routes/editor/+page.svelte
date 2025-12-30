@@ -4,7 +4,7 @@
 	import Flow from './Flow.svelte';
 </script>
 
-<div class="mx-auto h-screen w-screen overflow-hidden rounded-3xl border border-black">
+<div class="mx-auto h-screen w-screen overflow-hidden">
 	<SvelteFlowProvider>
 		<Flow />
 	</SvelteFlowProvider>
