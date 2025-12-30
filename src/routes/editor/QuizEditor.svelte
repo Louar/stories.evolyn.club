@@ -97,6 +97,29 @@
 		return newArray;
 	}
 
+	// Handle drag end for questions
+	function handleQuestionDragEnd(event: any) {
+		const { active, over } = event;
+
+		if (over && active && active.id !== over.id) {
+			const oldIndex = quiz.findIndex((item) => item.order.toString() === active.id);
+			const newIndex = quiz.findIndex((item) => item.order.toString() === over.id);
+
+			if (oldIndex !== -1 && newIndex !== -1) {
+				// Reorder the array
+				const newQuiz = moveArrayItem(quiz, oldIndex, newIndex);
+
+				// Update the order property for each question
+				newQuiz.forEach((question: any, index: number) => {
+					question.order = index + 1;
+				});
+
+				// Update the quiz
+				quiz = newQuiz;
+			}
+		}
+	}
+
 	// Handle drag end for answer options
 	function handleDragEnd(event: any, qIndex: number) {
 		const { active, over } = event;
@@ -144,75 +167,98 @@
 			<Dialog.Title>Configure Quiz</Dialog.Title>
 			<Dialog.Description>Add questions and answer options to your quiz.</Dialog.Description>
 		</Dialog.Header>
-		<div class="grid gap-6">
-			{#each quiz as question, qIndex (question.order)}
-				<Field.Set class="grid gap-4 rounded-lg border p-4">
-					<div class="flex items-center justify-between">
-						<Field.Title class="text-base font-medium">Question {question.order}</Field.Title>
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							onclick={() => quiz.splice(qIndex, 1)}
-						>
-							Remove
-						</Button>
-					</div>
+		<DragDropProvider onDragEnd={handleQuestionDragEnd}>
+			<div class="grid gap-6">
+				{#each quiz as question, qIndex (question.order)}
+					{@const questionSortable = useSortable({
+						id: question.order.toString(),
+						index: qIndex
+					})}
+					<Field.Set
+						class="grid cursor-move gap-4 rounded-lg border bg-card p-4"
+						{@attach questionSortable.ref}
+					>
+						<div class="flex items-center justify-between">
+							<Field.Title class="text-base font-medium">Question {question.order}</Field.Title>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onclick={() => {
+									quiz.splice(qIndex, 1);
+									// Update order for remaining questions
+									quiz.forEach((q, i) => (q.order = i + 1));
+								}}
+							>
+								Remove
+							</Button>
+						</div>
 
-					<Field.Field>
-						<Field.Label>Description</Field.Label>
-						<Input bind:value={question.description} placeholder="Enter your question" />
-						<!-- <Field.Error>Enter the question text</Field.Error> -->
-					</Field.Field>
+						<Field.Field>
+							<Field.Label>Description</Field.Label>
+							<Input bind:value={question.description} placeholder="Enter your question" />
+							<!-- <Field.Error>Enter the question text</Field.Error> -->
+						</Field.Field>
 
-					<Field.Field>
-						<Field.Label>Answer Options</Field.Label>
-						<DragDropProvider onDragEnd={(event) => handleDragEnd(event, qIndex)}>
-							<div class="space-y-3">
-								{#each question.answerOptions as option, oIndex (option.order)}
-									{@const sortable = useSortable({
-										id: option.order.toString(),
-										index: oIndex
-									})}
-									<div
-										class="flex cursor-move items-start gap-2 rounded-md border bg-card p-3 transition-colors hover:bg-muted"
-										{@attach sortable.ref}
-									>
-										<!-- class:opacity-50={sortable.isDragging} -->
-										<div class="grid flex-1 gap-2">
-											<Input bind:value={option.label} placeholder="Option label" />
-											<Input bind:value={option.value} placeholder="Option value (JSON string)" />
-											<div class="flex items-center space-x-2">
-												<Switch
-													bind:checked={option.isCorrect}
-													id={`correct-${qIndex}-${oIndex}`}
-												/>
-												<Field.Label
-													for={`correct-${qIndex}-${oIndex}`}
-													class="text-sm font-normal"
-												>
-													Correct answer
-												</Field.Label>
-											</div>
-										</div>
-										<Button
-											type="button"
-											variant="outline"
-											size="sm"
-											onclick={() => question.answerOptions.splice(oIndex, 1)}
+						<Field.Field>
+							<Field.Label>Answer Options</Field.Label>
+							<DragDropProvider onDragEnd={(event) => handleDragEnd(event, qIndex)}>
+								<div class="space-y-3">
+									{#each question.answerOptions as option, oIndex (option.order)}
+										{@const sortable = useSortable({
+											id: option.order.toString(),
+											index: oIndex
+										})}
+										<div
+											class="flex cursor-move items-start gap-2 rounded-md border bg-card p-3 transition-colors hover:bg-muted"
+											{@attach sortable.ref}
 										>
-											×
-										</Button>
-									</div>
-								{/each}
-								<Button type="button" variant="outline" size="sm" onclick={() => addOption(qIndex)}>
-									Add Option
-								</Button>
-							</div>
-						</DragDropProvider>
-					</Field.Field>
+											<!-- class:opacity-50={sortable.isDragging} -->
+											<div class="grid flex-1 gap-2">
+												<Input bind:value={option.label} placeholder="Option label" />
+												<Input bind:value={option.value} placeholder="Option value (JSON string)" />
+												<div class="flex items-center space-x-2">
+													<Switch
+														bind:checked={option.isCorrect}
+														id={`correct-${qIndex}-${oIndex}`}
+													/>
+													<Field.Label
+														for={`correct-${qIndex}-${oIndex}`}
+														class="text-sm font-normal"
+													>
+														Correct answer
+													</Field.Label>
+												</div>
+											</div>
+											<Button
+												type="button"
+												variant="outline"
+												size="sm"
+												onclick={() => {
+													question.answerOptions.splice(oIndex, 1);
+													// Update order for remaining options
+													question.answerOptions.forEach((option, index) => {
+														option.order = index + 1;
+													});
+												}}
+											>
+												×
+											</Button>
+										</div>
+									{/each}
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onclick={() => addOption(qIndex)}
+									>
+										Add Option
+									</Button>
+								</div>
+							</DragDropProvider>
+						</Field.Field>
 
-					<!-- <Field.Field class="block space-x-2">
+						<!-- <Field.Field class="block space-x-2">
 											<div class="flex items-center space-x-2">
 												<Switch id="required" />
 												<Field.Label for="required" class="text-sm font-normal"
@@ -220,11 +266,13 @@
 												>
 											</div>
 										</Field.Field> -->
-				</Field.Set>
-			{/each}
+					</Field.Set>
+				{/each}
 
-			<Button type="button" variant="outline" size="sm" onclick={addQuestion}>Add Question</Button>
-		</div>
+				<Button type="button" variant="outline" size="sm" onclick={addQuestion}>Add Question</Button
+				>
+			</div>
+		</DragDropProvider>
 		<Dialog.Footer>
 			<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
 			<Button type="submit">Save Quiz</Button>
