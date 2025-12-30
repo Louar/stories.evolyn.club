@@ -3,6 +3,7 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { Switch } from '$lib/components/ui/switch/index.js';
 	import { DragDropProvider } from '@dnd-kit-svelte/svelte';
 	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
 	import { z } from 'zod/v4';
@@ -10,7 +11,8 @@
 	const answerOptionSchema = z.object({
 		order: z.number(),
 		value: z.string(),
-		label: z.string()
+		label: z.string(),
+		isCorrect: z.boolean().default(false)
 	});
 
 	const questionSchema = z.object({
@@ -34,12 +36,14 @@
 				{
 					order: 1,
 					value: JSON.stringify(1),
-					label: 'Yes'
+					label: 'Yes',
+					isCorrect: true
 				},
 				{
 					order: 2,
 					value: JSON.stringify(0),
-					label: 'No'
+					label: 'No',
+					isCorrect: false
 				}
 			]
 		},
@@ -52,12 +56,14 @@
 				{
 					order: 1,
 					value: JSON.stringify('YES'),
-					label: 'Yes'
+					label: 'Yes',
+					isCorrect: true
 				},
 				{
 					order: 2,
 					value: JSON.stringify('NO'),
-					label: 'No'
+					label: 'No',
+					isCorrect: false
 				}
 			]
 		}
@@ -78,7 +84,8 @@
 		question.answerOptions.push({
 			order: question.answerOptions.length + 1,
 			value: '',
-			label: ''
+			label: '',
+			isCorrect: false
 		});
 	}
 
@@ -175,6 +182,18 @@
 										<div class="grid flex-1 gap-2">
 											<Input bind:value={option.label} placeholder="Option label" />
 											<Input bind:value={option.value} placeholder="Option value (JSON string)" />
+											<div class="flex items-center space-x-2">
+												<Switch
+													bind:checked={option.isCorrect}
+													id={`correct-${qIndex}-${oIndex}`}
+												/>
+												<Field.Label
+													for={`correct-${qIndex}-${oIndex}`}
+													class="text-sm font-normal"
+												>
+													Correct answer
+												</Field.Label>
+											</div>
 										</div>
 										<Button
 											type="button"

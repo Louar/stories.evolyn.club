@@ -65,9 +65,6 @@
 				</form>
 			</Dialog.Root>
 		</div>
-		<div class="">
-			<Input type="text" placeholder="URL" class="" />
-		</div>
 		<div class="flex gap-3 py-4">
 			<!-- <span class="text-sm text-gray-500">{range[0]}s</span> -->
 			<Slider bind:range {duration} {hasOverlay} />
