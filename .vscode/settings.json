@@ -1,0 +1,8 @@
+{
+	"editor.formatOnSave": true,
+	"html.customData": ["./node_modules/vidstack/vscode.html-data.json"],
+	"files.associations": {
+		"*.css": "tailwindcss"
+	},
+	"prettier.documentSelectors": ["**/*.svelte"]
+}
