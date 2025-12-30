@@ -10,6 +10,8 @@
 	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
 	import { z } from 'zod/v4';
 	import Slider from './Slider.svelte';
+	import { DragDropProvider } from '@dnd-kit-svelte/svelte';
+	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
 
 	let { data }: NodeProps = $props();
 
@@ -106,6 +108,42 @@
 		});
 	}
 
+	// Helper function to reorder array
+	function moveArrayItem<T>(array: T[], fromIndex: number, toIndex: number): T[] {
+		const newArray = [...array];
+		const [removed] = newArray.splice(fromIndex, 1);
+		newArray.splice(toIndex, 0, removed);
+		return newArray;
+	}
+
+	// Handle drag end for answer options
+	function handleDragEnd(event: any, qIndex: number) {
+		const { active, over } = event;
+
+		if (over && active && active.id !== over.id) {
+			const question = quiz[qIndex];
+			const oldIndex = question.answerOptions.findIndex(
+				(item) => item.order.toString() === active.id
+			);
+			const newIndex = question.answerOptions.findIndex(
+				(item) => item.order.toString() === over.id
+			);
+
+			if (oldIndex !== -1 && newIndex !== -1) {
+				// Reorder the array
+				const newAnswerOptions = moveArrayItem(question.answerOptions, oldIndex, newIndex);
+
+				// Update the order property for each option
+				newAnswerOptions.forEach((option: any, index: number) => {
+					option.order = index + 1;
+				});
+
+				// Update the question's answer options
+				quiz[qIndex].answerOptions = newAnswerOptions;
+			}
+		}
+	}
+
 	function handleSubmit(event: Event) {
 		event.preventDefault();
 		const result = quizSchema.safeParse(quiz);
@@ -136,7 +174,7 @@
 						<Dialog.Header>
 							<Dialog.Title>Edit profile</Dialog.Title>
 							<Dialog.Description>
-								Make changes to your profile here. Click save when you&apos;re done.
+								Make changes to your profile here. Click save when you're done.
 							</Dialog.Description>
 						</Dialog.Header>
 						<div class="grid gap-4">
@@ -235,35 +273,45 @@
 
 										<Field.Field>
 											<Field.Label>Answer Options</Field.Label>
-											<div class="space-y-3">
-												{#each question.answerOptions as option, oIndex (option.order)}
-													<div class="flex items-start gap-2 rounded border p-3">
-														<div class="grid flex-1 gap-2">
-															<Input bind:value={option.label} placeholder="Option label" />
-															<Input
-																bind:value={option.value}
-																placeholder="Option value (JSON string)"
-															/>
-														</div>
-														<Button
-															type="button"
-															variant="outline"
-															size="sm"
-															onclick={() => question.answerOptions.splice(oIndex, 1)}
+											<DragDropProvider onDragEnd={(event) => handleDragEnd(event, qIndex)}>
+												<div class="space-y-3">
+													{#each question.answerOptions as option, oIndex (option.order)}
+														{@const sortable = useSortable({
+															id: option.order.toString(),
+															index: oIndex
+														})}
+														<div
+															class="flex cursor-move items-start gap-2 rounded border p-3 transition-colors hover:bg-gray-50"
+															{@attach sortable.ref}
+															class:opacity-50={sortable.isDragging}
 														>
-															×
-														</Button>
-													</div>
-												{/each}
-												<Button
-													type="button"
-													variant="outline"
-													size="sm"
-													onclick={() => addOption(qIndex)}
-												>
-													Add Option
-												</Button>
-											</div>
+															<div class="grid flex-1 gap-2">
+																<Input bind:value={option.label} placeholder="Option label" />
+																<Input
+																	bind:value={option.value}
+																	placeholder="Option value (JSON string)"
+																/>
+															</div>
+															<Button
+																type="button"
+																variant="outline"
+																size="sm"
+																onclick={() => question.answerOptions.splice(oIndex, 1)}
+															>
+																×
+															</Button>
+														</div>
+													{/each}
+													<Button
+														type="button"
+														variant="outline"
+														size="sm"
+														onclick={() => addOption(qIndex)}
+													>
+														Add Option
+													</Button>
+												</div>
+											</DragDropProvider>
 										</Field.Field>
 
 										<!-- <Field.Field class="block space-x-2">
