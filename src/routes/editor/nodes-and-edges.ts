@@ -12,13 +12,13 @@ export const initialNodes: Node[] = [
     type: 'media',
     data: { name: 'Tyler Weary', job: 'Designer', emoji: '🤓' },
 
-    position: { x: 500, y: -200 }
+    position: { x: 400, y: -200 }
   },
   {
     id: '3',
     type: 'media',
     data: { name: 'Kristi Price', job: 'Developer', emoji: '🤩' },
-    position: { x: 500, y: 200 }
+    position: { x: 400, y: 200 }
   }
 ];
 
@@ -38,7 +38,6 @@ export const initialEdges: Edge[] = [
     id: 'e1-1',
     source: '1',
     target: '1',
-    type: 'selfconnecting',
   },
   {
     id: 'e3-1',

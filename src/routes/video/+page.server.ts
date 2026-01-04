@@ -18,6 +18,7 @@ export const load: PageServerLoad = (async () => {
         },
         foreground: {
           start: 0.5,
+          type: 'quiz',
           interactions: [
             {
               widget: 'single-select',
@@ -105,6 +106,12 @@ export const load: PageServerLoad = (async () => {
           },
           next: 'city-Barcelona',
         },
+        foreground: {
+          start: 0.5,
+          type: 'information',
+          title: 'Welcome to the quiz!',
+          message: 'And good luck!',
+        }
       },
       {
         id: 'city-Barcelona',
@@ -116,6 +123,7 @@ export const load: PageServerLoad = (async () => {
         },
         foreground: {
           start: 1,
+          type: 'quiz',
           interactions: [
             {
               widget: 'single-select',
@@ -213,6 +221,7 @@ export const load: PageServerLoad = (async () => {
         },
         foreground: {
           start: 1,
+          type: 'quiz',
           interactions: [
             {
               widget: 'single-select',
@@ -311,6 +320,7 @@ export const load: PageServerLoad = (async () => {
         },
         foreground: {
           start: 0.5,
+          type: 'quiz',
           interactions: [
             {
               widget: 'single-select',

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import Interaction from './Interaction.svelte';
+	import InformationOverlay from './InformationOverlay.svelte';
+	import InteractionOverlay from './InteractionOverlay.svelte';
 	import Player from './Player.svelte';
 	import type { InputFromLogic, Logic, OutputFromLogic } from './types.js';
 
@@ -123,8 +124,11 @@
 						/>
 					{/if}
 
-					{#if part.foreground && (player?.watchPercentage ?? 0) >= (part.foreground.start ?? 0)}
-						<Interaction
+					{#if part.foreground?.type === 'information' && (player?.watchPercentage ?? 0) >= (part.foreground?.start ?? 0)}
+						<InformationOverlay title={part.foreground.title} message={part.foreground.message} />
+					{/if}
+					{#if part.foreground?.type === 'quiz' && (player?.watchPercentage ?? 0) >= (part.foreground?.start ?? 0)}
+						<InteractionOverlay
 							interactions={part.foreground.interactions}
 							logic={part.foreground.logic}
 							{submit}

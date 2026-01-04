@@ -7,9 +7,9 @@
 		type Node,
 		type OnConnectEnd
 	} from '@xyflow/svelte';
+	import MediaEdge from './MediaEdge.svelte';
 	import MediaNode from './MediaNode.svelte';
 	import { initialEdges, initialNodes } from './nodes-and-edges';
-	import SelfConnectingEdge from './SelfConnectingEdge.svelte';
 
 	let nodes = $state.raw<Node[]>(initialNodes);
 	let edges = $state.raw<Edge[]>(initialEdges);
@@ -19,7 +19,7 @@
 	};
 
 	const edgeTypes = {
-		selfconnecting: SelfConnectingEdge
+		media: MediaEdge
 	};
 
 	const { screenToFlowPosition } = useSvelteFlow();
@@ -61,9 +61,10 @@
 	bind:edges
 	{edgeTypes}
 	fitView
-	defaultEdgeOptions={{ type: 'bezier' }}
+	defaultEdgeOptions={{ type: 'media' }}
 	onconnectend={handleConnectEnd}
 	proOptions={{ hideAttribution: true }}
+	snapGrid={[400, 200]}
 >
 	<Background patternColor="#aaa" gap={16} />
 </SvelteFlow>
@@ -71,5 +72,7 @@
 <style lang="postcss">
 	:root {
 		--xy-background-color: #f7f9fb;
+		--xy-edge-stroke-selected-default: red;
+		--xy-connectionline-stroke-default: green;
 	}
 </style>
