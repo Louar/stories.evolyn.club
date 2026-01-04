@@ -24,6 +24,8 @@
 		"@tailwindcss/forms": "^0.5.10",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.1.17",
+		"@types/bcryptjs": "^2.4.6",
+		"@types/jsonwebtoken": "^9.0.10",
 		"@types/node": "^22",
 		"bits-ui": "^2.14.4",
 		"clsx": "^2.1.1",
@@ -50,7 +52,11 @@
 	"dependencies": {
 		"@dnd-kit-svelte/svelte": "^0.1.5",
 		"@xyflow/svelte": "^1.5.0",
+		"bcryptjs": "^3.0.3",
 		"hls.js": "^1.6.15",
+		"jsonwebtoken": "^9.0.3",
+		"kysely": "^0.28.9",
+		"pg": "^8.16.3",
 		"vidstack": "^1.12.13"
 	}
 }

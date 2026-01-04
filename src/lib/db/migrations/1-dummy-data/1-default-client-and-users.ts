@@ -1,0 +1,296 @@
+import { env } from '$env/dynamic/private';
+import type { Schema } from '$lib/db/schema';
+import { Language, mediaValidator, type Media, type Translatable } from '$lib/db/schemas/0-utils';
+import { ClientAuthenticationMethod, UserRole } from '$lib/db/schemas/1-client-user-module';
+import bcrypt from 'bcryptjs';
+import type { Kysely, Migration } from 'kysely';
+import z from 'zod/v4';
+
+export const DummyDataDefaultClientAndUsers: Migration = {
+  async up(db: Kysely<Schema>) {
+
+    // Create the default Client
+    const client = await db.insertInto('client')
+      .values({
+        reference: env.SECRET_DEFAULT_CLIENT_REFERENCE,
+        name: 'Evolyn',
+        domains: JSON.stringify(['localhost:5173', 'evolyn.club', 'app.evolyn.club', 'beta.evolyn.club']),
+        css: JSON.stringify({
+          ":root": {
+            "--radius": "0.65rem",
+            "--background": "oklch(1 0 0)",
+            "--foreground": "oklch(0.141 0.005 285.823)",
+            "--card": "oklch(1 0 0)",
+            "--card-foreground": "oklch(0.141 0.005 285.823)",
+            "--popover": "oklch(1 0 0)",
+            "--popover-foreground": "oklch(0.141 0.005 285.823)",
+            "--primary": "oklch(0.705 0.213 47.604)",
+            "--primary-foreground": "oklch(0.98 0.016 73.684)",
+            "--secondary": "oklch(0.967 0.001 286.375)",
+            "--secondary-foreground": "oklch(0.21 0.006 285.885)",
+            "--muted": "oklch(0.967 0.001 286.375)",
+            "--muted-foreground": "oklch(0.552 0.016 285.938)",
+            "--accent": "oklch(0.967 0.001 286.375)",
+            "--accent-foreground": "oklch(0.21 0.006 285.885)",
+            "--destructive": "oklch(0.577 0.245 27.325)",
+            "--border": "oklch(0.92 0.004 286.32)",
+            "--input": "oklch(0.92 0.004 286.32)",
+            "--ring": "oklch(0.705 0.213 47.604)",
+            "--chart-1": "oklch(0.646 0.222 41.116)",
+            "--chart-2": "oklch(0.6 0.118 184.704)",
+            "--chart-3": "oklch(0.398 0.07 227.392)",
+            "--chart-4": "oklch(0.828 0.189 84.429)",
+            "--chart-5": "oklch(0.769 0.188 70.08)",
+            "--sidebar": "oklch(0.985 0 0)",
+            "--sidebar-foreground": "oklch(0.141 0.005 285.823)",
+            "--sidebar-primary": "oklch(0.705 0.213 47.604)",
+            "--sidebar-primary-foreground": "oklch(0.98 0.016 73.684)",
+            "--sidebar-accent": "oklch(0.967 0.001 286.375)",
+            "--sidebar-accent-foreground": "oklch(0.21 0.006 285.885)",
+            "--sidebar-border": "oklch(0.92 0.004 286.32)",
+            "--sidebar-ring": "oklch(0.705 0.213 47.604)"
+          },
+          ".dark": {
+            "--background": "oklch(0.141 0.005 285.823)",
+            "--foreground": "oklch(0.985 0 0)",
+            "--card": "oklch(0.21 0.006 285.885)",
+            "--card-foreground": "oklch(0.985 0 0)",
+            "--popover": "oklch(0.21 0.006 285.885)",
+            "--popover-foreground": "oklch(0.985 0 0)",
+            "--primary": "oklch(0.646 0.222 41.116)",
+            "--primary-foreground": "oklch(0.98 0.016 73.684)",
+            "--secondary": "oklch(0.274 0.006 286.033)",
+            "--secondary-foreground": "oklch(0.985 0 0)",
+            "--muted": "oklch(0.274 0.006 286.033)",
+            "--muted-foreground": "oklch(0.705 0.015 286.067)",
+            "--accent": "oklch(0.274 0.006 286.033)",
+            "--accent-foreground": "oklch(0.985 0 0)",
+            "--destructive": "oklch(0.704 0.191 22.216)",
+            "--border": "oklch(1 0 0 / 10%)",
+            "--input": "oklch(1 0 0 / 15%)",
+            "--ring": "oklch(0.646 0.222 41.116)",
+            "--chart-1": "oklch(0.488 0.243 264.376)",
+            "--chart-2": "oklch(0.696 0.17 162.48)",
+            "--chart-3": "oklch(0.769 0.188 70.08)",
+            "--chart-4": "oklch(0.627 0.265 303.9)",
+            "--chart-5": "oklch(0.645 0.246 16.439)",
+            "--sidebar": "oklch(0.21 0.006 285.885)",
+            "--sidebar-foreground": "oklch(0.985 0 0)",
+            "--sidebar-primary": "oklch(0.646 0.222 41.116)",
+            "--sidebar-primary-foreground": "oklch(0.98 0.016 73.684)",
+            "--sidebar-accent": "oklch(0.274 0.006 286.033)",
+            "--sidebar-accent-foreground": "oklch(0.985 0 0)",
+            "--sidebar-border": "oklch(1 0 0 / 10%)",
+            "--sidebar-ring": "oklch(0.646 0.222 41.116)"
+          }
+        }),
+        manifest: JSON.stringify(
+          {
+            name: 'Evolyn - The self-help app',
+            short_name: 'Evolyn',
+            description: 'The self-help app',
+            scope: '/',
+            start_url: '/',
+            display: 'standalone',
+            icons: [
+              {
+                src: '/evolyn-logo.svg',
+                sizes: 'any',
+                type: 'image/svg+xml',
+              },
+              {
+                src: `/evolyn-logo-maskable.png`,
+                purpose: 'maskable',
+                sizes: '1024x1024',
+                type: 'image/png',
+              },
+            ],
+            background_color: '#ffffff',
+            theme_color: '#0079c1',
+          }
+        ),
+        isFindableBySearchEngines: true,
+        plausibleDomain: process.env.NODE_ENV === 'production' ? 'app.evolyn.club' : undefined,
+        authenticationMethods: JSON.stringify([ClientAuthenticationMethod.code, ClientAuthenticationMethod.password]),
+        accessTokenKey: 'YEMzj,;jg4&P.!-/[H9s0Hp>RWt"o_ns"Jd]p9E|o)f|jl"q@)c6)@S^ER.Y/T:',
+        onboardingSchema: JSON.stringify(
+          z.toJSONSchema(z.object({
+            email: z.email().min(1),
+            firstName: z.string().min(1),
+            lastName: z.string().nullish(),
+            picture: mediaValidator.nullish(),
+          }))
+        ),
+        // createdBy: admin.id,
+        // updatedBy: admin.id,
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+
+    // Create the default admin User
+    const salt = await bcrypt.genSalt();
+    const hash = await bcrypt.hash(env.SECRET_DEFAULT_USER_PASSWORD, salt);
+    const admin = await db.insertInto('user')
+      .values({
+        clientId: client.id,
+        email: env.SECRET_DEFAULT_USER_EMAIL,
+        password: `{bcrypt}${hash}`,
+        firstName: env.SECRET_DEFAULT_USER_FIRST_NAME,
+        lastName: env.SECRET_DEFAULT_USER_LAST_NAME,
+        roles: JSON.stringify([UserRole.admin, UserRole.user]),
+        language: Language.Dutch,
+        emailConfirmed: true,
+        isActive: true,
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+
+    // Create a dummy License
+    await db.insertInto('license')
+      .values({
+        clientId: client.id,
+        name: JSON.stringify({ en: 'Dummy license' } as Translatable),
+        version: 'v0.0.0',
+        termsOfUse: JSON.stringify({ default: `# Servicevoorwaarden` } as Translatable),
+        privacyPolicy: JSON.stringify({ default: `# Privacybeleid` } as Translatable),
+        createdBy: admin.id,
+        updatedBy: admin.id,
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow();
+
+    // Create additional Users for this Client, with Auth Codes
+    if (process.env.NODE_ENV !== 'production') {
+      await db.insertInto('user')
+        .values([
+          {
+            clientId: client.id,
+            email: 'r01@projectraoul.nl',
+            password: `{bcrypt}${hash}`,
+            firstName: 'Marie',
+            lastName: 'Romero',
+            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=5' } as Media),
+            language: Language.Dutch,
+            roles: JSON.stringify([UserRole.user]),
+            emailConfirmed: true,
+            isActive: true,
+          },
+          {
+            clientId: client.id,
+            email: 'r02@projectraoul.nl',
+            password: `{bcrypt}${hash}`,
+            firstName: 'Albert',
+            lastName: 'Morgan',
+            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=8' } as Media),
+            language: Language.Dutch,
+            roles: JSON.stringify([UserRole.user]),
+            emailConfirmed: true,
+            isActive: true,
+          },
+          {
+            clientId: client.id,
+            email: 'r03@projectraoul.nl',
+            password: `{bcrypt}${hash}`,
+            firstName: 'Cynthia',
+            lastName: 'Shaw',
+            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=9' } as Media),
+            language: Language.Dutch,
+            roles: JSON.stringify([UserRole.user]),
+            emailConfirmed: true,
+            isActive: true,
+          },
+          {
+            clientId: client.id,
+            email: 'r04@projectraoul.nl',
+            password: `{bcrypt}${hash}`,
+            firstName: 'Ryan',
+            lastName: 'Carroll',
+            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=7' } as Media),
+            language: Language.Dutch,
+            roles: JSON.stringify([UserRole.user]),
+            emailConfirmed: true,
+            isActive: true,
+          },
+          {
+            clientId: client.id,
+            email: 'r05@projectraoul.nl',
+            password: `{bcrypt}${hash}`,
+            firstName: 'Barbara',
+            lastName: 'Foster',
+            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=16' } as Media),
+            language: Language.Dutch,
+            roles: JSON.stringify([UserRole.user]),
+            emailConfirmed: true,
+            isActive: true,
+          },
+          {
+            clientId: client.id,
+            email: 'r06@projectraoul.nl',
+            password: `{bcrypt}${hash}`,
+            firstName: 'Rusell',
+            lastName: 'Myers',
+            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=14' } as Media),
+            language: Language.Dutch,
+            roles: JSON.stringify([UserRole.user]),
+            emailConfirmed: true,
+            isActive: true,
+          },
+          {
+            clientId: client.id,
+            email: 'r07@projectraoul.nl',
+            password: `{bcrypt}${hash}`,
+            firstName: 'Evelyn',
+            lastName: 'Jimenez',
+            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=27' } as Media),
+            language: Language.Dutch,
+            roles: JSON.stringify([UserRole.user]),
+            emailConfirmed: true,
+            isActive: true,
+          },
+          {
+            clientId: client.id,
+            email: 'r08@projectraoul.nl',
+            password: `{bcrypt}${hash}`,
+            firstName: 'Jack',
+            lastName: 'Newman',
+            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=12' } as Media),
+            language: Language.Dutch,
+            roles: JSON.stringify([UserRole.user]),
+            emailConfirmed: true,
+            isActive: true,
+          },
+          {
+            clientId: client.id,
+            email: 'r09@projectraoul.nl',
+            password: `{bcrypt}${hash}`,
+            firstName: 'Kathleen',
+            lastName: 'Thompson',
+            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=24' } as Media),
+            language: Language.Dutch,
+            roles: JSON.stringify([UserRole.user]),
+            emailConfirmed: true,
+            isActive: true,
+          }
+        ])
+        .execute();
+
+      const users = await db.selectFrom('user').where('clientId', '=', client.id).select('id').orderBy('createdAt', 'asc').execute();
+
+      for (const [index, user] of users.entries())
+        await db.insertInto('authCode')
+          .values({
+            clientId: client.id,
+            userId: user.id,
+            value: `access-${index}`,
+            // value: crypto.randomUUID().toString().slice(0, 8),
+          })
+          .returning('id')
+          .executeTakeFirstOrThrow();
+    }
+
+  },
+  async down() {
+    // db: Kysely<Schema>
+
+  },
+};
