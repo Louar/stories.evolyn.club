@@ -79,6 +79,8 @@ export const InitStoryModule: Migration = {
     await db.schema.createTable('story')
       .ifNotExists()
       .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('client_id', 'uuid', (col) => col.references('client.id').onDelete('cascade').notNull())
+      .addColumn('reference', 'text', col => col.notNull())
       .addColumn('name', 'text', col => col.notNull())
       .addColumn('configuration', 'jsonb')
       .addColumn('is_published', 'boolean', col => col.defaultTo(false).notNull())
@@ -87,6 +89,7 @@ export const InitStoryModule: Migration = {
       .addColumn('created_by', 'uuid', (col) => col.references('user.id').onDelete('set null'))
       .addColumn('updated_at', 'timestamptz', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
       .addColumn('updated_by', 'uuid', (col) => col.references('user.id').onDelete('set null'))
+      .addUniqueConstraint('unique_story_per_client', ['client_id', 'reference'])
       .execute();
 
     // Create Part table
@@ -110,7 +113,7 @@ export const InitStoryModule: Migration = {
     await db.schema.createTable('quiz_logic_for_part')
       .ifNotExists()
       .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
-      .addColumn('quiz_question_template_id', 'uuid', (col) => col.references('quiz_question_template.id').onDelete('cascade').notNull())
+      .addColumn('quiz_template_id', 'uuid', (col) => col.references('quiz_template.id').onDelete('cascade').notNull())
       .addColumn('default_next_part_id', 'uuid', (col) => col.references('part.id').onDelete('set null'))
       .addColumn('hitpolicy', sql`logic_hitpolicy`, (col) => col.defaultTo(LogicHitpolicy.first).notNull())
       .execute();
@@ -123,6 +126,8 @@ export const InitStoryModule: Migration = {
     await db.schema.createTable('quiz_logic_rule')
       .ifNotExists()
       .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('order', 'smallint', (col) => col.notNull())
+      .addColumn('name', 'text', col => col.notNull())
       .addColumn('quiz_logic_for_part_id', 'uuid', (col) => col.references('quiz_logic_for_part.id').onDelete('cascade').notNull())
       .addColumn('next_part_id', 'uuid', (col) => col.references('part.id').onDelete('cascade').notNull())
       .execute();

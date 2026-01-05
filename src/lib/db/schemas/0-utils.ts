@@ -92,3 +92,19 @@ export const expressionValidator = z.object({
   constants: z.record(z.string(), z.union([z.string(), z.number()])).optional(),
 }).strict();
 export type Expression = z.infer<typeof expressionValidator>;
+
+
+export const StoryOrientation = {
+  portrait: 'portrait',
+  landscape: 'landscape',
+  square: 'square',
+} as const;
+export type StoryOrientation = (typeof StoryOrientation)[keyof typeof StoryOrientation];
+
+export const selectByOrientation = <DB, TB extends keyof DB & string>(eb: ExpressionBuilder<DB, TB>, column: StringReference<DB, TB>, orientation?: StoryOrientation | null) => {
+  return eb.fn.coalesce(
+    sql<string | null>`${eb.ref(column)}->>${orientation ?? StoryOrientation.portrait}`,
+    sql<string | null>`${eb.ref(column)}->>'default'`,
+    sql<string | null>`${eb.ref(column)}->>${StoryOrientation.portrait}`,
+  );
+}

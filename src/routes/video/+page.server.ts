@@ -1,7 +1,16 @@
+import { env } from '$env/dynamic/private';
+import { db } from '$lib/db/database';
+import { findStory } from '$lib/db/repositories/2-stories-module';
+import { LogicHitpolicy } from '$lib/db/schemas/2-story-module';
 import type { PageServerLoad } from './$types';
-import { HitPolicy } from './types';
 
 export const load: PageServerLoad = (async () => {
+
+  const clientId = (await db.selectFrom('client').where('reference', '=', env.SECRET_DEFAULT_CLIENT_REFERENCE).select('id').executeTakeFirstOrThrow()).id;
+  const storyReference = 'quiz-of-cities';
+
+  const s = await findStory(clientId, storyReference);
+  console.log(JSON.stringify(s, undefined, 4));
 
   const story = {
     parts: [
@@ -58,7 +67,7 @@ export const load: PageServerLoad = (async () => {
             },
           ],
           logic: {
-            hitPolicy: HitPolicy.first,
+            hitPolicy: LogicHitpolicy.first,
             inputs: [
               {
                 id: 'interaction_1',
@@ -158,7 +167,7 @@ export const load: PageServerLoad = (async () => {
             },
           ],
           logic: {
-            hitPolicy: HitPolicy.first,
+            hitPolicy: LogicHitpolicy.first,
             inputs: [
               {
                 id: 'interaction_1',
@@ -256,7 +265,7 @@ export const load: PageServerLoad = (async () => {
             },
           ],
           logic: {
-            hitPolicy: HitPolicy.first,
+            hitPolicy: LogicHitpolicy.first,
             inputs: [
               {
                 id: 'interaction_1',
@@ -336,7 +345,7 @@ export const load: PageServerLoad = (async () => {
             },
           ],
           logic: {
-            hitPolicy: HitPolicy.first,
+            hitPolicy: LogicHitpolicy.first,
             inputs: [
               {
                 id: 'interaction_1',

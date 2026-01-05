@@ -1,7 +1,4 @@
-
-export enum HitPolicy {
-  'first' = 'first'
-};
+import type { LogicHitpolicy } from "$lib/db/schemas/2-story-module";
 
 type LogicInput = {
   id: string;
@@ -26,7 +23,7 @@ export type Logic<
   I extends readonly LogicInput[] = readonly LogicInput[],
   O extends readonly LogicOutput[] = readonly LogicOutput[]
 > = {
-  hitPolicy: HitPolicy;
+  hitPolicy: LogicHitpolicy;
   inputs: I;
   outputs: O;
   rules: Rule[];
