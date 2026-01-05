@@ -23,6 +23,7 @@ export const findStory = async (clientId: string, storyReference: string, orient
           .whereRef('part.storyId', '=', 'story.id')
           .select((eb) => [
             'part.id',
+            'part.duration',
 
             // Background
             'part.backgroundType',
@@ -34,7 +35,9 @@ export const findStory = async (clientId: string, storyReference: string, orient
                   selectByOrientation(eb, 'video.source', orientation).as('source'),
                   selectByOrientation(eb, 'video.thumbnail', orientation).as('thumbnail'),
                   selectLocalizedField(eb, 'video.captions', language).as('captions'),
+                  'video.duration',
                 ])
+                .$narrowType<{ source: NotNull, duration: NotNull }>()
             ).$notNull().as('background'),
             'part.defaultNextPartId',
 
@@ -82,7 +85,8 @@ export const findStory = async (clientId: string, storyReference: string, orient
                                 .orderBy('quizQuestionTemplateAnswerItem.order', 'asc')
                                 .select((eb) => [
                                   'quizQuestionTemplateAnswerItem.order',
-                                  'quizQuestionTemplateAnswerItem.value',
+                                  // 'quizQuestionTemplateAnswerItem.value',
+                                  eb.cast<string>('quizQuestionTemplateAnswerItem.value', 'text').as('value'),
                                   selectLocalizedField(eb, 'quizQuestionTemplateAnswerItem.label', language).as('label'),
                                 ])
                                 .$narrowType<{ order: NotNull, value: NotNull, label: NotNull }>()

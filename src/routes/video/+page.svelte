@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import InformationOverlay from './InformationOverlay.svelte';
+	import AnnouncementOverlay from './AnnouncementOverlay.svelte';
 	import InteractionOverlay from './InteractionOverlay.svelte';
 	import Player from './Player.svelte';
 	import type { InputFromLogic, Logic, OutputFromLogic } from './types.js';
@@ -15,7 +15,8 @@
 		pid = story?.parts?.[0]?.id;
 	});
 
-	const submit = (logic: Logic, input: InputFromLogic<Logic>) => {
+	const submit = (logic: Logic | undefined, input: InputFromLogic<Logic>) => {
+		if (!logic || !input) return;
 		const output = executeLogic(logic, input);
 		if (!output?.next || typeof output.next !== 'string') return;
 
@@ -89,12 +90,12 @@
 				{@const player = players.find((player) => player.id === part.id)}
 
 				<div class="absolute inset-0 {part.id === pid ? 'opacity-100' : 'opacity-0'}">
-					{#if part?.background?.type === 'video' && player}
+					{#if part?.backgroundType === 'video' && player}
 						<Player
 							id={player.id}
 							class="portrait"
 							src={player.source}
-							poster={player?.poster}
+							poster={player?.thumbnail}
 							start={player?.start ?? undefined}
 							end={player?.end ?? undefined}
 							playbackRate={player?.playbackRate ?? undefined}
@@ -107,7 +108,9 @@
 
 								const nextPlayers = [
 									player.next?.length ? playerById.get(player.next) : undefined,
-									...(part.foreground?.logic?.rules?.map((rule) => playerById.get(rule.next)) ?? [])
+									...(part.foreground?.logic?.rules?.map((rule) =>
+										typeof rule.next === 'string' ? playerById.get(rule.next) : undefined
+									) ?? [])
 								].filter((p): p is (typeof players)[number] => p !== undefined);
 								if (nextPlayers?.length) {
 									nextPlayers.forEach((nextPlayer) => (nextPlayer.doBuffer = true));
@@ -124,15 +127,21 @@
 						/>
 					{/if}
 
-					{#if part.foreground?.type === 'information' && (player?.watchPercentage ?? 0) >= (part.foreground?.start ?? 0)}
-						<InformationOverlay title={part.foreground.title} message={part.foreground.message} />
-					{/if}
-					{#if part.foreground?.type === 'quiz' && (player?.watchPercentage ?? 0) >= (part.foreground?.start ?? 0)}
-						<InteractionOverlay
-							interactions={part.foreground.interactions}
-							logic={part.foreground.logic}
-							{submit}
-						/>
+					{#if part.foreground}
+						{part.foregroundType}
+						{#if part.foregroundType === 'announcement' && (player?.watchPercentage ?? 0) >= (part.foregroundConfiguration?.start ?? 0)}
+							<AnnouncementOverlay
+								title={part.foreground.title}
+								message={part.foreground.message}
+							/>
+						{/if}
+						{#if part.foregroundType === 'quiz' && (player?.watchPercentage ?? 0) >= (part.foregroundConfiguration?.start ?? 0)}
+							<InteractionOverlay
+								questions={part.foreground.questions}
+								logic={part.foreground.logic}
+								{submit}
+							/>
+						{/if}
 					{/if}
 				</div>
 			{/each}

@@ -38,9 +38,9 @@ type Part = {
   id: Generated<string>;
   storyId: string;
   backgroundType: string | null;
-  backgroundConfiguration: JSONColumnType<object> | null;
+  backgroundConfiguration: JSONColumnType<{ start?: number; end?: number;[x: string]: unknown }> | null;
   foregroundType: string | null;
-  foregroundConfiguration: JSONColumnType<object> | null;
+  foregroundConfiguration: JSONColumnType<{ start?: number; end?: number;[x: string]: unknown }> | null;
   duration: number;
   isInitial: ColumnType<boolean, boolean | null, boolean>;
   isFinal: ColumnType<boolean, boolean | null, boolean>;
@@ -82,7 +82,7 @@ type QuizQuestionTemplateAnswerItem = {
   id: Generated<string>;
   quizQuestionTemplateAnswerGroupId: string;
   order: number;
-  value: JSONColumnType<object>;
+  value: string;
   label: TranslatableColumn;
 };
 

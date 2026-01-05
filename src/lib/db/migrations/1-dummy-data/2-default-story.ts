@@ -35,10 +35,10 @@ export const DummyDataDefaultStory: Migration = {
       .insertInto('video')
       .values({
         name: 'Play/Pause',
-        source: JSON.stringify({ default: '/videos/play-pause/stream.m3u8' } as Translatable),
-        thumbnail: JSON.stringify({ default: '/videos/play-pause.jpg' } as Translatable),
+        source: JSON.stringify({ default: '/videos/play-pause/stream.m3u8' } as Translatable), // TODO: Fix as type
+        thumbnail: JSON.stringify({ default: '/videos/play-pause.jpg' } as Translatable), // TODO: Fix as type
         captions: null,
-        duration: 3,
+        duration: 15,
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -47,10 +47,10 @@ export const DummyDataDefaultStory: Migration = {
       .insertInto('video')
       .values({
         name: 'Countdown',
-        source: JSON.stringify({ default: '/videos/countdown/stream.m3u8' } as Translatable),
-        thumbnail: JSON.stringify({ default: '/videos/countdown.jpg' } as Translatable),
+        source: JSON.stringify({ default: '/videos/countdown/stream.m3u8' } as Translatable), // TODO: Fix as type
+        thumbnail: JSON.stringify({ default: '/videos/countdown.jpg' } as Translatable), // TODO: Fix as type
         captions: null,
-        duration: 0,
+        duration: 10,
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -59,10 +59,10 @@ export const DummyDataDefaultStory: Migration = {
       .insertInto('video')
       .values({
         name: 'City of Barcelona',
-        source: JSON.stringify({ default: '/videos/city-Barcelona/stream.m3u8' } as Translatable),
+        source: JSON.stringify({ default: '/videos/city-Barcelona/stream.m3u8' } as Translatable), // TODO: Fix as type
         thumbnail: null,
         captions: null,
-        duration: 0,
+        duration: 5,
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -71,10 +71,10 @@ export const DummyDataDefaultStory: Migration = {
       .insertInto('video')
       .values({
         name: 'Thumbs-down',
-        source: JSON.stringify({ default: '/videos/thumbs-down/stream.m3u8' } as Translatable),
+        source: JSON.stringify({ default: '/videos/thumbs-down/stream.m3u8' } as Translatable), // TODO: Fix as type
         thumbnail: null,
         captions: null,
-        duration: 3,
+        duration: 9,
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -83,10 +83,10 @@ export const DummyDataDefaultStory: Migration = {
       .insertInto('video')
       .values({
         name: 'Tthumbs-up',
-        source: JSON.stringify({ default: '/videos/thumbs-up/stream.m3u8' } as Translatable),
+        source: JSON.stringify({ default: '/videos/thumbs-up/stream.m3u8' } as Translatable), // TODO: Fix as type
         thumbnail: null,
         captions: null,
-        duration: 3,
+        duration: 5,
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -95,10 +95,10 @@ export const DummyDataDefaultStory: Migration = {
       .insertInto('video')
       .values({
         name: 'City of Luzern',
-        source: JSON.stringify({ default: '/videos/city-Luzern/stream.m3u8' } as Translatable),
+        source: JSON.stringify({ default: '/videos/city-Luzern/stream.m3u8' } as Translatable), // TODO: Fix as type
         thumbnail: null,
         captions: null,
-        duration: 0,
+        duration: 5,
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -107,10 +107,10 @@ export const DummyDataDefaultStory: Migration = {
       .insertInto('video')
       .values({
         name: 'Game over',
-        source: JSON.stringify({ default: '/videos/game-over/stream.m3u8' } as Translatable),
+        source: JSON.stringify({ default: '/videos/game-over/stream.m3u8' } as Translatable), // TODO: Fix as type
         thumbnail: null,
         captions: null,
-        duration: 0,
+        duration: 10,
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -285,7 +285,7 @@ export const DummyDataDefaultStory: Migration = {
         quizQuestionTemplateAnswerGroupId: agCityLuzernQ1.id,
         order: 1,
         value: JSON.stringify('Luzern'),
-        label: JSON.stringify({ value: 'Luzern' } as Translatable),
+        label: JSON.stringify({ en: 'Luzern' } as Translatable),
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -342,7 +342,7 @@ export const DummyDataDefaultStory: Migration = {
       .values({
         quizTemplateId: quizPlayPause.id,
         order: 1,
-        answerTemplateReference: 'play-pause-q1',
+        answerTemplateReference: 'select-single',
         title: JSON.stringify({ en: 'Are you ready?' } as Translatable),
         instruction: null,
         placeholder: null,
@@ -358,7 +358,7 @@ export const DummyDataDefaultStory: Migration = {
       .values({
         quizTemplateId: quizPlayPause.id,
         order: 2,
-        answerTemplateReference: 'play-pause-q2',
+        answerTemplateReference: 'select-single',
         title: JSON.stringify({ en: 'Are you sure?' } as Translatable),
         instruction: null,
         placeholder: null,
@@ -374,7 +374,7 @@ export const DummyDataDefaultStory: Migration = {
       .values({
         quizTemplateId: quizCityBarcelona.id,
         order: 1,
-        answerTemplateReference: 'city-barcelona-q1',
+        answerTemplateReference: 'select-single',
         title: JSON.stringify({ en: 'Which city is this?' } as Translatable),
         instruction: null,
         placeholder: null,
@@ -390,7 +390,7 @@ export const DummyDataDefaultStory: Migration = {
       .values({
         quizTemplateId: quizCityLuzern.id,
         order: 1,
-        answerTemplateReference: 'city-luzern-q1',
+        answerTemplateReference: 'select-single',
         title: JSON.stringify({ en: 'Which city is this?' } as Translatable),
         instruction: null,
         placeholder: null,
@@ -406,7 +406,7 @@ export const DummyDataDefaultStory: Migration = {
       .values({
         quizTemplateId: quizGameOver.id,
         order: 1,
-        answerTemplateReference: 'game-over-q1',
+        answerTemplateReference: 'select-single',
         title: JSON.stringify({ en: 'Start over?' } as Translatable),
         instruction: null,
         placeholder: null,
@@ -426,10 +426,10 @@ export const DummyDataDefaultStory: Migration = {
       .values({
         storyId: story.id,
         backgroundType: 'video',
-        backgroundConfiguration: JSON.stringify({ start: 0, end: 0.8, poster: '/videos/play-pause.jpg', captions: '' }),
+        backgroundConfiguration: JSON.stringify({ start: 0.05, end: 0.45 }),
+        duration: 6,
         foregroundType: 'quiz',
         foregroundConfiguration: JSON.stringify({ start: 0.5 }),
-        duration: 3,
         isInitial: true,
         isFinal: false,
         defaultNextPartId: null,
@@ -445,10 +445,10 @@ export const DummyDataDefaultStory: Migration = {
       .values({
         storyId: story.id,
         backgroundType: 'video',
-        backgroundConfiguration: JSON.stringify({ start: 0.5, poster: '/videos/countdown.jpg' }),
-        foregroundType: 'information',
-        foregroundConfiguration: JSON.stringify({ start: 0.6 }),
-        duration: 0,
+        backgroundConfiguration: JSON.stringify({ start: 0.5 }),
+        duration: 5,
+        foregroundType: 'announcement',
+        foregroundConfiguration: JSON.stringify({ start: 0.5 }),
         isInitial: false,
         isFinal: false,
         defaultNextPartId: null, // set later -> city-Barcelona
@@ -465,9 +465,9 @@ export const DummyDataDefaultStory: Migration = {
         storyId: story.id,
         backgroundType: 'video',
         backgroundConfiguration: null,
+        duration: 5,
         foregroundType: 'quiz',
         foregroundConfiguration: JSON.stringify({ start: 1 }),
-        duration: 0,
         isInitial: false,
         isFinal: false,
         defaultNextPartId: null,
@@ -484,9 +484,9 @@ export const DummyDataDefaultStory: Migration = {
         storyId: story.id,
         backgroundType: 'video',
         backgroundConfiguration: JSON.stringify({ end: 0.5 }),
+        duration: 5,
         foregroundType: null,
         foregroundConfiguration: null,
-        duration: 3,
         isInitial: false,
         isFinal: false,
         defaultNextPartId: null, // set later -> city-Barcelona
@@ -502,10 +502,10 @@ export const DummyDataDefaultStory: Migration = {
       .values({
         storyId: story.id,
         backgroundType: 'video',
-        backgroundConfiguration: JSON.stringify({ end: 0.5 }),
+        backgroundConfiguration: JSON.stringify({ end: 1 }),
         foregroundType: null,
         foregroundConfiguration: null,
-        duration: 3,
+        duration: 5,
         isInitial: false,
         isFinal: false,
         defaultNextPartId: null, // set later -> city-Luzern
@@ -522,9 +522,9 @@ export const DummyDataDefaultStory: Migration = {
         storyId: story.id,
         backgroundType: 'video',
         backgroundConfiguration: null,
+        duration: 5,
         foregroundType: 'quiz',
-        foregroundConfiguration: JSON.stringify({ start: 0.2 }),
-        duration: 0,
+        foregroundConfiguration: JSON.stringify({ start: 1 }),
         isInitial: false,
         isFinal: false,
         defaultNextPartId: null,
@@ -540,10 +540,10 @@ export const DummyDataDefaultStory: Migration = {
       .values({
         storyId: story.id,
         backgroundType: 'video',
-        backgroundConfiguration: JSON.stringify({ end: 0.3, playbackRate: 2 }),
+        backgroundConfiguration: JSON.stringify({ end: 0.333, playbackRate: 2 }),
+        duration: 6,
         foregroundType: null,
         foregroundConfiguration: null,
-        duration: 3,
         isInitial: false,
         isFinal: false,
         defaultNextPartId: null, // set later -> city-Luzern
@@ -559,10 +559,10 @@ export const DummyDataDefaultStory: Migration = {
       .values({
         storyId: story.id,
         backgroundType: 'video',
-        backgroundConfiguration: JSON.stringify({ end: 5 }),
+        backgroundConfiguration: JSON.stringify({ end: 1 }),
+        duration: 5,
         foregroundType: null,
         foregroundConfiguration: null,
-        duration: 3,
         isInitial: false,
         isFinal: false,
         defaultNextPartId: null, // set later -> game-over
@@ -579,9 +579,9 @@ export const DummyDataDefaultStory: Migration = {
         storyId: story.id,
         backgroundType: 'video',
         backgroundConfiguration: null,
+        duration: 10,
         foregroundType: 'quiz',
         foregroundConfiguration: JSON.stringify({ start: 0.5 }),
-        duration: 0,
         isInitial: false,
         isFinal: true,
         defaultNextPartId: null,

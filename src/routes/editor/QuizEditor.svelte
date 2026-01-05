@@ -16,7 +16,7 @@
 	});
 
 	const questionSchema = z.object({
-		widget: z.literal('single-select'),
+		widget: z.literal('select-single'),
 		order: z.number(),
 		description: z.string().min(1, 'Description is required'),
 		isRequired: z.boolean().default(true),
@@ -28,7 +28,7 @@
 
 	let quiz = $state([
 		{
-			widget: 'single-select',
+			widget: 'select-single',
 			order: 1,
 			description: 'Are you ready?',
 			isRequired: true,
@@ -48,7 +48,7 @@
 			]
 		},
 		{
-			widget: 'single-select',
+			widget: 'select-single',
 			order: 2,
 			description: 'Are you sure?',
 			isRequired: true,
@@ -71,7 +71,7 @@
 
 	function addQuestion() {
 		quiz.push({
-			widget: 'single-select',
+			widget: 'select-single',
 			order: quiz.length + 1,
 			description: '',
 			isRequired: true,

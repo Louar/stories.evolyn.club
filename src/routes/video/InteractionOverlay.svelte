@@ -6,26 +6,31 @@
 	import type { InputFromLogic, Logic } from './types';
 
 	type Props = {
-		interactions: {
-			widget: string;
+		questions: {
+			id: string;
 			order: number;
-			description?: string | undefined;
+			answerTemplateReference: string;
+			title: string;
+			instruction: string | null;
+			configuration: object | null;
 			isRequired: boolean;
-			answerOptions: {
-				order: number;
-				value: string;
-				label: string;
-			}[];
+			answerOptions: [
+				{
+					order: number;
+					value: string;
+					label: string;
+				}
+			];
 		}[];
 
-		logic: Logic;
+		logic: Logic | undefined;
 
-		submit: (logic: Logic, input: InputFromLogic<Logic>) => void;
+		submit: (logic: Logic | undefined, input: InputFromLogic<Logic>) => void;
 
 		class?: ClassValue | null | undefined;
 	};
 	let {
-		interactions,
+		questions,
 		logic,
 
 		submit,
@@ -37,9 +42,9 @@
 	let input: InputFromLogic<Logic> = $state({});
 
 	const next = async () => {
-		if (!interactions?.length || i === -1) return;
+		if (!questions?.length || i === -1) return;
 
-		if (i < interactions?.length - 1) i++;
+		if (i < questions?.length - 1) i++;
 		else {
 			i = -1;
 			await new Promise((resolve) => setTimeout(resolve, 250));
@@ -47,7 +52,7 @@
 		}
 	};
 
-	const set = (raw: string) => {
+	const set = (id: string, raw: string) => {
 		let value: unknown;
 		try {
 			value = JSON.parse(raw);
@@ -55,12 +60,12 @@
 			return false;
 		}
 
-		input[`interaction_${i + 1}`] = value;
+		input[id] = value;
 	};
 </script>
 
 <div class="absolute inset-0 z-20 bg-black/20 backdrop-blur-md" in:fade={{ duration: 250 }}></div>
-{#each interactions as interaction, ii}
+{#each questions as question, ii}
 	{#if i === ii}
 		<div class="absolute inset-0 z-30 flex overflow-y-auto px-8 py-16 text-white md:py-20">
 			<div class="mx-auto mt-auto flex min-h-min w-full max-w-sm flex-col gap-4">
@@ -76,22 +81,22 @@
 						duration: 250
 					}}
 				>
-					{#if interaction.description?.length}
+					{#if question.title?.length}
 						<h3 class="text-lg font-medium md:text-2xl">
-							{interaction.description}
+							{question.title}
 						</h3>
 					{/if}
 				</div>
 
-				{#if interaction.widget === 'single-select'}
+				{#if question.answerTemplateReference === 'select-single'}
 					<RadioGroup.Root
 						class="gap-2"
 						onValueChange={(value) => {
-							set(value);
+							set(question.id, value);
 							next();
 						}}
 					>
-						{#each interaction.answerOptions as answerOption, jj}
+						{#each question.answerOptions as answerOption, jj}
 							<div
 								in:fly|global={{
 									y: 20,
@@ -101,7 +106,7 @@
 								out:fly|global={{
 									y: 20,
 									duration: 250,
-									delay: ii === interactions.length - 1 ? 0 : jj * 150
+									delay: ii === questions.length - 1 ? 0 : jj * 150
 								}}
 							>
 								<Label
