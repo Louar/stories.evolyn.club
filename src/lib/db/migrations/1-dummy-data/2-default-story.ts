@@ -86,7 +86,7 @@ export const DummyDataDefaultStory: Migration = {
     const videoThumbsUp = await db
       .insertInto('video')
       .values({
-        name: 'Tthumbs-up',
+        name: 'Thumbs-up',
         source: JSON.stringify({ default: '/videos/thumbs-up/stream.m3u8' } as Translatable), // TODO: Fix as type
         thumbnail: null,
         captions: null,
@@ -503,7 +503,7 @@ export const DummyDataDefaultStory: Migration = {
         videoId: videoThumbsDown.id,
         announcementTemplateId: null,
         quizLogicForPartId: null,
-        position: JSON.stringify({ x: 1200, y: -200 }),
+        position: JSON.stringify({ x: 1200, y: 200 }),
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -522,7 +522,7 @@ export const DummyDataDefaultStory: Migration = {
         videoId: videoThumbsUp.id,
         announcementTemplateId: null,
         quizLogicForPartId: null,
-        position: JSON.stringify({ x: 1200, y: 200 }),
+        position: JSON.stringify({ x: 1200, y: -200 }),
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -560,7 +560,7 @@ export const DummyDataDefaultStory: Migration = {
         videoId: videoThumbsDown.id,
         announcementTemplateId: null,
         quizLogicForPartId: null,
-        position: JSON.stringify({ x: 2000, y: -200 }),
+        position: JSON.stringify({ x: 2000, y: 200 }),
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -579,7 +579,7 @@ export const DummyDataDefaultStory: Migration = {
         videoId: videoThumbsUp.id,
         announcementTemplateId: null,
         quizLogicForPartId: null,
-        position: JSON.stringify({ x: 2000, y: 200 }),
+        position: JSON.stringify({ x: 2000, y: -200 }),
       })
       .returning('id')
       .executeTakeFirstOrThrow();
