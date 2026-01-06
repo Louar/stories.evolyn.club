@@ -141,9 +141,40 @@ export const InitStoryModule: Migration = {
       .addColumn('value', 'jsonb', (col) => col.notNull())
       .execute();
 
+    // Create VideoAvailableToStory table
+    await db.schema.createTable('video_available_to_story')
+      .ifNotExists()
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('story_id', 'uuid', (col) => col.references('story.id').onDelete('cascade'))
+      .addColumn('video_id', 'uuid', (col) => col.references('video.id').onDelete('cascade'))
+      .addUniqueConstraint('unique_video_per_story', ['story_id', 'video_id'])
+      .execute();
+
+    // Create AnnouncementTemplateAvailableToStory table
+    await db.schema.createTable('announcement_template_available_to_story')
+      .ifNotExists()
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('story_id', 'uuid', (col) => col.references('story.id').onDelete('cascade'))
+      .addColumn('announcement_template_id', 'uuid', (col) => col.references('announcement_template.id').onDelete('cascade'))
+      .addUniqueConstraint('unique_announcement_template_per_story', ['story_id', 'announcement_template_id'])
+      .execute();
+
+    // Create QuizTemplateAvailableToStory table
+    await db.schema.createTable('quiz_template_available_to_story')
+      .ifNotExists()
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('story_id', 'uuid', (col) => col.references('story.id').onDelete('cascade'))
+      .addColumn('quiz_template_id', 'uuid', (col) => col.references('quiz_template.id').onDelete('cascade'))
+      .addUniqueConstraint('unique_quiz_template_per_story', ['story_id', 'quiz_template_id'])
+      .execute();
+
   },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async down(db: Kysely<any>) {
+    await db.schema.dropTable('quiz_template_available_to_story').ifExists().execute();
+    await db.schema.dropTable('announcement_template_available_to_story').ifExists().execute();
+    await db.schema.dropTable('video_available_to_story').ifExists().execute();
+
     await db.schema.dropTable('quiz_logic_rule_input').ifExists().execute();
     await db.schema.dropTable('quiz_logic_rule').ifExists().execute();
 

@@ -46,7 +46,7 @@
 	};
 
 	const format = (percentage: number) => {
-		const seconds = (duration * percentage) / 100;
+		const seconds = duration * percentage;
 		return [Math.floor((seconds / 60) % 60), Math.round(seconds % 60)]
 			.join(':')
 			.replace(/\b(\d)\b/g, '0$1');
@@ -54,9 +54,9 @@
 </script>
 
 <SliderPrimitive.Root
-	step={100 / duration}
+	step={1 / duration}
 	min={0}
-	max={100}
+	max={1}
 	type="multiple"
 	bind:value={range}
 	class={cn(

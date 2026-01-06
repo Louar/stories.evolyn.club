@@ -20,8 +20,8 @@ export const DummyDataDefaultStory: Migration = {
         reference: 'quiz-of-cities',
         name: 'Quiz of Cities',
         configuration: null,
-        isPublished: false,
-        isPublic: false,
+        isPublished: true,
+        isPublic: true,
         createdBy: userId,
         updatedBy: userId,
       })
@@ -42,6 +42,7 @@ export const DummyDataDefaultStory: Migration = {
       })
       .returning('id')
       .executeTakeFirstOrThrow();
+    await db.insertInto('videoAvailableToStory').values({ storyId: story.id, videoId: videoPlayPause.id }).executeTakeFirstOrThrow();
 
     const videoCountdown = await db
       .insertInto('video')
@@ -54,6 +55,7 @@ export const DummyDataDefaultStory: Migration = {
       })
       .returning('id')
       .executeTakeFirstOrThrow();
+    await db.insertInto('videoAvailableToStory').values({ storyId: story.id, videoId: videoCountdown.id }).executeTakeFirstOrThrow();
 
     const videoCityBarcelona = await db
       .insertInto('video')
@@ -66,6 +68,7 @@ export const DummyDataDefaultStory: Migration = {
       })
       .returning('id')
       .executeTakeFirstOrThrow();
+    await db.insertInto('videoAvailableToStory').values({ storyId: story.id, videoId: videoCityBarcelona.id }).executeTakeFirstOrThrow();
 
     const videoThumbsDown = await db
       .insertInto('video')
@@ -78,6 +81,7 @@ export const DummyDataDefaultStory: Migration = {
       })
       .returning('id')
       .executeTakeFirstOrThrow();
+    await db.insertInto('videoAvailableToStory').values({ storyId: story.id, videoId: videoThumbsDown.id }).executeTakeFirstOrThrow();
 
     const videoThumbsUp = await db
       .insertInto('video')
@@ -90,6 +94,7 @@ export const DummyDataDefaultStory: Migration = {
       })
       .returning('id')
       .executeTakeFirstOrThrow();
+    await db.insertInto('videoAvailableToStory').values({ storyId: story.id, videoId: videoThumbsUp.id }).executeTakeFirstOrThrow();
 
     const videoCityLuzern = await db
       .insertInto('video')
@@ -102,6 +107,7 @@ export const DummyDataDefaultStory: Migration = {
       })
       .returning('id')
       .executeTakeFirstOrThrow();
+    await db.insertInto('videoAvailableToStory').values({ storyId: story.id, videoId: videoCityLuzern.id }).executeTakeFirstOrThrow();
 
     const videoGameOver = await db
       .insertInto('video')
@@ -114,6 +120,7 @@ export const DummyDataDefaultStory: Migration = {
       })
       .returning('id')
       .executeTakeFirstOrThrow();
+    await db.insertInto('videoAvailableToStory').values({ storyId: story.id, videoId: videoGameOver.id }).executeTakeFirstOrThrow();
 
     // -------------------------
     // 3) Announcement templates
@@ -127,6 +134,7 @@ export const DummyDataDefaultStory: Migration = {
       })
       .returning('id')
       .executeTakeFirstOrThrow();
+    await db.insertInto('announcementTemplateAvailableToStory').values({ storyId: story.id, announcementTemplateId: annWelcome.id }).executeTakeFirstOrThrow();
 
     // -------------------------
     // 4) Quiz templates
@@ -136,24 +144,28 @@ export const DummyDataDefaultStory: Migration = {
       .values({ name: 'Are you ready?-quiz', doRandomize: false })
       .returning('id')
       .executeTakeFirstOrThrow();
+    await db.insertInto('quizTemplateAvailableToStory').values({ storyId: story.id, quizTemplateId: quizPlayPause.id }).executeTakeFirstOrThrow();
 
     const quizCityBarcelona = await db
       .insertInto('quizTemplate')
       .values({ name: 'City of Barcelona quiz', doRandomize: true })
       .returning('id')
       .executeTakeFirstOrThrow();
+    await db.insertInto('quizTemplateAvailableToStory').values({ storyId: story.id, quizTemplateId: quizCityBarcelona.id }).executeTakeFirstOrThrow();
 
     const quizCityLuzern = await db
       .insertInto('quizTemplate')
       .values({ name: 'City of Luzern quiz', doRandomize: true })
       .returning('id')
       .executeTakeFirstOrThrow();
+    await db.insertInto('quizTemplateAvailableToStory').values({ storyId: story.id, quizTemplateId: quizCityLuzern.id }).executeTakeFirstOrThrow();
 
     const quizGameOver = await db
       .insertInto('quizTemplate')
       .values({ name: 'Game over quiz', doRandomize: false })
       .returning('id')
       .executeTakeFirstOrThrow();
+    await db.insertInto('quizTemplateAvailableToStory').values({ storyId: story.id, quizTemplateId: quizGameOver.id }).executeTakeFirstOrThrow();
 
     // -------------------------
     // 5) Answer groups

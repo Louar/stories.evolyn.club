@@ -12,7 +12,7 @@
 	let { data }: NodeProps & { data: { duration: number; range: number[] } } = $props();
 
 	let duration = $state(data.duration ?? 300);
-	let range = $state(data.range ?? [0, 50, 100]);
+	let range = $state(data.range ?? [0, 0.5, 1]);
 
 	const overlayOptions = [
 		{ value: 'text', label: 'Text' },

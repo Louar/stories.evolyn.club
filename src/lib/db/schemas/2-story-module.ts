@@ -10,8 +10,11 @@ export type StoryModuleSchema = {
   story: Story;
   part: Part;
   video: Video;
+  videoAvailableToStory: VideoAvailableToStory;
   announcementTemplate: AnnouncementTemplate;
+  announcementTemplateAvailableToStory: AnnouncementTemplateAvailableToStory;
   quizTemplate: QuizTemplate;
+  quizTemplateAvailableToStory: QuizTemplateAvailableToStory;
   quizQuestionTemplateAnswerGroup: QuizQuestionTemplateAnswerGroup;
   quizQuestionTemplateAnswerItem: QuizQuestionTemplateAnswerItem;
   quizQuestionTemplate: QuizQuestionTemplate;
@@ -57,6 +60,11 @@ type Video = {
   captions: TranslatableColumn | null;
   duration: number;
 };
+type VideoAvailableToStory = {
+  id: Generated<string>;
+  storyId: string;
+  videoId: string;
+};
 
 type AnnouncementTemplate = {
   id: Generated<string>;
@@ -64,11 +72,21 @@ type AnnouncementTemplate = {
   title: TranslatableColumn | null;
   message: TranslatableColumn | null;
 };
+type AnnouncementTemplateAvailableToStory = {
+  id: Generated<string>;
+  storyId: string;
+  announcementTemplateId: string;
+};
 
 type QuizTemplate = {
   id: Generated<string>;
   name: string;
   doRandomize: ColumnType<boolean, boolean | null, boolean>;
+};
+type QuizTemplateAvailableToStory = {
+  id: Generated<string>;
+  storyId: string;
+  quizTemplateId: string;
 };
 
 type QuizQuestionTemplateAnswerGroup = {
