@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { findOneStoryById } from '$lib/db/repositories/2-stories-module';
 	import {
 		Background,
 		SvelteFlow,
@@ -9,10 +10,82 @@
 	} from '@xyflow/svelte';
 	import MediaEdge from './MediaEdge.svelte';
 	import MediaNode from './MediaNode.svelte';
-	import { initialEdges, initialNodes } from './nodes-and-edges';
 
-	let nodes = $state.raw<Node[]>(initialNodes);
-	let edges = $state.raw<Edge[]>(initialEdges);
+	type Props = {
+		story: Awaited<ReturnType<typeof findOneStoryById>> | undefined;
+	};
+	let { story }: Props = $props();
+
+	let nodes = $state.raw<Node[]>([]);
+	let edges = $state.raw<Edge[]>([]);
+
+	// Transform story parts into nodes
+	$effect(() => {
+		if (!story?.parts) {
+			nodes = [];
+			edges = [];
+			return;
+		}
+
+		const newNodes: Node[] = story.parts.map((part, index) => {
+			const hasQuiz =
+				part.foregroundType === 'quiz' && part.foreground && 'rawlogic' in part.foreground;
+			const background = part.background;
+			const duration = background?.duration ?? 300;
+
+			// Calculate position based on index (simple layout)
+			const x = (index % 3) * 400;
+			const y = Math.floor(index / 3) * 300;
+
+			return {
+				id: part.id,
+				type: 'media',
+				position: { x, y },
+				data: {
+					part,
+					videos: story.videos,
+					announcements: story.announcements,
+					quizzes: story.quizzes
+					// label: part.name,
+					// duration,
+					// hasQuiz,
+					// isInitial: part.isInitial
+				}
+			};
+		});
+
+		// Create edges based on defaultNextPartId and quiz logic
+		const newEdges: Edge[] = [];
+
+		story.parts.forEach((part) => {
+			// Default edge from defaultNextPartId
+			if (part.defaultNextPartId) {
+				newEdges.push({
+					id: `e-${part.id}-${part.defaultNextPartId}`,
+					source: part.id,
+					target: part.defaultNextPartId,
+					sourceHandle: 'default'
+				});
+			}
+
+			// Quiz logic edges from rules
+			if (part.foreground?.logic?.rules) {
+				part.foreground.logic.rules.forEach((rule) => {
+					if (rule.next) {
+						newEdges.push({
+							id: `e-${part.id}-${rule._id}-${rule.next}`,
+							source: part.id,
+							target: rule.next,
+							sourceHandle: rule._id
+						});
+					}
+				});
+			}
+		});
+
+		nodes = newNodes;
+		edges = newEdges;
+	});
 
 	const nodeTypes = {
 		media: MediaNode

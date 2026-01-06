@@ -6,7 +6,7 @@ import type { Rule } from '../../../routes/video/types';
 import { Language, selectByOrientation, selectLocalizedField, StoryOrientation } from '../schemas/0-utils';
 import { LogicHitpolicy } from '../schemas/2-story-module';
 
-export const findStoryById = async (clientId: string, storyId: string, orientation?: StoryOrientation, language?: Language) => {
+export const findOneStoryById = async (clientId: string, storyId: string, orientation?: StoryOrientation, language?: Language) => {
 
   if (!clientId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) error(404, 'De client-ID is ongeldig.');
 
@@ -177,7 +177,7 @@ export const findStoryById = async (clientId: string, storyId: string, orientati
   return rawstory;
 }
 
-export const findStoryByReference = async (clientId: string, storyReference: string, orientation?: StoryOrientation, language?: Language) => {
+export const findOneStoryByReference = async (clientId: string, storyReference: string, orientation?: StoryOrientation, language?: Language) => {
 
   if (!clientId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) error(404, 'De client-ID is ongeldig.');
 

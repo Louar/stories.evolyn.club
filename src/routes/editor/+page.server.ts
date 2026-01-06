@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { db } from '$lib/db/database';
-import { findStoryById } from '$lib/db/repositories/2-stories-module';
+import { findOneStoryById } from '$lib/db/repositories/2-stories-module';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = (async () => {
@@ -15,7 +15,7 @@ export const load: PageServerLoad = (async () => {
     .select('story.id')
     .executeTakeFirstOrThrow()
 
-  const story = await findStoryById(clientId, storyId);
+  const story = await findOneStoryById(clientId, storyId);
 
   return { story };
 });
