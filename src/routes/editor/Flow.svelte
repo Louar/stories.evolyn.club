@@ -45,11 +45,23 @@
 					part,
 					videos: story.videos,
 					announcements: story.announcements,
-					quizzes: story.quizzes
-					// label: part.name,
-					// duration,
-					// hasQuiz,
-					// isInitial: part.isInitial
+					quizzes: story.quizzes,
+					label:
+						part.backgroundType === 'video'
+							? background?.source
+								? background.source.split('/').pop()?.split('.')[0] || 'Video'
+								: 'Video'
+							: part.foregroundType === 'quiz'
+								? 'Quiz'
+								: part.foregroundType === 'announcement'
+									? 'Announcement'
+									: 'Part',
+					duration,
+					hasQuiz,
+					isInitial: part.isInitial || false,
+					isFinal: part.isFinal || false,
+					backgroundType: part.backgroundType,
+					backgroundSource: background?.source
 				}
 			};
 		});
@@ -68,15 +80,15 @@
 				});
 			}
 
-			// Quiz logic edges from rules
-			if (part.foreground?.logic?.rules) {
-				part.foreground.logic.rules.forEach((rule) => {
-					if (rule.next) {
+			// Quiz logic edges from rawlogic rules
+			if (part.foreground && 'rawlogic' in part.foreground && part.foreground.rawlogic?.rules) {
+				part.foreground.rawlogic.rules.forEach((rule) => {
+					if (rule.nextPartId) {
 						newEdges.push({
-							id: `e-${part.id}-${rule._id}-${rule.next}`,
+							id: `e-${part.id}-${rule.order}-${rule.nextPartId}`,
 							source: part.id,
-							target: rule.next,
-							sourceHandle: rule._id
+							target: rule.nextPartId,
+							sourceHandle: String(rule.order)
 						});
 					}
 				});

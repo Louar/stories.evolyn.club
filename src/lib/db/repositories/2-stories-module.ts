@@ -23,6 +23,8 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
           .leftJoin('videoAvailableToStory', 'videoAvailableToStory.videoId', 'video.id')
           .whereRef('videoAvailableToStory.storyId', '=', 'story.id')
           .select([
+            'video.id',
+            'video.name',
             'video.source',
             'video.thumbnail',
             'video.captions',
@@ -35,6 +37,8 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
           .leftJoin('announcementTemplateAvailableToStory', 'announcementTemplateAvailableToStory.announcementTemplateId', 'announcementTemplate.id')
           .whereRef('announcementTemplateAvailableToStory.storyId', '=', 'story.id')
           .select([
+            'announcementTemplate.id',
+            'announcementTemplate.name',
             'announcementTemplate.title',
             'announcementTemplate.message',
           ])
@@ -45,6 +49,8 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
           .leftJoin('quizTemplateAvailableToStory', 'quizTemplateAvailableToStory.quizTemplateId', 'quizTemplate.id')
           .whereRef('quizTemplateAvailableToStory.storyId', '=', 'story.id')
           .select((eb) => [
+            'quizTemplate.id',
+            'quizTemplate.name',
             'quizTemplate.doRandomize',
             jsonArrayFrom(
               eb.selectFrom('quizQuestionTemplate')
@@ -118,6 +124,7 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
                     .selectFrom('announcementTemplate')
                     .whereRef('announcementTemplate.id', '=', 'part.announcementTemplateId')
                     .select((eb) => [
+                      'announcementTemplate.id',
                       selectLocalizedField(eb, 'announcementTemplate.title', language).as('title'),
                       selectLocalizedField(eb, 'announcementTemplate.message', language).as('message'),
                     ])

@@ -33,39 +33,28 @@
 		{ value: 'quiz', label: 'Quiz' },
 		{ value: 'announcement', label: 'Announcement' }
 	];
+
+	let duration = $derived(part?.background?.duration ?? 300);
+	let range = $state([0, 0.5, 1]);
 </script>
 
 <div class="flex w-72 flex-col rounded-lg border border-stone-400 bg-white py-3 shadow-md">
 	<div class="relative grid w-full gap-2">
-		<!-- Part Label/Header -->
-		<div class="px-4 pb-2">
-			<p class="truncate text-sm font-medium" title={data.label}>{data.label}</p>
-			{#if data.isInitial}
-				<span
-					class="inline-block rounded bg-green-100 px-1.5 py-0.5 text-xs font-semibold text-green-800"
-					>Initial</span
-				>
-			{/if}
-			{#if data.isFinal}
-				<span
-					class="inline-block rounded bg-red-100 px-1.5 py-0.5 text-xs font-semibold text-red-800"
-					>Final</span
-				>
-			{/if}
-		</div>
-
 		<!-- Media Selector -->
 		<div class="relative px-2">
 			<Dialog.Root>
 				<Dialog.Trigger
-					class="flex w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-placeholder:text-muted-foreground data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground"
-					data-placeholder
+					class="flex w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground
+					{part?.backgroundType !== 'video' ? 'text-muted-foreground' : ''}"
 				>
-					<span class="truncate"
-						>{data.backgroundType === 'video'
-							? 'Video'
-							: data.backgroundType || 'Select media...'}</span
-					>
+					<span class="truncate">
+						{#if part?.backgroundType === 'video'}
+							{@const video = videos.find((video) => video.id === part?.videoId)}
+							Video: {video?.name}
+						{:else}
+							Select media...
+						{/if}
+					</span>
 					<ChevronDownIcon class="size-4 opacity-50" />
 				</Dialog.Trigger>
 				<Dialog.Content class="sm:max-w-106.25">
@@ -109,13 +98,22 @@
 		<div class="px-2">
 			<Dialog.Root>
 				<Dialog.Trigger
-					class="flex w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-placeholder:text-muted-foreground data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground"
-					data-placeholder
+					class="flex w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground
+					{part?.backgroundType !== 'video' ? 'text-muted-foreground' : ''}"
 				>
-					<span class="truncate"
-						>{overlayOptions.find((o) => o.value === part?.foregroundType)?.label ||
-							'Select overlay...'}</span
-					>
+					<span class="truncate">
+						{#if part?.foregroundType}
+							{#if part?.foregroundType === 'announcement'}
+								{@const announcement = announcements.find((a) => a.id === part?.foreground?.id)}
+								Announcement: {announcement?.name}
+							{:else if part?.foregroundType === 'quiz'}
+								{@const quiz = quizzes.find((q) => q.id === part?.foreground?.id)}
+								Quiz: {quiz?.name}
+							{/if}
+						{:else}
+							Select overlay...
+						{/if}
+					</span>
 					<ChevronDownIcon class="size-4 opacity-50" />
 				</Dialog.Trigger>
 				<Dialog.Content class="sm:max-w-106.25">
@@ -164,13 +162,13 @@
 			{#if part?.foreground?.rawlogic?.rules?.length}
 				{#each part?.foreground?.rawlogic?.rules as rule}
 					<div class="relative px-2">
-						<p class="text-sm" title={rule._description}>
-							{rule._description || `Rule ${rule._id}`}
+						<p class="text-sm" title={rule.name}>
+							{rule.name || `Rule ${rule.order}`}
 						</p>
 						<Handle
 							type="source"
 							position={Position.Right}
-							id={rule._id}
+							id={String(rule.order)}
 							class="size-4! bg-amber-300!"
 						/>
 					</div>
