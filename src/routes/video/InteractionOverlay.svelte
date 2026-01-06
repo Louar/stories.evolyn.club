@@ -10,17 +10,15 @@
 			id: string;
 			order: number;
 			answerTemplateReference: string;
-			title: string;
+			title: string | null;
 			instruction: string | null;
 			configuration: object | null;
 			isRequired: boolean;
-			answerOptions: [
-				{
-					order: number;
-					value: string;
-					label: string;
-				}
-			];
+			answerOptions: {
+				order: number;
+				value: string;
+				label: string;
+			}[];
 		}[];
 
 		logic: Logic | undefined;

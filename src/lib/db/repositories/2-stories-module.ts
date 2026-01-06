@@ -2,7 +2,7 @@ import { db } from '$lib/db/database';
 import { error } from '@sveltejs/kit';
 import type { NotNull } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
-import type { Logic, Rule } from '../../../routes/video/types';
+import type { Rule } from '../../../routes/video/types';
 import { Language, selectByOrientation, selectLocalizedField, StoryOrientation } from '../schemas/0-utils';
 import { LogicHitpolicy } from '../schemas/2-story-module';
 
@@ -23,7 +23,6 @@ export const findStory = async (clientId: string, storyReference: string, orient
           .whereRef('part.storyId', '=', 'story.id')
           .select((eb) => [
             'part.id',
-            'part.duration',
 
             // Background
             'part.backgroundType',
@@ -127,7 +126,6 @@ export const findStory = async (clientId: string, storyReference: string, orient
                             ).as('rules'),
                           ])
                       ).as('rawlogic')
-
                     ])
                 )
               )
@@ -145,10 +143,9 @@ export const findStory = async (clientId: string, storyReference: string, orient
     reference: rawstory.reference,
     parts: rawstory.parts.map(
       (part) => {
-        let foreground: typeof part.foreground & { logic?: Logic } | null = part.foreground;
-        if (part.foregroundType === 'quiz' && part.foreground && typeof part.foreground === 'object' && 'questions' in part.foreground && Array.isArray(part.foreground.questions) && part.foreground.rawlogic && typeof part.foreground.rawlogic === 'object') {
-          const questions = part.foreground.questions;
-          const rawlogic = part.foreground.rawlogic;
+        const { background, backgroundConfiguration, foreground, foregroundConfiguration, ...restPart } = part;
+        if (part.foregroundType === 'quiz' && foreground && typeof foreground === 'object' && 'questions' in foreground && Array.isArray(foreground.questions) && foreground.rawlogic && typeof foreground.rawlogic === 'object') {
+          const { questions, rawlogic, ...restForeground } = foreground;
 
           // --- inputs derived from QUESTIONS array ---
           const inputs = questions.map((q) => ({
@@ -194,20 +191,27 @@ export const findStory = async (clientId: string, storyReference: string, orient
             return rule;
           });
 
-          foreground = {
-            ...part.foreground,
-            logic: {
-              hitPolicy: rawlogic.hitpolicy ?? LogicHitpolicy.first,
-              inputs,
-              outputs,
-              rules,
-            },
+          return {
+            ...restPart,
+            background: { ...background, ...backgroundConfiguration },
+            foreground: {
+              ...restForeground,
+              ...foregroundConfiguration,
+              questions,
+              logic: {
+                hitPolicy: rawlogic.hitpolicy ?? LogicHitpolicy.first,
+                inputs,
+                outputs,
+                rules,
+              }
+            }
           };
-        }
-
-        return {
-          ...part,
-          foreground,
+        } else {
+          return {
+            ...restPart,
+            background: { ...background, ...backgroundConfiguration },
+            foreground: { ...foreground, ...foregroundConfiguration },
+          };
         }
       }
     ),

@@ -101,7 +101,6 @@ export const InitStoryModule: Migration = {
       .addColumn('background_configuration', 'jsonb')
       .addColumn('foreground_type', 'text')
       .addColumn('foreground_configuration', 'jsonb')
-      .addColumn('duration', 'smallint', col => col.notNull())
       .addColumn('is_initial', 'boolean', col => col.defaultTo(false).notNull())
       .addColumn('is_final', 'boolean', col => col.defaultTo(false).notNull())
       .addColumn('default_next_part_id', 'uuid', (col) => col.references('part.id').onDelete('set null'))

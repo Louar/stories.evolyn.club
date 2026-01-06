@@ -41,7 +41,6 @@ type Part = {
   backgroundConfiguration: JSONColumnType<{ start?: number; end?: number;[x: string]: unknown }> | null;
   foregroundType: string | null;
   foregroundConfiguration: JSONColumnType<{ start?: number; end?: number;[x: string]: unknown }> | null;
-  duration: number;
   isInitial: ColumnType<boolean, boolean | null, boolean>;
   isFinal: ColumnType<boolean, boolean | null, boolean>;
   defaultNextPartId: string | null;

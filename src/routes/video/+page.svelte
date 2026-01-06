@@ -102,15 +102,17 @@
 							bind:doBuffer={player.doBuffer}
 							bind:doPlay={player.doPlay}
 							bind:doRestart={player.doRestart}
-							bind:watchPercentage={player.watchPercentage}
+							bind:time={player.time}
 							bufferNext={() => {
 								const playerById = new Map(players.map((p) => [p.id, p]));
 
 								const nextPlayers = [
 									player.next?.length ? playerById.get(player.next) : undefined,
-									...(part.foreground?.logic?.rules?.map((rule) =>
-										typeof rule.next === 'string' ? playerById.get(rule.next) : undefined
-									) ?? [])
+									...('logic' in part.foreground
+										? (part.foreground?.logic?.rules?.map((rule) =>
+												typeof rule.next === 'string' ? playerById.get(rule.next) : undefined
+											) ?? [])
+										: [])
 								].filter((p): p is (typeof players)[number] => p !== undefined);
 								if (nextPlayers?.length) {
 									nextPlayers.forEach((nextPlayer) => (nextPlayer.doBuffer = true));
@@ -125,20 +127,20 @@
 								}
 							}}
 						/>
+						<!-- bind:watchPercentage={player.watchPercentage} -->
 					{/if}
 
-					{#if part.foreground}
-						{part.foregroundType}
-						{#if part.foregroundType === 'announcement' && (player?.watchPercentage ?? 0) >= (part.foregroundConfiguration?.start ?? 0)}
+					{#if part.foreground && (player?.start ?? 0) + (player?.time ?? 0) >= (part.foreground?.start ?? 0) * part.background?.duration}
+						{#if part.foregroundType === 'announcement' && 'title' in part.foreground && 'message' in part.foreground}
 							<AnnouncementOverlay
-								title={part.foreground.title}
-								message={part.foreground.message}
+								title={part.foreground?.title}
+								message={part.foreground?.message}
 							/>
 						{/if}
-						{#if part.foregroundType === 'quiz' && (player?.watchPercentage ?? 0) >= (part.foregroundConfiguration?.start ?? 0)}
+						{#if part.foregroundType === 'quiz' && 'questions' in part.foreground && 'logic' in part.foreground}
 							<InteractionOverlay
-								questions={part.foreground.questions}
-								logic={part.foreground.logic}
+								questions={part.foreground?.questions}
+								logic={part.foreground?.logic}
 								{submit}
 							/>
 						{/if}

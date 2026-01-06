@@ -48,7 +48,7 @@ export const DummyDataDefaultStory: Migration = {
       .values({
         name: 'Countdown',
         source: JSON.stringify({ default: '/videos/countdown/stream.m3u8' } as Translatable), // TODO: Fix as type
-        thumbnail: JSON.stringify({ default: '/videos/countdown.jpg' } as Translatable), // TODO: Fix as type
+        // thumbnail: JSON.stringify({ default: '/videos/countdown.jpg' } as Translatable),
         captions: null,
         duration: 10,
       })
@@ -427,9 +427,8 @@ export const DummyDataDefaultStory: Migration = {
         storyId: story.id,
         backgroundType: 'video',
         backgroundConfiguration: JSON.stringify({ start: 0.05, end: 0.45 }),
-        duration: 6,
         foregroundType: 'quiz',
-        foregroundConfiguration: JSON.stringify({ start: 0.5 }),
+        foregroundConfiguration: JSON.stringify({ start: 0.15 }),
         isInitial: true,
         isFinal: false,
         defaultNextPartId: null,
@@ -446,9 +445,8 @@ export const DummyDataDefaultStory: Migration = {
         storyId: story.id,
         backgroundType: 'video',
         backgroundConfiguration: JSON.stringify({ start: 0.5 }),
-        duration: 5,
         foregroundType: 'announcement',
-        foregroundConfiguration: JSON.stringify({ start: 0.5 }),
+        foregroundConfiguration: JSON.stringify({ start: 0.75 }),
         isInitial: false,
         isFinal: false,
         defaultNextPartId: null, // set later -> city-Barcelona
@@ -465,7 +463,6 @@ export const DummyDataDefaultStory: Migration = {
         storyId: story.id,
         backgroundType: 'video',
         backgroundConfiguration: null,
-        duration: 5,
         foregroundType: 'quiz',
         foregroundConfiguration: JSON.stringify({ start: 1 }),
         isInitial: false,
@@ -484,7 +481,6 @@ export const DummyDataDefaultStory: Migration = {
         storyId: story.id,
         backgroundType: 'video',
         backgroundConfiguration: JSON.stringify({ end: 0.5 }),
-        duration: 5,
         foregroundType: null,
         foregroundConfiguration: null,
         isInitial: false,
@@ -505,7 +501,6 @@ export const DummyDataDefaultStory: Migration = {
         backgroundConfiguration: JSON.stringify({ end: 1 }),
         foregroundType: null,
         foregroundConfiguration: null,
-        duration: 5,
         isInitial: false,
         isFinal: false,
         defaultNextPartId: null, // set later -> city-Luzern
@@ -522,7 +517,6 @@ export const DummyDataDefaultStory: Migration = {
         storyId: story.id,
         backgroundType: 'video',
         backgroundConfiguration: null,
-        duration: 5,
         foregroundType: 'quiz',
         foregroundConfiguration: JSON.stringify({ start: 1 }),
         isInitial: false,
@@ -540,8 +534,7 @@ export const DummyDataDefaultStory: Migration = {
       .values({
         storyId: story.id,
         backgroundType: 'video',
-        backgroundConfiguration: JSON.stringify({ end: 0.333, playbackRate: 2 }),
-        duration: 6,
+        backgroundConfiguration: JSON.stringify({ end: 0.4 }),
         foregroundType: null,
         foregroundConfiguration: null,
         isInitial: false,
@@ -559,8 +552,7 @@ export const DummyDataDefaultStory: Migration = {
       .values({
         storyId: story.id,
         backgroundType: 'video',
-        backgroundConfiguration: JSON.stringify({ end: 1 }),
-        duration: 5,
+        backgroundConfiguration: JSON.stringify({ end: 0.8 }),
         foregroundType: null,
         foregroundConfiguration: null,
         isInitial: false,
@@ -579,7 +571,6 @@ export const DummyDataDefaultStory: Migration = {
         storyId: story.id,
         backgroundType: 'video',
         backgroundConfiguration: null,
-        duration: 10,
         foregroundType: 'quiz',
         foregroundConfiguration: JSON.stringify({ start: 0.5 }),
         isInitial: false,

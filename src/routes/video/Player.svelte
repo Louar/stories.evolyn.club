@@ -19,7 +19,8 @@
 		doBuffer: boolean;
 		doPlay: boolean;
 		doRestart: boolean;
-		watchPercentage: number;
+		time: number;
+		// watchPercentage: number;
 
 		bufferNext: () => void;
 		playNext: () => void;
@@ -37,7 +38,8 @@
 		doBuffer = $bindable(false),
 		doPlay = $bindable(false),
 		doRestart = $bindable(false),
-		watchPercentage = $bindable(0),
+		time = $bindable(0),
+		// watchPercentage = $bindable(0),
 
 		bufferNext,
 		playNext,
@@ -58,7 +60,8 @@
 		player?.subscribe(({ currentTime }) => {
 			if (player?.duration) {
 				timeLeft = player.duration - currentTime;
-				watchPercentage = currentTime / player.duration;
+				time = currentTime;
+				// watchPercentage = currentTime / player.duration;
 				if (!almostEnded && (timeLeft ?? Infinity) <= 30) almostEnded = true;
 			}
 		});
