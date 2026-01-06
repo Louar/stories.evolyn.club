@@ -106,6 +106,7 @@ export const InitStoryModule: Migration = {
       .addColumn('default_next_part_id', 'uuid', (col) => col.references('part.id').onDelete('set null'))
       .addColumn('video_id', 'uuid', (col) => col.references('video.id').onDelete('set null'))
       .addColumn('announcement_template_id', 'uuid', (col) => col.references('announcement_template.id').onDelete('set null'))
+      .addColumn('position', 'jsonb')
       .execute();
 
     // Create QuizLogicForPart table

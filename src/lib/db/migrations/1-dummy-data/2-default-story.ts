@@ -430,8 +430,7 @@ export const DummyDataDefaultStory: Migration = {
       .executeTakeFirstOrThrow();
 
     // -------------------------
-    // 8) Parts (insert without defaultNextPartId for the forward refs)
-    //    (because several next-part references point to parts not yet created)
+    // 8) Parts (insert without defaultNextPartId for the forward refs, because several next-part references point to parts not yet created)
     // -------------------------
     const partPlayPause = await db
       .insertInto('part')
@@ -447,6 +446,7 @@ export const DummyDataDefaultStory: Migration = {
         videoId: videoPlayPause.id,
         announcementTemplateId: null,
         quizLogicForPartId: null, // set later after quiz logic insert
+        position: JSON.stringify({ x: 0, y: 0 }),
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -465,6 +465,7 @@ export const DummyDataDefaultStory: Migration = {
         videoId: videoCountdown.id,
         announcementTemplateId: annWelcome.id,
         quizLogicForPartId: null,
+        position: JSON.stringify({ x: 400, y: -200 }),
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -483,6 +484,7 @@ export const DummyDataDefaultStory: Migration = {
         videoId: videoCityBarcelona.id,
         announcementTemplateId: null,
         quizLogicForPartId: null, // set later
+        position: JSON.stringify({ x: 800, y: 0 }),
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -501,6 +503,7 @@ export const DummyDataDefaultStory: Migration = {
         videoId: videoThumbsDown.id,
         announcementTemplateId: null,
         quizLogicForPartId: null,
+        position: JSON.stringify({ x: 1200, y: -200 }),
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -519,6 +522,7 @@ export const DummyDataDefaultStory: Migration = {
         videoId: videoThumbsUp.id,
         announcementTemplateId: null,
         quizLogicForPartId: null,
+        position: JSON.stringify({ x: 1200, y: 200 }),
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -537,6 +541,7 @@ export const DummyDataDefaultStory: Migration = {
         videoId: videoCityLuzern.id,
         announcementTemplateId: null,
         quizLogicForPartId: null, // set later
+        position: JSON.stringify({ x: 1600, y: 0 }),
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -555,6 +560,7 @@ export const DummyDataDefaultStory: Migration = {
         videoId: videoThumbsDown.id,
         announcementTemplateId: null,
         quizLogicForPartId: null,
+        position: JSON.stringify({ x: 2000, y: -200 }),
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -573,6 +579,7 @@ export const DummyDataDefaultStory: Migration = {
         videoId: videoThumbsUp.id,
         announcementTemplateId: null,
         quizLogicForPartId: null,
+        position: JSON.stringify({ x: 2000, y: 200 }),
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -591,6 +598,7 @@ export const DummyDataDefaultStory: Migration = {
         videoId: videoGameOver.id,
         announcementTemplateId: null,
         quizLogicForPartId: null, // set later
+        position: JSON.stringify({ x: 2400, y: 0 }),
       })
       .returning('id')
       .executeTakeFirstOrThrow();

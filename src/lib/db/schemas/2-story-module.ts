@@ -50,6 +50,7 @@ type Part = {
   videoId: string | null;
   announcementTemplateId: string | null;
   quizLogicForPartId: string | null;
+  position: JSONColumnType<{ x: number; y: number }> | null;
 };
 
 type Video = {

@@ -94,6 +94,7 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
             'part.id',
             'part.isInitial',
             'part.isFinal',
+            'part.position',
 
             // Background
             'part.backgroundType',

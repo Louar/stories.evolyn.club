@@ -40,7 +40,7 @@
 			return {
 				id: part.id,
 				type: 'media',
-				position: { x, y },
+				position: part.position,
 				data: {
 					part,
 					videos: story.videos,
