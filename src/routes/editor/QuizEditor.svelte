@@ -38,6 +38,7 @@
 			isRequired: true,
 			answerOptions: [],
 			answerGroup: {
+				id: 'new',
 				doRandomize: false
 			}
 		});
@@ -88,6 +89,7 @@
 	};
 
 	const submit = async (event: Event) => {
+		console.log('quiz', quiz);
 		event.preventDefault();
 
 		const result = await fetch(`/api/quizzes/${quiz?.id ?? 'new'}/questions`, {
@@ -275,7 +277,7 @@
 		</DragDropProvider>
 		<Dialog.Footer>
 			<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
-			<Button type="submit">Save Quiz</Button>
+			<Button type="submit" onclick={submit}>Save Quiz</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
 </form>

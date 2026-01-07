@@ -81,8 +81,8 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
                   jsonObjectFrom(
                     eb.selectFrom('quizQuestionTemplateAnswerGroup')
                       .whereRef('quizQuestionTemplateAnswerGroup.id', '=', 'quizQuestionTemplate.quizQuestionTemplateAnswerGroupId')
-                      .select(['quizQuestionTemplateAnswerGroup.doRandomize'])
-                      .$narrowType<{ doRandomize: NotNull }>()
+                      .select(['quizQuestionTemplateAnswerGroup.id', 'quizQuestionTemplateAnswerGroup.doRandomize'])
+                      .$narrowType<{ id: NotNull, doRandomize: NotNull }>()
                   ).as('answerGroup')
                 ])
             ).as('questions'),
