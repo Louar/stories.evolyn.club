@@ -42,7 +42,6 @@
 
 	// Selection state
 	let selectedVideoId = $state(part?.videoId || '');
-	let selectedOverlayType = $state(part?.foregroundType || 'none');
 	let selectedAnnouncementId = $state(
 		part?.foregroundType === 'announcement' ? part.foreground?.id || '' : ''
 	);
@@ -54,10 +53,9 @@
 	}
 
 	function selectOverlay(type: string) {
-		selectedOverlayType = type;
 		// Reset selections when changing overlay type
-		if (type !== 'announcement') selectedAnnouncementId = '';
-		if (type !== 'quiz') selectedQuizId = '';
+		if (part?.foregroundType !== 'announcement') selectedAnnouncementId = '';
+		if (part?.foregroundType !== 'quiz') selectedQuizId = '';
 	}
 
 	function selectAnnouncement(announcementId: string) {
@@ -161,13 +159,13 @@
 						<div class="grid gap-3">
 							<Label>Overlay Type</Label>
 							<RadioGroup.Root
-								value={selectedOverlayType}
+								value={part?.foregroundType ?? 'none'}
 								onValueChange={(v) => selectOverlay(v)}
 								class="grid grid-cols-2 gap-2"
 							>
 								{#each overlayOptions as option}
 									<Label
-										class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {selectedOverlayType ===
+										class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {part?.foregroundType ===
 										option.value
 											? 'bg-muted/75'
 											: ''}"
@@ -182,7 +180,7 @@
 						</div>
 
 						<!-- Announcement Selection -->
-						{#if selectedOverlayType === 'announcement'}
+						{#if part?.foregroundType === 'announcement'}
 							<Separator />
 							<div class="grid gap-3">
 								<Label>Select Announcement</Label>
@@ -209,7 +207,7 @@
 						{/if}
 
 						<!-- Quiz Selection -->
-						{#if selectedOverlayType === 'quiz'}
+						{#if part?.foregroundType === 'quiz'}
 							<Separator />
 							<div class="grid gap-3">
 								<Label>Select Quiz</Label>

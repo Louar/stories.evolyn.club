@@ -3,10 +3,15 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import { Switch } from '$lib/components/ui/switch/index.js';
+	import type { findOneStoryById } from '$lib/db/repositories/2-stories-module';
 	import { DragDropProvider } from '@dnd-kit-svelte/svelte';
 	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
 	import { z } from 'zod/v4';
+
+	type Props = {
+		quizzes: Awaited<ReturnType<typeof findOneStoryById>>['quizzes'];
+	};
+	let { quizzes }: Props = $props();
 
 	const answerOptionSchema = z.object({
 		order: z.number(),
@@ -216,8 +221,8 @@
 											<!-- class:opacity-50={sortable.isDragging} -->
 											<div class="grid flex-1 gap-2">
 												<Input bind:value={option.label} placeholder="Option label" />
-												<Input bind:value={option.value} placeholder="Option value (JSON string)" />
-												<div class="flex items-center space-x-2">
+												<!-- <Input bind:value={option.value} placeholder="Option value (JSON string)" /> -->
+												<!-- <div class="flex items-center space-x-2">
 													<Switch
 														bind:checked={option.isCorrect}
 														id={`correct-${qIndex}-${oIndex}`}
@@ -228,7 +233,7 @@
 													>
 														Correct answer
 													</Field.Label>
-												</div>
+												</div> -->
 											</div>
 											<Button
 												type="button"

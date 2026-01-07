@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
 	import { navigationMenuTriggerStyle } from '$lib/components/ui/navigation-menu/navigation-menu-trigger.svelte';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
@@ -7,9 +8,12 @@
 	import { SvelteFlowProvider } from '@xyflow/svelte';
 	import '@xyflow/svelte/dist/style.css';
 	import Flow from './Flow.svelte';
+	import QuizEditor from './QuizEditor.svelte';
 
 	let { data } = $props();
 	let story = $derived(data.story);
+
+	let dialogs = $state({ videos: false, announcements: false, quizzes: false });
 </script>
 
 <div class="absolute inset-x-0 top-0 z-50 mt-4">
@@ -45,7 +49,7 @@
 									Browse and update announcements for this story.
 								</div>
 							</NavigationMenu.Link>
-							<NavigationMenu.Link href="##">
+							<NavigationMenu.Link onclick={() => (dialogs.quizzes = true)}>
 								<div class="font-medium">Quizzes</div>
 								<div class="text-muted-foreground">Browse and update quizzes for this story.</div>
 							</NavigationMenu.Link>
@@ -64,6 +68,10 @@
 		</NavigationMenu.List>
 	</NavigationMenu.Root>
 </div>
+
+<Dialog.Root bind:open={dialogs.quizzes}>
+	<QuizEditor />
+</Dialog.Root>
 
 <div class="mx-auto h-screen w-screen overflow-hidden">
 	<SvelteFlowProvider>
