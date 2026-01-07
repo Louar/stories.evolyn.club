@@ -14,10 +14,10 @@
 		data
 	}: NodeProps & {
 		data: {
+			part: Awaited<ReturnType<typeof findOneStoryById>>['parts'][number] | undefined;
 			videos: Awaited<ReturnType<typeof findOneStoryById>>['videos'];
 			announcements: Awaited<ReturnType<typeof findOneStoryById>>['announcements'];
 			quizzes: Awaited<ReturnType<typeof findOneStoryById>>['quizzes'];
-			part: Awaited<ReturnType<typeof findOneStoryById>>['parts'][number] | undefined;
 		};
 	} = $props();
 
@@ -246,10 +246,11 @@
 			</Dialog.Root>
 		</div>
 
-		<!-- Slider for timeline -->
-		<div class="flex gap-3 p-4">
-			<Slider bind:range {duration} hasOverlay={!!part?.foregroundType} />
-		</div>
+		{#if part?.backgroundType === 'video'}
+			<div class="flex gap-3 p-4">
+				<Slider bind:range {duration} hasOverlay={!!part?.foregroundType} />
+			</div>
+		{/if}
 	</div>
 
 	<!-- Quiz Handles -->

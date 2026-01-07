@@ -47,10 +47,11 @@
 			// Default edge from defaultNextPartId
 			if (part.defaultNextPartId) {
 				e.push({
-					id: `e-${part.id}-${part.defaultNextPartId}`,
+					id: `e-${part.id}-default-${part.defaultNextPartId}`,
+					type: 'media',
 					source: part.id,
-					target: part.defaultNextPartId,
-					sourceHandle: 'default'
+					sourceHandle: 'default',
+					target: part.defaultNextPartId
 				});
 			}
 
@@ -60,9 +61,10 @@
 					if (rule.nextPartId) {
 						e.push({
 							id: `e-${part.id}-${rule.id}-${rule.nextPartId}`,
+							type: 'media',
 							source: part.id,
-							target: rule.nextPartId,
-							sourceHandle: rule.id
+							sourceHandle: rule.id,
+							target: rule.nextPartId
 						});
 					}
 				});
@@ -72,33 +74,64 @@
 	});
 
 	const connect: OnConnectEnd = (event, connectionState) => {
-		if (connectionState.isValid) return;
+		if (connectionState.isValid) {
+			if (!connectionState.fromHandle || !connectionState.toHandle) return;
+			const { type: fromType, nodeId: fromNode, id: fromHandle } = connectionState.fromHandle;
+			const { type: toType, nodeId: toNode, id: toHandle } = connectionState.toHandle;
 
-		const sourceNodeId = connectionState.fromNode?.id ?? '1';
-		const id = crypto.randomUUID().toString();
-		const { clientX, clientY } = 'changedTouches' in event ? event.changedTouches[0] : event;
-
-		const newNode: Node = {
-			id,
-			type: 'media',
-			data: { label: `Node ${id}` },
-			// project the screen coordinates to pane coordinates
-			position: screenToFlowPosition({
-				x: clientX,
-				y: clientY
-			}),
-			// set the origin of the new node so it is centered
-			origin: [0.5, 0.0]
-		};
-		nodes = [...nodes, newNode];
-		edges = [
-			...edges,
-			{
-				source: sourceNodeId,
-				target: id,
-				id: `${sourceNodeId}--${id}`
+			let sourceNode = fromNode;
+			let sourceHandle = fromHandle;
+			let targetNode = toNode;
+			if (fromType === 'target' && toType === 'source') {
+				sourceNode = toNode;
+				sourceHandle = toHandle;
+				targetNode = fromNode;
 			}
-		];
+
+			// Remove existing edge if source already has an outgoing edge on the same handle
+			edges = edges.filter(
+				(e) =>
+					!(e.source === sourceNode && e.sourceHandle === sourceHandle && e.target !== targetNode)
+			);
+		} else {
+			if (!connectionState.fromHandle) return;
+			const { type: fromType, nodeId: fromNode, id: fromHandle } = connectionState.fromHandle;
+			if (fromType !== 'source') return;
+			const id = crypto.randomUUID().toString();
+			const { clientX, clientY } = 'changedTouches' in event ? event.changedTouches[0] : event;
+
+			const newNode: Node = {
+				id,
+				type: 'media',
+				data: {
+					part: undefined,
+					videos: story?.videos ?? [],
+					announcements: story?.announcements ?? [],
+					quizzes: story?.quizzes ?? []
+				},
+				position: screenToFlowPosition(
+					{
+						x: clientX,
+						y: clientY
+					},
+					{ snapToGrid: true }
+				)
+				// set the origin of the new node so it is centered
+				// origin: [0.5, 0.0]
+			};
+
+			nodes = [...nodes, newNode];
+			edges = [
+				...edges,
+				{
+					id: `e-${fromNode}-${fromHandle ?? 'default'}-${id}`,
+					type: 'media',
+					source: fromNode,
+					sourceHandle: fromHandle ?? 'default',
+					target: id
+				}
+			];
+		}
 	};
 </script>
 
