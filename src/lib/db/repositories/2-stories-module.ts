@@ -151,6 +151,7 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
                                 .whereRef('quizLogicRule.quizLogicForPartId', '=', 'quizLogicForPart.id')
                                 .orderBy('quizLogicRule.order', 'asc')
                                 .select((eb) => [
+                                  'quizLogicRule.id',
                                   'quizLogicRule.order',
                                   'quizLogicRule.name',
                                   'quizLogicRule.nextPartId',

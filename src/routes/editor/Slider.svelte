@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatDuration } from '$lib/db/schemas/0-utils';
 	import { cn } from '$lib/utils';
 	import CirclePause from '@lucide/svelte/icons/circle-pause';
 	import CirclePlay from '@lucide/svelte/icons/circle-play';
@@ -44,13 +45,6 @@
 
 		range = [min, mid, max];
 	};
-
-	const format = (percentage: number) => {
-		const seconds = duration * percentage;
-		return [Math.floor((seconds / 60) % 60), Math.round(seconds % 60)]
-			.join(':')
-			.replace(/\b(\d)\b/g, '0$1');
-	};
 </script>
 
 <SliderPrimitive.Root
@@ -88,7 +82,7 @@
 			index={0}
 			class="mb-3 rounded-md bg-muted px-2 py-1 text-xs text-nowrap text-foreground"
 		>
-			{format(range?.[0] ?? 0)}
+			{formatDuration(duration, range?.[0] ?? 0)}
 		</SliderPrimitive.ThumbLabel>
 
 		<SliderPrimitive.Thumb
@@ -105,7 +99,7 @@
 				? 'hidden'
 				: ''} z-20 mb-3 rounded-md bg-muted px-2 py-1 text-xs text-nowrap text-foreground"
 		>
-			{format(range?.[1] ?? 0)}
+			{formatDuration(duration, range?.[1] ?? 0)}
 		</SliderPrimitive.ThumbLabel>
 
 		<SliderPrimitive.Thumb
@@ -118,7 +112,7 @@
 			index={2}
 			class="mb-3 rounded-md bg-muted px-2 py-1 text-xs text-nowrap text-foreground"
 		>
-			{format(range?.[2] ?? 0)}
+			{formatDuration(duration, range?.[2] ?? 0)}
 		</SliderPrimitive.ThumbLabel>
 	{/snippet}
 </SliderPrimitive.Root>

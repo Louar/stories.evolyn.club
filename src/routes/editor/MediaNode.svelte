@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
-	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
+	import { Separator } from '$lib/components/ui/separator/index.js';
 	import type { findOneStoryById } from '$lib/db/repositories/2-stories-module';
+	import { formatDuration } from '$lib/db/schemas/0-utils';
 	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
 	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
 	import Slider from './Slider.svelte';
@@ -22,7 +22,6 @@
 	} = $props();
 
 	let part = $derived(data.part);
-	let hasOverlay = $derived(part?.foregroundType !== 'none');
 
 	let videos = $derived(data.videos);
 	let announcements = $derived(data.announcements);
@@ -30,15 +29,18 @@
 
 	const overlayOptions = [
 		{ value: 'none', label: 'None' },
-		{ value: 'text', label: 'Text' },
 		{ value: 'quiz', label: 'Quiz' },
 		{ value: 'announcement', label: 'Announcement' }
 	];
 
-	let duration = $derived(part?.background?.duration ?? 300);
-	let range = $state([0, 0.5, 1]);
+	let duration = $derived(part?.background?.duration ?? 0);
+	let range = $state([
+		part?.backgroundConfiguration?.start ?? 0,
+		part?.foregroundConfiguration?.start ?? 0.5,
+		part?.backgroundConfiguration?.end ?? 1
+	]);
 
-	// Selection state (in a real app, these would update the part)
+	// Selection state
 	let selectedVideoId = $state(part?.videoId || '');
 	let selectedOverlayType = $state(part?.foregroundType || 'none');
 	let selectedAnnouncementId = $state(
@@ -67,13 +69,15 @@
 	}
 </script>
 
-<div class="flex w-72 flex-col rounded-lg border border-stone-400 bg-white py-3 shadow-md">
+<div class="flex w-75 flex-col rounded-lg border border-stone-400 bg-white py-3 shadow-md">
 	<div class="relative grid w-full gap-2">
 		<!-- Media Selector -->
 		<div class="relative px-2">
 			<Dialog.Root>
 				<Dialog.Trigger
-					class="flex w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground"
+					class="flex w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground {!part?.backgroundType
+						? 'text-muted-foreground'
+						: ''}"
 				>
 					<span class="truncate">
 						{#if part?.backgroundType === 'video'}
@@ -87,33 +91,30 @@
 				</Dialog.Trigger>
 				<Dialog.Content class="sm:max-w-106.25">
 					<Dialog.Header>
-						<Dialog.Title>Edit Media</Dialog.Title>
-						<Dialog.Description>Select the media for this part.</Dialog.Description>
+						<Dialog.Title>Edit background</Dialog.Title>
+						<Dialog.Description>Select the background media for this part.</Dialog.Description>
 					</Dialog.Header>
 					<div class="grid gap-4">
 						<div class="grid gap-3">
-							<Label>Available Videos</Label>
+							<Label>Available videos</Label>
 							<RadioGroup.Root
 								value={selectedVideoId}
 								onValueChange={(v) => selectVideo(v)}
 								class="grid gap-2"
 							>
 								{#each videos as video}
-									<label
-										class="flex cursor-pointer items-center gap-2 rounded-md border p-3 hover:bg-muted"
-										class:bg-primary={selectedVideoId === video.id}
-										class:bg-muted={selectedVideoId !== video.id}
+									<Label
+										class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {selectedVideoId ===
+										video.id
+											? 'bg-muted/75'
+											: ''}"
 									>
-										<RadioGroup.Item value={video.id} id={`video-${video.id}`} />
+										<RadioGroup.Item value={video.id} />
 										<div class="flex-1">
-											<Label for={`video-${video.id}`} class="cursor-pointer">
-												{video.name || 'Unnamed Video'}
-											</Label>
-											<p class="text-xs text-muted-foreground">
-												Duration: {Math.round((video.duration || 0) / 60)}s
-											</p>
+											<p class="text-sm">{video.name ?? 'Unnamed video'}</p>
+											<p class="text-xs text-muted-foreground">{formatDuration(duration)}</p>
 										</div>
-									</label>
+									</Label>
 								{/each}
 							</RadioGroup.Root>
 						</div>
@@ -133,7 +134,9 @@
 		<div class="px-2">
 			<Dialog.Root>
 				<Dialog.Trigger
-					class="flex w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground"
+					class="flex w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground {!part?.foregroundType
+						? 'text-muted-foreground'
+						: ''}"
 				>
 					<span class="truncate">
 						{#if part?.foregroundType === 'announcement'}
@@ -163,16 +166,17 @@
 								class="grid grid-cols-2 gap-2"
 							>
 								{#each overlayOptions as option}
-									<label
-										class="flex cursor-pointer items-center gap-2 rounded-md border p-3 hover:bg-muted"
-										class:bg-primary={selectedOverlayType === option.value}
-										class:bg-muted={selectedOverlayType !== option.value}
+									<Label
+										class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {selectedOverlayType ===
+										option.value
+											? 'bg-muted/75'
+											: ''}"
 									>
-										<RadioGroup.Item value={option.value} id={`overlay-${option.value}`} />
-										<Label for={`overlay-${option.value}`} class="cursor-pointer">
-											{option.label}
-										</Label>
-									</label>
+										<RadioGroup.Item value={option.value} />
+										<div class="flex-1">
+											<p class="text-sm">{option.label}</p>
+										</div>
+									</Label>
 								{/each}
 							</RadioGroup.Root>
 						</div>
@@ -188,18 +192,17 @@
 									class="grid gap-2"
 								>
 									{#each announcements as announcement}
-										<label
-											class="flex cursor-pointer items-center gap-2 rounded-md border p-3 hover:bg-muted"
-											class:bg-primary={selectedAnnouncementId === announcement.id}
-											class:bg-muted={selectedAnnouncementId !== announcement.id}
+										<Label
+											class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {selectedAnnouncementId ===
+											announcement.id
+												? 'bg-muted/75'
+												: ''}"
 										>
-											<RadioGroup.Item value={announcement.id} id={`ann-${announcement.id}`} />
+											<RadioGroup.Item value={announcement.id} />
 											<div class="flex-1">
-												<Label for={`ann-${announcement.id}`} class="cursor-pointer">
-													{announcement.name || 'Unnamed'}
-												</Label>
+												<p class="text-sm">{announcement.name ?? 'Unnamed announcement'}</p>
 											</div>
-										</label>
+										</Label>
 									{/each}
 								</RadioGroup.Root>
 							</div>
@@ -216,21 +219,20 @@
 									class="grid gap-2"
 								>
 									{#each quizzes as quiz}
-										<label
-											class="flex cursor-pointer items-center gap-2 rounded-md border p-3 hover:bg-muted"
-											class:bg-primary={selectedQuizId === quiz.id}
-											class:bg-muted={selectedQuizId !== quiz.id}
+										<Label
+											class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {selectedQuizId ===
+											quiz.id
+												? 'bg-muted/75'
+												: ''}"
 										>
-											<RadioGroup.Item value={quiz.id} id={`quiz-${quiz.id}`} />
+											<RadioGroup.Item value={quiz.id} />
 											<div class="flex-1">
-												<Label for={`quiz-${quiz.id}`} class="cursor-pointer">
-													{quiz.name || 'Unnamed'}
-												</Label>
+												<p class="text-sm">{quiz.name ?? 'Unnamed quiz'}</p>
 												<p class="text-xs text-muted-foreground">
 													{quiz.questions?.length || 0} questions
 												</p>
 											</div>
-										</label>
+										</Label>
 									{/each}
 								</RadioGroup.Root>
 							</div>
@@ -246,7 +248,7 @@
 
 		<!-- Slider for timeline -->
 		<div class="flex gap-3 p-4">
-			<Slider bind:range {duration} {hasOverlay} />
+			<Slider bind:range {duration} hasOverlay={!!part?.foregroundType} />
 		</div>
 	</div>
 
@@ -254,41 +256,19 @@
 	{#if part?.foregroundType === 'quiz' && part?.foreground && 'rawlogic' in part.foreground}
 		<Separator class="mt-1 mb-3" />
 		<div class="grid w-full gap-2">
-			{#if part?.foreground?.rawlogic?.rules?.length}
-				{#each part?.foreground?.rawlogic?.rules as rule}
-					<div class="relative px-2">
-						<p class="text-sm" title={rule.name}>
-							{rule.name || `Rule ${rule.order}`}
-						</p>
-						<Handle
-							type="source"
-							position={Position.Right}
-							id={String(rule.order)}
-							class="size-4! bg-amber-300!"
-						/>
-					</div>
-				{/each}
-			{:else}
-				<!-- Fallback handles for backward compatibility -->
+			{#each part?.foreground?.rawlogic?.rules as rule}
 				<div class="relative px-2">
-					<p class="text-sm">All correct</p>
+					<p class="text-sm" title={rule.name}>
+						{rule.name || `Rule ${rule.order}`}
+					</p>
 					<Handle
 						type="source"
 						position={Position.Right}
-						id="correct"
+						id={rule.id}
 						class="size-4! bg-amber-300!"
 					/>
 				</div>
-				<div class="relative px-2">
-					<p class="text-sm">Some incorrect</p>
-					<Handle
-						type="source"
-						position={Position.Right}
-						id="incorrect"
-						class="size-4! bg-amber-300!"
-					/>
-				</div>
-			{/if}
+			{/each}
 		</div>
 	{/if}
 </div>

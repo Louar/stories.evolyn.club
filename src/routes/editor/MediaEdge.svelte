@@ -5,9 +5,20 @@
 
 	let path: string = $derived.by(() => {
 		if (target === source) {
-			const radiusX = (sourceX - targetX) * 0.6;
-			const radiusY = 50;
-			return `M ${sourceX - 5} ${sourceY} A ${radiusX} ${radiusY} 0 1 0 ${targetX + 2} ${targetY}`;
+			const edgePadX = 10;
+			const dir = Math.sign(sourceX - targetX) || 1;
+
+			const arcStartX = sourceX + edgePadX * dir;
+			const arcEndX = targetX - edgePadX * dir;
+
+			const dx = Math.abs(arcStartX - arcEndX);
+			const radiusX = Math.max(dx * 0.6, 80);
+			const radiusY = 200;
+
+			return `M ${sourceX} ${sourceY}
+			  L ${arcStartX} ${sourceY}
+			  A ${radiusX} ${radiusY} 0 1 1 ${arcEndX} ${targetY}
+			  L ${targetX} ${targetY}`;
 		} else if (sourceX > targetX) {
 			const edgePadX = 25;
 			const dir = Math.sign(sourceX - targetX) || 1;

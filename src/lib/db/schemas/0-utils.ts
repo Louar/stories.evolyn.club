@@ -108,3 +108,10 @@ export const selectByOrientation = <DB, TB extends keyof DB & string>(eb: Expres
     sql<string | null>`${eb.ref(column)}->>${StoryOrientation.portrait}`,
   );
 }
+
+export const formatDuration = (duration: number, percentage: number = 1) => {
+  const seconds = duration * percentage;
+  return [Math.floor((seconds / 60) % 60), Math.round(seconds % 60)]
+    .join(':')
+    .replace(/\b(\d)\b/g, '0$1');
+};
