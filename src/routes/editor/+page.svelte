@@ -70,7 +70,7 @@
 </div>
 
 <Dialog.Root bind:open={dialogs.quizzes}>
-	<QuizEditor />
+	<QuizEditor quizzes={story?.quizzes ?? []} />
 </Dialog.Root>
 
 <div class="mx-auto h-screen w-screen overflow-hidden">

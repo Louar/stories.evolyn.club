@@ -94,6 +94,7 @@ type QuizQuestionTemplateAnswerGroup = {
   id: Generated<string>;
   reference: string; // unique
   name: string;
+  doRandomize: ColumnType<boolean, boolean | null, boolean>;
 };
 
 type QuizQuestionTemplateAnswerItem = {

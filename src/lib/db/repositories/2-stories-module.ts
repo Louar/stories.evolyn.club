@@ -70,18 +70,20 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
                       .leftJoin('quizQuestionTemplateAnswerItem', 'quizQuestionTemplateAnswerItem.quizQuestionTemplateAnswerGroupId', 'quizQuestionTemplateAnswerGroup.id')
                       .orderBy('quizQuestionTemplateAnswerItem.order', 'asc')
                       .select((eb) => [
+                        'quizQuestionTemplateAnswerItem.id',
                         'quizQuestionTemplateAnswerItem.order',
                         // 'quizQuestionTemplateAnswerItem.value',
                         eb.cast<string>('quizQuestionTemplateAnswerItem.value', 'text').as('value'),
                         selectLocalizedField(eb, 'quizQuestionTemplateAnswerItem.label', language).as('label'),
                       ])
-                      .$narrowType<{ order: NotNull, value: NotNull, label: NotNull }>()
+                      .$narrowType<{ id: NotNull, order: NotNull, value: NotNull, label: NotNull }>()
                   ).as('answerOptions'),
-                  // jsonObjectFrom(
-                  //   eb.selectFrom('quizQuestionTemplateAnswerGroup')
-                  //     .whereRef('quizQuestionTemplateAnswerGroup.id', '=', 'quizQuestionTemplate.quizQuestionTemplateAnswerGroupId')
-                  //     .select(['quizQuestionTemplateAnswerGroup.doRandomize'])
-                  // ).as('answerGroup')
+                  jsonObjectFrom(
+                    eb.selectFrom('quizQuestionTemplateAnswerGroup')
+                      .whereRef('quizQuestionTemplateAnswerGroup.id', '=', 'quizQuestionTemplate.quizQuestionTemplateAnswerGroupId')
+                      .select(['quizQuestionTemplateAnswerGroup.doRandomize'])
+                      .$narrowType<{ doRandomize: NotNull }>()
+                  ).as('answerGroup')
                 ])
             ).as('questions'),
           ])
@@ -269,11 +271,12 @@ export const findOneStoryByReference = async (clientId: string, storyReference: 
                                 ])
                                 .$narrowType<{ order: NotNull, value: NotNull, label: NotNull }>()
                             ).as('answerOptions'),
-                            // jsonObjectFrom(
-                            //   eb.selectFrom('quizQuestionTemplateAnswerGroup')
-                            //     .whereRef('quizQuestionTemplateAnswerGroup.id', '=', 'quizQuestionTemplate.quizQuestionTemplateAnswerGroupId')
-                            //     .select(['quizQuestionTemplateAnswerGroup.doRandomize'])
-                            // ).as('answerGroup')
+                            jsonObjectFrom(
+                              eb.selectFrom('quizQuestionTemplateAnswerGroup')
+                                .whereRef('quizQuestionTemplateAnswerGroup.id', '=', 'quizQuestionTemplate.quizQuestionTemplateAnswerGroupId')
+                                .select(['quizQuestionTemplateAnswerGroup.doRandomize'])
+                                .$narrowType<{ doRandomize: NotNull }>()
+                            ).as('answerGroup')
                           ])
                       ).as('questions'),
                       jsonObjectFrom(

@@ -47,7 +47,7 @@ export const InitStoryModule: Migration = {
       .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
       .addColumn('reference', 'text', col => col.unique().notNull())
       .addColumn('name', 'text', (col) => col.notNull())
-      // .addColumn('do_randomize', 'boolean', col => col.defaultTo(false).notNull())
+      .addColumn('do_randomize', 'boolean', col => col.defaultTo(false).notNull())
       .execute();
 
     // Create QuizQuestionTemplateAnswerItem table

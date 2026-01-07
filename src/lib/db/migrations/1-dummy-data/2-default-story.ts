@@ -148,14 +148,14 @@ export const DummyDataDefaultStory: Migration = {
 
     const quizCityBarcelona = await db
       .insertInto('quizTemplate')
-      .values({ name: 'City of Barcelona quiz', doRandomize: true })
+      .values({ name: 'City of Barcelona quiz', doRandomize: false })
       .returning('id')
       .executeTakeFirstOrThrow();
     await db.insertInto('quizTemplateAvailableToStory').values({ storyId: story.id, quizTemplateId: quizCityBarcelona.id }).executeTakeFirstOrThrow();
 
     const quizCityLuzern = await db
       .insertInto('quizTemplate')
-      .values({ name: 'City of Luzern quiz', doRandomize: true })
+      .values({ name: 'City of Luzern quiz', doRandomize: false })
       .returning('id')
       .executeTakeFirstOrThrow();
     await db.insertInto('quizTemplateAvailableToStory').values({ storyId: story.id, quizTemplateId: quizCityLuzern.id }).executeTakeFirstOrThrow();
@@ -172,31 +172,31 @@ export const DummyDataDefaultStory: Migration = {
     // -------------------------
     const agPlayPauseQ1 = await db
       .insertInto('quizQuestionTemplateAnswerGroup')
-      .values({ reference: 'play-pause-q1', name: 'Are you ready?' })
+      .values({ reference: 'play-pause-q1', name: 'Yes / No 1', doRandomize: true })
       .returning('id')
       .executeTakeFirstOrThrow();
 
     const agPlayPauseQ2 = await db
       .insertInto('quizQuestionTemplateAnswerGroup')
-      .values({ reference: 'play-pause-q2', name: 'Are you sure?' })
+      .values({ reference: 'play-pause-q2', name: 'Yes / No 2' })
       .returning('id')
       .executeTakeFirstOrThrow();
 
     const agCityBarcelonaQ1 = await db
       .insertInto('quizQuestionTemplateAnswerGroup')
-      .values({ reference: 'city-barcelona-q1', name: 'Which city is this?' })
+      .values({ reference: 'city-barcelona-q1', name: 'City options: Barcelona', doRandomize: false })
       .returning('id')
       .executeTakeFirstOrThrow();
 
     const agCityLuzernQ1 = await db
       .insertInto('quizQuestionTemplateAnswerGroup')
-      .values({ reference: 'city-luzern-q1', name: 'Which city is this?' })
+      .values({ reference: 'city-luzern-q1', name: 'City options: Luzern', doRandomize: false })
       .returning('id')
       .executeTakeFirstOrThrow();
 
     const agGameOverQ1 = await db
       .insertInto('quizQuestionTemplateAnswerGroup')
-      .values({ reference: 'game-over-q1', name: 'Start over?' })
+      .values({ reference: 'game-over-q1', name: 'Option to: Start over?' })
       .returning('id')
       .executeTakeFirstOrThrow();
 
