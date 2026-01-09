@@ -27,6 +27,7 @@
 		"@types/bcryptjs": "^2.4.6",
 		"@types/jsonwebtoken": "^9.0.10",
 		"@types/node": "^22",
+		"@types/pg": "^8.16.0",
 		"bits-ui": "^2.14.4",
 		"clsx": "^2.1.1",
 		"eslint": "^9.39.1",

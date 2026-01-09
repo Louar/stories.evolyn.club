@@ -6,6 +6,7 @@ import type { Rule } from '../../../routes/video/types';
 import { Language, selectByOrientation, selectLocalizedField, StoryOrientation } from '../schemas/0-utils';
 import { LogicHitpolicy } from '../schemas/2-story-module';
 
+// TODO: remove reliance on language parameter
 export const findOneStoryById = async (clientId: string, storyId: string, orientation?: StoryOrientation, language?: Language) => {
 
   if (!clientId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) error(404, 'De client-ID is ongeldig.');
@@ -75,15 +76,17 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
                         // 'quizQuestionTemplateAnswerItem.value',
                         eb.cast<string>('quizQuestionTemplateAnswerItem.value', 'text').as('value'),
                         selectLocalizedField(eb, 'quizQuestionTemplateAnswerItem.label', language).as('label'),
+                        eb.lit<boolean>(false).as('isRemoved'),
                       ])
-                      .$narrowType<{ id: NotNull, order: NotNull, value: NotNull, label: NotNull }>()
+                      .$narrowType<{ id: NotNull, order: NotNull, value: NotNull, label: NotNull, isRemoved: NotNull }>()
                   ).as('answerOptions'),
                   jsonObjectFrom(
                     eb.selectFrom('quizQuestionTemplateAnswerGroup')
                       .whereRef('quizQuestionTemplateAnswerGroup.id', '=', 'quizQuestionTemplate.quizQuestionTemplateAnswerGroupId')
                       .select(['quizQuestionTemplateAnswerGroup.id', 'quizQuestionTemplateAnswerGroup.doRandomize'])
                       .$narrowType<{ id: NotNull, doRandomize: NotNull }>()
-                  ).as('answerGroup')
+                  ).as('answerGroup'),
+                  eb.lit<boolean>(false).as('isRemoved'),
                 ])
             ).as('questions'),
           ])
@@ -92,6 +95,8 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
       jsonArrayFrom(
         eb.selectFrom('part')
           .whereRef('part.storyId', '=', 'story.id')
+          .leftJoin('quizLogicForPart as qlfp', 'qlfp.id', 'part.quizLogicForPartId')
+          .leftJoin('quizTemplate', 'quizTemplate.id', 'qlfp.quizTemplateId')
           .select((eb) => [
             'part.id',
             'part.isInitial',
@@ -102,82 +107,45 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
             'part.backgroundType',
             'part.backgroundConfiguration',
             'part.videoId',
-
-            jsonObjectFrom(
-              eb.selectFrom('video')
-                .whereRef('video.id', '=', 'part.videoId')
-                .select((eb) => [
-                  selectByOrientation(eb, 'video.source', orientation).as('source'),
-                  selectByOrientation(eb, 'video.thumbnail', orientation).as('thumbnail'),
-                  selectLocalizedField(eb, 'video.captions', language).as('captions'),
-                  'video.duration',
-                ])
-                .$narrowType<{ source: NotNull, duration: NotNull }>()
-            ).$notNull().as('background'),
             'part.defaultNextPartId',
 
             // Foreground
             'part.foregroundType',
             'part.foregroundConfiguration',
-            eb.case()
-              .when(eb('part.announcementTemplateId', 'is not', null))
-              .then(
-                jsonObjectFrom(
-                  eb
-                    .selectFrom('announcementTemplate')
-                    .whereRef('announcementTemplate.id', '=', 'part.announcementTemplateId')
-                    .select((eb) => [
-                      'announcementTemplate.id',
-                      selectLocalizedField(eb, 'announcementTemplate.title', language).as('title'),
-                      selectLocalizedField(eb, 'announcementTemplate.message', language).as('message'),
-                    ])
-                )
-              )
-              .when(eb('part.quizLogicForPartId', 'is not', null))
-              .then(
-                jsonObjectFrom(
-                  eb
-                    .selectFrom('quizLogicForPart as qlfp')
-                    .whereRef('qlfp.id', '=', 'part.quizLogicForPartId')
-                    .leftJoin('quizTemplate', 'quizTemplate.id', 'qlfp.quizTemplateId')
-                    .select((eb) => [
-                      'quizTemplate.id',
-                      jsonObjectFrom(
-                        eb.selectFrom('quizLogicForPart')
-                          .whereRef('quizLogicForPart.id', '=', 'qlfp.id')
-                          .select((eb) => [
-                            'quizLogicForPart.hitpolicy',
-                            'quizLogicForPart.defaultNextPartId',
-                            jsonArrayFrom(
-                              eb.selectFrom('quizLogicRule')
-                                .whereRef('quizLogicRule.quizLogicForPartId', '=', 'quizLogicForPart.id')
-                                .orderBy('quizLogicRule.order', 'asc')
-                                .select((eb) => [
-                                  'quizLogicRule.id',
-                                  'quizLogicRule.order',
-                                  'quizLogicRule.name',
-                                  'quizLogicRule.nextPartId',
-                                  jsonArrayFrom(
-                                    eb.selectFrom('quizLogicRuleInput')
-                                      .whereRef('quizLogicRuleInput.quizLogicRuleId', '=', 'quizLogicRule.id')
-                                      .select([
-                                        'quizLogicRuleInput.quizQuestionTemplateId',
-                                        'quizLogicRuleInput.value',
-                                        'quizLogicRuleInput.quizQuestionTemplateAnswerItemId',
-                                      ])
-                                      .$narrowType<{ quizQuestionTemplateId: NotNull }>()
-                                  ).as('inputs'),
-                                ])
-                                .$narrowType<{ nextPartId: NotNull, inputs: NotNull }>()
-                            ).as('rules'),
-                          ])
-                      ).as('rawlogic')
-                    ])
-                )
-              )
-              .else(null)
-              .end()
-              .as('foreground'),
+            'part.announcementTemplateId',
+            'quizTemplate.id as quizTemplateId',
+            'part.quizLogicForPartId',
+
+            jsonObjectFrom(
+              eb.selectFrom('quizLogicForPart')
+                .whereRef('quizLogicForPart.id', '=', 'part.quizLogicForPartId')
+                .select((eb) => [
+                  'quizLogicForPart.hitpolicy',
+                  'quizLogicForPart.defaultNextPartId',
+                  jsonArrayFrom(
+                    eb.selectFrom('quizLogicRule')
+                      .whereRef('quizLogicRule.quizLogicForPartId', '=', 'quizLogicForPart.id')
+                      .orderBy('quizLogicRule.order', 'asc')
+                      .select((eb) => [
+                        'quizLogicRule.id',
+                        'quizLogicRule.order',
+                        'quizLogicRule.name',
+                        'quizLogicRule.nextPartId',
+                        jsonArrayFrom(
+                          eb.selectFrom('quizLogicRuleInput')
+                            .whereRef('quizLogicRuleInput.quizLogicRuleId', '=', 'quizLogicRule.id')
+                            .select([
+                              'quizLogicRuleInput.quizQuestionTemplateId',
+                              'quizLogicRuleInput.value',
+                              'quizLogicRuleInput.quizQuestionTemplateAnswerItemId',
+                            ])
+                            .$narrowType<{ quizQuestionTemplateId: NotNull }>()
+                        ).as('inputs'),
+                      ])
+                      .$narrowType<{ nextPartId: NotNull, inputs: NotNull }>()
+                  ).as('rules'),
+                ])
+            ).as('quizLogicForPart')
           ])
           .orderBy('part.isInitial', 'desc')
           .orderBy('part.isFinal', 'asc')
@@ -391,4 +359,55 @@ export const findOneStoryByReference = async (clientId: string, storyReference: 
   }
 
   return story;
+}
+
+
+// TODO: remove reliance on language parameter
+export const findOneQuizById = async (quizId: string, language?: Language) => {
+  const quiz = await db.selectFrom('quizTemplate')
+    .where('quizTemplate.id', '=', quizId)
+    .select((eb) => [
+      'quizTemplate.id',
+      'quizTemplate.name',
+      'quizTemplate.doRandomize',
+      jsonArrayFrom(
+        eb.selectFrom('quizQuestionTemplate')
+          .whereRef('quizQuestionTemplate.quizTemplateId', '=', 'quizTemplate.id')
+          .orderBy('quizQuestionTemplate.order', 'asc')
+          .select((eb) => [
+            'quizQuestionTemplate.id',
+            'quizQuestionTemplate.order',
+            'quizQuestionTemplate.answerTemplateReference',
+            selectLocalizedField(eb, 'quizQuestionTemplate.title', language).as('title'),
+            selectLocalizedField(eb, 'quizQuestionTemplate.instruction', language).as('instruction'),
+            'quizQuestionTemplate.configuration',
+            'quizQuestionTemplate.isRequired',
+            jsonArrayFrom(
+              eb.selectFrom('quizQuestionTemplateAnswerGroup')
+                .whereRef('quizQuestionTemplateAnswerGroup.id', '=', 'quizQuestionTemplate.quizQuestionTemplateAnswerGroupId')
+                .leftJoin('quizQuestionTemplateAnswerItem', 'quizQuestionTemplateAnswerItem.quizQuestionTemplateAnswerGroupId', 'quizQuestionTemplateAnswerGroup.id')
+                .orderBy('quizQuestionTemplateAnswerItem.order', 'asc')
+                .select((eb) => [
+                  'quizQuestionTemplateAnswerItem.id',
+                  'quizQuestionTemplateAnswerItem.order',
+                  // 'quizQuestionTemplateAnswerItem.value',
+                  eb.cast<string>('quizQuestionTemplateAnswerItem.value', 'text').as('value'),
+                  selectLocalizedField(eb, 'quizQuestionTemplateAnswerItem.label', language).as('label'),
+                  eb.lit<boolean>(false).as('isRemoved'),
+                ])
+                .$narrowType<{ id: NotNull, order: NotNull, value: NotNull, label: NotNull, isRemoved: NotNull }>()
+            ).as('answerOptions'),
+            jsonObjectFrom(
+              eb.selectFrom('quizQuestionTemplateAnswerGroup')
+                .whereRef('quizQuestionTemplateAnswerGroup.id', '=', 'quizQuestionTemplate.quizQuestionTemplateAnswerGroupId')
+                .select(['quizQuestionTemplateAnswerGroup.id', 'quizQuestionTemplateAnswerGroup.doRandomize'])
+                .$narrowType<{ id: NotNull, doRandomize: NotNull }>()
+            ).as('answerGroup'),
+            eb.lit<boolean>(false).as('isRemoved'),
+          ])
+      ).as('questions'),
+    ])
+    .executeTakeFirstOrThrow();
+
+  return quiz;
 }

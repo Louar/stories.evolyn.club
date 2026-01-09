@@ -45,9 +45,10 @@ export const InitStoryModule: Migration = {
     await db.schema.createTable('quiz_question_template_answer_group')
       .ifNotExists()
       .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
-      .addColumn('reference', 'text', col => col.unique().notNull())
-      .addColumn('name', 'text', (col) => col.notNull())
+      .addColumn('reference', 'text')
+      .addColumn('name', 'text')
       .addColumn('do_randomize', 'boolean', col => col.defaultTo(false).notNull())
+      .addColumn('is_global', 'boolean', col => col.defaultTo(false).notNull())
       .execute();
 
     // Create QuizQuestionTemplateAnswerItem table

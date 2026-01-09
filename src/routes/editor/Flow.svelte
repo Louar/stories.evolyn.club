@@ -56,8 +56,17 @@
 			}
 
 			// Quiz logic edges from rawlogic rules
-			if (part.foreground && 'rawlogic' in part.foreground && part.foreground.rawlogic?.rules) {
-				part.foreground.rawlogic.rules.forEach((rule) => {
+			if (part.quizLogicForPart) {
+				if (part.quizLogicForPart.defaultNextPartId?.length) {
+					e.push({
+						id: `e-${part.id}-default-after-quiz-${part.quizLogicForPart.defaultNextPartId}`,
+						type: 'media',
+						source: part.id,
+						sourceHandle: 'default-after-quiz',
+						target: part.quizLogicForPart.defaultNextPartId
+					});
+				}
+				part.quizLogicForPart?.rules?.forEach((rule) => {
 					if (rule.nextPartId) {
 						e.push({
 							id: `e-${part.id}-${rule.id}-${rule.nextPartId}`,

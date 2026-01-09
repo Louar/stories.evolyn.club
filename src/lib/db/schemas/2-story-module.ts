@@ -92,9 +92,10 @@ type QuizTemplateAvailableToStory = {
 
 type QuizQuestionTemplateAnswerGroup = {
   id: Generated<string>;
-  reference: string; // unique
-  name: string;
+  reference: string | null;
+  name: string | null;
   doRandomize: ColumnType<boolean, boolean | null, boolean>;
+  isGlobal: ColumnType<boolean, boolean | null, boolean>;
 };
 
 type QuizQuestionTemplateAnswerItem = {

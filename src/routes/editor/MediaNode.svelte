@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import type { findOneStoryById } from '$lib/db/repositories/2-stories-module';
 	import { formatDuration } from '$lib/db/schemas/0-utils';
 	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
+	import CogIcon from '@lucide/svelte/icons/cog';
 	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
 	import Slider from './Slider.svelte';
 
@@ -14,18 +16,38 @@
 		data
 	}: NodeProps & {
 		data: {
-			part: Awaited<ReturnType<typeof findOneStoryById>>['parts'][number] | undefined;
+			part: Awaited<ReturnType<typeof findOneStoryById>>['parts'][number];
 			videos: Awaited<ReturnType<typeof findOneStoryById>>['videos'];
 			announcements: Awaited<ReturnType<typeof findOneStoryById>>['announcements'];
 			quizzes: Awaited<ReturnType<typeof findOneStoryById>>['quizzes'];
 		};
 	} = $props();
 
-	let part = $derived(data.part);
+	const defaultPart = {
+		id: 'new',
+		backgroundType: null,
+		backgroundConfiguration: null,
+		background: null,
+		videoId: null,
+		defaultNextPartId: null,
 
-	let videos = $derived(data.videos);
-	let announcements = $derived(data.announcements);
-	let quizzes = $derived(data.quizzes);
+		foregroundType: null,
+		foregroundConfiguration: null,
+		announcementTemplateId: null,
+		quizTemplateId: null,
+		quizLogicForPartId: null,
+		hitpolicy: null,
+		quizRules: [],
+
+		isInitial: false,
+		isFinal: false,
+		position: null
+	};
+	let part = $state(data.part ?? defaultPart);
+
+	let videos = $state(data.videos);
+	let announcements = $state(data.announcements);
+	let quizzes = $state(data.quizzes);
 
 	const overlayOptions = [
 		{ value: 'none', label: 'None' },
@@ -33,37 +55,31 @@
 		{ value: 'announcement', label: 'Announcement' }
 	];
 
-	let duration = $derived(part?.background?.duration ?? 0);
+	let duration = $derived(videos.find((video) => video.id === part.videoId)?.duration ?? 0);
 	let range = $state([
-		part?.backgroundConfiguration?.start ?? 0,
-		part?.foregroundConfiguration?.start ?? 0.5,
-		part?.backgroundConfiguration?.end ?? 1
+		part.backgroundConfiguration?.start ?? 0,
+		part.foregroundConfiguration?.start ?? 0.5,
+		part.backgroundConfiguration?.end ?? 1
 	]);
 
-	// Selection state
-	let selectedVideoId = $state(part?.videoId || '');
-	let selectedAnnouncementId = $state(
-		part?.foregroundType === 'announcement' ? part.foreground?.id || '' : ''
-	);
-	let selectedQuizId = $state(part?.foregroundType === 'quiz' ? part.foreground?.id || '' : '');
-
 	function selectVideo(videoId: string) {
-		selectedVideoId = videoId;
+		part.videoId = videoId;
 		// In a real app, this would update the part's videoId
 	}
 
 	function selectOverlay(type: string) {
-		// Reset selections when changing overlay type
-		if (part?.foregroundType !== 'announcement') selectedAnnouncementId = '';
-		if (part?.foregroundType !== 'quiz') selectedQuizId = '';
+		if (!part) return;
+		part.foregroundType = type;
+		if (part.foregroundType !== 'announcement') part.announcementTemplateId = null;
+		if (part.foregroundType !== 'quiz') part.quizTemplateId = null;
 	}
 
 	function selectAnnouncement(announcementId: string) {
-		selectedAnnouncementId = announcementId;
+		part.announcementTemplateId = announcementId;
 	}
 
 	function selectQuiz(quizId: string) {
-		selectedQuizId = quizId;
+		part.quizTemplateId = quizId;
 	}
 </script>
 
@@ -73,13 +89,13 @@
 		<div class="relative px-2">
 			<Dialog.Root>
 				<Dialog.Trigger
-					class="flex w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground {!part?.backgroundType
+					class="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground {!part.backgroundType
 						? 'text-muted-foreground'
 						: ''}"
 				>
 					<span class="truncate">
-						{#if part?.backgroundType === 'video'}
-							{@const video = videos.find((video) => video.id === part?.videoId)}
+						{#if part.backgroundType === 'video'}
+							{@const video = videos.find((video) => video.id === part.videoId)}
 							Video: {video?.name || 'Unknown'}
 						{:else}
 							Select media...
@@ -96,13 +112,13 @@
 						<div class="grid gap-3">
 							<Label>Available videos</Label>
 							<RadioGroup.Root
-								value={selectedVideoId}
+								value={part.videoId ?? 'none'}
 								onValueChange={(v) => selectVideo(v)}
 								class="grid gap-2"
 							>
 								{#each videos as video}
 									<Label
-										class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {selectedVideoId ===
+										class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {part.videoId ===
 										video.id
 											? 'bg-muted/75'
 											: ''}"
@@ -110,7 +126,7 @@
 										<RadioGroup.Item value={video.id} />
 										<div class="flex-1">
 											<p class="text-sm">{video.name ?? 'Unnamed video'}</p>
-											<p class="text-xs text-muted-foreground">{formatDuration(duration)}</p>
+											<p class="text-xs text-muted-foreground">{formatDuration(video.duration)}</p>
 										</div>
 									</Label>
 								{/each}
@@ -129,19 +145,21 @@
 		</div>
 
 		<!-- Overlay Selector -->
-		<div class="px-2">
+		<div class="flex gap-2 px-2">
 			<Dialog.Root>
 				<Dialog.Trigger
-					class="flex w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground {!part?.foregroundType
+					class="flex h-9 w-full items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground {!part.foregroundType
 						? 'text-muted-foreground'
 						: ''}"
 				>
 					<span class="truncate">
-						{#if part?.foregroundType === 'announcement'}
-							{@const announcement = announcements.find((a) => a.id === part?.foreground?.id)}
+						{#if part.foregroundType === 'announcement'}
+							{@const announcement = announcements.find(
+								(a) => a.id === part.announcementTemplateId
+							)}
 							Announcement: {announcement?.name || 'Unknown'}
-						{:else if part?.foregroundType === 'quiz'}
-							{@const quiz = quizzes.find((q) => q.id === part?.foreground?.id)}
+						{:else if part.foregroundType === 'quiz'}
+							{@const quiz = quizzes.find((q) => q.id === part.quizTemplateId)}
 							Quiz: {quiz?.name || 'Unknown'}
 						{:else}
 							Select overlay...
@@ -151,7 +169,7 @@
 				</Dialog.Trigger>
 				<Dialog.Content class="sm:max-w-106.25">
 					<Dialog.Header>
-						<Dialog.Title>Edit Overlay</Dialog.Title>
+						<Dialog.Title>Edit overlay</Dialog.Title>
 						<Dialog.Description>Configure the overlay for this part.</Dialog.Description>
 					</Dialog.Header>
 					<div class="grid gap-4">
@@ -159,13 +177,13 @@
 						<div class="grid gap-3">
 							<Label>Overlay Type</Label>
 							<RadioGroup.Root
-								value={part?.foregroundType ?? 'none'}
+								value={part.foregroundType ?? 'none'}
 								onValueChange={(v) => selectOverlay(v)}
 								class="grid grid-cols-2 gap-2"
 							>
 								{#each overlayOptions as option}
 									<Label
-										class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {part?.foregroundType ===
+										class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {part.foregroundType ===
 										option.value
 											? 'bg-muted/75'
 											: ''}"
@@ -180,18 +198,18 @@
 						</div>
 
 						<!-- Announcement Selection -->
-						{#if part?.foregroundType === 'announcement'}
+						{#if part.foregroundType === 'announcement'}
 							<Separator />
 							<div class="grid gap-3">
 								<Label>Select Announcement</Label>
 								<RadioGroup.Root
-									value={selectedAnnouncementId}
+									value={part.announcementTemplateId ?? 'none'}
 									onValueChange={(v) => selectAnnouncement(v)}
 									class="grid gap-2"
 								>
 									{#each announcements as announcement}
 										<Label
-											class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {selectedAnnouncementId ===
+											class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {part.announcementTemplateId ===
 											announcement.id
 												? 'bg-muted/75'
 												: ''}"
@@ -207,18 +225,18 @@
 						{/if}
 
 						<!-- Quiz Selection -->
-						{#if part?.foregroundType === 'quiz'}
+						{#if part.foregroundType === 'quiz'}
 							<Separator />
 							<div class="grid gap-3">
 								<Label>Select Quiz</Label>
 								<RadioGroup.Root
-									value={selectedQuizId}
+									value={part.quizTemplateId ?? 'none'}
 									onValueChange={(v) => selectQuiz(v)}
 									class="grid gap-2"
 								>
 									{#each quizzes as quiz}
 										<Label
-											class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {selectedQuizId ===
+											class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {part.quizTemplateId ===
 											quiz.id
 												? 'bg-muted/75'
 												: ''}"
@@ -242,22 +260,54 @@
 					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>
+
+			{#if part.foregroundType === 'quiz'}
+				<Dialog.Root>
+					<form>
+						<Dialog.Trigger class={buttonVariants({ variant: 'outline', size: 'icon' })}>
+							<CogIcon />
+						</Dialog.Trigger>
+						<Dialog.Content class="sm:max-w-106.25">
+							<Dialog.Header>
+								<Dialog.Title>Edit profile</Dialog.Title>
+								<Dialog.Description>
+									Make changes to your profile here. Click save when you&apos;re done.
+								</Dialog.Description>
+							</Dialog.Header>
+							<div class="grid gap-4">
+								<div class="grid gap-3">
+									<Label for="name-1">Name</Label>
+									<Input id="name-1" name="name" defaultValue="Pedro Duarte" />
+								</div>
+								<div class="grid gap-3">
+									<Label for="username-1">Username</Label>
+									<Input id="username-1" name="username" defaultValue="@peduarte" />
+								</div>
+							</div>
+							<Dialog.Footer>
+								<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
+								<Button type="submit">Save changes</Button>
+							</Dialog.Footer>
+						</Dialog.Content>
+					</form>
+				</Dialog.Root>
+			{/if}
 		</div>
 
-		{#if part?.backgroundType === 'video'}
+		{#if part.backgroundType === 'video'}
 			<div class="flex gap-3 p-4">
-				<Slider bind:range {duration} hasOverlay={!!part?.foregroundType} />
+				<Slider bind:range {duration} hasOverlay={!!part.foregroundType} />
 			</div>
 		{/if}
 	</div>
 
 	<!-- Quiz Handles -->
-	{#if part?.foregroundType === 'quiz' && part?.foreground && 'rawlogic' in part.foreground}
+	{#if part.foregroundType === 'quiz' && part.quizLogicForPart?.rules?.length}
 		<Separator class="mt-1 mb-3" />
 		<div class="grid w-full gap-2">
-			{#each part?.foreground?.rawlogic?.rules as rule}
+			{#each part.quizLogicForPart?.rules as rule}
 				<div class="relative px-2">
-					<p class="text-sm" title={rule.name}>
+					<p class="text-sm">
 						{rule.name || `Rule ${rule.order}`}
 					</p>
 					<Handle
@@ -268,6 +318,15 @@
 					/>
 				</div>
 			{/each}
+			<div class="relative px-2">
+				<p class="text-sm italic">Default after quiz</p>
+				<Handle
+					type="source"
+					position={Position.Right}
+					id="default-after-quiz"
+					class="size-4! bg-amber-300!"
+				/>
+			</div>
 		</div>
 	{/if}
 </div>

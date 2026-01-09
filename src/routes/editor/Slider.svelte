@@ -22,6 +22,8 @@
 		orientation = 'horizontal'
 	}: Props = $props();
 
+	let step = $derived(1 / (duration * 2));
+
 	const update = (next: number[], bounds = { min: -Infinity, max: Infinity }) => {
 		// Fallback for unexpected shapes
 		if (!Array.isArray(next) || next.length !== 3) {
@@ -48,7 +50,7 @@
 </script>
 
 <SliderPrimitive.Root
-	step={1 / duration}
+	{step}
 	min={0}
 	max={1}
 	type="multiple"

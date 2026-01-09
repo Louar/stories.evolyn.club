@@ -1,5 +1,5 @@
 import { env } from '$env/dynamic/private';
-import { CamelCasePlugin, Kysely, PostgresDialect } from 'kysely';
+import { CamelCasePlugin, HandleEmptyInListsPlugin, Kysely, PostgresDialect, replaceWithNoncontingentExpression } from 'kysely';
 import pg from 'pg';
 import { migrate } from './migrator';
 import type { Schema } from './schema';
@@ -25,7 +25,10 @@ const dialect = new PostgresDialect({
 const kysely = new Kysely<Schema>({
   dialect,
   plugins: [
-    new CamelCasePlugin()
+    new CamelCasePlugin(),
+    new HandleEmptyInListsPlugin({
+      strategy: replaceWithNoncontingentExpression
+    })
   ]
 });
 

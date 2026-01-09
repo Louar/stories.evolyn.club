@@ -660,18 +660,6 @@ export const DummyDataDefaultStory: Migration = {
       .returning('id')
       .executeTakeFirstOrThrow();
 
-    // Default: Not ready -> back to play-pause
-    await db
-      .insertInto('quizLogicRule')
-      .values({
-        order: 2,
-        name: 'Default: Not ready',
-        quizLogicForPartId: qlPlayPause.id,
-        nextPartId: partPlayPause.id,
-      })
-      .returning('id')
-      .executeTakeFirstOrThrow();
-
     const qlrCityBarcelona1 = await db
       .insertInto('quizLogicRule')
       .values({
@@ -683,17 +671,6 @@ export const DummyDataDefaultStory: Migration = {
       .returning('id')
       .executeTakeFirstOrThrow();
 
-    await db
-      .insertInto('quizLogicRule')
-      .values({
-        order: 2,
-        name: 'Default: Not correct',
-        quizLogicForPartId: qlCityBarcelona.id,
-        nextPartId: partCityBarcelonaThumbsDown.id,
-      })
-      .returning('id')
-      .executeTakeFirstOrThrow();
-
     const qlrCityLuzern1 = await db
       .insertInto('quizLogicRule')
       .values({
@@ -701,17 +678,6 @@ export const DummyDataDefaultStory: Migration = {
         name: 'Correct: Luzern',
         quizLogicForPartId: qlCityLuzern.id,
         nextPartId: partCityLuzernThumbsUp.id,
-      })
-      .returning('id')
-      .executeTakeFirstOrThrow();
-
-    await db
-      .insertInto('quizLogicRule')
-      .values({
-        order: 2,
-        name: 'Default: Not correct',
-        quizLogicForPartId: qlCityLuzern.id,
-        nextPartId: partCityLuzernThumbsDown.id,
       })
       .returning('id')
       .executeTakeFirstOrThrow();

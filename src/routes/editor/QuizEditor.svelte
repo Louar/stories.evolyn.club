@@ -1,22 +1,36 @@
 <script lang="ts">
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
+	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
-	import type { findOneStoryById } from '$lib/db/repositories/2-stories-module';
+	import type { findOneQuizById, findOneStoryById } from '$lib/db/repositories/2-stories-module';
 	import { DragDropProvider } from '@dnd-kit-svelte/svelte';
 	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
+	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
 	import Dices from '@lucide/svelte/icons/dices';
 	import GripVertical from '@lucide/svelte/icons/grip-vertical';
+	import SquarePlus from '@lucide/svelte/icons/square-plus';
 	import Trash from '@lucide/svelte/icons/trash-2';
+	import type { $ZodIssue } from 'zod/v4/core';
+
+	type DragEndEvent = {
+		operation: { source: { sortable: { index: number; initialIndex: number } | null } | null };
+	};
 
 	type Props = {
+		storyId: string;
 		quizzes: Awaited<ReturnType<typeof findOneStoryById>>['quizzes'];
+		close: (output: {
+			action: 'persist' | 'delete';
+			id?: string;
+			quiz?: Awaited<ReturnType<typeof findOneQuizById>>;
+		}) => void;
 	};
-	let { quizzes }: Props = $props();
+	let { storyId, quizzes, close }: Props = $props();
 
 	// Initialize quiz from quizzes prop or use default
 	const defaultQuiz: (typeof quizzes)[number] = {
@@ -25,13 +39,14 @@
 		doRandomize: false,
 		questions: []
 	};
-	let quiz = $state(quizzes?.length ? quizzes[0] : defaultQuiz);
+	let quiz = $state(defaultQuiz);
+	let error = $state<$ZodIssue[] | null>(null);
 
 	const addQuestion = () => {
-		quiz?.questions?.push({
-			id: 'new',
+		quiz.questions?.push({
+			id: `new-${crypto.randomUUID().toString().slice(0, 8)}`,
 			answerTemplateReference: 'select-single',
-			order: (quiz?.questions?.length ?? 0) + 1,
+			order: (quiz.questions?.length ?? 0) + 1,
 			title: '',
 			instruction: null,
 			configuration: null,
@@ -40,44 +55,41 @@
 			answerGroup: {
 				id: 'new',
 				doRandomize: false
-			}
+			},
+			isRemoved: false // Front-end purposes
 		});
 	};
 
-	const addAnswerOption = (q: number) => {
-		const question = quiz?.questions?.[q];
-		question?.answerOptions.push({
-			id: 'new',
+	const addAnswerOption = (question: (typeof quiz.questions)[number]) => {
+		question.answerOptions.push({
+			id: `new-${crypto.randomUUID().toString().slice(0, 8)}`,
 			order: question.answerOptions.length + 1,
 			value: '',
-			label: ''
+			label: '',
+			isRemoved: false // Front-end purposes
 		});
 	};
 
-	const handleQuestionDrag = (event: any) => {
-		const { active, over } = event;
-		if (quiz?.questions?.length && over && active && active.id !== over.id) {
-			const i = quiz?.questions?.findIndex((q) => q.id === active.id) ?? -1;
-			const j = quiz?.questions?.findIndex((q) => q.id === over.id) ?? -1;
-			if (i !== -1 && j !== -1) {
-				const questions = moveArrayItem(quiz?.questions ?? [], i, j);
-				questions.forEach((question, index) => (question.order = index + 1));
-				quiz.questions = questions;
-			}
-		}
+	const handleQuestionDrag = (event: DragEndEvent) => {
+		const sortable = event.operation.source?.sortable;
+		if (!sortable) return;
+		const questions = moveArrayItem(quiz.questions ?? [], sortable.initialIndex, sortable.index);
+		questions?.filter((q) => !q.isRemoved)?.forEach((q, i) => (q.order = i + 1)) ?? [];
+		quiz.questions = questions;
 	};
-	const handleAnswerOptionDrag = (event: any, q: number) => {
-		const { active, over } = event;
-		if (quiz?.questions?.length && over && active && active.id !== over.id) {
-			const question = quiz?.questions?.[q];
-			const i = question?.answerOptions.findIndex((o) => o.id === active.id) ?? -1;
-			const j = question?.answerOptions.findIndex((o) => o.id === over.id) ?? -1;
-			if (i !== -1 && j !== -1) {
-				const newAnswerOptions = moveArrayItem(question?.answerOptions ?? [], i, j);
-				newAnswerOptions.forEach((option, index) => (option.order = index + 1));
-				quiz.questions[q].answerOptions = newAnswerOptions;
-			}
-		}
+	const handleAnswerOptionDrag = (
+		event: DragEndEvent,
+		question: (typeof quiz.questions)[number]
+	) => {
+		const sortable = event.operation.source?.sortable;
+		if (!sortable) return;
+		const options = moveArrayItem(
+			question.answerOptions ?? [],
+			sortable.initialIndex,
+			sortable.index
+		);
+		options?.filter((o) => !o.isRemoved)?.forEach((o, i) => (o.order = i + 1)) ?? [];
+		question.answerOptions = options;
 	};
 
 	// Helper function to reorder array
@@ -88,65 +100,121 @@
 		return newArray;
 	};
 
-	const submit = async (event: Event) => {
-		console.log('quiz', quiz);
+	const persist = async (event: Event) => {
 		event.preventDefault();
 
-		const result = await fetch(`/api/quizzes/${quiz?.id ?? 'new'}/questions`, {
+		const result = await fetch(`/api/stories/${storyId}/quizzes/${quiz.id ?? 'new'}/questions`, {
 			method: 'POST',
 			body: JSON.stringify(quiz)
 		});
 
-		if (!result.ok) {
-			console.error('Validation errors:', result.statusText);
-			// TODO: Display errors
+		if (!result.ok) error = await result.json();
+		else close({ action: 'persist', quiz: await result.json() });
+	};
+	const remove = async () => {
+		const result = await fetch(`/api/stories/${storyId}/quizzes/${quiz.id ?? 'new'}/questions`, {
+			method: 'DELETE'
+		});
+		if (!result.ok) error = await result.json();
+		else {
+			close({ action: 'delete', id: quiz.id });
+			quiz = defaultQuiz;
 		}
 	};
 </script>
 
-<form onsubmit={submit}>
-	<Dialog.Content class="max-h-[90vh] overflow-y-auto sm:max-w-200">
-		<Dialog.Header>
-			<Dialog.Title>Configure Quiz</Dialog.Title>
-			<Dialog.Description>Add questions and answer options to your quiz.</Dialog.Description>
-
-			<!-- Quiz Selection Dropdown -->
-			{#if quizzes && quizzes.length > 0}
-				<div class="mt-4">
-					<Select.Root
-						type="single"
-						value={quiz?.id ?? 'none'}
-						onValueChange={(value) => (quiz = quizzes.find((q) => q.id === value) ?? defaultQuiz)}
+<form onsubmit={persist}>
+	<Dialog.Content
+		class="scrollbar-none max-h-[90vh] overflow-y-auto pt-0 sm:max-w-200"
+		showCloseButton={false}
+	>
+		<Dialog.Header class="sticky top-0 z-50 -mx-6 bg-background/50 pt-6 backdrop-blur-md">
+			<div class="flex justify-between gap-2 px-6">
+				<div class="flex w-full items-center gap-2">
+					{#if quizzes && quizzes.length > 0}
+						<Dialog.Title>Edit:</Dialog.Title>
+						<div>
+							<Select.Root
+								type="single"
+								value={quiz.id ?? 'none'}
+								onValueChange={(value) =>
+									(quiz = quizzes.find((q) => q.id === value) ?? defaultQuiz)}
+							>
+								<Select.Trigger
+									class="min-w-40 {quizzes.find((q) => quiz.id && q.id === quiz.id)
+										? ''
+										: 'text-muted-foreground'}"
+								>
+									{quizzes.find((q) => quiz.id && q.id === quiz.id)?.name ?? 'Select a quiz...'}
+								</Select.Trigger>
+								<Select.Content align="start">
+									<Select.Group>
+										<!-- <Select.GroupHeading>Quizzes</Select.GroupHeading> -->
+										{#each quizzes as item}
+											<Select.Item class="block" value={item.id}>
+												<p>{item.name}</p>
+												<p class="text-xs text-muted-foreground">
+													{item?.questions?.length ?? 0} questions
+												</p>
+											</Select.Item>
+										{/each}
+									</Select.Group>
+								</Select.Content>
+							</Select.Root>
+						</div>
+					{/if}
+					<Separator orientation="vertical" class="mr-2 ml-4" />
+					<Toggle
+						size="default"
+						variant="default"
+						class="bg-card! {quiz?.id === 'new'
+							? 'text-blue-600! *:[svg]:fill-blue-100! *:[svg]:stroke-blue-500!'
+							: ''}"
+						onclick={() => (quiz = defaultQuiz)}
 					>
-						<Select.Trigger>
-							{quizzes.find((q) => quiz?.id && q.id === quiz.id)?.name ?? 'Select a quiz...'}
-						</Select.Trigger>
-						<Select.Content>
-							<Select.Group>
-								<Select.GroupHeading>Quizzes</Select.GroupHeading>
-								{#each quizzes as item}
-									<Select.Item value={item.id}>
-										{item.name} ({item?.questions?.length ?? 0} questions)
-									</Select.Item>
-								{/each}
-							</Select.Group>
-						</Select.Content>
-					</Select.Root>
+						<SquarePlus />
+						New
+					</Toggle>
 				</div>
-			{/if}
+				<!-- <Dialog.Close class={buttonVariants({ variant: 'ghost', size: 'icon' })}>
+					<XIcon />
+				</Dialog.Close> -->
+
+				<div class="flex gap-2">
+					<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
+					<Button type="submit" onclick={persist}>Save quiz</Button>
+				</div>
+			</div>
+
+			<Separator class="mt-4" />
 		</Dialog.Header>
 
-		<div class="grid gap-2 rounded-lg border bg-card p-4">
-			<Field.Label>Quiz</Field.Label>
+		<div class="grid gap-4 rounded-lg border bg-accent p-4">
+			<div class="flex items-center justify-between">
+				<div class="w-full">
+					<Field.Label>Quiz</Field.Label>
+					<Field.Error>
+						{error?.find((e) => e.path?.join('.') === ['questions'].join('.'))?.message}
+					</Field.Error>
+				</div>
+				{#if quiz.id && quiz.id !== 'new'}
+					<Button variant="destructive" size="sm" onclick={remove}>Delete quiz</Button>
+				{/if}
+			</div>
 			<div class="flex gap-4">
-				<Field.Field>
-					<Input bind:value={quiz.name} placeholder="Enter your question" />
-				</Field.Field>
+				<div class="w-full space-y-1">
+					<Field.Field>
+						<Input bind:value={quiz.name} placeholder="Quiz name" />
+					</Field.Field>
+					<Field.Error>
+						{error?.find((e) => e.path?.join('.') === ['name'].join('.'))?.message}
+					</Field.Error>
+				</div>
 				<Field.Field class="flex-1">
 					<Toggle
 						size="default"
 						variant="outline"
-						class="data-[state=on]:bg-transparent data-[state=on]:text-blue-600 data-[state=on]:*:[svg]:fill-blue-100 data-[state=on]:*:[svg]:stroke-blue-500"
+						class="bg-card! data-[state=on]:text-blue-600 data-[state=on]:*:[svg]:fill-blue-100 data-[state=on]:*:[svg]:stroke-blue-500"
 						bind:pressed={quiz.doRandomize}
 					>
 						<Dices />
@@ -156,111 +224,156 @@
 			</div>
 		</div>
 
-		<DragDropProvider onDragEnd={handleQuestionDrag}>
+		<DragDropProvider onDragEnd={(event) => handleQuestionDrag(event as DragEndEvent)}>
 			<div class="grid gap-4">
-				{#each quiz?.questions as question, q (question.id)}
+				{#each quiz.questions as question, q (question.id)}
 					{@const { ref, handleRef } = useSortable({
 						id: question.id,
 						index: q
 					})}
 					<Field.Set
-						class="grid cursor-move gap-0 rounded-lg border bg-card/50 backdrop-blur-md"
+						class="grid gap-0 rounded-lg border bg-card/50 backdrop-blur-md {question.isRemoved
+							? 'hidden'
+							: ''}"
 						{@attach ref}
 					>
-						<div class="grid gap-0 p-4">
-							<Field.Label>Question</Field.Label>
-							<div class="flex items-center justify-between gap-2 p-4 transition-colors">
-								<GripVertical
-									class="size-6 cursor-move text-muted-foreground"
-									{@attach handleRef}
-								/>
-								<!-- <span class="text-sm text-muted-foreground">{q + 1}.</span> -->
-								<Input bind:value={question.title} placeholder="Enter your question" />
-
-								<Button
-									type="button"
-									variant="ghost"
-									size="icon"
-									class="text-destructive hover:bg-destructive/10 hover:text-destructive"
-									onclick={() => {
-										quiz?.questions?.splice(q, 1);
-										// Update order for remaining questions
-										quiz?.questions?.forEach((q, i) => (q.order = i + 1));
-									}}
-								>
-									<Trash class="size-4" />
-								</Button>
-							</div>
-						</div>
-
-						<Separator />
-
-						<Field.Field class="p-4">
-							<div class="flex items-center justify-between">
-								<Field.Label>Answer options</Field.Label>
-								{#if question.answerGroup}
-									<Toggle
-										size="sm"
-										variant="outline"
-										class="data-[state=on]:bg-transparent data-[state=on]:*:[svg]:fill-blue-100 data-[state=on]:*:[svg]:stroke-blue-500"
-										bind:pressed={question.answerGroup.doRandomize}
-									>
-										<Dices />
-									</Toggle>
-								{/if}
-							</div>
-
-							<DragDropProvider onDragEnd={(event) => handleAnswerOptionDrag(event, q)}>
-								<div class="space-y-3">
-									{#each question.answerOptions as option, o (option.id)}
-										{@const { ref, handleRef, isDragging, isDropTarget } = useSortable({
-											id: option.id,
-											index: o
-										})}
-										<div
-											class="flex items-center gap-2 rounded-md border bg-card/50 p-3 transition-colors"
-											class:bg-muted={isDragging.current}
-											class:bg-accent={isDropTarget.current}
-											{@attach ref}
-										>
-											<GripVertical
-												class="size-5 cursor-move text-muted-foreground"
-												{@attach handleRef}
-											/>
-											<!-- class:opacity-50={sortable.isDragging} -->
-											<div class="grid flex-1 gap-2">
-												<Input bind:value={option.label} placeholder="Option label" />
-												<!-- <Input bind:value={option.value} placeholder="Option value (JSON string)" /> -->
-											</div>
-											<Button
-												type="button"
-												variant="ghost"
-												size="icon"
-												class="text-destructive hover:bg-destructive/10 hover:text-destructive"
-												onclick={() => {
-													question.answerOptions.splice(o, 1);
-													question.answerOptions.forEach(
-														(option, index) => (option.order = index + 1)
-													);
-												}}
-											>
-												<Trash class="size-4" />
-											</Button>
-										</div>
-									{/each}
+						<Collapsible.Root open={true}>
+							<div class="grid gap-4 p-4">
+								<div class="flex items-center gap-2">
 									<Button
 										type="button"
-										variant="outline"
-										size="sm"
-										onclick={() => addAnswerOption(q)}
+										variant="ghost"
+										size="icon"
+										class="cursor-move"
+										{@attach handleRef}
 									>
-										Add Option
+										<GripVertical />
 									</Button>
+									<Field.Label>Question {question.order}</Field.Label>
 								</div>
-							</DragDropProvider>
-						</Field.Field>
+								<div class="flex justify-between gap-2">
+									<!-- <span class="text-sm text-muted-foreground">{q + 1}.</span> -->
+									<div class="w-full space-y-1">
+										<Field.Field>
+											<Input bind:value={question.title} placeholder="Enter your question" />
+										</Field.Field>
+										<Field.Error>
+											{error?.find((e) => e.path?.join('.') === ['questions', q, 'title'].join('.'))
+												?.message}
+										</Field.Error>
+									</div>
 
-						<!-- <Field.Field class="block space-x-2">
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon"
+										class="text-destructive hover:bg-destructive/10 hover:text-destructive"
+										onclick={() => {
+											question.isRemoved = true;
+											quiz.questions
+												?.filter((q) => !q.isRemoved)
+												?.forEach((q, i) => (q.order = i + 1));
+										}}
+									>
+										<Trash class="size-4" />
+									</Button>
+									<Collapsible.Trigger class={buttonVariants({ variant: 'ghost', size: 'icon' })}>
+										<ChevronsUpDownIcon />
+									</Collapsible.Trigger>
+								</div>
+							</div>
+
+							<Collapsible.Content>
+								<Separator />
+
+								<Field.Field class="p-4">
+									<div class="flex items-center justify-between">
+										<div>
+											<Field.Label>Answer options</Field.Label>
+											<Field.Error>
+												{error?.find(
+													(e) => e.path?.join('.') === ['questions', q, 'answerOptions'].join('.')
+												)?.message}
+											</Field.Error>
+										</div>
+										{#if question.answerGroup}
+											<Toggle
+												size="sm"
+												variant="outline"
+												class="data-[state=on]:bg-transparent data-[state=on]:*:[svg]:fill-blue-100 data-[state=on]:*:[svg]:stroke-blue-500"
+												bind:pressed={question.answerGroup.doRandomize}
+											>
+												<Dices />
+											</Toggle>
+										{/if}
+									</div>
+
+									<DragDropProvider
+										onDragEnd={(event) => handleAnswerOptionDrag(event as DragEndEvent, question)}
+									>
+										<div class="space-y-3">
+											{#each question.answerOptions as option, o (option.id)}
+												{@const { ref, handleRef, isDragging, isDropTarget } = useSortable({
+													id: option.id,
+													index: o
+												})}
+												<div
+													class="flex gap-2 rounded-md border bg-card/50 p-3 transition-colors"
+													class:bg-muted={isDragging.current}
+													class:bg-accent={isDropTarget.current}
+													class:hidden={option.isRemoved}
+													{@attach ref}
+												>
+													<Button
+														type="button"
+														variant="ghost"
+														size="icon"
+														class="cursor-move"
+														{@attach handleRef}
+													>
+														<GripVertical />
+													</Button>
+													<div class="w-full space-y-1">
+														<Field.Field>
+															<Input bind:value={option.label} placeholder="Option label" />
+														</Field.Field>
+														<Field.Error>
+															{error?.find(
+																(e) =>
+																	e.path?.join('.') ===
+																	['questions', q, 'answerOptions', o, 'label'].join('.')
+															)?.message}
+														</Field.Error>
+													</div>
+													<Button
+														type="button"
+														variant="ghost"
+														size="icon"
+														class="text-destructive hover:bg-destructive/10 hover:text-destructive"
+														onclick={() => {
+															option.isRemoved = true;
+															question.answerOptions
+																?.filter((o) => !o.isRemoved)
+																?.forEach((o, i) => (o.order = i + 1));
+														}}
+													>
+														<Trash class="size-4" />
+													</Button>
+												</div>
+											{/each}
+											<Button
+												type="button"
+												variant="outline"
+												size="sm"
+												onclick={() => addAnswerOption(question)}
+											>
+												Add Option
+											</Button>
+										</div>
+									</DragDropProvider>
+								</Field.Field>
+
+								<!-- <Field.Field class="block space-x-2">
 											<div class="flex items-center space-x-2">
 												<Switch id="required" />
 												<Field.Label for="required" class="text-sm font-normal"
@@ -268,6 +381,8 @@
 												>
 											</div>
 										</Field.Field> -->
+							</Collapsible.Content>
+						</Collapsible.Root>
 					</Field.Set>
 				{/each}
 
@@ -275,9 +390,9 @@
 				>
 			</div>
 		</DragDropProvider>
-		<Dialog.Footer>
+		<!-- <Dialog.Footer>
 			<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
 			<Button type="submit" onclick={submit}>Save Quiz</Button>
-		</Dialog.Footer>
+		</Dialog.Footer> -->
 	</Dialog.Content>
 </form>

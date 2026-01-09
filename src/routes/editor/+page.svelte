@@ -3,6 +3,7 @@
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
 	import { navigationMenuTriggerStyle } from '$lib/components/ui/navigation-menu/navigation-menu-trigger.svelte';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
+	import type { findOneQuizById } from '$lib/db/repositories/2-stories-module.js';
 	import House from '@lucide/svelte/icons/house';
 	import TvMinimalPlay from '@lucide/svelte/icons/tv-minimal-play';
 	import { SvelteFlowProvider } from '@xyflow/svelte';
@@ -14,6 +15,21 @@
 	let story = $derived(data.story);
 
 	let dialogs = $state({ videos: false, announcements: false, quizzes: false });
+
+	const close = (output: {
+		action: 'persist' | 'delete';
+		id?: string;
+		quiz?: Awaited<ReturnType<typeof findOneQuizById>>;
+	}) => {
+		const { action, id, quiz } = output;
+		if (action === 'delete' && id?.length) {
+			story.quizzes = story.quizzes?.filter((q) => q.id !== id);
+		} else if (action === 'persist' && quiz) {
+			if (story.quizzes?.find((q) => q.id === quiz.id))
+				story.quizzes = story.quizzes.map((q) => (q.id === quiz.id ? quiz : q));
+		}
+		dialogs.quizzes = false;
+	};
 </script>
 
 <div class="absolute inset-x-0 top-0 z-50 mt-4">
@@ -70,7 +86,7 @@
 </div>
 
 <Dialog.Root bind:open={dialogs.quizzes}>
-	<QuizEditor quizzes={story?.quizzes ?? []} />
+	<QuizEditor storyId={story.id} quizzes={story.quizzes} {close} />
 </Dialog.Root>
 
 <div class="mx-auto h-screen w-screen overflow-hidden">
