@@ -37,11 +37,11 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
         eb.selectFrom('announcementTemplate')
           .leftJoin('announcementTemplateAvailableToStory', 'announcementTemplateAvailableToStory.announcementTemplateId', 'announcementTemplate.id')
           .whereRef('announcementTemplateAvailableToStory.storyId', '=', 'story.id')
-          .select([
+          .select((eb) => [
             'announcementTemplate.id',
             'announcementTemplate.name',
-            'announcementTemplate.title',
-            'announcementTemplate.message',
+            selectLocalizedField(eb, 'announcementTemplate.title', language).as('title'),
+            selectLocalizedField(eb, 'announcementTemplate.message', language).as('message'),
           ])
       ).as('announcements'),
 
@@ -361,7 +361,6 @@ export const findOneStoryByReference = async (clientId: string, storyReference: 
   return story;
 }
 
-
 // TODO: remove reliance on language parameter
 export const findOneQuizById = async (quizId: string, language?: Language) => {
   const quiz = await db.selectFrom('quizTemplate')
@@ -406,6 +405,21 @@ export const findOneQuizById = async (quizId: string, language?: Language) => {
             eb.lit<boolean>(false).as('isRemoved'),
           ])
       ).as('questions'),
+    ])
+    .executeTakeFirstOrThrow();
+
+  return quiz;
+}
+
+// TODO: remove reliance on language parameter
+export const findOneAnnouncementById = async (announcementId: string, language?: Language) => {
+  const quiz = await db.selectFrom('announcementTemplate')
+    .where('announcementTemplate.id', '=', announcementId)
+    .select((eb) => [
+      'announcementTemplate.id',
+      'announcementTemplate.name',
+      selectLocalizedField(eb, 'announcementTemplate.title', language).as('title'),
+      selectLocalizedField(eb, 'announcementTemplate.message', language).as('message'),
     ])
     .executeTakeFirstOrThrow();
 

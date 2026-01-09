@@ -11,10 +11,10 @@
 	import { DragDropProvider } from '@dnd-kit-svelte/svelte';
 	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
-	import Dices from '@lucide/svelte/icons/dices';
-	import GripVertical from '@lucide/svelte/icons/grip-vertical';
-	import SquarePlus from '@lucide/svelte/icons/square-plus';
-	import Trash from '@lucide/svelte/icons/trash-2';
+	import DicesIcon from '@lucide/svelte/icons/dices';
+	import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical';
+	import SquarePlusIcon from '@lucide/svelte/icons/square-plus';
+	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import type { $ZodIssue } from 'zod/v4/core';
 
 	type DragEndEvent = {
@@ -112,7 +112,8 @@
 		else close({ action: 'persist', quiz: await result.json() });
 	};
 	const remove = async () => {
-		const result = await fetch(`/api/stories/${storyId}/quizzes/${quiz.id ?? 'new'}/questions`, {
+		if (!quiz.id?.length) return;
+		const result = await fetch(`/api/stories/${storyId}/quizzes/${quiz.id}/questions`, {
 			method: 'DELETE'
 		});
 		if (!result.ok) error = await result.json();
@@ -172,7 +173,7 @@
 							: ''}"
 						onclick={() => (quiz = defaultQuiz)}
 					>
-						<SquarePlus />
+						<SquarePlusIcon />
 						New
 					</Toggle>
 				</div>
@@ -217,7 +218,7 @@
 						class="bg-card! data-[state=on]:text-blue-600 data-[state=on]:*:[svg]:fill-blue-100 data-[state=on]:*:[svg]:stroke-blue-500"
 						bind:pressed={quiz.doRandomize}
 					>
-						<Dices />
+						<DicesIcon />
 						Randomize
 					</Toggle>
 				</Field.Field>
@@ -247,7 +248,7 @@
 										class="cursor-move"
 										{@attach handleRef}
 									>
-										<GripVertical />
+										<GripVerticalIcon />
 									</Button>
 									<Field.Label>Question {question.order}</Field.Label>
 								</div>
@@ -275,7 +276,7 @@
 												?.forEach((q, i) => (q.order = i + 1));
 										}}
 									>
-										<Trash class="size-4" />
+										<TrashIcon class="size-4" />
 									</Button>
 									<Collapsible.Trigger class={buttonVariants({ variant: 'ghost', size: 'icon' })}>
 										<ChevronsUpDownIcon />
@@ -303,7 +304,7 @@
 												class="data-[state=on]:bg-transparent data-[state=on]:*:[svg]:fill-blue-100 data-[state=on]:*:[svg]:stroke-blue-500"
 												bind:pressed={question.answerGroup.doRandomize}
 											>
-												<Dices />
+												<DicesIcon />
 											</Toggle>
 										{/if}
 									</div>
@@ -331,7 +332,7 @@
 														class="cursor-move"
 														{@attach handleRef}
 													>
-														<GripVertical />
+														<GripVerticalIcon />
 													</Button>
 													<div class="w-full space-y-1">
 														<Field.Field>
@@ -357,7 +358,7 @@
 																?.forEach((o, i) => (o.order = i + 1));
 														}}
 													>
-														<Trash class="size-4" />
+														<TrashIcon class="size-4" />
 													</Button>
 												</div>
 											{/each}
