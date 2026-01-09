@@ -35,6 +35,7 @@
 			type: 'media',
 			position: part.position ?? { x: 0, y: 0 },
 			data: {
+				storyId: story.id,
 				part,
 				videos: story.videos,
 				announcements: story.announcements,
@@ -103,7 +104,7 @@
 					!(e.source === sourceNode && e.sourceHandle === sourceHandle && e.target !== targetNode)
 			);
 		} else {
-			if (!connectionState.fromHandle) return;
+			if (!connectionState.fromHandle || !story?.id) return;
 			const { type: fromType, nodeId: fromNode, id: fromHandle } = connectionState.fromHandle;
 			if (fromType !== 'source') return;
 			const id = crypto.randomUUID().toString();
@@ -113,6 +114,7 @@
 				id,
 				type: 'media',
 				data: {
+					storyId: story.id,
 					part: undefined,
 					videos: story?.videos ?? [],
 					announcements: story?.announcements ?? [],

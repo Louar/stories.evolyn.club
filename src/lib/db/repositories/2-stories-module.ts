@@ -135,14 +135,17 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
                           eb.selectFrom('quizLogicRuleInput')
                             .whereRef('quizLogicRuleInput.quizLogicRuleId', '=', 'quizLogicRule.id')
                             .select([
+                              'quizLogicRuleInput.id',
                               'quizLogicRuleInput.quizQuestionTemplateId',
                               'quizLogicRuleInput.value',
                               'quizLogicRuleInput.quizQuestionTemplateAnswerItemId',
+                              eb.lit<boolean>(false).as('isRemoved'),
                             ])
-                            .$narrowType<{ quizQuestionTemplateId: NotNull }>()
+                            .$narrowType<{ id: NotNull, quizQuestionTemplateId: NotNull }>()
                         ).as('inputs'),
+                        eb.lit<boolean>(false).as('isRemoved'),
                       ])
-                      .$narrowType<{ nextPartId: NotNull, inputs: NotNull }>()
+                      .$narrowType<{ id: NotNull, nextPartId: NotNull, inputs: NotNull, isRemoved: NotNull }>()
                   ).as('rules'),
                 ])
             ).as('quizLogicForPart')

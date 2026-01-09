@@ -1,27 +1,30 @@
 <script lang="ts">
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
-	import type { findOneStoryById } from '$lib/db/repositories/2-stories-module';
+	import type { findOneQuizById, findOneStoryById } from '$lib/db/repositories/2-stories-module';
 	import { formatDuration } from '$lib/db/schemas/0-utils';
 	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
 	import CogIcon from '@lucide/svelte/icons/cog';
 	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
+	import QuizLogicEditor from './QuizLogicEditor.svelte';
 	import Slider from './Slider.svelte';
 
 	let {
 		data
 	}: NodeProps & {
 		data: {
+			storyId: string;
 			part: Awaited<ReturnType<typeof findOneStoryById>>['parts'][number];
 			videos: Awaited<ReturnType<typeof findOneStoryById>>['videos'];
 			announcements: Awaited<ReturnType<typeof findOneStoryById>>['announcements'];
 			quizzes: Awaited<ReturnType<typeof findOneStoryById>>['quizzes'];
 		};
 	} = $props();
+
+	let storyId = $derived(data.storyId);
 
 	const defaultPart = {
 		id: 'new',
@@ -48,6 +51,9 @@
 	let videos = $state(data.videos);
 	let announcements = $state(data.announcements);
 	let quizzes = $state(data.quizzes);
+	let quiz: (typeof quizzes)[number] | undefined = $derived(
+		quizzes.find((q) => q.id === part.quizTemplateId)
+	);
 
 	const overlayOptions = [
 		{ value: 'none', label: 'None' },
@@ -62,25 +68,20 @@
 		part.backgroundConfiguration?.end ?? 1
 	]);
 
-	function selectVideo(videoId: string) {
-		part.videoId = videoId;
-		// In a real app, this would update the part's videoId
-	}
-
-	function selectOverlay(type: string) {
-		if (!part) return;
-		part.foregroundType = type;
-		if (part.foregroundType !== 'announcement') part.announcementTemplateId = null;
-		if (part.foregroundType !== 'quiz') part.quizTemplateId = null;
-	}
-
-	function selectAnnouncement(announcementId: string) {
-		part.announcementTemplateId = announcementId;
-	}
-
-	function selectQuiz(quizId: string) {
-		part.quizTemplateId = quizId;
-	}
+	let isOpen = $state(false);
+	const close = (output: {
+		action: 'persist' | 'delete';
+		id?: string;
+		rules?: Awaited<ReturnType<typeof findOneQuizById>>;
+	}) => {
+		const { action, id, rules } = output;
+		if (action === 'delete' && id?.length) {
+			//
+		} else if (action === 'persist' && rules) {
+			//
+		}
+		isOpen = false;
+	};
 </script>
 
 <div class="flex w-75 flex-col rounded-lg border border-stone-400 bg-white py-3 shadow-md">
@@ -113,7 +114,7 @@
 							<Label>Available videos</Label>
 							<RadioGroup.Root
 								value={part.videoId ?? 'none'}
-								onValueChange={(v) => selectVideo(v)}
+								onValueChange={(value) => (part.videoId = value)}
 								class="grid gap-2"
 							>
 								{#each videos as video}
@@ -159,7 +160,6 @@
 							)}
 							Announcement: {announcement?.name || 'Unknown'}
 						{:else if part.foregroundType === 'quiz'}
-							{@const quiz = quizzes.find((q) => q.id === part.quizTemplateId)}
 							Quiz: {quiz?.name || 'Unknown'}
 						{:else}
 							Select overlay...
@@ -178,7 +178,12 @@
 							<Label>Overlay Type</Label>
 							<RadioGroup.Root
 								value={part.foregroundType ?? 'none'}
-								onValueChange={(v) => selectOverlay(v)}
+								onValueChange={(value) => {
+									if (!part) return;
+									part.foregroundType = value;
+									if (part.foregroundType !== 'announcement') part.announcementTemplateId = null;
+									if (part.foregroundType !== 'quiz') part.quizTemplateId = null;
+								}}
 								class="grid grid-cols-2 gap-2"
 							>
 								{#each overlayOptions as option}
@@ -204,7 +209,7 @@
 								<Label>Select Announcement</Label>
 								<RadioGroup.Root
 									value={part.announcementTemplateId ?? 'none'}
-									onValueChange={(v) => selectAnnouncement(v)}
+									onValueChange={(value) => (part.announcementTemplateId = value)}
 									class="grid gap-2"
 								>
 									{#each announcements as announcement}
@@ -231,7 +236,7 @@
 								<Label>Select Quiz</Label>
 								<RadioGroup.Root
 									value={part.quizTemplateId ?? 'none'}
-									onValueChange={(v) => selectQuiz(v)}
+									onValueChange={(value) => (part.quizTemplateId = value)}
 									class="grid gap-2"
 								>
 									{#each quizzes as quiz}
@@ -261,35 +266,18 @@
 				</Dialog.Content>
 			</Dialog.Root>
 
-			{#if part.foregroundType === 'quiz'}
-				<Dialog.Root>
-					<form>
-						<Dialog.Trigger class={buttonVariants({ variant: 'outline', size: 'icon' })}>
-							<CogIcon />
-						</Dialog.Trigger>
-						<Dialog.Content class="sm:max-w-106.25">
-							<Dialog.Header>
-								<Dialog.Title>Edit profile</Dialog.Title>
-								<Dialog.Description>
-									Make changes to your profile here. Click save when you&apos;re done.
-								</Dialog.Description>
-							</Dialog.Header>
-							<div class="grid gap-4">
-								<div class="grid gap-3">
-									<Label for="name-1">Name</Label>
-									<Input id="name-1" name="name" defaultValue="Pedro Duarte" />
-								</div>
-								<div class="grid gap-3">
-									<Label for="username-1">Username</Label>
-									<Input id="username-1" name="username" defaultValue="@peduarte" />
-								</div>
-							</div>
-							<Dialog.Footer>
-								<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
-								<Button type="submit">Save changes</Button>
-							</Dialog.Footer>
-						</Dialog.Content>
-					</form>
+			{#if part.foregroundType === 'quiz' && quiz}
+				<Dialog.Root open={isOpen}>
+					<Dialog.Trigger class={buttonVariants({ variant: 'outline', size: 'icon' })}>
+						<CogIcon />
+					</Dialog.Trigger>
+					<QuizLogicEditor
+						{storyId}
+						partId={part.id}
+						rules={part.quizLogicForPart?.rules ?? []}
+						{quiz}
+						{close}
+					/>
 				</Dialog.Root>
 			{/if}
 		</div>
