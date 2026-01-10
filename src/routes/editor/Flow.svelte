@@ -7,7 +7,8 @@
 		useSvelteFlow,
 		type Edge,
 		type Node,
-		type OnConnectEnd
+		type OnConnectEnd,
+		type OnDelete
 	} from '@xyflow/svelte';
 	import MediaEdge from './MediaEdge.svelte';
 	import MediaNode from './MediaNode.svelte';
@@ -83,7 +84,7 @@
 		edges = e;
 	});
 
-	const connect: OnConnectEnd = (event, connectionState) => {
+	const connect: OnConnectEnd = async (event, connectionState) => {
 		if (connectionState.isValid) {
 			if (!connectionState.fromHandle || !connectionState.toHandle) return;
 			const { type: fromType, nodeId: fromNode, id: fromHandle } = connectionState.fromHandle;
@@ -103,6 +104,12 @@
 				(e) =>
 					!(e.source === sourceNode && e.sourceHandle === sourceHandle && e.target !== targetNode)
 			);
+
+			const result = await fetch(`/api/stories/${story?.id}/parts/${sourceNode}/connections`, {
+				method: 'POST',
+				body: JSON.stringify({ handle: sourceHandle, target: targetNode })
+			});
+			if (!result.ok) console.log(await result.json());
 		} else {
 			if (!connectionState.fromHandle || !story?.id) return;
 			const { type: fromType, nodeId: fromNode, id: fromHandle } = connectionState.fromHandle;
@@ -133,7 +140,7 @@
 
 			nodes = [...nodes, newNode];
 			edges = [
-				...edges,
+				...edges.filter((e) => !(e.source === fromNode && e.sourceHandle === fromHandle)),
 				{
 					id: `e-${fromNode}-${fromHandle ?? 'default'}-${id}`,
 					type: 'media',
@@ -142,6 +149,23 @@
 					target: id
 				}
 			];
+		}
+	};
+
+	const remove: OnDelete = async ({ nodes, edges }) => {
+		if (edges?.length) {
+			const { source: sourceNode, sourceHandle, target: targetNode } = edges[0];
+			const result = await fetch(`/api/stories/${story?.id}/parts/${sourceNode}/connections`, {
+				method: 'DELETE',
+				body: JSON.stringify({ handle: sourceHandle, target: targetNode })
+			});
+			if (!result.ok) console.log(await result.json());
+		}
+		if (nodes?.length) {
+			const result = await fetch(`/api/stories/${story?.id}/parts/${nodes[0].id}`, {
+				method: 'DELETE'
+			});
+			if (!result.ok) console.log(await result.json());
 		}
 	};
 </script>
@@ -154,6 +178,7 @@
 	fitView
 	defaultEdgeOptions={{ type: 'media' }}
 	onconnectend={connect}
+	ondelete={remove}
 	proOptions={{ hideAttribution: true }}
 	snapGrid={[400, 200]}
 >
