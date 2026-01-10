@@ -1,6 +1,7 @@
 import { db } from '$lib/db/database';
 import { findOneQuizById } from '$lib/db/repositories/2-stories-module';
 import type { Translatable } from '$lib/db/schemas/0-utils';
+import { clean } from '$lib/utils';
 import { json } from '@sveltejs/kit';
 import z from 'zod/v4';
 import type { RequestHandler } from './$types';
@@ -29,7 +30,7 @@ const quizSchema = z.object({
 
 export const POST = (async ({ request, params }) => {
 
-  const body = quizSchema.safeParse(await request.json());
+  const body = quizSchema.safeParse(clean(await request.json()));
   if (!body.success) return json(body.error.issues, { status: 422 });
 
   const { questions, ...rest } = body.data;
@@ -65,7 +66,7 @@ export const POST = (async ({ request, params }) => {
       .where('id', 'not in', questions?.map((q) => q.id)?.filter<string>((q): q is string => typeof q === 'string' && !q?.startsWith('new')) ?? null)
       .execute();
 
-    // Create update the remaining questions
+    // Create / update the remaining questions
     for (const rawquestion of questions) {
       const { id: questionId, title, answerOptions, answerGroup, ...rest } = rawquestion;
 

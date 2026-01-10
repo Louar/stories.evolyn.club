@@ -8,6 +8,7 @@
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
 	import type { findOneQuizById, findOneStoryById } from '$lib/db/repositories/2-stories-module';
+	import { moveArrayItem } from '$lib/utils';
 	import { DragDropProvider } from '@dnd-kit-svelte/svelte';
 	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
@@ -90,14 +91,6 @@
 		);
 		options?.filter((o) => !o.isRemoved)?.forEach((o, i) => (o.order = i + 1)) ?? [];
 		question.answerOptions = options;
-	};
-
-	// Helper function to reorder array
-	const moveArrayItem = <T,>(array: T[], fromIndex: number, to: number): T[] => {
-		const newArray = [...array];
-		const [removed] = newArray.splice(fromIndex, 1);
-		newArray.splice(to, 0, removed);
-		return newArray;
 	};
 
 	const persist = async (event: Event) => {

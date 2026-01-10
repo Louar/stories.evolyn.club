@@ -4,7 +4,10 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
-	import type { findOneQuizById, findOneStoryById } from '$lib/db/repositories/2-stories-module';
+	import type {
+		findOneQuizLogicById,
+		findOneStoryById
+	} from '$lib/db/repositories/2-stories-module';
 	import { formatDuration } from '$lib/db/schemas/0-utils';
 	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
 	import CogIcon from '@lucide/svelte/icons/cog';
@@ -72,13 +75,11 @@
 	const close = (output: {
 		action: 'persist' | 'delete';
 		id?: string;
-		rules?: Awaited<ReturnType<typeof findOneQuizById>>;
+		logic?: Awaited<ReturnType<typeof findOneQuizLogicById>>;
 	}) => {
-		const { action, id, rules } = output;
-		if (action === 'delete' && id?.length) {
-			//
-		} else if (action === 'persist' && rules) {
-			//
+		const { action, id, logic } = output;
+		if (action === 'persist' && logic) {
+			part.quizLogicForPart = logic;
 		}
 		isOpen = false;
 	};
@@ -267,7 +268,7 @@
 			</Dialog.Root>
 
 			{#if part.foregroundType === 'quiz' && quiz}
-				<Dialog.Root open={isOpen}>
+				<Dialog.Root bind:open={isOpen}>
 					<Dialog.Trigger class={buttonVariants({ variant: 'outline', size: 'icon' })}>
 						<CogIcon />
 					</Dialog.Trigger>

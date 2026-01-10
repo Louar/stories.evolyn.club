@@ -4,8 +4,13 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
-	import type { findOneQuizById, findOneStoryById } from '$lib/db/repositories/2-stories-module';
+	import type {
+		findOneQuizLogicById,
+		findOneStoryById
+	} from '$lib/db/repositories/2-stories-module';
+	import { moveArrayItem } from '$lib/utils';
 	import { DragDropProvider } from '@dnd-kit-svelte/svelte';
 	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
@@ -27,7 +32,7 @@
 		close: (output: {
 			action: 'persist' | 'delete';
 			id?: string;
-			rules?: Awaited<ReturnType<typeof findOneQuizById>>;
+			logic?: Awaited<ReturnType<typeof findOneQuizLogicById>>;
 		}) => void;
 	};
 	let { storyId, partId, rules, quiz, close }: Props = $props();
@@ -39,7 +44,7 @@
 			id: `new-${crypto.randomUUID().toString().slice(0, 8)}`,
 			order: (rules?.length ?? 0) + 1,
 			name: '',
-			nextPartId: 'null',
+			nextPartId: null,
 			inputs: [],
 			isRemoved: false // Front-end purposes
 		});
@@ -48,7 +53,7 @@
 	const addRuleInput = (rule: (typeof rules)[number]) => {
 		rule.inputs.push({
 			id: `new-${crypto.randomUUID().toString().slice(0, 8)}`,
-			quizQuestionTemplateId: 'null',
+			quizQuestionTemplateId: 'none',
 			value: null,
 			quizQuestionTemplateAnswerItemId: null,
 			isRemoved: false // Front-end purposes
@@ -63,38 +68,16 @@
 		quiz.questions = questions;
 	};
 
-	// Helper function to reorder array
-	const moveArrayItem = <T,>(array: T[], fromIndex: number, to: number): T[] => {
-		const newArray = [...array];
-		const [removed] = newArray.splice(fromIndex, 1);
-		newArray.splice(to, 0, removed);
-		return newArray;
-	};
-
 	const persist = async (event: Event) => {
 		event.preventDefault();
 
-		const result = await fetch(
-			`/api/stories/${storyId}/parts/${partId}/quizzes/${quiz.id ?? 'new'}/logic`,
-			{
-				method: 'POST',
-				body: JSON.stringify(quiz)
-			}
-		);
+		const result = await fetch(`/api/stories/${storyId}/parts/${partId}/quizzes/${quiz.id}/logic`, {
+			method: 'POST',
+			body: JSON.stringify({ rules })
+		});
 
 		if (!result.ok) error = await result.json();
-		else close({ action: 'persist', rules: await result.json() });
-	};
-	const remove = async () => {
-		if (!quiz.id?.length) return;
-		const result = await fetch(`/api/stories/${storyId}/quizzes/${quiz.id}/questions`, {
-			method: 'DELETE'
-		});
-		if (!result.ok) error = await result.json();
-		else {
-			close({ action: 'delete', id: quiz.id });
-			// quiz = defaultQuiz;
-		}
+		else close({ action: 'persist', logic: await result.json() });
 	};
 </script>
 
@@ -156,7 +139,8 @@
 											<Input bind:value={rule.name} placeholder="Rule name" />
 										</Field.Field>
 										<Field.Error>
-											{error?.find((e) => e.path?.join('.') === [r, 'name'].join('.'))?.message}
+											{error?.find((e) => e.path?.join('.') === ['rules', r, 'name'].join('.'))
+												?.message}
 										</Field.Error>
 									</div>
 
@@ -176,13 +160,12 @@
 										<ChevronsUpDownIcon />
 									</Collapsible.Trigger>
 								</div>
-
-								<Field.Field>
+								<!-- <Field.Field>
 									<Input bind:value={rule.nextPartId} placeholder="Next" />
 									<Field.Error>
-										{error?.find((e) => e.path?.join('.') === [r, 'nextPartId'].join('.'))?.message}
+										{error?.find((e) => e.path?.join('.') === ['rules', r, 'nextPartId'].join('.'))?.message}
 									</Field.Error>
-								</Field.Field>
+								</Field.Field> -->
 							</div>
 
 							<Collapsible.Content>
@@ -193,7 +176,8 @@
 										<div>
 											<Field.Label>Inputs</Field.Label>
 											<Field.Error>
-												{error?.find((e) => e.path?.join('.') === [r, 'inputs'].join('.'))?.message}
+												{error?.find((e) => e.path?.join('.') === ['rules', r, 'inputs'].join('.'))
+													?.message}
 											</Field.Error>
 										</div>
 									</div>
@@ -204,21 +188,89 @@
 												class="flex gap-2 rounded-md border bg-card/50 p-3 transition-colors"
 												class:hidden={input.isRemoved}
 											>
-												<div class="w-full space-y-1">
-													<Field.Field>
-														<Input
-															bind:value={input.quizQuestionTemplateId}
-															placeholder="Option label"
-														/>
-													</Field.Field>
+												<Field.Field class="w-1/2">
+													<Field.Label for="question">Question</Field.Label>
+													<Select.Root
+														type="single"
+														name="quizQuestionTemplateId"
+														bind:value={input.quizQuestionTemplateId}
+													>
+														{@const question = quiz.questions.find(
+															(q) => q.id === input.quizQuestionTemplateId
+														)}
+														<Select.Trigger
+															class="w-full {question ? '' : 'text-muted-foreground'}"
+														>
+															{@html !question
+																? 'Select a question...'
+																: `<p><span class="mr-1 text-muted-foreground">${question.order}.</span>${question.title}</p>`}
+														</Select.Trigger>
+														<Select.Content>
+															<Select.Group>
+																<ol class="list-inside list-decimal marker:text-muted-foreground">
+																	{#each quiz.questions as question (question.id)}
+																		<Select.Item value={question.id}>
+																			<li>{question.title}</li>
+																		</Select.Item>
+																	{/each}
+																</ol>
+															</Select.Group>
+														</Select.Content>
+													</Select.Root>
 													<Field.Error>
 														{error?.find(
 															(e) =>
 																e.path?.join('.') ===
-																[r, 'inputs', i, 'quizQuestionTemplateId'].join('.')
+																['rules', r, 'inputs', i, 'quizQuestionTemplateId'].join('.')
 														)?.message}
 													</Field.Error>
-												</div>
+												</Field.Field>
+												<Field.Field class="w-1/2">
+													<Field.Label for="value">Answer</Field.Label>
+													<Select.Root
+														type="single"
+														name="quizQuestionTemplateId"
+														value={input.quizQuestionTemplateAnswerItemId ?? 'none'}
+														onValueChange={(value) =>
+															(input.quizQuestionTemplateAnswerItemId =
+																value === 'none' ? null : value)}
+													>
+														{@const question = quiz.questions.find(
+															(q) => q.id === input.quizQuestionTemplateId
+														)}
+														{@const answer = question?.answerOptions?.find(
+															(o) => o.id === input.quizQuestionTemplateAnswerItemId
+														)}
+														<Select.Trigger class="w-full {answer ? '' : 'text-muted-foreground'}">
+															{@html !answer
+																? 'Select an answer option...'
+																: `<p><span class="mr-1 text-muted-foreground">${answer.order}.</span>${answer.label}</p>`}
+														</Select.Trigger>
+														<Select.Content>
+															{#if question?.answerOptions?.length}
+																<Select.Group>
+																	<ol class="list-inside list-decimal marker:text-muted-foreground">
+																		{#each question.answerOptions as option (option.id)}
+																			<Select.Item value={option.id}>
+																				<li>{option.label}</li>
+																			</Select.Item>
+																		{/each}
+																	</ol>
+																</Select.Group>
+															{/if}
+														</Select.Content>
+													</Select.Root>
+													<Field.Error>
+														{error?.find(
+															(e) =>
+																e.path?.join('.') ===
+																['rules', r, 'inputs', i, 'quizQuestionTemplateAnswerItemId'].join(
+																	'.'
+																)
+														)?.message}
+													</Field.Error>
+												</Field.Field>
+
 												<Button
 													type="button"
 													variant="ghost"
@@ -255,6 +307,9 @@
 				{/each}
 
 				<Button type="button" variant="outline" size="sm" onclick={addRule}>Add rule</Button>
+				<Field.Error>
+					{error?.find((e) => e.path?.join('.') === ['rules'].join('.'))?.message}
+				</Field.Error>
 			</div>
 		</DragDropProvider>
 		<!-- <Dialog.Footer>

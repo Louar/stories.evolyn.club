@@ -703,7 +703,6 @@ export const DummyDataDefaultStory: Migration = {
         quizLogicRuleId: qlrPlayPause1.id,
         quizQuestionTemplateId: qqtPlayPause1.id,
         quizQuestionTemplateAnswerItemId: aiPlayPauseQ1Yes.id,
-        value: JSON.stringify(1),
       })
       .executeTakeFirstOrThrow();
 
@@ -713,7 +712,6 @@ export const DummyDataDefaultStory: Migration = {
         quizLogicRuleId: qlrPlayPause1.id,
         quizQuestionTemplateId: qqtPlayPause2.id,
         quizQuestionTemplateAnswerItemId: aiPlayPauseQ2Yes.id,
-        value: JSON.stringify('YES'),
       })
       .executeTakeFirstOrThrow();
 
@@ -724,7 +722,6 @@ export const DummyDataDefaultStory: Migration = {
         quizLogicRuleId: qlrCityBarcelona1.id,
         quizQuestionTemplateId: qqtCityBarcelona1.id,
         quizQuestionTemplateAnswerItemId: aiCityBarcelonaBarcelona.id,
-        value: JSON.stringify('Barcelona'),
       })
       .executeTakeFirstOrThrow();
 
@@ -735,7 +732,6 @@ export const DummyDataDefaultStory: Migration = {
         quizLogicRuleId: qlrCityLuzern1.id,
         quizQuestionTemplateId: qqtCityLuzern1.id,
         quizQuestionTemplateAnswerItemId: aiCityLuzernLuzern.id,
-        value: JSON.stringify('Luzern'),
       })
       .executeTakeFirstOrThrow();
 
@@ -746,7 +742,6 @@ export const DummyDataDefaultStory: Migration = {
         quizLogicRuleId: qlrGameOver1.id,
         quizQuestionTemplateId: qqtGameOver1.id,
         quizQuestionTemplateAnswerItemId: aiGameOverStartOver.id,
-        value: JSON.stringify(true),
       })
       .executeTakeFirstOrThrow();
 

@@ -130,7 +130,7 @@ export const InitStoryModule: Migration = {
       .addColumn('order', 'smallint', (col) => col.notNull())
       .addColumn('name', 'text', col => col.notNull())
       .addColumn('quiz_logic_for_part_id', 'uuid', (col) => col.references('quiz_logic_for_part.id').onDelete('cascade').notNull())
-      .addColumn('next_part_id', 'uuid', (col) => col.references('part.id').onDelete('cascade').notNull())
+      .addColumn('next_part_id', 'uuid', (col) => col.references('part.id').onDelete('cascade'))
       .execute();
 
     // Create QuizLogicRuleInput table
@@ -140,7 +140,7 @@ export const InitStoryModule: Migration = {
       .addColumn('quiz_logic_rule_id', 'uuid', (col) => col.references('quiz_logic_rule.id').onDelete('cascade').notNull())
       .addColumn('quiz_question_template_id', 'uuid', (col) => col.references('quiz_question_template.id').onDelete('cascade').notNull())
       .addColumn('quiz_question_template_answer_item_id', 'uuid', (col) => col.references('quiz_question_template_answer_item.id').onDelete('cascade'))
-      .addColumn('value', 'jsonb', (col) => col.notNull())
+      .addColumn('value', 'jsonb')
       .execute();
 
     // Create VideoAvailableToStory table

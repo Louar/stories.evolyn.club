@@ -131,7 +131,7 @@ type QuizLogicRule = {
   order: number;
   name: string;
   quizLogicForPartId: string;
-  nextPartId: string;
+  nextPartId: string | null;
 };
 
 type QuizLogicRuleInput = {

@@ -145,7 +145,7 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
                         ).as('inputs'),
                         eb.lit<boolean>(false).as('isRemoved'),
                       ])
-                      .$narrowType<{ id: NotNull, nextPartId: NotNull, inputs: NotNull, isRemoved: NotNull }>()
+                      .$narrowType<{ id: NotNull, inputs: NotNull, isRemoved: NotNull }>()
                   ).as('rules'),
                 ])
             ).as('quizLogicForPart')
@@ -364,6 +364,22 @@ export const findOneStoryByReference = async (clientId: string, storyReference: 
   return story;
 }
 
+
+// TODO: remove reliance on language parameter
+export const findOneAnnouncementById = async (announcementId: string, language?: Language) => {
+  const quiz = await db.selectFrom('announcementTemplate')
+    .where('announcementTemplate.id', '=', announcementId)
+    .select((eb) => [
+      'announcementTemplate.id',
+      'announcementTemplate.name',
+      selectLocalizedField(eb, 'announcementTemplate.title', language).as('title'),
+      selectLocalizedField(eb, 'announcementTemplate.message', language).as('message'),
+    ])
+    .executeTakeFirstOrThrow();
+
+  return quiz;
+}
+
 // TODO: remove reliance on language parameter
 export const findOneQuizById = async (quizId: string, language?: Language) => {
   const quiz = await db.selectFrom('quizTemplate')
@@ -415,16 +431,39 @@ export const findOneQuizById = async (quizId: string, language?: Language) => {
 }
 
 // TODO: remove reliance on language parameter
-export const findOneAnnouncementById = async (announcementId: string, language?: Language) => {
-  const quiz = await db.selectFrom('announcementTemplate')
-    .where('announcementTemplate.id', '=', announcementId)
+export const findOneQuizLogicById = async (logicId: string) => {
+  const logic = await db.selectFrom('quizLogicForPart')
+    .where('quizLogicForPart.id', '=', logicId)
     .select((eb) => [
-      'announcementTemplate.id',
-      'announcementTemplate.name',
-      selectLocalizedField(eb, 'announcementTemplate.title', language).as('title'),
-      selectLocalizedField(eb, 'announcementTemplate.message', language).as('message'),
+      'quizLogicForPart.hitpolicy',
+      'quizLogicForPart.defaultNextPartId',
+      jsonArrayFrom(
+        eb.selectFrom('quizLogicRule')
+          .whereRef('quizLogicRule.quizLogicForPartId', '=', 'quizLogicForPart.id')
+          .orderBy('quizLogicRule.order', 'asc')
+          .select((eb) => [
+            'quizLogicRule.id',
+            'quizLogicRule.order',
+            'quizLogicRule.name',
+            'quizLogicRule.nextPartId',
+            jsonArrayFrom(
+              eb.selectFrom('quizLogicRuleInput')
+                .whereRef('quizLogicRuleInput.quizLogicRuleId', '=', 'quizLogicRule.id')
+                .select([
+                  'quizLogicRuleInput.id',
+                  'quizLogicRuleInput.quizQuestionTemplateId',
+                  'quizLogicRuleInput.value',
+                  'quizLogicRuleInput.quizQuestionTemplateAnswerItemId',
+                  eb.lit<boolean>(false).as('isRemoved'),
+                ])
+                .$narrowType<{ id: NotNull, quizQuestionTemplateId: NotNull }>()
+            ).as('inputs'),
+            eb.lit<boolean>(false).as('isRemoved'),
+          ])
+          .$narrowType<{ id: NotNull, inputs: NotNull, isRemoved: NotNull }>()
+      ).as('rules'),
     ])
     .executeTakeFirstOrThrow();
 
-  return quiz;
+  return logic;
 }
