@@ -2,7 +2,7 @@ import { db } from '$lib/db/database';
 import { error } from '@sveltejs/kit';
 import type { NotNull } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
-import type { Rule } from '../../../routes/video/types';
+import type { Rule } from '../../../routes/stories/[storyReference]/types';
 import { Language, selectByOrientation, selectLocalizedField, StoryOrientation } from '../schemas/0-utils';
 import { LogicHitpolicy } from '../schemas/2-story-module';
 

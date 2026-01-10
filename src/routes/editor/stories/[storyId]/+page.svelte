@@ -74,7 +74,9 @@
 			<NavigationMenu.Item>
 				<NavigationMenu.Link>
 					{#snippet child()}
-						<a href="/docs" class={navigationMenuTriggerStyle()}><House class="size-4" /></a>
+						<a href="/editor/stories" class={navigationMenuTriggerStyle()}>
+							<House class="size-4" />
+						</a>
 					{/snippet}
 				</NavigationMenu.Link>
 			</NavigationMenu.Item>
@@ -112,7 +114,8 @@
 			<NavigationMenu.Item>
 				<NavigationMenu.Link>
 					{#snippet child()}
-						<a href="/docs" class={navigationMenuTriggerStyle()}><TvMinimalPlay class="size-4" /></a
+						<a href="/stories/{story.reference}" class={navigationMenuTriggerStyle()}
+							><TvMinimalPlay class="size-4" /></a
 						>
 					{/snippet}
 				</NavigationMenu.Link>

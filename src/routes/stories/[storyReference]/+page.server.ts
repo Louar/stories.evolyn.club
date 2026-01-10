@@ -3,12 +3,11 @@ import { db } from '$lib/db/database';
 import { findOneStoryByReference } from '$lib/db/repositories/2-stories-module';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = (async () => {
+export const load: PageServerLoad = (async ({ params }) => {
 
   const clientId = (await db.selectFrom('client').where('reference', '=', env.SECRET_DEFAULT_CLIENT_REFERENCE).select('id').executeTakeFirstOrThrow()).id;
-  const storyReference = 'quiz-of-cities';
 
-  const story = await findOneStoryByReference(clientId, storyReference);
+  const story = await findOneStoryByReference(clientId, params.storyReference);
 
   const players = story?.parts?.map((part, index) => ({
     id: part.id,
