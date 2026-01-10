@@ -5,7 +5,8 @@
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import type {
 		findOneAnnouncementById,
-		findOneQuizById
+		findOneQuizById,
+		findOneVideoById
 	} from '$lib/db/repositories/2-stories-module.js';
 	import House from '@lucide/svelte/icons/house';
 	import TvMinimalPlay from '@lucide/svelte/icons/tv-minimal-play';
@@ -14,12 +15,27 @@
 	import AnnouncementEditor from './AnnouncementEditor.svelte';
 	import Flow from './Flow.svelte';
 	import QuizEditor from './QuizEditor.svelte';
+	import VideoEditor from './VideoEditor.svelte';
 
 	let { data } = $props();
 	let story = $derived(data.story);
 
 	let dialogs = $state({ videos: false, announcements: false, quizzes: false });
 
+	const closeVideo = (output: {
+		action: 'persist' | 'delete';
+		id?: string;
+		video?: Awaited<ReturnType<typeof findOneVideoById>>;
+	}) => {
+		const { action, id, video } = output;
+		if (action === 'delete' && id?.length) {
+			story.videos = story.videos?.filter((v) => v.id !== id);
+		} else if (action === 'persist' && video) {
+			if (story.videos?.find((v) => v.id === video.id))
+				story.videos = story.videos.map((v) => (v.id === video.id ? video : v));
+		}
+		dialogs.videos = false;
+	};
 	const closeAnnouncement = (output: {
 		action: 'persist' | 'delete';
 		id?: string;
@@ -74,7 +90,7 @@
 				<NavigationMenu.Content>
 					<ul class="grid w-75 gap-2">
 						<li>
-							<NavigationMenu.Link href="##">
+							<NavigationMenu.Link onclick={() => (dialogs.videos = true)}>
 								<div class="font-medium">Video's</div>
 								<div class="text-muted-foreground">Browse and update video's for this story.</div>
 							</NavigationMenu.Link>
@@ -105,6 +121,9 @@
 	</NavigationMenu.Root>
 </div>
 
+<Dialog.Root bind:open={dialogs.videos}>
+	<VideoEditor storyId={story.id} videos={story.videos} close={closeVideo} />
+</Dialog.Root>
 <Dialog.Root bind:open={dialogs.announcements}>
 	<AnnouncementEditor
 		storyId={story.id}

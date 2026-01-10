@@ -23,12 +23,12 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
         eb.selectFrom('video')
           .leftJoin('videoAvailableToStory', 'videoAvailableToStory.videoId', 'video.id')
           .whereRef('videoAvailableToStory.storyId', '=', 'story.id')
-          .select([
+          .select((eb) => [
             'video.id',
             'video.name',
-            'video.source',
-            'video.thumbnail',
-            'video.captions',
+            selectByOrientation(eb, 'video.source', orientation).as('source'),
+            selectByOrientation(eb, 'video.thumbnail', orientation).as('thumbnail'),
+            selectLocalizedField(eb, 'video.captions', language).as('captions'),
             'video.duration',
           ])
       ).as('videos'),
@@ -421,6 +421,23 @@ export const findOnePartById = async (partId: string) => {
     .executeTakeFirstOrThrow();
 
   return part;
+}
+
+// TODO: remove reliance on language parameter
+export const findOneVideoById = async (videoId: string, language?: Language) => {
+  const announcement = await db.selectFrom('video')
+    .where('video.id', '=', videoId)
+    .select((eb) => [
+      'video.id',
+      'video.name',
+      selectByOrientation(eb, 'video.source', undefined).as('source'),
+      selectByOrientation(eb, 'video.thumbnail', undefined).as('thumbnail'),
+      selectLocalizedField(eb, 'video.captions', language).as('captions'),
+      'video.duration',
+    ])
+    .executeTakeFirstOrThrow();
+
+  return announcement;
 }
 
 // TODO: remove reliance on language parameter

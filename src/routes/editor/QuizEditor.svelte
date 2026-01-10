@@ -33,7 +33,6 @@
 	};
 	let { storyId, quizzes, close }: Props = $props();
 
-	// Initialize quiz from quizzes prop or use default
 	const defaultQuiz: (typeof quizzes)[number] = {
 		id: 'new',
 		name: '',

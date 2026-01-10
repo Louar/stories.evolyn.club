@@ -6,57 +6,54 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
-	import type {
-		findOneAnnouncementById,
-		findOneStoryById
-	} from '$lib/db/repositories/2-stories-module';
+	import type { findOneStoryById, findOneVideoById } from '$lib/db/repositories/2-stories-module';
 	import SquarePlus from '@lucide/svelte/icons/square-plus';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import type { $ZodIssue } from 'zod/v4/core';
 
 	type Props = {
 		storyId: string;
-		announcements: Awaited<ReturnType<typeof findOneStoryById>>['announcements'];
+		videos: Awaited<ReturnType<typeof findOneStoryById>>['videos'];
 		close: (output: {
 			action: 'persist' | 'delete';
 			id?: string;
-			announcement?: Awaited<ReturnType<typeof findOneAnnouncementById>>;
+			video?: Awaited<ReturnType<typeof findOneVideoById>>;
 		}) => void;
 	};
-	let { storyId, announcements, close }: Props = $props();
+	let { storyId, videos, close }: Props = $props();
 
-	const defaultAnnouncement: (typeof announcements)[number] = {
+	// Initialize quiz from quizzes prop or use default
+	const defaultVideo: (typeof videos)[number] = {
 		id: 'new',
 		name: '',
-		title: '',
-		message: ''
+		source: '',
+		thumbnail: '',
+		captions: '',
+		duration: 0
 	};
-	let announcement = $state(defaultAnnouncement);
+	let video = $state(defaultVideo);
 	let error = $state<$ZodIssue[] | null>(null);
 
 	const persist = async (event: Event) => {
 		event.preventDefault();
 
-		const result = await fetch(
-			`/api/stories/${storyId}/announcements/${announcement.id ?? 'new'}`,
-			{
-				method: 'POST',
-				body: JSON.stringify(announcement)
-			}
-		);
+		const result = await fetch(`/api/stories/${storyId}/videos/${video.id ?? 'new'}`, {
+			method: 'POST',
+			body: JSON.stringify(video)
+		});
 
 		if (!result.ok) error = await result.json();
-		else close({ action: 'persist', announcement: await result.json() });
+		else close({ action: 'persist', video: await result.json() });
 	};
 	const remove = async () => {
-		if (!announcement.id?.length) return;
-		const result = await fetch(`/api/stories/${storyId}/announcements/${announcement.id}`, {
+		if (!video.id?.length) return;
+		const result = await fetch(`/api/stories/${storyId}/videos/${video.id}`, {
 			method: 'DELETE'
 		});
 		if (!result.ok) error = await result.json();
 		else {
-			close({ action: 'delete', id: announcement.id });
-			announcement = defaultAnnouncement;
+			close({ action: 'delete', id: video.id });
+			video = defaultVideo;
 		}
 	};
 </script>
@@ -69,31 +66,28 @@
 		<Dialog.Header class="sticky top-0 z-50 -mx-6 bg-background/50 pt-6 backdrop-blur-md">
 			<div class="flex justify-between gap-2 px-6">
 				<div class="flex w-full items-center gap-2">
-					{#if announcements && announcements.length > 0}
+					{#if videos && videos.length > 0}
 						<Dialog.Title>Edit:</Dialog.Title>
 						<div>
 							<Select.Root
 								type="single"
-								value={announcement.id ?? 'none'}
+								value={video.id ?? 'none'}
 								onValueChange={(value) =>
-									(announcement = announcements.find((a) => a.id === value) ?? defaultAnnouncement)}
+									(video = videos.find((v) => v.id === value) ?? defaultVideo)}
 							>
 								<Select.Trigger
-									class="min-w-40 {announcements.find(
-										(a) => announcement.id && a.id === announcement.id
-									)
+									class="min-w-40 {videos.find((v) => video.id && v.id === video.id)
 										? ''
 										: 'text-muted-foreground'}"
 								>
-									{announcements.find((a) => announcement.id && a.id === announcement.id)?.name ??
-										'Select an announcement...'}
+									{videos.find((a) => video.id && a.id === video.id)?.name ?? 'Select a video...'}
 								</Select.Trigger>
 								<Select.Content align="start">
 									<Select.Group>
-										<!-- <Select.GroupHeading>Announcements</Select.GroupHeading> -->
-										{#each announcements as item}
-											<Select.Item class="block" value={item.id}>
-												<p>{item.name}</p>
+										<!-- <Select.GroupHeading>Videos</Select.GroupHeading> -->
+										{#each videos as video}
+											<Select.Item class="block" value={video.id}>
+												<p>{video.name}</p>
 											</Select.Item>
 										{/each}
 									</Select.Group>
@@ -105,10 +99,10 @@
 					<Toggle
 						size="default"
 						variant="default"
-						class="bg-card! {announcement?.id === 'new'
+						class="bg-card! {video?.id === 'new'
 							? 'text-blue-600! *:[svg]:fill-blue-100! *:[svg]:stroke-blue-500!'
 							: ''}"
-						onclick={() => (announcement = defaultAnnouncement)}
+						onclick={() => (video = defaultVideo)}
 					>
 						<SquarePlus />
 						New
@@ -120,12 +114,12 @@
 
 				<div class="flex gap-2">
 					<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
-					{#if announcement.id && announcement.id !== 'new'}
+					{#if video.id && video.id !== 'new'}
 						<Button variant="destructive" size="icon" onclick={remove}>
 							<TrashIcon />
 						</Button>
 					{/if}
-					<Button type="submit" onclick={persist}>Save announcement</Button>
+					<Button type="submit" onclick={persist}>Save video</Button>
 				</div>
 			</div>
 
@@ -134,24 +128,24 @@
 
 		<Field.Group class="gap-2">
 			<Field.Field>
-				<Field.Label>Announcement reference name</Field.Label>
-				<Input bind:value={announcement.name} placeholder="Name..." />
+				<Field.Label>Video reference name</Field.Label>
+				<Input bind:value={video.name} placeholder="Name..." />
 				<Field.Error>
 					{error?.find((e) => e.path?.join('.') === ['name'].join('.'))?.message}
 				</Field.Error>
 			</Field.Field>
 			<Field.Field>
-				<Field.Label>Title (optional)</Field.Label>
-				<Input bind:value={announcement.title} placeholder="Title..." />
+				<Field.Label>Source</Field.Label>
+				<Input bind:value={video.source} placeholder="Source..." />
 				<Field.Error>
-					{error?.find((e) => e.path?.join('.') === ['title'].join('.'))?.message}
+					{error?.find((e) => e.path?.join('.') === ['source'].join('.'))?.message}
 				</Field.Error>
 			</Field.Field>
 			<Field.Field>
-				<Field.Label>Message (optional)</Field.Label>
-				<Input bind:value={announcement.message} placeholder="Message..." />
+				<Field.Label>Duration (in seconds)</Field.Label>
+				<Input bind:value={video.duration} placeholder="Duration..." />
 				<Field.Error>
-					{error?.find((e) => e.path?.join('.') === ['message'].join('.'))?.message}
+					{error?.find((e) => e.path?.join('.') === ['duration'].join('.'))?.message}
 				</Field.Error>
 			</Field.Field>
 		</Field.Group>
