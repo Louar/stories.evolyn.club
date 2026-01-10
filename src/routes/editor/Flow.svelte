@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { findOneStoryById } from '$lib/db/repositories/2-stories-module';
+	import type { findOnePartById, findOneStoryById } from '$lib/db/repositories/2-stories-module';
 	import {
 		Background,
 		Controls,
@@ -117,26 +117,33 @@
 			const id = crypto.randomUUID().toString();
 			const { clientX, clientY } = 'changedTouches' in event ? event.changedTouches[0] : event;
 
+			const position = screenToFlowPosition({ x: clientX, y: clientY }, { snapToGrid: true });
+
+			const result = await fetch(`/api/stories/${story?.id}/parts/new`, {
+				method: 'POST',
+				body: JSON.stringify({ position })
+			});
+			if (!result.ok) console.log(await result.json());
+			const part = (await result.json()) as Awaited<ReturnType<typeof findOnePartById>>;
+
 			const newNode: Node = {
 				id,
 				type: 'media',
 				data: {
 					storyId: story.id,
-					part: undefined,
+					part,
 					videos: story?.videos ?? [],
 					announcements: story?.announcements ?? [],
 					quizzes: story?.quizzes ?? []
 				},
-				position: screenToFlowPosition(
-					{
-						x: clientX,
-						y: clientY
-					},
-					{ snapToGrid: true }
-				)
-				// set the origin of the new node so it is centered
-				// origin: [0.5, 0.0]
+				position
 			};
+
+			const result2 = await fetch(`/api/stories/${story?.id}/parts/${fromNode}/connections`, {
+				method: 'POST',
+				body: JSON.stringify({ handle: fromHandle, target: part.id })
+			});
+			if (!result2.ok) console.log(await result2.json());
 
 			nodes = [...nodes, newNode];
 			edges = [

@@ -103,7 +103,6 @@ export const InitStoryModule: Migration = {
       .addColumn('foreground_type', 'text')
       .addColumn('foreground_configuration', 'jsonb')
       .addColumn('is_initial', 'boolean', col => col.defaultTo(false).notNull())
-      .addColumn('is_final', 'boolean', col => col.defaultTo(false).notNull())
       .addColumn('default_next_part_id', 'uuid', (col) => col.references('part.id').onDelete('set null'))
       .addColumn('video_id', 'uuid', (col) => col.references('video.id').onDelete('set null'))
       .addColumn('announcement_template_id', 'uuid', (col) => col.references('announcement_template.id').onDelete('set null'))

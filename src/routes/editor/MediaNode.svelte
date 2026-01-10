@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
+	import { buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
@@ -29,27 +29,7 @@
 
 	let storyId = $derived(data.storyId);
 
-	const defaultPart = {
-		id: 'new',
-		backgroundType: null,
-		backgroundConfiguration: null,
-		background: null,
-		videoId: null,
-		defaultNextPartId: null,
-
-		foregroundType: null,
-		foregroundConfiguration: null,
-		announcementTemplateId: null,
-		quizTemplateId: null,
-		quizLogicForPartId: null,
-		hitpolicy: null,
-		quizRules: [],
-
-		isInitial: false,
-		isFinal: false,
-		position: null
-	};
-	let part = $state(data.part ?? defaultPart);
+	let part = $state(data.part);
 
 	let videos = $state(data.videos);
 	let announcements = $state(data.announcements);
@@ -70,6 +50,45 @@
 		part.foregroundConfiguration?.start ?? 0.5,
 		part.backgroundConfiguration?.end ?? 1
 	]);
+	$effect(() => {
+		updateRange(range);
+		// part.backgroundConfiguration = {
+		// 	...part.backgroundConfiguration,
+		// 	start: range[0],
+		// 	end: range[2]
+		// };
+		// if (part.foregroundType) {
+		// 	part.foregroundConfiguration = {
+		// 		...part.foregroundConfiguration,
+		// 		start: range[1]
+		// 	};
+		// }
+		// persist();
+	});
+	const updateRange = (range: number[]) => {
+		if (part.backgroundType === 'video') {
+			if (
+				(part.backgroundConfiguration?.start ?? 0) !== range[0] ||
+				(part.backgroundConfiguration?.end ?? 1) !== range[2]
+			) {
+				part.backgroundConfiguration = {
+					...part.backgroundConfiguration,
+					start: range[0],
+					end: range[2]
+				};
+				persist();
+			}
+		}
+		if (part.foregroundType && part.foregroundType !== 'none') {
+			if ((part.foregroundConfiguration?.start ?? 0) !== range[1]) {
+				part.foregroundConfiguration = {
+					...part.foregroundConfiguration,
+					start: range[1]
+				};
+				persist();
+			}
+		}
+	};
 
 	let isOpen = $state(false);
 	const close = (output: {
@@ -82,6 +101,16 @@
 			part.quizLogicForPart = logic;
 		}
 		isOpen = false;
+	};
+
+	const persist = async () => {
+		const result = await fetch(`/api/stories/${storyId}/parts/${part.id}`, {
+			method: 'POST',
+			body: JSON.stringify(part)
+		});
+
+		if (!result.ok) console.log(await result.json());
+		else part = await result.json();
 	};
 </script>
 
@@ -115,7 +144,11 @@
 							<Label>Available videos</Label>
 							<RadioGroup.Root
 								value={part.videoId ?? 'none'}
-								onValueChange={(value) => (part.videoId = value)}
+								onValueChange={(value) => {
+									part.backgroundType = 'video';
+									part.videoId = value;
+									persist();
+								}}
 								class="grid gap-2"
 							>
 								{#each videos as video}
@@ -137,7 +170,7 @@
 					</div>
 					<Dialog.Footer>
 						<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
-						<Button type="submit" onclick={() => {}}>Save</Button>
+						<Dialog.Close class={buttonVariants({ variant: 'default' })}>Save</Dialog.Close>
 					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>
@@ -184,6 +217,7 @@
 									part.foregroundType = value;
 									if (part.foregroundType !== 'announcement') part.announcementTemplateId = null;
 									if (part.foregroundType !== 'quiz') part.quizTemplateId = null;
+									persist();
 								}}
 								class="grid grid-cols-2 gap-2"
 							>
@@ -210,7 +244,10 @@
 								<Label>Select Announcement</Label>
 								<RadioGroup.Root
 									value={part.announcementTemplateId ?? 'none'}
-									onValueChange={(value) => (part.announcementTemplateId = value)}
+									onValueChange={(value) => {
+										part.announcementTemplateId = value;
+										persist();
+									}}
 									class="grid gap-2"
 								>
 									{#each announcements as announcement}
@@ -237,7 +274,10 @@
 								<Label>Select Quiz</Label>
 								<RadioGroup.Root
 									value={part.quizTemplateId ?? 'none'}
-									onValueChange={(value) => (part.quizTemplateId = value)}
+									onValueChange={(value) => {
+										part.quizTemplateId = value;
+										persist();
+									}}
 									class="grid gap-2"
 								>
 									{#each quizzes as quiz}
@@ -262,7 +302,7 @@
 					</div>
 					<Dialog.Footer>
 						<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
-						<Button type="submit" onclick={() => {}}>Save</Button>
+						<Dialog.Close class={buttonVariants({ variant: 'default' })}>Save</Dialog.Close>
 					</Dialog.Footer>
 				</Dialog.Content>
 			</Dialog.Root>

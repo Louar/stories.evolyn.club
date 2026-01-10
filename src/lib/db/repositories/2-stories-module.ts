@@ -100,7 +100,6 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
           .select((eb) => [
             'part.id',
             'part.isInitial',
-            'part.isFinal',
             'part.position',
 
             // Background
@@ -151,7 +150,6 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
             ).as('quizLogicForPart')
           ])
           .orderBy('part.isInitial', 'desc')
-          .orderBy('part.isFinal', 'asc')
       ).as('parts'),
     ])
     .executeTakeFirstOrThrow();
@@ -287,7 +285,6 @@ export const findOneStoryByReference = async (clientId: string, storyReference: 
               .as('foreground'),
           ])
           .orderBy('part.isInitial', 'desc')
-          .orderBy('part.isFinal', 'asc')
       ).as('parts'),
     ])
     .executeTakeFirstOrThrow();
@@ -364,10 +361,71 @@ export const findOneStoryByReference = async (clientId: string, storyReference: 
   return story;
 }
 
+export const findOnePartById = async (partId: string) => {
+  const part = await db.selectFrom('part')
+    .where('part.id', '=', partId)
+    .leftJoin('quizLogicForPart as qlfp', 'qlfp.id', 'part.quizLogicForPartId')
+    .leftJoin('quizTemplate', 'quizTemplate.id', 'qlfp.quizTemplateId')
+    .select((eb) => [
+      'part.id',
+      'part.isInitial',
+      'part.position',
+
+      // Background
+      'part.backgroundType',
+      'part.backgroundConfiguration',
+      'part.videoId',
+      'part.defaultNextPartId',
+
+      // Foreground
+      'part.foregroundType',
+      'part.foregroundConfiguration',
+      'part.announcementTemplateId',
+      'quizTemplate.id as quizTemplateId',
+      'part.quizLogicForPartId',
+
+      jsonObjectFrom(
+        eb.selectFrom('quizLogicForPart')
+          .whereRef('quizLogicForPart.id', '=', 'part.quizLogicForPartId')
+          .select((eb) => [
+            'quizLogicForPart.hitpolicy',
+            'quizLogicForPart.defaultNextPartId',
+            jsonArrayFrom(
+              eb.selectFrom('quizLogicRule')
+                .whereRef('quizLogicRule.quizLogicForPartId', '=', 'quizLogicForPart.id')
+                .orderBy('quizLogicRule.order', 'asc')
+                .select((eb) => [
+                  'quizLogicRule.id',
+                  'quizLogicRule.order',
+                  'quizLogicRule.name',
+                  'quizLogicRule.nextPartId',
+                  jsonArrayFrom(
+                    eb.selectFrom('quizLogicRuleInput')
+                      .whereRef('quizLogicRuleInput.quizLogicRuleId', '=', 'quizLogicRule.id')
+                      .select([
+                        'quizLogicRuleInput.id',
+                        'quizLogicRuleInput.quizQuestionTemplateId',
+                        'quizLogicRuleInput.value',
+                        'quizLogicRuleInput.quizQuestionTemplateAnswerItemId',
+                        eb.lit<boolean>(false).as('isRemoved'),
+                      ])
+                      .$narrowType<{ id: NotNull, quizQuestionTemplateId: NotNull }>()
+                  ).as('inputs'),
+                  eb.lit<boolean>(false).as('isRemoved'),
+                ])
+                .$narrowType<{ id: NotNull, inputs: NotNull, isRemoved: NotNull }>()
+            ).as('rules'),
+          ])
+      ).as('quizLogicForPart')
+    ])
+    .executeTakeFirstOrThrow();
+
+  return part;
+}
 
 // TODO: remove reliance on language parameter
 export const findOneAnnouncementById = async (announcementId: string, language?: Language) => {
-  const quiz = await db.selectFrom('announcementTemplate')
+  const announcement = await db.selectFrom('announcementTemplate')
     .where('announcementTemplate.id', '=', announcementId)
     .select((eb) => [
       'announcementTemplate.id',
@@ -377,7 +435,7 @@ export const findOneAnnouncementById = async (announcementId: string, language?:
     ])
     .executeTakeFirstOrThrow();
 
-  return quiz;
+  return announcement;
 }
 
 // TODO: remove reliance on language parameter

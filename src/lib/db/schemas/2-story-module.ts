@@ -45,7 +45,6 @@ type Part = {
   foregroundType: string | null;
   foregroundConfiguration: JSONColumnType<{ start?: number; end?: number;[x: string]: unknown }> | null;
   isInitial: ColumnType<boolean, boolean | null, boolean>;
-  isFinal: ColumnType<boolean, boolean | null, boolean>;
   defaultNextPartId: string | null;
   videoId: string | null;
   announcementTemplateId: string | null;
