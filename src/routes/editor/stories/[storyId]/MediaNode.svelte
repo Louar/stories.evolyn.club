@@ -9,6 +9,7 @@
 		findOneStoryById
 	} from '$lib/db/repositories/2-stories-module';
 	import { formatDuration } from '$lib/db/schemas/0-utils';
+	import CheckIcon from '@lucide/svelte/icons/check';
 	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
 	import CogIcon from '@lucide/svelte/icons/cog';
 	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
@@ -134,10 +135,25 @@
 					</span>
 					<ChevronDownIcon class="size-4 opacity-50" />
 				</Dialog.Trigger>
-				<Dialog.Content class="sm:max-w-106.25">
-					<Dialog.Header>
-						<Dialog.Title>Edit background</Dialog.Title>
-						<Dialog.Description>Select the background media for this part.</Dialog.Description>
+				<Dialog.Content
+					class="scrollbar-none max-h-[90vh] overflow-y-auto pt-0 sm:max-w-106.25"
+					showCloseButton={false}
+				>
+					<Dialog.Header class="sticky top-0 z-50 -mx-6 bg-background/50 pt-6 backdrop-blur-md">
+						<div class="flex justify-between gap-2 px-6">
+							<div>
+								<Dialog.Title>Edit background</Dialog.Title>
+								<Dialog.Description>Select the background media for this part.</Dialog.Description>
+							</div>
+
+							<div class="flex gap-2">
+								<Dialog.Close class={buttonVariants({ variant: 'ghost', size: 'icon' })}>
+									<CheckIcon />
+								</Dialog.Close>
+							</div>
+						</div>
+
+						<Separator class="mt-4" />
 					</Dialog.Header>
 					<div class="grid gap-4">
 						<div class="grid gap-3">
@@ -168,10 +184,10 @@
 							</RadioGroup.Root>
 						</div>
 					</div>
-					<Dialog.Footer>
+					<!-- <Dialog.Footer>
 						<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
 						<Dialog.Close class={buttonVariants({ variant: 'default' })}>Save</Dialog.Close>
-					</Dialog.Footer>
+					</Dialog.Footer> -->
 				</Dialog.Content>
 			</Dialog.Root>
 
@@ -201,10 +217,25 @@
 					</span>
 					<ChevronDownIcon class="size-4 opacity-50" />
 				</Dialog.Trigger>
-				<Dialog.Content class="sm:max-w-106.25">
-					<Dialog.Header>
-						<Dialog.Title>Edit overlay</Dialog.Title>
-						<Dialog.Description>Configure the overlay for this part.</Dialog.Description>
+				<Dialog.Content
+					class="scrollbar-none max-h-[90vh] overflow-y-auto pt-0 sm:max-w-106.25"
+					showCloseButton={false}
+				>
+					<Dialog.Header class="sticky top-0 z-50 -mx-6 bg-background/50 pt-6 backdrop-blur-md">
+						<div class="flex justify-between gap-2 px-6">
+							<div>
+								<Dialog.Title>Edit overlay</Dialog.Title>
+								<Dialog.Description>Configure the overlay for this part.</Dialog.Description>
+							</div>
+
+							<div class="flex gap-2">
+								<Dialog.Close class={buttonVariants({ variant: 'ghost', size: 'icon' })}>
+									<CheckIcon />
+								</Dialog.Close>
+							</div>
+						</div>
+
+						<Separator class="mt-4" />
 					</Dialog.Header>
 					<div class="grid gap-4">
 						<!-- Overlay Type Selection -->
@@ -300,10 +331,10 @@
 							</div>
 						{/if}
 					</div>
-					<Dialog.Footer>
+					<!-- <Dialog.Footer>
 						<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
 						<Dialog.Close class={buttonVariants({ variant: 'default' })}>Save</Dialog.Close>
-					</Dialog.Footer>
+					</Dialog.Footer> -->
 				</Dialog.Content>
 			</Dialog.Root>
 

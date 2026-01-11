@@ -4,15 +4,15 @@ import { json } from '@sveltejs/kit';
 import z from 'zod/v4';
 import type { RequestHandler } from './$types';
 
-const announcementSchema = z.object({
+const videoSchema = z.object({
   name: z.string().min(1),
   source: z.string().min(1),
-  duration: z.number().int().min(0),
+  duration: z.number().int().min(1),
 });
 
 export const POST = (async ({ request, params }) => {
 
-  const body = announcementSchema.safeParse(await request.json());
+  const body = videoSchema.safeParse(await request.json());
   if (!body.success) return json(body.error.issues, { status: 422 });
 
   const { name, source, duration } = body.data;

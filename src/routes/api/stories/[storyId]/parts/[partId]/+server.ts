@@ -1,5 +1,6 @@
 import { db } from '$lib/db/database';
 import { findOnePartById } from '$lib/db/repositories/2-stories-module';
+import { LogicHitpolicy } from '$lib/db/schemas/2-story-module.js';
 import { json } from '@sveltejs/kit';
 import z from 'zod/v4';
 import type { RequestHandler } from './$types';
@@ -13,6 +14,7 @@ const partSchema = z.object({
   defaultNextPartId: z.string().nullish(),
   videoId: z.string().nullish(),
   announcementTemplateId: z.string().nullish(),
+  quizTemplateId: z.string().nullish(),
   quizLogicForPartId: z.string().nullish(),
   position: z.object({ x: z.number(), y: z.number() }).nullable(),
 });
@@ -22,29 +24,58 @@ export const POST = (async ({ request, params }) => {
   const body = partSchema.safeParse(await request.json());
   if (!body.success) return json(body.error.issues, { status: 422 });
 
-  const { position, backgroundConfiguration, foregroundConfiguration, ...rest } = body.data;
+  const { position, backgroundConfiguration, foregroundConfiguration, quizTemplateId, ...rest } = body.data;
 
-  const { id: partId } = await db
-    .insertInto('part')
-    .values({
-      id: params.partId === 'new' ? undefined : params.partId,
-      storyId: params.storyId,
-      position: position ? JSON.stringify(position) : null,
-      backgroundConfiguration: backgroundConfiguration ? JSON.stringify(backgroundConfiguration) : null,
-      foregroundConfiguration: foregroundConfiguration ? JSON.stringify(foregroundConfiguration) : null,
-      ...rest
-    })
-    .onConflict((oc) =>
-      oc.columns(['id']).doUpdateSet({
+  const partId = await db.transaction().execute(async (trx) => {
+    const { id: partId, foregroundType, quizLogicForPartId: initialQuizLogicForPartId } = await db
+      .insertInto('part')
+      .values({
+        id: params.partId === 'new' ? undefined : params.partId,
         storyId: params.storyId,
         position: position ? JSON.stringify(position) : null,
         backgroundConfiguration: backgroundConfiguration ? JSON.stringify(backgroundConfiguration) : null,
         foregroundConfiguration: foregroundConfiguration ? JSON.stringify(foregroundConfiguration) : null,
         ...rest
       })
-    )
-    .returning('id')
-    .executeTakeFirstOrThrow();
+      .onConflict((oc) =>
+        oc.columns(['id']).doUpdateSet({
+          storyId: params.storyId,
+          position: position ? JSON.stringify(position) : null,
+          backgroundConfiguration: backgroundConfiguration ? JSON.stringify(backgroundConfiguration) : null,
+          foregroundConfiguration: foregroundConfiguration ? JSON.stringify(foregroundConfiguration) : null,
+          ...rest
+        })
+      )
+      .returning(['id', 'foregroundType', 'quizLogicForPartId'])
+      .executeTakeFirstOrThrow();
+
+    if (foregroundType === 'quiz' && quizTemplateId?.length) {
+      if (!initialQuizLogicForPartId?.length) {
+        const { id: quizLogicForPartId } = await trx
+          .insertInto('quizLogicForPart')
+          .values({
+            hitpolicy: LogicHitpolicy.first,
+            quizTemplateId,
+          })
+          .returning('id')
+          .executeTakeFirstOrThrow();
+
+        await trx
+          .updateTable('part')
+          .where('id', '=', partId)
+          .set({ quizLogicForPartId })
+          .executeTakeFirstOrThrow();
+      } else {
+        await trx
+          .updateTable('quizLogicForPart')
+          .where('id', '=', initialQuizLogicForPartId)
+          .set({ quizTemplateId })
+          .executeTakeFirstOrThrow();
+      }
+    }
+
+    return partId;
+  });
 
   const part = await findOnePartById(partId);
 

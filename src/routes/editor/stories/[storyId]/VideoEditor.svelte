@@ -143,7 +143,7 @@
 			</Field.Field>
 			<Field.Field>
 				<Field.Label>Duration (in seconds)</Field.Label>
-				<Input bind:value={video.duration} placeholder="Duration..." />
+				<Input type="number" bind:value={video.duration} placeholder="Duration..." />
 				<Field.Error>
 					{error?.find((e) => e.path?.join('.') === ['duration'].join('.'))?.message}
 				</Field.Error>

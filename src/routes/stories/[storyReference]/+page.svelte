@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { PLAYERS } from '$lib/states/players.svelte.js';
 	import { onMount } from 'svelte';
 	import AnnouncementOverlay from './AnnouncementOverlay.svelte';
 	import InteractionOverlay from './InteractionOverlay.svelte';
@@ -83,8 +84,8 @@
 	};
 </script>
 
-<div class="w-full bg-black px-2 py-2">
-	<div class="relative mx-auto aspect-9/16 w-full max-w-sm overflow-hidden rounded-3xl p-8">
+<div class="bg-black">
+	<div class="relative mx-auto aspect-9/16 max-h-screen max-w-full overflow-hidden rounded-3xl p-8">
 		{#if story?.parts?.length}
 			{#each story?.parts as part (part.id)}
 				{@const player = players.find((player) => player.id === part.id)}
@@ -130,7 +131,7 @@
 						<!-- bind:watchPercentage={player.watchPercentage} -->
 					{/if}
 
-					{#if part.foreground && (player?.start ?? 0) + (player?.time ?? 0) >= (part.foreground?.start ?? 0) * part.background?.duration}
+					{#if PLAYERS.didUserInteract && part.foreground && (player?.start ?? 0) + (player?.time ?? 0) >= (part.foreground?.start ?? 0) * part.background?.duration}
 						{#if part.foregroundType === 'announcement' && 'title' in part.foreground && 'message' in part.foreground}
 							<AnnouncementOverlay
 								title={part.foreground?.title}

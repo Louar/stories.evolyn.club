@@ -17,7 +17,9 @@ export const load: PageServerLoad = (async ({ params }) => {
         .values({
           clientId,
           reference: crypto.randomUUID().toString().slice(0, 8),
-          name: 'New Story'
+          name: 'New Story',
+          isPublic: true,
+          isPublished: true,
         })
         .returning('id')
         .executeTakeFirstOrThrow();
@@ -26,6 +28,7 @@ export const load: PageServerLoad = (async ({ params }) => {
         .values({
           storyId: newStoryId,
           position: JSON.stringify({ x: 0, y: 0 }),
+          isInitial: true,
         })
         .returning('id')
         .executeTakeFirstOrThrow();

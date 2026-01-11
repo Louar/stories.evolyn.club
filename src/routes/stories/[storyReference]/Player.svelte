@@ -4,7 +4,6 @@
 	import type { ClassValue } from 'clsx';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
-
 	import 'vidstack/bundle';
 	import type { MediaPlayerElement } from 'vidstack/elements';
 

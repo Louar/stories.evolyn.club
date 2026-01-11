@@ -265,10 +265,16 @@ export const findOneStoryByReference = async (clientId: string, storyReference: 
                                   jsonArrayFrom(
                                     eb.selectFrom('quizLogicRuleInput')
                                       .whereRef('quizLogicRuleInput.quizLogicRuleId', '=', 'quizLogicRule.id')
-                                      .select([
+                                      .leftJoin('quizQuestionTemplateAnswerItem as qqtai', 'qqtai.id', 'quizLogicRuleInput.quizQuestionTemplateAnswerItemId')
+                                      .select((eb) => [
                                         'quizLogicRuleInput.quizQuestionTemplateId',
-                                        'quizLogicRuleInput.value',
-                                        'quizLogicRuleInput.quizQuestionTemplateAnswerItemId',
+                                        eb.case()
+                                          .when(eb('quizLogicRuleInput.value', 'is not', null)).then(eb.ref('quizLogicRuleInput.value'))
+                                          .when(eb('quizLogicRuleInput.quizQuestionTemplateAnswerItemId', 'is not', null)).then(eb.ref('qqtai.value'))
+                                          .else(eb.val(null))
+                                          .end().as('value'),
+                                        // 'quizLogicRuleInput.value',
+                                        // 'quizLogicRuleInput.quizQuestionTemplateAnswerItemId',
                                       ])
                                       .$narrowType<{ quizQuestionTemplateId: NotNull }>()
                                   ).as('inputs'),
@@ -331,6 +337,14 @@ export const findOneStoryByReference = async (clientId: string, storyReference: 
 
             return rule;
           });
+
+          if (rawlogic.defaultNextPartId) {
+            rules.push({
+              _id: 'default-after-quiz',
+              _description: 'Default after quiz',
+              next: rawlogic.defaultNextPartId,
+            })
+          }
 
           return {
             ...restPart,

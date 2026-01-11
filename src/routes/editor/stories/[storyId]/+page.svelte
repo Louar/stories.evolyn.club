@@ -87,7 +87,7 @@
 					{/snippet}
 				</NavigationMenu.Link>
 			</NavigationMenu.Item> -->
-			<NavigationMenu.Item class="hidden md:block">
+			<NavigationMenu.Item>
 				<NavigationMenu.Trigger>Media</NavigationMenu.Trigger>
 				<NavigationMenu.Content>
 					<ul class="grid w-75 gap-2">
