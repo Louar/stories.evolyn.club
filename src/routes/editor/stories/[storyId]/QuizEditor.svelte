@@ -7,7 +7,8 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
-	import type { findOneQuizById, findOneStoryById } from '$lib/db/repositories/2-stories-module';
+	import type { findOneQuizById } from '$lib/db/repositories/2-stories-module';
+	import { EDITORS } from '$lib/states/editors.svelte';
 	import { moveArrayItem } from '$lib/utils';
 	import { DragDropProvider } from '@dnd-kit-svelte/svelte';
 	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
@@ -24,14 +25,15 @@
 
 	type Props = {
 		storyId: string;
-		quizzes: Awaited<ReturnType<typeof findOneStoryById>>['quizzes'];
 		close: (output: {
 			action: 'persist' | 'delete';
 			id?: string;
 			quiz?: Awaited<ReturnType<typeof findOneQuizById>>;
 		}) => void;
 	};
-	let { storyId, quizzes, close }: Props = $props();
+	let { storyId, close }: Props = $props();
+
+	let quizzes = $derived(EDITORS.quizzes);
 
 	const defaultQuiz: (typeof quizzes)[number] = {
 		id: 'new',
@@ -155,8 +157,8 @@
 								</Select.Content>
 							</Select.Root>
 						</div>
+						<Separator orientation="vertical" class="mr-2 ml-4" />
 					{/if}
-					<Separator orientation="vertical" class="mr-2 ml-4" />
 					<Toggle
 						size="default"
 						variant="default"

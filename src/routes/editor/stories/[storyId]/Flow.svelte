@@ -37,10 +37,7 @@
 			position: part.position ?? { x: 0, y: 0 },
 			data: {
 				storyId: story.id,
-				part,
-				videos: story.videos,
-				announcements: story.announcements,
-				quizzes: story.quizzes
+				part
 			}
 		}));
 
@@ -114,7 +111,6 @@
 			if (!connectionState.fromHandle || !story?.id) return;
 			const { type: fromType, nodeId: fromNode, id: fromHandle } = connectionState.fromHandle;
 			if (fromType !== 'source') return;
-			const id = crypto.randomUUID().toString();
 			const { clientX, clientY } = 'changedTouches' in event ? event.changedTouches[0] : event;
 
 			const position = screenToFlowPosition({ x: clientX, y: clientY }, { snapToGrid: true });
@@ -127,14 +123,11 @@
 			const part = (await result.json()) as Awaited<ReturnType<typeof findOnePartById>>;
 
 			const newNode: Node = {
-				id,
+				id: part.id,
 				type: 'media',
 				data: {
 					storyId: story.id,
-					part,
-					videos: story?.videos ?? [],
-					announcements: story?.announcements ?? [],
-					quizzes: story?.quizzes ?? []
+					part
 				},
 				position
 			};
@@ -149,11 +142,11 @@
 			edges = [
 				...edges.filter((e) => !(e.source === fromNode && e.sourceHandle === fromHandle)),
 				{
-					id: `e-${fromNode}-${fromHandle ?? 'default'}-${id}`,
+					id: `e-${fromNode}-${fromHandle ?? 'default'}-${part.id}`,
 					type: 'media',
 					source: fromNode,
 					sourceHandle: fromHandle ?? 'default',
-					target: id
+					target: part.id
 				}
 			];
 		}

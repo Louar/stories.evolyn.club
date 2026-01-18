@@ -6,24 +6,23 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
-	import type {
-		findOneAnnouncementById,
-		findOneStoryById
-	} from '$lib/db/repositories/2-stories-module';
+	import type { findOneAnnouncementById } from '$lib/db/repositories/2-stories-module';
+	import { EDITORS } from '$lib/states/editors.svelte';
 	import SquarePlus from '@lucide/svelte/icons/square-plus';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import type { $ZodIssue } from 'zod/v4/core';
 
 	type Props = {
 		storyId: string;
-		announcements: Awaited<ReturnType<typeof findOneStoryById>>['announcements'];
 		close: (output: {
 			action: 'persist' | 'delete';
 			id?: string;
 			announcement?: Awaited<ReturnType<typeof findOneAnnouncementById>>;
 		}) => void;
 	};
-	let { storyId, announcements, close }: Props = $props();
+	let { storyId, close }: Props = $props();
+
+	let announcements = $derived(EDITORS.announcements);
 
 	const defaultAnnouncement: (typeof announcements)[number] = {
 		id: 'new',
@@ -100,8 +99,8 @@
 								</Select.Content>
 							</Select.Root>
 						</div>
+						<Separator orientation="vertical" class="mr-2 ml-4" />
 					{/if}
-					<Separator orientation="vertical" class="mr-2 ml-4" />
 					<Toggle
 						size="default"
 						variant="default"

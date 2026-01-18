@@ -8,10 +8,12 @@
 		findOneQuizById,
 		findOneVideoById
 	} from '$lib/db/repositories/2-stories-module.js';
+	import { EDITORS } from '$lib/states/editors.svelte.js';
 	import House from '@lucide/svelte/icons/house';
 	import TvMinimalPlay from '@lucide/svelte/icons/tv-minimal-play';
 	import { SvelteFlowProvider } from '@xyflow/svelte';
 	import '@xyflow/svelte/dist/style.css';
+	import { onMount } from 'svelte';
 	import AnnouncementEditor from './AnnouncementEditor.svelte';
 	import Flow from './Flow.svelte';
 	import QuizEditor from './QuizEditor.svelte';
@@ -19,6 +21,12 @@
 
 	let { data } = $props();
 	let story = $derived(data.story);
+
+	onMount(() => {
+		EDITORS.videos = story.videos;
+		EDITORS.announcements = story.announcements;
+		EDITORS.quizzes = story.quizzes;
+	});
 
 	let dialogs = $state({ videos: false, announcements: false, quizzes: false });
 
@@ -29,10 +37,11 @@
 	}) => {
 		const { action, id, video } = output;
 		if (action === 'delete' && id?.length) {
-			story.videos = story.videos?.filter((v) => v.id !== id);
+			EDITORS.videos = EDITORS.videos?.filter((v) => v.id !== id);
 		} else if (action === 'persist' && video) {
-			if (story.videos?.find((v) => v.id === video.id))
-				story.videos = story.videos.map((v) => (v.id === video.id ? video : v));
+			if (EDITORS.videos?.find((v) => v.id === video.id))
+				EDITORS.videos = EDITORS.videos.map((v) => (v.id === video.id ? video : v));
+			else EDITORS.videos = [...EDITORS.videos, video];
 		}
 		dialogs.videos = false;
 	};
@@ -43,12 +52,13 @@
 	}) => {
 		const { action, id, announcement } = output;
 		if (action === 'delete' && id?.length) {
-			story.announcements = story.announcements?.filter((a) => a.id !== id);
+			EDITORS.announcements = EDITORS.announcements?.filter((a) => a.id !== id);
 		} else if (action === 'persist' && announcement) {
-			if (story.announcements?.find((a) => a.id === announcement.id))
-				story.announcements = story.announcements.map((a) =>
+			if (EDITORS.announcements?.find((a) => a.id === announcement.id))
+				EDITORS.announcements = EDITORS.announcements.map((a) =>
 					a.id === announcement.id ? announcement : a
 				);
+			else EDITORS.announcements = [...EDITORS.announcements, announcement];
 		}
 		dialogs.announcements = false;
 	};
@@ -59,10 +69,11 @@
 	}) => {
 		const { action, id, quiz } = output;
 		if (action === 'delete' && id?.length) {
-			story.quizzes = story.quizzes?.filter((q) => q.id !== id);
+			EDITORS.quizzes = EDITORS.quizzes?.filter((q) => q.id !== id);
 		} else if (action === 'persist' && quiz) {
-			if (story.quizzes?.find((q) => q.id === quiz.id))
-				story.quizzes = story.quizzes.map((q) => (q.id === quiz.id ? quiz : q));
+			if (EDITORS.quizzes?.find((q) => q.id === quiz.id))
+				EDITORS.quizzes = EDITORS.quizzes.map((q) => (q.id === quiz.id ? quiz : q));
+			else EDITORS.quizzes = [...EDITORS.quizzes, quiz];
 		}
 		dialogs.quizzes = false;
 	};
@@ -94,18 +105,16 @@
 						<li>
 							<NavigationMenu.Link onclick={() => (dialogs.videos = true)}>
 								<div class="font-medium">Video's</div>
-								<div class="text-muted-foreground">Browse and update video's for this story.</div>
+								<div class="text-muted-foreground">Browse and update video's.</div>
 							</NavigationMenu.Link>
 							<Separator class="my-2" />
 							<NavigationMenu.Link onclick={() => (dialogs.announcements = true)}>
 								<div class="font-medium">Announcements</div>
-								<div class="text-muted-foreground">
-									Browse and update announcements for this story.
-								</div>
+								<div class="text-muted-foreground">Browse and update announcements.</div>
 							</NavigationMenu.Link>
 							<NavigationMenu.Link onclick={() => (dialogs.quizzes = true)}>
 								<div class="font-medium">Quizzes</div>
-								<div class="text-muted-foreground">Browse and update quizzes for this story.</div>
+								<div class="text-muted-foreground">Browse and update quizzes.</div>
 							</NavigationMenu.Link>
 						</li>
 					</ul>
@@ -125,17 +134,13 @@
 </div>
 
 <Dialog.Root bind:open={dialogs.videos}>
-	<VideoEditor storyId={story.id} videos={story.videos} close={closeVideo} />
+	<VideoEditor storyId={story.id} close={closeVideo} />
 </Dialog.Root>
 <Dialog.Root bind:open={dialogs.announcements}>
-	<AnnouncementEditor
-		storyId={story.id}
-		announcements={story.announcements}
-		close={closeAnnouncement}
-	/>
+	<AnnouncementEditor storyId={story.id} close={closeAnnouncement} />
 </Dialog.Root>
 <Dialog.Root bind:open={dialogs.quizzes}>
-	<QuizEditor storyId={story.id} quizzes={story.quizzes} close={closeQuiz} />
+	<QuizEditor storyId={story.id} close={closeQuiz} />
 </Dialog.Root>
 
 <div class="mx-auto h-screen w-screen overflow-hidden">

@@ -24,11 +24,13 @@ export const POST = (async ({ request, params }) => {
         .set({ defaultNextPartId: target })
         .executeTakeFirstOrThrow();
     } else if (handle === 'default-after-quiz') {
+      console.log('default-after-quiz', source, target);
       await trx
         .updateTable('quizLogicForPart')
-        .leftJoin('part', 'part.quizLogicForPartId', 'quizLogicForPart.id')
-        .where('part.id', '=', source)
         .set({ defaultNextPartId: target })
+        .from('part')
+        .whereRef('part.quizLogicForPartId', '=', 'quizLogicForPart.id')
+        .where('part.id', '=', source)
         .executeTakeFirstOrThrow();
     } else {
       await trx

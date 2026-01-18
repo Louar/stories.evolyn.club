@@ -9,6 +9,7 @@
 		findOneStoryById
 	} from '$lib/db/repositories/2-stories-module';
 	import { formatDuration } from '$lib/db/schemas/0-utils';
+	import { EDITORS } from '$lib/states/editors.svelte';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
 	import CogIcon from '@lucide/svelte/icons/cog';
@@ -22,9 +23,6 @@
 		data: {
 			storyId: string;
 			part: Awaited<ReturnType<typeof findOneStoryById>>['parts'][number];
-			videos: Awaited<ReturnType<typeof findOneStoryById>>['videos'];
-			announcements: Awaited<ReturnType<typeof findOneStoryById>>['announcements'];
-			quizzes: Awaited<ReturnType<typeof findOneStoryById>>['quizzes'];
 		};
 	} = $props();
 
@@ -32,9 +30,9 @@
 
 	let part = $state(data.part);
 
-	let videos = $state(data.videos);
-	let announcements = $state(data.announcements);
-	let quizzes = $state(data.quizzes);
+	let videos = $derived(EDITORS.videos);
+	let announcements = $derived(EDITORS.announcements);
+	let quizzes = $derived(EDITORS.quizzes);
 	let quiz: (typeof quizzes)[number] | undefined = $derived(
 		quizzes.find((q) => q.id === part.quizTemplateId)
 	);
@@ -340,7 +338,7 @@
 
 			{#if part.foregroundType === 'quiz' && quiz}
 				<Dialog.Root bind:open={isOpen}>
-					<Dialog.Trigger class={buttonVariants({ variant: 'outline', size: 'icon' })}>
+					<Dialog.Trigger class="{buttonVariants({ variant: 'outline', size: 'icon' })} -mr-2">
 						<CogIcon />
 					</Dialog.Trigger>
 					<QuizLogicEditor
