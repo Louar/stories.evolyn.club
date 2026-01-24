@@ -22,8 +22,8 @@ export const load: PageServerLoad = (async ({ params }) => {
     doBuffer: index === 0,
     doPlay: false,
     doRestart: false,
+    doEnd: false,
     time: 0,
-    // watchPercentage: 0,
   }));
 
   return { story, players };

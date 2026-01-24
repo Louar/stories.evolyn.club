@@ -18,8 +18,8 @@
 		doBuffer: boolean;
 		doPlay: boolean;
 		doRestart: boolean;
+		doEnd: boolean;
 		time: number;
-		// watchPercentage: number;
 
 		bufferNext: () => void;
 		playNext: () => void;
@@ -37,8 +37,8 @@
 		doBuffer = $bindable(false),
 		doPlay = $bindable(false),
 		doRestart = $bindable(false),
+		doEnd = $bindable(false),
 		time = $bindable(0),
-		// watchPercentage = $bindable(0),
 
 		bufferNext,
 		playNext,
@@ -52,6 +52,8 @@
 	let almostEnded = $state(false);
 	let isEnded = $state(false);
 
+	let timer = $state<ReturnType<typeof setInterval> | null>(null);
+
 	onMount(() => {
 		player?.subscribe(({ canPlay: canplay }) => {
 			canPlay = canplay;
@@ -60,7 +62,6 @@
 			if (player?.duration) {
 				timeLeft = player.duration - currentTime;
 				time = currentTime;
-				// watchPercentage = currentTime / player.duration;
 				if (!almostEnded && (timeLeft ?? Infinity) <= 30) almostEnded = true;
 			}
 		});
@@ -68,6 +69,34 @@
 			isEnded = ended;
 		});
 	});
+
+	const startWatching = () => {
+		if (timer) clearInterval(timer);
+		timer = setInterval(
+			() => (PLAYERS.watchDurations[id] = (PLAYERS.watchDurations[id] ?? 0) + 0.1),
+			100
+		);
+	};
+	const pauseWatching = () => {
+		if (timer) {
+			clearInterval(timer);
+			timer = null;
+		}
+	};
+	$effect(() => {
+		if (doEnd) {
+			player.pause();
+			endWatching();
+		}
+	});
+	const endWatching = async () => {
+		pauseWatching();
+
+		if (PLAYERS.watchDurations[id] > 0) {
+			const watchTimePercentage = (PLAYERS.watchDurations[id] / player.duration) * 100;
+			PLAYERS.watchTimePercentages[id] = watchTimePercentage;
+		}
+	};
 
 	$effect(() => {
 		if (doBuffer) load();
@@ -90,6 +119,8 @@
 	});
 	const restart = () => {
 		player.currentTime = 0;
+		PLAYERS.watchDurations[id] = 0;
+		PLAYERS.watchTimePercentages[id] = 0;
 		player.play();
 		isEnded = false;
 	};
@@ -97,6 +128,8 @@
 	$effect(() => {
 		if (doRestart) {
 			player.currentTime = 0;
+			PLAYERS.watchDurations[id] = 0;
+			PLAYERS.watchTimePercentages[id] = 0;
 			isEnded = false;
 			doPlay = true;
 			doRestart = false;
@@ -114,6 +147,13 @@
 	clipStartTime={start ?? 0}
 	clipEndTime={end}
 	playbackRate={playbackRate ?? 1}
+	onplay={startWatching}
+	onplaying={startWatching}
+	onpause={pauseWatching}
+	onwaiting={pauseWatching}
+	onseeking={pauseWatching}
+	onseeked={startWatching}
+	onended={endWatching}
 >
 	<media-provider>
 		{#if poster}

@@ -62,9 +62,10 @@ export const DELETE = (async ({ request, params }) => {
     } else if (handle === 'default-after-quiz') {
       await trx
         .updateTable('quizLogicForPart')
-        .leftJoin('part', 'part.quizLogicForPartId', 'quizLogicForPart.id')
-        .where('part.id', '=', source)
         .set({ defaultNextPartId: null })
+        .from('part')
+        .whereRef('part.quizLogicForPartId', '=', 'quizLogicForPart.id')
+        .where('part.id', '=', source)
         .executeTakeFirstOrThrow();
     } else {
       await trx
