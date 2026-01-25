@@ -116,7 +116,7 @@
 						].filter((p): p is (typeof players)[number] => p !== undefined)}
 						<Player
 							id={player.id}
-							class={orientation}
+							class={orientation ?? Orientation.portrait}
 							src={player.source}
 							poster={player?.thumbnail}
 							start={player?.start ?? undefined}
@@ -169,11 +169,10 @@
 							/>
 						{/if}
 						{#if part.foregroundType === 'quiz' && 'questions' in part.foreground && 'logic' in part.foreground}
-							<InteractionOverlay
-								questions={part.foreground?.questions}
-								logic={part.foreground?.logic}
-								{submit}
-							/>
+							{@const questions = part.foreground?.doRandomize
+								? part.foreground?.questions?.sort(() => Math.random() - 0.5)
+								: part.foreground?.questions}
+							<InteractionOverlay {questions} logic={part.foreground?.logic} {submit} />
 						{/if}
 					{/if}
 				</div>

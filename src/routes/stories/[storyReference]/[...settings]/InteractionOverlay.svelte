@@ -1,25 +1,16 @@
 <script lang="ts">
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
+	import type { findOneStoryByReference } from '$lib/db/repositories/2-stories-module';
 	import type { ClassValue } from 'clsx';
 	import { fade, fly } from 'svelte/transition';
 	import type { InputFromLogic, Logic } from './types';
 
 	type Props = {
-		questions: {
-			id: string;
-			order: number;
-			answerTemplateReference: string;
-			title: string | null;
-			instruction: string | null;
-			configuration: object | null;
-			isRequired: boolean;
-			answerOptions: {
-				order: number;
-				value: string;
-				label: string;
-			}[];
-		}[];
+		questions: Extract<
+			Awaited<ReturnType<typeof findOneStoryByReference>>['parts'][number]['foreground'],
+			{ questions: any }
+		>['questions'];
 
 		logic: Logic | undefined;
 
@@ -87,6 +78,9 @@
 				</div>
 
 				{#if question.answerTemplateReference === 'select-single'}
+					{@const answerOptions = question.answerGroup?.doRandomize
+						? question.answerOptions?.sort(() => Math.random() - 0.5)
+						: question.answerOptions}
 					<RadioGroup.Root
 						class="gap-2"
 						onValueChange={(value) => {
@@ -94,7 +88,7 @@
 							next();
 						}}
 					>
-						{#each question.answerOptions as answerOption, jj}
+						{#each answerOptions as answerOption, jj}
 							<div
 								in:fly|global={{
 									y: 20,
