@@ -13,6 +13,7 @@
 	import GalleryHorizontalIcon from '@lucide/svelte/icons/gallery-horizontal';
 	import GalleryVerticalIcon from '@lucide/svelte/icons/gallery-vertical';
 	import SquareIcon from '@lucide/svelte/icons/square';
+	import SquareAsteriskIcon from '@lucide/svelte/icons/square-asterisk';
 	import type { HTMLInputAttributes, HTMLInputTypeAttribute } from 'svelte/elements';
 
 	type Props = {
@@ -38,7 +39,9 @@
 		<DropdownMenu.Trigger>
 			{#snippet child({ props })}
 				<Button {...props} variant="outline" class={cn('', className)}>
-					{#if EDITORS.orientation === 'default' || EDITORS.orientation === Orientation.portrait}
+					{#if EDITORS.orientation === 'default'}
+						<SquareAsteriskIcon />
+					{:else if EDITORS.orientation === Orientation.portrait}
 						<GalleryHorizontalIcon />
 					{:else if EDITORS.orientation === Orientation.landscape}
 						<GalleryVerticalIcon />
