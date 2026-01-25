@@ -3,9 +3,11 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { LanguageSelector } from '$lib/components/ui/language-selector';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
+	import { TranslatableInput } from '$lib/components/ui/translatable-input';
 	import type { findOneAnnouncementById } from '$lib/db/repositories/2-stories-module';
 	import { EDITORS } from '$lib/states/editors.svelte';
 	import SquarePlus from '@lucide/svelte/icons/square-plus';
@@ -27,8 +29,8 @@
 	const defaultAnnouncement: (typeof announcements)[number] = {
 		id: 'new',
 		name: '',
-		title: '',
-		message: ''
+		title: {},
+		message: {}
 	};
 	let announcement = $state(defaultAnnouncement);
 	let error = $state<$ZodIssue[] | null>(null);
@@ -44,8 +46,12 @@
 			}
 		);
 
-		if (!result.ok) error = await result.json();
-		else close({ action: 'persist', announcement: await result.json() });
+		if (!result.ok) {
+			error = await result.json();
+		} else {
+			error = null;
+			close({ action: 'persist', announcement: await result.json() });
+		}
 	};
 	const remove = async () => {
 		if (!announcement.id?.length) return;
@@ -113,11 +119,9 @@
 						New
 					</Toggle>
 				</div>
-				<!-- <Dialog.Close class={buttonVariants({ variant: 'ghost', size: 'icon' })}>
-					<XIcon />
-				</Dialog.Close> -->
 
 				<div class="flex gap-2">
+					<LanguageSelector />
 					<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
 					{#if announcement.id && announcement.id !== 'new'}
 						<Button variant="destructive" size="icon" onclick={remove}>
@@ -141,14 +145,14 @@
 			</Field.Field>
 			<Field.Field>
 				<Field.Label>Title (optional)</Field.Label>
-				<Input bind:value={announcement.title} placeholder="Title..." />
+				<TranslatableInput bind:value={announcement.title} placeholder="Title..." />
 				<Field.Error>
 					{error?.find((e) => e.path?.join('.') === ['title'].join('.'))?.message}
 				</Field.Error>
 			</Field.Field>
 			<Field.Field>
 				<Field.Label>Message (optional)</Field.Label>
-				<Input bind:value={announcement.message} placeholder="Message..." />
+				<TranslatableInput bind:value={announcement.message} placeholder="Message..." />
 				<Field.Error>
 					{error?.find((e) => e.path?.join('.') === ['message'].join('.'))?.message}
 				</Field.Error>

@@ -28,6 +28,7 @@
 
 	let storyId = $derived(data.storyId);
 
+	// svelte-ignore state_referenced_locally
 	let part = $state(data.part);
 
 	let videos = $derived(EDITORS.videos);
@@ -45,8 +46,11 @@
 
 	let duration = $derived(videos.find((video) => video.id === part.videoId)?.duration ?? 0);
 	let range = $state([
+		// svelte-ignore state_referenced_locally
 		part.backgroundConfiguration?.start ?? 0,
+		// svelte-ignore state_referenced_locally
 		part.foregroundConfiguration?.start ?? 0.5,
+		// svelte-ignore state_referenced_locally
 		part.backgroundConfiguration?.end ?? 1
 	]);
 	$effect(() => {

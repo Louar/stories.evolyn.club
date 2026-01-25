@@ -1,6 +1,6 @@
 import { db } from '$lib/db/database';
 import { findOneQuizById } from '$lib/db/repositories/2-stories-module';
-import type { Translatable } from '$lib/db/schemas/0-utils';
+import { translatableValidator } from '$lib/db/schemas/0-utils';
 import { clean } from '$lib/utils';
 import { json } from '@sveltejs/kit';
 import z from 'zod/v4';
@@ -10,13 +10,14 @@ const answerOptionSchema = z.object({
   id: z.string().optional(),
   order: z.number(),
   value: z.string().nullable(),
-  label: z.string().min(1),
+  label: translatableValidator,
 });
 const questionSchema = z.object({
   id: z.string().optional(),
   answerTemplateReference: z.literal('select-single'),
   order: z.number(),
-  title: z.string().min(1),
+  title: translatableValidator,
+  instruction: translatableValidator.nullable(),
   isRequired: z.boolean().default(true),
   answerOptions: z.array(answerOptionSchema).min(1, 'At least one answer option is required'),
   answerGroup: z.object({ id: z.string().optional(), doRandomize: z.boolean() }).optional(),
@@ -68,7 +69,7 @@ export const POST = (async ({ request, params }) => {
 
     // Create / update the remaining questions
     for (const rawquestion of questions) {
-      const { id: questionId, title, answerOptions, answerGroup, ...rest } = rawquestion;
+      const { id: questionId, title, instruction, answerOptions, answerGroup, ...rest } = rawquestion;
 
       // Find answerOptionGroup by ID, or create it if it does not exist.
       let quizQuestionTemplateAnswerGroupId: string | null = null;
@@ -108,13 +109,13 @@ export const POST = (async ({ request, params }) => {
               quizQuestionTemplateAnswerGroupId,
               order: answerOption.order,
               value: JSON.stringify(answerOption.value),
-              label: JSON.stringify({ default: answerOption.label } as Translatable),
+              label: JSON.stringify(answerOption.label),
             })
             .onConflict((oc) =>
               oc.columns(['id']).doUpdateSet({
                 order: answerOption.order,
                 value: JSON.stringify(answerOption.value ?? answerOption.label),
-                label: JSON.stringify({ default: answerOption.label } as Translatable),
+                label: JSON.stringify(answerOption.label),
               })
             )
             .executeTakeFirstOrThrow();
@@ -128,12 +129,15 @@ export const POST = (async ({ request, params }) => {
           id: questionId?.startsWith('new') ? undefined : questionId,
           quizTemplateId: quiz.id,
           quizQuestionTemplateAnswerGroupId,
-          title: JSON.stringify({ default: title } as Translatable),
+          title: JSON.stringify(title),
+          instruction: JSON.stringify(instruction),
           ...rest
         })
         .onConflict((oc) =>
           oc.columns(['id']).doUpdateSet({
             quizQuestionTemplateAnswerGroupId,
+            title: JSON.stringify(title),
+            instruction: JSON.stringify(instruction),
             ...rest
           })
         )

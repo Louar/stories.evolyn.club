@@ -4,9 +4,11 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import LanguageSelector from '$lib/components/ui/language-selector/language-selector.svelte';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
+	import { TranslatableInput } from '$lib/components/ui/translatable-input';
 	import type { findOneQuizById } from '$lib/db/repositories/2-stories-module';
 	import { EDITORS } from '$lib/states/editors.svelte';
 	import { moveArrayItem } from '$lib/utils';
@@ -49,7 +51,7 @@
 			id: `new-${crypto.randomUUID().toString().slice(0, 8)}`,
 			answerTemplateReference: 'select-single',
 			order: (quiz.questions?.length ?? 0) + 1,
-			title: '',
+			title: {},
 			instruction: null,
 			configuration: null,
 			isRequired: true,
@@ -67,7 +69,7 @@
 			id: `new-${crypto.randomUUID().toString().slice(0, 8)}`,
 			order: question.answerOptions.length + 1,
 			value: '',
-			label: '',
+			label: {},
 			isRemoved: false // Front-end purposes
 		});
 	};
@@ -102,8 +104,12 @@
 			body: JSON.stringify(quiz)
 		});
 
-		if (!result.ok) error = await result.json();
-		else close({ action: 'persist', quiz: await result.json() });
+		if (!result.ok) {
+			error = await result.json();
+		} else {
+			error = null;
+			close({ action: 'persist', quiz: await result.json() });
+		}
 	};
 	const remove = async () => {
 		if (!quiz.id?.length) return;
@@ -171,11 +177,9 @@
 						New
 					</Toggle>
 				</div>
-				<!-- <Dialog.Close class={buttonVariants({ variant: 'ghost', size: 'icon' })}>
-					<XIcon />
-				</Dialog.Close> -->
 
 				<div class="flex gap-2">
+					<LanguageSelector />
 					<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
 					<Button type="submit" onclick={persist}>Save quiz</Button>
 				</div>
@@ -250,7 +254,10 @@
 									<!-- <span class="text-sm text-muted-foreground">{q + 1}.</span> -->
 									<div class="w-full space-y-1">
 										<Field.Field>
-											<Input bind:value={question.title} placeholder="Enter your question" />
+											<TranslatableInput
+												bind:value={question.title}
+												placeholder="Enter your question"
+											/>
 										</Field.Field>
 										<Field.Error>
 											{error?.find((e) => e.path?.join('.') === ['questions', q, 'title'].join('.'))
@@ -330,7 +337,10 @@
 													</Button>
 													<div class="w-full space-y-1">
 														<Field.Field>
-															<Input bind:value={option.label} placeholder="Option label" />
+															<TranslatableInput
+																bind:value={option.label}
+																placeholder="Option label"
+															/>
 														</Field.Field>
 														<Field.Error>
 															{error?.find(

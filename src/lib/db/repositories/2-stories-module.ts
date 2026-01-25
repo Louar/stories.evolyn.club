@@ -7,7 +7,7 @@ import { Language, selectByOrientation, selectLocalizedField, StoryOrientation }
 import { LogicHitpolicy } from '../schemas/2-story-module';
 
 // TODO: remove reliance on language parameter
-export const findOneStoryById = async (clientId: string, storyId: string, orientation?: StoryOrientation, language?: Language) => {
+export const findOneStoryById = async (clientId: string, storyId: string) => {
 
   if (!clientId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) error(404, 'De client-ID is ongeldig.');
 
@@ -23,12 +23,12 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
         eb.selectFrom('video')
           .leftJoin('videoAvailableToStory', 'videoAvailableToStory.videoId', 'video.id')
           .whereRef('videoAvailableToStory.storyId', '=', 'story.id')
-          .select((eb) => [
+          .select([
             'video.id',
             'video.name',
-            selectByOrientation(eb, 'video.source', orientation).as('source'),
-            selectByOrientation(eb, 'video.thumbnail', orientation).as('thumbnail'),
-            selectLocalizedField(eb, 'video.captions', language).as('captions'),
+            'video.source',
+            'video.thumbnail',
+            'video.captions',
             'video.duration',
           ])
       ).as('videos'),
@@ -37,11 +37,11 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
         eb.selectFrom('announcementTemplate')
           .leftJoin('announcementTemplateAvailableToStory', 'announcementTemplateAvailableToStory.announcementTemplateId', 'announcementTemplate.id')
           .whereRef('announcementTemplateAvailableToStory.storyId', '=', 'story.id')
-          .select((eb) => [
+          .select([
             'announcementTemplate.id',
             'announcementTemplate.name',
-            selectLocalizedField(eb, 'announcementTemplate.title', language).as('title'),
-            selectLocalizedField(eb, 'announcementTemplate.message', language).as('message'),
+            'announcementTemplate.title',
+            'announcementTemplate.message',
           ])
       ).as('announcements'),
 
@@ -61,8 +61,8 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
                   'quizQuestionTemplate.id',
                   'quizQuestionTemplate.order',
                   'quizQuestionTemplate.answerTemplateReference',
-                  selectLocalizedField(eb, 'quizQuestionTemplate.title', language).as('title'),
-                  selectLocalizedField(eb, 'quizQuestionTemplate.instruction', language).as('instruction'),
+                  'quizQuestionTemplate.title',
+                  'quizQuestionTemplate.instruction',
                   'quizQuestionTemplate.configuration',
                   'quizQuestionTemplate.isRequired',
                   jsonArrayFrom(
@@ -75,7 +75,7 @@ export const findOneStoryById = async (clientId: string, storyId: string, orient
                         'quizQuestionTemplateAnswerItem.order',
                         // 'quizQuestionTemplateAnswerItem.value',
                         eb.cast<string>('quizQuestionTemplateAnswerItem.value', 'text').as('value'),
-                        selectLocalizedField(eb, 'quizQuestionTemplateAnswerItem.label', language).as('label'),
+                        'quizQuestionTemplateAnswerItem.label',
                         eb.lit<boolean>(false).as('isRemoved'),
                       ])
                       .$narrowType<{ id: NotNull, order: NotNull, value: NotNull, label: NotNull, isRemoved: NotNull }>()
@@ -437,16 +437,15 @@ export const findOnePartById = async (partId: string) => {
   return part;
 }
 
-// TODO: remove reliance on language parameter
-export const findOneVideoById = async (videoId: string, language?: Language) => {
+export const findOneVideoById = async (videoId: string) => {
   const announcement = await db.selectFrom('video')
     .where('video.id', '=', videoId)
-    .select((eb) => [
+    .select([
       'video.id',
       'video.name',
-      selectByOrientation(eb, 'video.source', undefined).as('source'),
-      selectByOrientation(eb, 'video.thumbnail', undefined).as('thumbnail'),
-      selectLocalizedField(eb, 'video.captions', language).as('captions'),
+      'video.source',
+      'video.thumbnail',
+      'video.captions',
       'video.duration',
     ])
     .executeTakeFirstOrThrow();
@@ -454,23 +453,21 @@ export const findOneVideoById = async (videoId: string, language?: Language) => 
   return announcement;
 }
 
-// TODO: remove reliance on language parameter
-export const findOneAnnouncementById = async (announcementId: string, language?: Language) => {
+export const findOneAnnouncementById = async (announcementId: string) => {
   const announcement = await db.selectFrom('announcementTemplate')
     .where('announcementTemplate.id', '=', announcementId)
-    .select((eb) => [
+    .select([
       'announcementTemplate.id',
       'announcementTemplate.name',
-      selectLocalizedField(eb, 'announcementTemplate.title', language).as('title'),
-      selectLocalizedField(eb, 'announcementTemplate.message', language).as('message'),
+      'announcementTemplate.title',
+      'announcementTemplate.message',
     ])
     .executeTakeFirstOrThrow();
 
   return announcement;
 }
 
-// TODO: remove reliance on language parameter
-export const findOneQuizById = async (quizId: string, language?: Language) => {
+export const findOneQuizById = async (quizId: string) => {
   const quiz = await db.selectFrom('quizTemplate')
     .where('quizTemplate.id', '=', quizId)
     .select((eb) => [
@@ -485,8 +482,8 @@ export const findOneQuizById = async (quizId: string, language?: Language) => {
             'quizQuestionTemplate.id',
             'quizQuestionTemplate.order',
             'quizQuestionTemplate.answerTemplateReference',
-            selectLocalizedField(eb, 'quizQuestionTemplate.title', language).as('title'),
-            selectLocalizedField(eb, 'quizQuestionTemplate.instruction', language).as('instruction'),
+            'quizQuestionTemplate.title',
+            'quizQuestionTemplate.instruction',
             'quizQuestionTemplate.configuration',
             'quizQuestionTemplate.isRequired',
             jsonArrayFrom(
@@ -499,7 +496,7 @@ export const findOneQuizById = async (quizId: string, language?: Language) => {
                   'quizQuestionTemplateAnswerItem.order',
                   // 'quizQuestionTemplateAnswerItem.value',
                   eb.cast<string>('quizQuestionTemplateAnswerItem.value', 'text').as('value'),
-                  selectLocalizedField(eb, 'quizQuestionTemplateAnswerItem.label', language).as('label'),
+                  'quizQuestionTemplateAnswerItem.label',
                   eb.lit<boolean>(false).as('isRemoved'),
                 ])
                 .$narrowType<{ id: NotNull, order: NotNull, value: NotNull, label: NotNull, isRemoved: NotNull }>()

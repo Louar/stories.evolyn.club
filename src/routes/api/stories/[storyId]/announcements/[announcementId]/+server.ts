@@ -1,14 +1,14 @@
 import { db } from '$lib/db/database';
 import { findOneAnnouncementById } from '$lib/db/repositories/2-stories-module';
-import type { Translatable } from '$lib/db/schemas/0-utils';
+import { translatableValidator } from '$lib/db/schemas/0-utils';
 import { json } from '@sveltejs/kit';
 import z from 'zod/v4';
 import type { RequestHandler } from './$types';
 
 const announcementSchema = z.object({
   name: z.string().min(1),
-  title: z.string().nullable(),
-  message: z.string().nullable(),
+  title: translatableValidator.nullable(),
+  message: translatableValidator.nullable(),
 });
 
 export const POST = (async ({ request, params }) => {
@@ -25,14 +25,14 @@ export const POST = (async ({ request, params }) => {
       .values({
         id: params.announcementId === 'new' ? undefined : params.announcementId,
         name,
-        title: JSON.stringify({ default: title } as Translatable),
-        message: JSON.stringify({ default: message } as Translatable),
+        title: JSON.stringify(title),
+        message: JSON.stringify(message),
       })
       .onConflict((oc) =>
         oc.columns(['id']).doUpdateSet({
           name,
-          title: JSON.stringify({ default: title } as Translatable),
-          message: JSON.stringify({ default: message } as Translatable),
+          title: JSON.stringify(title),
+          message: JSON.stringify(message),
         })
       )
       .returning('id')
