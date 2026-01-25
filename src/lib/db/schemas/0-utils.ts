@@ -68,13 +68,11 @@ export enum LanguageFlag {
   'nl' = '🇳🇱',
   'pt' = '🇵🇹',
 }
-
 export const translatableValidator = z.record(z.union([z.enum(['default']), z.enum(Language)]), z.string().min(1).optional()).refine(
   (data) => data.default || data[Language.English], { message: `Translation must include at least 'default' or 'en'` }
 );
 export type Translatable = Partial<z.infer<typeof translatableValidator>>; // Record<'default' | Language, string>;
 export type TranslatableColumn = JSONColumnType<Translatable>;
-
 export const selectLocalizedField = <DB, TB extends keyof DB & string>(eb: ExpressionBuilder<DB, TB>, column: StringReference<DB, TB>, language?: Language | null) => {
   return eb.fn.coalesce(
     sql<string | null>`${eb.ref(column)}->>${language ?? Language.English}`,
@@ -82,7 +80,6 @@ export const selectLocalizedField = <DB, TB extends keyof DB & string>(eb: Expre
     sql<string | null>`${eb.ref(column)}->>${Language.English}`,
   );
 }
-
 export const translateLocalizedField = (obj?: Translatable | null, language?: Language | null) => {
   return obj?.[language ?? 'default'] ?? obj?.default ?? obj?.[Language.English];
 }
@@ -94,18 +91,22 @@ export const expressionValidator = z.object({
 export type Expression = z.infer<typeof expressionValidator>;
 
 
-export const StoryOrientation = {
+export const Orientation = {
   portrait: 'portrait',
   landscape: 'landscape',
   square: 'square',
 } as const;
-export type StoryOrientation = (typeof StoryOrientation)[keyof typeof StoryOrientation];
-
-export const selectByOrientation = <DB, TB extends keyof DB & string>(eb: ExpressionBuilder<DB, TB>, column: StringReference<DB, TB>, orientation?: StoryOrientation | null) => {
+export type Orientation = (typeof Orientation)[keyof typeof Orientation];
+export const orientationableValidator = z.record(z.union([z.enum(['default']), z.enum(Orientation)]), z.string().min(1).optional()).refine(
+  (data) => data.default || data[Orientation.portrait], { message: `Must include at least 'default' or 'portrait'` }
+);
+export type Orientationable = Partial<z.infer<typeof orientationableValidator>>;
+export type OrientationableColumn = JSONColumnType<Orientationable>;
+export const selectByOrientation = <DB, TB extends keyof DB & string>(eb: ExpressionBuilder<DB, TB>, column: StringReference<DB, TB>, orientation?: Orientation | null) => {
   return eb.fn.coalesce(
-    sql<string | null>`${eb.ref(column)}->>${orientation ?? StoryOrientation.portrait}`,
+    sql<string | null>`${eb.ref(column)}->>${orientation ?? Orientation.portrait}`,
     sql<string | null>`${eb.ref(column)}->>'default'`,
-    sql<string | null>`${eb.ref(column)}->>${StoryOrientation.portrait}`,
+    sql<string | null>`${eb.ref(column)}->>${Orientation.portrait}`,
   );
 }
 

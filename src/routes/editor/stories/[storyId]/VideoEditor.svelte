@@ -3,6 +3,7 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import OrientationInput from '$lib/components/ui/orientation-input/orientation-input.svelte';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
@@ -28,9 +29,9 @@
 	const defaultVideo: (typeof videos)[number] = {
 		id: 'new',
 		name: '',
-		source: '',
-		thumbnail: '',
-		captions: '',
+		source: {},
+		thumbnail: {},
+		captions: {},
 		duration: 0
 	};
 	let video = $state(defaultVideo);
@@ -110,9 +111,6 @@
 						New
 					</Toggle>
 				</div>
-				<!-- <Dialog.Close class={buttonVariants({ variant: 'ghost', size: 'icon' })}>
-					<XIcon />
-				</Dialog.Close> -->
 
 				<div class="flex gap-2">
 					<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
@@ -138,9 +136,16 @@
 			</Field.Field>
 			<Field.Field>
 				<Field.Label>Source</Field.Label>
-				<Input bind:value={video.source} placeholder="Source..." />
+				<OrientationInput bind:value={video.source} placeholder="Source URL..." />
 				<Field.Error>
 					{error?.find((e) => e.path?.join('.') === ['source'].join('.'))?.message}
+				</Field.Error>
+			</Field.Field>
+			<Field.Field>
+				<Field.Label>Thumbnail (optional)</Field.Label>
+				<OrientationInput bind:value={video.thumbnail} placeholder="Thumbnail URL..." />
+				<Field.Error>
+					{error?.find((e) => e.path?.join('.') === ['thumbnail'].join('.'))?.message}
 				</Field.Error>
 			</Field.Field>
 			<Field.Field>

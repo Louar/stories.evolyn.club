@@ -1,12 +1,14 @@
 import { db } from '$lib/db/database';
 import { findOneVideoById } from '$lib/db/repositories/2-stories-module';
+import { orientationableValidator } from '$lib/db/schemas/0-utils';
 import { json } from '@sveltejs/kit';
 import z from 'zod/v4';
 import type { RequestHandler } from './$types';
 
 const videoSchema = z.object({
   name: z.string().min(1),
-  source: z.string().min(1),
+  source: orientationableValidator,
+  thumbnail: orientationableValidator.nullable(),
   duration: z.number().int().min(1),
 });
 
@@ -15,7 +17,7 @@ export const POST = (async ({ request, params }) => {
   const body = videoSchema.safeParse(await request.json());
   if (!body.success) return json(body.error.issues, { status: 422 });
 
-  const { name, source, duration } = body.data;
+  const { name, source, thumbnail, duration } = body.data;
 
   const videoId = await db.transaction().execute(async (trx) => {
 
@@ -24,13 +26,15 @@ export const POST = (async ({ request, params }) => {
       .values({
         id: params.videoId === 'new' ? undefined : params.videoId,
         name,
-        source: JSON.stringify({ default: source }),
+        source: JSON.stringify(source),
+        thumbnail: JSON.stringify(thumbnail),
         duration,
       })
       .onConflict((oc) =>
         oc.columns(['id']).doUpdateSet({
           name,
-          source: JSON.stringify({ default: source }),
+          source: JSON.stringify(source),
+          thumbnail: JSON.stringify(thumbnail),
           duration,
         })
       )
