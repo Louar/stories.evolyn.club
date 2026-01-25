@@ -10,6 +10,7 @@
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
 	import { TranslatableInput } from '$lib/components/ui/translatable-input';
 	import type { findOneQuizById } from '$lib/db/repositories/2-stories-module';
+	import { formatFormError } from '$lib/db/schemas/0-utils';
 	import { EDITORS } from '$lib/states/editors.svelte';
 	import { moveArrayItem } from '$lib/utils';
 	import { DragDropProvider } from '@dnd-kit-svelte/svelte';
@@ -193,7 +194,7 @@
 				<div class="w-full">
 					<Field.Label>Quiz</Field.Label>
 					<Field.Error>
-						{error?.find((e) => e.path?.join('.') === ['questions'].join('.'))?.message}
+						{formatFormError(error, `questions`)}
 					</Field.Error>
 				</div>
 				{#if quiz.id && quiz.id !== 'new'}
@@ -206,7 +207,7 @@
 						<Input bind:value={quiz.name} placeholder="Quiz name" />
 					</Field.Field>
 					<Field.Error>
-						{error?.find((e) => e.path?.join('.') === ['name'].join('.'))?.message}
+						{formatFormError(error, `name`)}
 					</Field.Error>
 				</div>
 				<Field.Field class="flex-1">
@@ -260,8 +261,7 @@
 											/>
 										</Field.Field>
 										<Field.Error>
-											{error?.find((e) => e.path?.join('.') === ['questions', q, 'title'].join('.'))
-												?.message}
+											{formatFormError(error, `questions.${q}.title.*`)}
 										</Field.Error>
 									</div>
 

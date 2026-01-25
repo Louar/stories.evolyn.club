@@ -236,12 +236,18 @@
 </media-player>
 
 <style lang="postcss">
+	@reference 'tailwindcss';
+
 	media-player {
+		&.portrait,
+		&.default {
+			@apply aspect-9/16;
+		}
+		&.landscape {
+			@apply aspect-video;
+		}
 		&.square {
 			@apply aspect-square;
-		}
-		&.portrait {
-			@apply aspect-9/16;
 		}
 	}
 	:global(media-player[data-started]:not([data-user-initiated]) .controls) {

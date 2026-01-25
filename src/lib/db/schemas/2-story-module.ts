@@ -1,5 +1,5 @@
 import type { ColumnType, Generated, JSONColumnType } from 'kysely';
-import type { TranslatableColumn } from './0-utils';
+import type { OrientationableColumn, TranslatableColumn } from './0-utils';
 
 export const LogicHitpolicy = {
   first: 'first',
@@ -55,8 +55,8 @@ type Part = {
 type Video = {
   id: Generated<string>;
   name: string;
-  source: JSONColumnType<{ portrait?: string; landscape?: string; square?: string; default?: string }>;
-  thumbnail: JSONColumnType<{ portrait?: string; landscape?: string; square?: string; default?: string }> | null;
+  source: OrientationableColumn;
+  thumbnail: OrientationableColumn | null;
   captions: TranslatableColumn | null;
   duration: number;
 };

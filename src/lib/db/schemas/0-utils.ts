@@ -1,5 +1,6 @@
 import { sql, type ExpressionBuilder, type JSONColumnType, type StringReference } from 'kysely';
 import { z } from 'zod/v4';
+import type { $ZodIssue } from 'zod/v4/core';
 
 export const MediaCollection = {
   internals: 'internals',
@@ -36,6 +37,14 @@ export const AcceptedFileTypes = { ...AcceptedImageFileTypes, ...AcceptedVideoFi
 export type AcceptedFileTypes = (typeof AcceptedFileTypes)[keyof typeof AcceptedFileTypes];
 
 
+export const formObjectPreprocessor = (val: unknown) => {
+  if (val && typeof val === 'object' && !Array.isArray(val)) {
+    const cleaned = Object.fromEntries(Object.entries(val).filter(([, v]) => v !== ''));
+    val = Object.keys(cleaned).length === 0 ? null : cleaned;
+  }
+  return val;
+}
+
 export const DaysOfWeek = {
   Monday: 1,
   Tuesday: 2,
@@ -50,23 +59,35 @@ export type DaysOfWeek = (typeof DaysOfWeek)[keyof typeof DaysOfWeek];
 
 // Adapted from https://gist.github.com/eilonmore/77f9fc3ddfd939f1513d7a8ed2641321
 export enum Language {
-  'German' = 'de',
   'English' = 'en',
+  'Bulgarian' = 'bg',
+  'Catalan' = 'ca',
+  'Danish' = 'da',
+  'German' = 'de',
   'Spanish' = 'es',
+  'Finnish' = 'fi',
   'French' = 'fr',
   'Italian' = 'it',
   'Dutch' = 'nl',
+  'Norwegian' = 'no',
   'Portuguese' = 'pt',
+  'Swedish' = 'sv',
 }
 export enum LanguageFlag {
   'default' = '🌐',
-  'de' = '🇩🇪',
   'en' = '🇺🇸',
+  'bg' = '🇧🇬',
+  'ca' = '🏴󠁥󠁳󠁣󠁴󠁿',
+  'da' = '🇩🇰',
+  'de' = '🇩🇪',
   'es' = '🇪🇸',
+  'fi' = '🇫🇮',
   'fr' = '🇫🇷',
   'it' = '🇮🇹',
   'nl' = '🇳🇱',
+  'no' = '🇳🇴',
   'pt' = '🇵🇹',
+  'sv' = '🇸🇪',
 }
 export const translatableValidator = z.record(z.union([z.enum(['default']), z.enum(Language)]), z.string().min(1).optional()).refine(
   (data) => data.default || data[Language.English], { message: `Translation must include at least 'default' or 'en'` }
@@ -97,10 +118,10 @@ export const Orientation = {
   square: 'square',
 } as const;
 export type Orientation = (typeof Orientation)[keyof typeof Orientation];
-export const orientationableValidator = z.record(z.union([z.enum(['default']), z.enum(Orientation)]), z.string().min(1).optional()).refine(
+export const orientationableUrlValidator = z.record(z.union([z.enum(['default']), z.enum(Orientation)]), z.url().min(1).optional()).refine(
   (data) => data.default || data[Orientation.portrait], { message: `Must include at least 'default' or 'portrait'` }
 );
-export type Orientationable = Partial<z.infer<typeof orientationableValidator>>;
+export type Orientationable = Partial<z.infer<typeof orientationableUrlValidator>>; // Record<'default' | Orientation, string>;
 export type OrientationableColumn = JSONColumnType<Orientationable>;
 export const selectByOrientation = <DB, TB extends keyof DB & string>(eb: ExpressionBuilder<DB, TB>, column: StringReference<DB, TB>, orientation?: Orientation | null) => {
   return eb.fn.coalesce(
@@ -116,3 +137,14 @@ export const formatDuration = (duration: number, percentage: number = 1) => {
     .join(':')
     .replace(/\b(\d)\b/g, '0$1');
 };
+
+export const formatFormError = (error: $ZodIssue[] | null | undefined, path: string) => {
+  let message;
+  if (path.endsWith('.*')) {
+    path = path.replace('.*', '');
+    message = error?.find((e) => e.path?.join('.').startsWith(path))?.message
+  } else {
+    message = error?.find((e) => e.path?.join('.') === path)?.message
+  }
+  return message;
+}

@@ -10,6 +10,7 @@
 		findOneQuizLogicById,
 		findOneStoryById
 	} from '$lib/db/repositories/2-stories-module';
+	import { formatFormError } from '$lib/db/schemas/0-utils';
 	import { moveArrayItem } from '$lib/utils';
 	import { DragDropProvider } from '@dnd-kit-svelte/svelte';
 	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
@@ -139,8 +140,7 @@
 											<Input bind:value={rule.name} placeholder="Rule name" />
 										</Field.Field>
 										<Field.Error>
-											{error?.find((e) => e.path?.join('.') === ['rules', r, 'name'].join('.'))
-												?.message}
+											{formatFormError(error, `rules.${r}.name`)}
 										</Field.Error>
 									</div>
 
@@ -160,12 +160,6 @@
 										<ChevronsUpDownIcon />
 									</Collapsible.Trigger>
 								</div>
-								<!-- <Field.Field>
-									<Input bind:value={rule.nextPartId} placeholder="Next" />
-									<Field.Error>
-										{error?.find((e) => e.path?.join('.') === ['rules', r, 'nextPartId'].join('.'))?.message}
-									</Field.Error>
-								</Field.Field> -->
 							</div>
 
 							<Collapsible.Content>
@@ -176,8 +170,7 @@
 										<div>
 											<Field.Label>Inputs</Field.Label>
 											<Field.Error>
-												{error?.find((e) => e.path?.join('.') === ['rules', r, 'inputs'].join('.'))
-													?.message}
+												{formatFormError(error, `rules.${r}.inputs`)}
 											</Field.Error>
 										</div>
 									</div>
@@ -308,7 +301,7 @@
 
 				<Button type="button" variant="outline" size="sm" onclick={addRule}>Add rule</Button>
 				<Field.Error>
-					{error?.find((e) => e.path?.join('.') === ['rules'].join('.'))?.message}
+					{formatFormError(error, `rules`)}
 				</Field.Error>
 			</div>
 		</DragDropProvider>

@@ -32,7 +32,9 @@
 		type="text"
 		value={value?.[EDITORS.language] ?? ''}
 		oninput={(e) => (value = { ...value, [EDITORS.language]: e.currentTarget.value })}
-		placeholder={translateLocalizedField(value) ?? placeholder}
+		placeholder={translateLocalizedField(value)?.length
+			? translateLocalizedField(value)
+			: placeholder}
 		{...restProps}
 	/>
 

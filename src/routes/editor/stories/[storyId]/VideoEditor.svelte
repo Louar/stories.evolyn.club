@@ -8,6 +8,7 @@
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
 	import type { findOneVideoById } from '$lib/db/repositories/2-stories-module';
+	import { formatFormError } from '$lib/db/schemas/0-utils';
 	import { EDITORS } from '$lib/states/editors.svelte';
 	import SquarePlus from '@lucide/svelte/icons/square-plus';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
@@ -45,8 +46,12 @@
 			body: JSON.stringify(video)
 		});
 
-		if (!result.ok) error = await result.json();
-		else close({ action: 'persist', video: await result.json() });
+		if (!result.ok) {
+			error = await result.json();
+		} else {
+			error = null;
+			close({ action: 'persist', video: await result.json() });
+		}
 	};
 	const remove = async () => {
 		if (!video.id?.length) return;
@@ -131,28 +136,31 @@
 				<Field.Label>Video reference name</Field.Label>
 				<Input bind:value={video.name} placeholder="Name..." />
 				<Field.Error>
-					{error?.find((e) => e.path?.join('.') === ['name'].join('.'))?.message}
+					{formatFormError(error, `name`)}
 				</Field.Error>
 			</Field.Field>
 			<Field.Field>
 				<Field.Label>Source</Field.Label>
-				<OrientationInput bind:value={video.source} placeholder="Source URL..." />
+				<OrientationInput
+					bind:value={video.source}
+					placeholder=".m3u8 stream URL, or YouTube URL"
+				/>
 				<Field.Error>
-					{error?.find((e) => e.path?.join('.') === ['source'].join('.'))?.message}
+					{formatFormError(error, `source.*`)}
 				</Field.Error>
 			</Field.Field>
 			<Field.Field>
 				<Field.Label>Thumbnail (optional)</Field.Label>
-				<OrientationInput bind:value={video.thumbnail} placeholder="Thumbnail URL..." />
+				<OrientationInput bind:value={video.thumbnail} placeholder="Thumbnail URL" />
 				<Field.Error>
-					{error?.find((e) => e.path?.join('.') === ['thumbnail'].join('.'))?.message}
+					{formatFormError(error, `thumbnail.*`)}
 				</Field.Error>
 			</Field.Field>
 			<Field.Field>
 				<Field.Label>Duration (in seconds)</Field.Label>
 				<Input type="number" bind:value={video.duration} placeholder="Duration..." />
 				<Field.Error>
-					{error?.find((e) => e.path?.join('.') === ['duration'].join('.'))?.message}
+					{formatFormError(error, `duration`)}
 				</Field.Error>
 			</Field.Field>
 		</Field.Group>

@@ -76,7 +76,9 @@
 		type="text"
 		value={value?.[EDITORS.orientation] ?? ''}
 		oninput={(e) => (value = { ...value, [EDITORS.orientation]: e.currentTarget.value })}
-		placeholder={translateLocalizedField(value) ?? placeholder}
+		placeholder={translateLocalizedField(value)?.length
+			? translateLocalizedField(value)
+			: placeholder}
 		{...restProps}
 	/>
 </div>

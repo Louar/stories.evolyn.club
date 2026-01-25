@@ -1,14 +1,20 @@
 import { db } from '$lib/db/database';
 import { findOneAnnouncementById } from '$lib/db/repositories/2-stories-module';
-import { translatableValidator } from '$lib/db/schemas/0-utils';
+import { formObjectPreprocessor, translatableValidator } from '$lib/db/schemas/0-utils';
 import { json } from '@sveltejs/kit';
 import z from 'zod/v4';
 import type { RequestHandler } from './$types';
 
 const announcementSchema = z.object({
   name: z.string().min(1),
-  title: translatableValidator.nullable(),
-  message: translatableValidator.nullable(),
+  title: z.preprocess(
+    formObjectPreprocessor,
+    translatableValidator.nullable()
+  ),
+  message: z.preprocess(
+    formObjectPreprocessor,
+    translatableValidator.nullable()
+  ),
 });
 
 export const POST = (async ({ request, params }) => {

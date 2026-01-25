@@ -118,6 +118,9 @@
 	body {
 		@apply bg-background text-foreground;
 	}
+	.aspect-portrait {
+		@apply aspect-9/16;
+	}
 }
 
 html::-webkit-scrollbar,

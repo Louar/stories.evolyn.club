@@ -9,6 +9,7 @@
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
 	import { TranslatableInput } from '$lib/components/ui/translatable-input';
 	import type { findOneAnnouncementById } from '$lib/db/repositories/2-stories-module';
+	import { formatFormError } from '$lib/db/schemas/0-utils';
 	import { EDITORS } from '$lib/states/editors.svelte';
 	import SquarePlus from '@lucide/svelte/icons/square-plus';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
@@ -140,21 +141,21 @@
 				<Field.Label>Announcement reference name</Field.Label>
 				<Input bind:value={announcement.name} placeholder="Name..." />
 				<Field.Error>
-					{error?.find((e) => e.path?.join('.') === ['name'].join('.'))?.message}
+					{formatFormError(error, `name`)}
 				</Field.Error>
 			</Field.Field>
 			<Field.Field>
 				<Field.Label>Title (optional)</Field.Label>
 				<TranslatableInput bind:value={announcement.title} placeholder="Title..." />
 				<Field.Error>
-					{error?.find((e) => e.path?.join('.') === ['title'].join('.'))?.message}
+					{formatFormError(error, `title.*`)}
 				</Field.Error>
 			</Field.Field>
 			<Field.Field>
 				<Field.Label>Message (optional)</Field.Label>
 				<TranslatableInput bind:value={announcement.message} placeholder="Message..." />
 				<Field.Error>
-					{error?.find((e) => e.path?.join('.') === ['message'].join('.'))?.message}
+					{formatFormError(error, `message.*`)}
 				</Field.Error>
 			</Field.Field>
 		</Field.Group>

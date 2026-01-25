@@ -8,17 +8,17 @@ export const load: PageServerLoad = (async ({ params }) => {
 
   const clientId = (await db.selectFrom('client').where('reference', '=', env.SECRET_DEFAULT_CLIENT_REFERENCE).select('id').executeTakeFirstOrThrow()).id;
 
-  const settings = params.settings?.split('/');
-  const setLanguage = (input: string[]) => {
+  const settings = params.settings?.toLowerCase()?.split('/');
+  const setLanguage = (input: string[]): Language | undefined => {
     const values = new Set<string>(Object.values(Language));
     const match = input.find(value => values.has(value));
-    return (match as Language) ?? 'default';
+    return (match as Language) ?? undefined;
   }
   const language = setLanguage(settings);
-  const setOrientation = (input: string[]) => {
+  const setOrientation = (input: string[]): Orientation | undefined => {
     const values = new Set<string>(Object.values(Orientation));
     const match = input.find(value => values.has(value));
-    return (match as Orientation) ?? 'default';
+    return (match as Orientation) ?? undefined;
   }
   const orientation = setOrientation(settings);
 
@@ -41,5 +41,5 @@ export const load: PageServerLoad = (async ({ params }) => {
     time: 0,
   }));
 
-  return { story, players };
+  return { story, players, orientation };
 });

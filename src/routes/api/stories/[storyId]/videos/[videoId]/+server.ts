@@ -1,14 +1,20 @@
 import { db } from '$lib/db/database';
 import { findOneVideoById } from '$lib/db/repositories/2-stories-module';
-import { orientationableValidator } from '$lib/db/schemas/0-utils';
+import { formObjectPreprocessor, orientationableUrlValidator } from '$lib/db/schemas/0-utils';
 import { json } from '@sveltejs/kit';
 import z from 'zod/v4';
 import type { RequestHandler } from './$types';
 
 const videoSchema = z.object({
   name: z.string().min(1),
-  source: orientationableValidator,
-  thumbnail: orientationableValidator.nullable(),
+  source: z.preprocess(
+    formObjectPreprocessor,
+    orientationableUrlValidator
+  ),
+  thumbnail: z.preprocess(
+    formObjectPreprocessor,
+    orientationableUrlValidator.nullable()
+  ),
   duration: z.number().int().min(1),
 });
 

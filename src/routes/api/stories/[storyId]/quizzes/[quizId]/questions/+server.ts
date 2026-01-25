@@ -1,6 +1,6 @@
 import { db } from '$lib/db/database';
 import { findOneQuizById } from '$lib/db/repositories/2-stories-module';
-import { translatableValidator } from '$lib/db/schemas/0-utils';
+import { formObjectPreprocessor, translatableValidator } from '$lib/db/schemas/0-utils';
 import { clean } from '$lib/utils';
 import { json } from '@sveltejs/kit';
 import z from 'zod/v4';
@@ -10,14 +10,23 @@ const answerOptionSchema = z.object({
   id: z.string().optional(),
   order: z.number(),
   value: z.string().nullable(),
-  label: translatableValidator,
+  label: z.preprocess(
+    formObjectPreprocessor,
+    translatableValidator
+  ),
 });
 const questionSchema = z.object({
   id: z.string().optional(),
   answerTemplateReference: z.literal('select-single'),
   order: z.number(),
-  title: translatableValidator,
-  instruction: translatableValidator.nullable(),
+  title: z.preprocess(
+    formObjectPreprocessor,
+    translatableValidator
+  ),
+  instruction: z.preprocess(
+    formObjectPreprocessor,
+    translatableValidator.nullable()
+  ),
   isRequired: z.boolean().default(true),
   answerOptions: z.array(answerOptionSchema).min(1, 'At least one answer option is required'),
   answerGroup: z.object({ id: z.string().optional(), doRandomize: z.boolean() }).optional(),

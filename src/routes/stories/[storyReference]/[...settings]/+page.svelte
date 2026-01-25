@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Orientation } from '$lib/db/schemas/0-utils.js';
 	import { PLAYERS } from '$lib/states/players.svelte.js';
 	import { onMount } from 'svelte';
 	import AnnouncementOverlay from './AnnouncementOverlay.svelte';
@@ -8,6 +9,7 @@
 
 	let { data } = $props();
 	let story = $derived(data.story);
+	let orientation = $derived(data.orientation);
 	// svelte-ignore state_referenced_locally
 	let players = $state(data.players);
 	let pid: string | undefined = $state();
@@ -87,8 +89,13 @@
 	};
 </script>
 
-<div class="bg-black">
-	<div class="relative mx-auto aspect-9/16 max-h-screen max-w-full overflow-hidden rounded-3xl p-8">
+<div>
+	<div
+		class="relative mx-auto max-h-screen max-w-full overflow-hidden rounded-3xl p-8"
+		class:aspect-portrait={!orientation || orientation === Orientation.portrait}
+		class:aspect-video={orientation === Orientation.landscape}
+		class:aspect-square={orientation === Orientation.square}
+	>
 		{#if story?.parts?.length}
 			{#each story?.parts as part (part.id)}
 				{@const player = players.find((player) => player.id === part.id)}
@@ -109,7 +116,7 @@
 						].filter((p): p is (typeof players)[number] => p !== undefined)}
 						<Player
 							id={player.id}
-							class="portrait"
+							class={orientation}
 							src={player.source}
 							poster={player?.thumbnail}
 							start={player?.start ?? undefined}
