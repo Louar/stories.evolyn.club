@@ -1,13 +1,28 @@
 import { env } from '$env/dynamic/private';
 import { db } from '$lib/db/database';
 import { findOneStoryByReference } from '$lib/db/repositories/2-stories-module';
+import { Language, Orientation } from '$lib/db/schemas/0-utils';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = (async ({ params }) => {
 
   const clientId = (await db.selectFrom('client').where('reference', '=', env.SECRET_DEFAULT_CLIENT_REFERENCE).select('id').executeTakeFirstOrThrow()).id;
 
-  const story = await findOneStoryByReference(clientId, params.storyReference);
+  const settings = params.settings?.split('/');
+  const setLanguage = (input: string[]) => {
+    const values = new Set<string>(Object.values(Language));
+    const match = input.find(value => values.has(value));
+    return (match as Language) ?? 'default';
+  }
+  const language = setLanguage(settings);
+  const setOrientation = (input: string[]) => {
+    const values = new Set<string>(Object.values(Orientation));
+    const match = input.find(value => values.has(value));
+    return (match as Orientation) ?? 'default';
+  }
+  const orientation = setOrientation(settings);
+
+  const story = await findOneStoryByReference(clientId, params.storyReference, orientation, language);
 
   const players = story?.parts?.map((part, index) => ({
     id: part.id,
