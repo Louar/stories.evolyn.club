@@ -13,12 +13,12 @@ pg.types.setTypeParser(20, (val) => {
 
 const dialect = new PostgresDialect({
   pool: new Pool({
-    database: env.SECRET_DB_DATABASE,
-    host: env.SECRET_DB_HOST,
-    user: env.SECRET_DB_USER,
-    password: env.SECRET_DB_PASSWORD,
-    port: Number(env.SECRET_DB_PORT),
-    max: Number(env.SECRET_DB_MAX),
+    database: env.SECRET_POSTGRES_DATABASE,
+    host: env.SECRET_POSTGRES_HOST,
+    user: env.SECRET_POSTGRES_USER,
+    password: env.SECRET_POSTGRES_PASSWORD,
+    port: Number(env.SECRET_POSTGRES_PORT),
+    max: Number(env.SECRET_POSTGRES_MAX),
   })
 })
 

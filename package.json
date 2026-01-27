@@ -1,8 +1,12 @@
 {
-	"name": "stories",
+	"name": "gamebus-stories-app",
 	"private": true,
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"type": "module",
+	"author": "Raoul Nuijten",
+	"config": {
+		"dockerRegistry": "registry.gamebus.eu:5000"
+	},
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
