@@ -125,6 +125,7 @@
 						start={player?.start ?? undefined}
 						end={player?.end ?? undefined}
 						playbackRate={player?.playbackRate ?? undefined}
+						isInitialPart={player?.isInitialPart}
 						bind:doBuffer={player.doBuffer}
 						bind:doPlay={player.doPlay}
 						bind:doRestart={player.doRestart}

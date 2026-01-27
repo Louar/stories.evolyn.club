@@ -14,6 +14,7 @@
 		start?: number | undefined;
 		end?: number | undefined;
 		playbackRate?: number | undefined;
+		isInitialPart: boolean;
 
 		doBuffer: boolean;
 		doPlay: boolean;
@@ -33,6 +34,7 @@
 		start,
 		end,
 		playbackRate,
+		isInitialPart,
 
 		doBuffer = $bindable(false),
 		doPlay = $bindable(false),
@@ -156,7 +158,7 @@
 	onended={endWatching}
 >
 	<media-provider>
-		{#if poster}
+		{#if poster && isInitialPart}
 			<media-poster
 				class="absolute inset-0 bg-black opacity-0 transition-opacity data-visible:opacity-100"
 				src={poster}

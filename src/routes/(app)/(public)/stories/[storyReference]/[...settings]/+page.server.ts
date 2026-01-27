@@ -32,6 +32,7 @@ export const load: PageServerLoad = (async ({ locals, params }) => {
     start: part.background?.start && part.background?.duration ? part?.background?.start * part.background?.duration : undefined,
     end: part.background?.end && part.background?.duration ? part?.background?.end * part.background?.duration : undefined,
     playbackRate: 1, // (part.background?.playbackRate as number) ?? undefined,
+    isInitialPart: index === 0,
     next: part.defaultNextPartId ?? undefined,
 
     doBuffer: index === 0,
