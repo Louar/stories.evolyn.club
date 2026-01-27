@@ -16,7 +16,7 @@ export const InitClientUserModule: Migration = {
     // Create the Client table
     await db.schema.createTable('client')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('reference', 'text', (col) => col.unique().notNull())
       .addColumn('name', 'text', (col) => col.notNull())
       .addColumn('description', 'jsonb')
@@ -40,7 +40,7 @@ export const InitClientUserModule: Migration = {
     // Create the ClientMedia table
     await db.schema.createTable('client_media')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('client_id', 'uuid', (col) => col.references('client.id').onDelete('cascade').notNull())
       .addColumn('name', 'text', (col) => col.notNull())
       .addColumn('extension', 'text', (col) => col.notNull())
@@ -54,7 +54,7 @@ export const InitClientUserModule: Migration = {
     // Create the User table
     await db.schema.createTable('user')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('client_id', 'uuid', (col) => col.references('client.id').onDelete('cascade').notNull())
       .addColumn('email', 'text')
       .addColumn('first_name', 'text')
@@ -90,7 +90,7 @@ export const InitClientUserModule: Migration = {
     // Create the UserMedia table
     await db.schema.createTable('user_media')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('user_id', 'uuid', (col) => col.references('user.id').onDelete('cascade').notNull())
       .addColumn('name', 'text', (col) => col.notNull())
       .addColumn('extension', 'text', (col) => col.notNull())
@@ -106,7 +106,7 @@ export const InitClientUserModule: Migration = {
     // Create the AuthCode table
     await db.schema.createTable('auth_code')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('client_id', 'uuid', (col) => col.references('client.id').onDelete('cascade').notNull())
       .addColumn('user_id', 'uuid', (col) => col.references('user.id').onDelete('cascade').notNull())
       .addColumn('value', 'text', (col) => col.notNull())
@@ -118,7 +118,7 @@ export const InitClientUserModule: Migration = {
     // Create the License table
     await db.schema.createTable('license')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('client_id', 'uuid', (col) => col.references('client.id').onDelete('cascade').notNull())
       .addColumn('name', 'jsonb', (col) => col.notNull())
       .addColumn('version', 'text', (col) => col.notNull())
@@ -134,7 +134,7 @@ export const InitClientUserModule: Migration = {
     // Create the LicenseAgreement table
     await db.schema.createTable('license_agreement')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('license_id', 'uuid', (col) => col.references('license.id').onDelete('cascade').notNull())
       .addColumn('user_id', 'uuid', (col) => col.references('user.id').onDelete('cascade').notNull())
       .addColumn('is_accepted', 'boolean', (col) => col.defaultTo(false).notNull())
@@ -146,7 +146,7 @@ export const InitClientUserModule: Migration = {
     // Create NotificationDevice table
     await db.schema.createTable('notification_device')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('user_id', 'uuid', (col) => col.references('user.id').onDelete('cascade').notNull())
       .addColumn('client_id', 'uuid', (col) => col.references('client.id').onDelete('cascade').notNull())
       .addColumn('agent', 'text')
@@ -161,7 +161,7 @@ export const InitClientUserModule: Migration = {
     // Create NotificationChannelSubscription table
     await db.schema.createTable('notification_channel_subscription')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('user_id', 'uuid', (col) => col.references('user.id').onDelete('cascade').notNull())
       .addColumn('client_id', 'uuid', (col) => col.references('client.id').onDelete('cascade').notNull())
       .addColumn('notification_device_id', 'uuid', (col) => col.references('notification_device.id').onDelete('cascade').notNull())
@@ -179,7 +179,7 @@ export const InitClientUserModule: Migration = {
     // Create NotificationLog table
     await db.schema.createTable('notification_log')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('user_id', 'uuid', (col) => col.references('user.id').onDelete('cascade').notNull())
       .addColumn('notification_channel_subscription_id', 'uuid', (col) => col.references('notification_channel_subscription.id').onDelete('set null'))
       .addColumn('status', sql`notification_log_status`, (col) => col.defaultTo(NotificationLogStatus.created).notNull())

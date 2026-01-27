@@ -16,7 +16,7 @@ export const InitStoryModule: Migration = {
     // Create Video table
     await db.schema.createTable('video')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('name', 'text', col => col.notNull())
       .addColumn('source', 'jsonb', col => col.notNull())
       .addColumn('thumbnail', 'jsonb')
@@ -27,7 +27,7 @@ export const InitStoryModule: Migration = {
     // Create AnnouncementTemplate table
     await db.schema.createTable('announcement_template')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('name', 'text', col => col.notNull())
       .addColumn('title', 'jsonb')
       .addColumn('message', 'jsonb')
@@ -36,7 +36,7 @@ export const InitStoryModule: Migration = {
     // Create QuizTemplate table
     await db.schema.createTable('quiz_template')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('name', 'text', col => col.notNull())
       .addColumn('do_randomize', 'boolean', col => col.defaultTo(false).notNull())
       .execute();
@@ -44,7 +44,7 @@ export const InitStoryModule: Migration = {
     // Create QuizQuestionTemplateAnswerGroup table
     await db.schema.createTable('quiz_question_template_answer_group')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('reference', 'text')
       .addColumn('name', 'text')
       .addColumn('do_randomize', 'boolean', col => col.defaultTo(false).notNull())
@@ -54,7 +54,7 @@ export const InitStoryModule: Migration = {
     // Create QuizQuestionTemplateAnswerItem table
     await db.schema.createTable('quiz_question_template_answer_item')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('quiz_question_template_answer_group_id', 'uuid', (col) => col.references('quiz_question_template_answer_group.id').onDelete('cascade').notNull())
       .addColumn('order', 'smallint', (col) => col.notNull())
       .addColumn('value', 'jsonb', (col) => col.notNull())
@@ -64,7 +64,7 @@ export const InitStoryModule: Migration = {
     // Create QuizQuestionTemplate table
     await db.schema.createTable('quiz_question_template')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('quiz_template_id', 'uuid', (col) => col.references('quiz_template.id').onDelete('cascade').notNull())
       .addColumn('order', 'smallint', (col) => col.notNull())
       .addColumn('answer_template_reference', 'text', (col) => col.notNull())
@@ -79,7 +79,7 @@ export const InitStoryModule: Migration = {
     // Create Story table
     await db.schema.createTable('story')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('client_id', 'uuid', (col) => col.references('client.id').onDelete('cascade').notNull())
       .addColumn('reference', 'text', col => col.notNull())
       .addColumn('name', 'text', col => col.notNull())
@@ -96,7 +96,7 @@ export const InitStoryModule: Migration = {
     // Create Part table
     await db.schema.createTable('part')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('story_id', 'uuid', (col) => col.references('story.id').onDelete('cascade').notNull())
       .addColumn('background_type', 'text')
       .addColumn('background_configuration', 'jsonb')
@@ -112,7 +112,7 @@ export const InitStoryModule: Migration = {
     // Create QuizLogicForPart table
     await db.schema.createTable('quiz_logic_for_part')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('quiz_template_id', 'uuid', (col) => col.references('quiz_template.id').onDelete('cascade').notNull())
       .addColumn('default_next_part_id', 'uuid', (col) => col.references('part.id').onDelete('set null'))
       .addColumn('hitpolicy', sql`logic_hitpolicy`, (col) => col.defaultTo(LogicHitpolicy.first).notNull())
@@ -125,7 +125,7 @@ export const InitStoryModule: Migration = {
     // Create QuizLogicRule table
     await db.schema.createTable('quiz_logic_rule')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('order', 'smallint', (col) => col.notNull())
       .addColumn('name', 'text', col => col.notNull())
       .addColumn('quiz_logic_for_part_id', 'uuid', (col) => col.references('quiz_logic_for_part.id').onDelete('cascade').notNull())
@@ -135,7 +135,7 @@ export const InitStoryModule: Migration = {
     // Create QuizLogicRuleInput table
     await db.schema.createTable('quiz_logic_rule_input')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('quiz_logic_rule_id', 'uuid', (col) => col.references('quiz_logic_rule.id').onDelete('cascade').notNull())
       .addColumn('quiz_question_template_id', 'uuid', (col) => col.references('quiz_question_template.id').onDelete('cascade').notNull())
       .addColumn('quiz_question_template_answer_item_id', 'uuid', (col) => col.references('quiz_question_template_answer_item.id').onDelete('cascade'))
@@ -145,7 +145,7 @@ export const InitStoryModule: Migration = {
     // Create VideoAvailableToStory table
     await db.schema.createTable('video_available_to_story')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('story_id', 'uuid', (col) => col.references('story.id').onDelete('cascade'))
       .addColumn('video_id', 'uuid', (col) => col.references('video.id').onDelete('cascade'))
       .addUniqueConstraint('unique_video_per_story', ['story_id', 'video_id'])
@@ -154,7 +154,7 @@ export const InitStoryModule: Migration = {
     // Create AnnouncementTemplateAvailableToStory table
     await db.schema.createTable('announcement_template_available_to_story')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('story_id', 'uuid', (col) => col.references('story.id').onDelete('cascade'))
       .addColumn('announcement_template_id', 'uuid', (col) => col.references('announcement_template.id').onDelete('cascade'))
       .addUniqueConstraint('unique_announcement_template_per_story', ['story_id', 'announcement_template_id'])
@@ -163,7 +163,7 @@ export const InitStoryModule: Migration = {
     // Create QuizTemplateAvailableToStory table
     await db.schema.createTable('quiz_template_available_to_story')
       .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`gen_random_uuid()`).notNull())
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('story_id', 'uuid', (col) => col.references('story.id').onDelete('cascade'))
       .addColumn('quiz_template_id', 'uuid', (col) => col.references('quiz_template.id').onDelete('cascade'))
       .addUniqueConstraint('unique_quiz_template_per_story', ['story_id', 'quiz_template_id'])
