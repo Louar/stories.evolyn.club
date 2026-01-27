@@ -91,7 +91,7 @@
 
 <div>
 	<div
-		class="relative mx-auto max-h-screen max-w-full overflow-hidden rounded-3xl p-8"
+		class="relative mx-auto max-h-screen max-w-full overflow-hidden rounded-3xl"
 		class:aspect-portrait={!orientation || orientation === Orientation.portrait}
 		class:aspect-video={orientation === Orientation.landscape}
 		class:aspect-square={orientation === Orientation.square}
@@ -180,3 +180,10 @@
 		{/if}
 	</div>
 </div>
+
+<style lang="postcss">
+	@reference 'tailwindcss';
+	:global(body) {
+		@apply bg-transparent;
+	}
+</style>
