@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
+	import { CopyButton } from '$lib/components/ui/copy-button';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
@@ -9,6 +10,7 @@
 	import { TranslatableInput } from '$lib/components/ui/translatable-input';
 	import type { findOneStoryById, storySchema } from '$lib/db/repositories/2-stories-module';
 	import { formatFormError } from '$lib/db/schemas/0-utils';
+	import CopyIcon from '@lucide/svelte/icons/copy';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import z from 'zod/v4';
 	import type { $ZodIssue } from 'zod/v4/core';
@@ -21,7 +23,10 @@
 		>;
 		close: (output: { action: 'persist' | 'delete'; data?: z.infer<typeof storySchema> }) => void;
 	};
-	let { storyId, story, close }: Props = $props();
+	let { storyId, story: rawstory, close }: Props = $props();
+
+	// svelte-ignore state_referenced_locally
+	let story = $state(rawstory);
 
 	let error = $state<$ZodIssue[] | null>(null);
 
@@ -97,9 +102,21 @@
 					<Switch id="ispublished" bind:checked={story.isPublished} />
 					<Field.Label for="ispublished" class="text-sm font-normal">Is published?</Field.Label>
 				</div>
-				<p class="text-sm text-muted-foreground italic" class:line-through={!story.isPublished}>
-					Share url: {page.url.origin}/stories/{story.reference}
-				</p>
+				<div class="block">
+					<CopyButton
+						text={`${page.url.origin}/stories/${story.reference}`}
+						size="sm"
+						variant="outline"
+					>
+						{#snippet icon()}
+							<CopyIcon />
+						{/snippet}
+						<span class="text-sm">Share url:</span>
+						<span class="font-mono text-sm font-light" class:line-through={!story.isPublished}>
+							{`${page.url.origin}/stories/${story.reference}`}
+						</span>
+					</CopyButton>
+				</div>
 				<Field.Error>
 					{formatFormError(error, `isPublished`)}
 				</Field.Error>
