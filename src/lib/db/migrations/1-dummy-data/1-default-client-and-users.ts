@@ -14,7 +14,7 @@ export const DummyDataDefaultClientAndUsers: Migration = {
       .values({
         reference: env.SECRET_DEFAULT_CLIENT_REFERENCE,
         name: 'Evolyn',
-        domains: JSON.stringify(['localhost:5173', 'evolyn.club', 'app.evolyn.club', 'beta.evolyn.club']),
+        domains: JSON.stringify(['localhost:5174', 'stories.evolyn.club', 'stories.beta.evolyn.club']),
         css: JSON.stringify({
           ":root": {
             "--radius": "0.65rem",
@@ -86,9 +86,9 @@ export const DummyDataDefaultClientAndUsers: Migration = {
         }),
         manifest: JSON.stringify(
           {
-            name: 'Evolyn - The self-help app',
-            short_name: 'Evolyn',
-            description: 'The self-help app',
+            name: 'Evolyn Stories',
+            short_name: 'Stories',
+            description: 'Create your own stories.',
             scope: '/',
             start_url: '/',
             display: 'standalone',
@@ -110,9 +110,9 @@ export const DummyDataDefaultClientAndUsers: Migration = {
           }
         ),
         isFindableBySearchEngines: true,
-        plausibleDomain: process.env.NODE_ENV === 'production' ? 'app.evolyn.club' : undefined,
+        plausibleDomain: process.env.NODE_ENV === 'production' ? 'stories.evolyn.club' : undefined,
         authenticationMethods: JSON.stringify([ClientAuthenticationMethod.code, ClientAuthenticationMethod.password]),
-        accessTokenKey: 'YEMzj,;jg4&P.!-/[H9s0Hp>RWt"o_ns"Jd]p9E|o)f|jl"q@)c6)@S^ER.Y/T:',
+        accessTokenKey: 'fB/pQk5CWtWwO1xuSyK45Lb9Lf6G6qZfbDToxBTg5LE=',
         onboardingSchema: JSON.stringify(
           z.toJSONSchema(z.object({
             email: z.email().min(1),
@@ -151,8 +151,8 @@ export const DummyDataDefaultClientAndUsers: Migration = {
         clientId: client.id,
         name: JSON.stringify({ en: 'Dummy license' } as Translatable),
         version: 'v0.0.0',
-        termsOfUse: JSON.stringify({ default: `# Servicevoorwaarden` } as Translatable),
-        privacyPolicy: JSON.stringify({ default: `# Privacybeleid` } as Translatable),
+        termsOfUse: JSON.stringify({ default: `# Terms of Use` } as Translatable),
+        privacyPolicy: JSON.stringify({ default: `# Privacy Policy` } as Translatable),
         createdBy: admin.id,
         updatedBy: admin.id,
       })

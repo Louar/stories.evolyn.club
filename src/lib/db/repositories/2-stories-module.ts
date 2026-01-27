@@ -6,7 +6,6 @@ import type { Rule } from '../../../routes/stories/[storyReference]/[...settings
 import { Language, Orientation, selectByOrientation, selectLocalizedField } from '../schemas/0-utils';
 import { LogicHitpolicy } from '../schemas/2-story-module';
 
-// TODO: remove reliance on language parameter
 export const findOneStoryById = async (clientId: string, storyId: string) => {
 
   if (!clientId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) error(404, 'De client-ID is ongeldig.');
@@ -18,6 +17,7 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
     .select((eb) => [
       'story.id',
       'story.reference',
+      'story.name',
 
       jsonArrayFrom(
         eb.selectFrom('video')
@@ -168,6 +168,7 @@ export const findOneStoryByReference = async (clientId: string, storyReference: 
     .where('story.isPublic', '=', true)
     .select((eb) => [
       'story.reference',
+      selectLocalizedField(eb, 'story.name', language).as('name'),
       jsonArrayFrom(
         eb.selectFrom('part')
           .whereRef('part.storyId', '=', 'story.id')
@@ -297,6 +298,7 @@ export const findOneStoryByReference = async (clientId: string, storyReference: 
 
   const story = {
     reference: rawstory.reference,
+    name: rawstory.name,
     parts: rawstory.parts.map(
       (part) => {
         const { background, backgroundConfiguration, foreground, foregroundConfiguration, ...restPart } = part;

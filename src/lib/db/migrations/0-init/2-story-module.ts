@@ -82,7 +82,7 @@ export const InitStoryModule: Migration = {
       .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
       .addColumn('client_id', 'uuid', (col) => col.references('client.id').onDelete('cascade').notNull())
       .addColumn('reference', 'text', col => col.notNull())
-      .addColumn('name', 'text', col => col.notNull())
+      .addColumn('name', 'jsonb', (col) => col.notNull())
       .addColumn('configuration', 'jsonb')
       .addColumn('is_published', 'boolean', col => col.defaultTo(false).notNull())
       .addColumn('is_public', 'boolean', col => col.defaultTo(false).notNull())

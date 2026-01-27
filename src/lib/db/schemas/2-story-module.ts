@@ -27,7 +27,7 @@ type Story = {
   id: Generated<string>;
   clientId: string;
   reference: string;
-  name: string;
+  name: TranslatableColumn;
   configuration: JSONColumnType<object> | null;
   isPublished: ColumnType<boolean, boolean | null, boolean>;
   isPublic: ColumnType<boolean, boolean | null, boolean>;

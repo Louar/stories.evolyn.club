@@ -5,7 +5,6 @@ import type { $ZodIssue } from 'zod/v4/core';
 export const MediaCollection = {
   internals: 'internals',
   clients: 'clients',
-  campaigns: 'campaigns',
   users: 'users',
   externals: 'externals',
 } as const;
