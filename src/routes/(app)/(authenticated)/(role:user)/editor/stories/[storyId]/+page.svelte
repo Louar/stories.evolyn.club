@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
 	import { navigationMenuTriggerStyle } from '$lib/components/ui/navigation-menu/navigation-menu-trigger.svelte';
@@ -7,17 +8,21 @@
 	import type {
 		findOneAnnouncementById,
 		findOneQuizById,
-		findOneVideoById
+		findOneVideoById,
+		storySchema
 	} from '$lib/db/repositories/2-stories-module.js';
 	import { translateLocalizedField } from '$lib/db/schemas/0-utils.js';
 	import { EDITORS } from '$lib/states/editors.svelte.js';
-	import TvMinimalPlay from '@lucide/svelte/icons/tv-minimal-play';
+	import SettingsIcon from '@lucide/svelte/icons/settings';
+	import TvMinimalPlayIcon from '@lucide/svelte/icons/tv-minimal-play';
 	import { SvelteFlowProvider } from '@xyflow/svelte';
 	import '@xyflow/svelte/dist/style.css';
 	import { onMount } from 'svelte';
+	import type { z } from 'zod/v4';
 	import AnnouncementEditor from './AnnouncementEditor.svelte';
 	import Flow from './Flow.svelte';
 	import QuizEditor from './QuizEditor.svelte';
+	import StorySettingsEditor from './StorySettingsEditor.svelte';
 	import VideoEditor from './VideoEditor.svelte';
 
 	let { data } = $props();
@@ -29,8 +34,20 @@
 		EDITORS.quizzes = story.quizzes;
 	});
 
-	let dialogs = $state({ videos: false, announcements: false, quizzes: false });
+	let dialogs = $state({ settings: false, videos: false, announcements: false, quizzes: false });
 
+	const closeSettings = (output: {
+		action: 'persist' | 'delete';
+		data?: z.infer<typeof storySchema>;
+	}) => {
+		const { action } = output;
+		if (action === 'delete') {
+			goto('/editor/stories');
+		} else if (action === 'persist' && data) {
+			story = { ...story, ...data };
+		}
+		dialogs.settings = false;
+	};
 	const closeVideo = (output: {
 		action: 'persist' | 'delete';
 		id?: string;
@@ -97,23 +114,22 @@
 					{/snippet}
 				</NavigationMenu.Link>
 			</NavigationMenu.Item>
-			<!-- <NavigationMenu.Item>
-				<NavigationMenu.Link>
-					{#snippet child()}
-						<a href="/docs" class={navigationMenuTriggerStyle()}>Docs</a>
-					{/snippet}
-				</NavigationMenu.Link>
-			</NavigationMenu.Item> -->
 			<NavigationMenu.Item>
-				<NavigationMenu.Trigger>Media</NavigationMenu.Trigger>
+				<NavigationMenu.Trigger>
+					<SettingsIcon class="mr-2 size-5" />
+				</NavigationMenu.Trigger>
 				<NavigationMenu.Content>
 					<ul class="grid w-75 gap-2">
 						<li>
+							<NavigationMenu.Link onclick={() => (dialogs.settings = true)}>
+								<div class="font-medium">Story settings</div>
+								<div class="text-muted-foreground">Update the story's settings.</div>
+							</NavigationMenu.Link>
+							<Separator class="my-2" />
 							<NavigationMenu.Link onclick={() => (dialogs.videos = true)}>
 								<div class="font-medium">Video's</div>
 								<div class="text-muted-foreground">Browse and update video's.</div>
 							</NavigationMenu.Link>
-							<Separator class="my-2" />
 							<NavigationMenu.Link onclick={() => (dialogs.announcements = true)}>
 								<div class="font-medium">Announcements</div>
 								<div class="text-muted-foreground">Browse and update announcements.</div>
@@ -134,7 +150,7 @@
 							target="_blank"
 							class={navigationMenuTriggerStyle()}
 						>
-							<TvMinimalPlay class="size-5" />
+							<TvMinimalPlayIcon class="size-5" />
 						</a>
 					{/snippet}
 				</NavigationMenu.Link>
@@ -143,6 +159,18 @@
 	</NavigationMenu.Root>
 </div>
 
+<Dialog.Root bind:open={dialogs.settings}>
+	<StorySettingsEditor
+		storyId={story.id}
+		story={{
+			reference: story.reference,
+			name: story.name,
+			isPublished: story.isPublished,
+			isPublic: story.isPublic
+		}}
+		close={closeSettings}
+	/>
+</Dialog.Root>
 <Dialog.Root bind:open={dialogs.videos}>
 	<VideoEditor storyId={story.id} close={closeVideo} />
 </Dialog.Root>

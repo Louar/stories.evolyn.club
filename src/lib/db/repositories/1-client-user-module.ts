@@ -72,7 +72,7 @@ export const findOneClient = async (clientReference: string, language?: Language
 export const findOneAuthenticatedUser = async (event: RequestEvent) => {
   const { url, locals, cookies } = event;
 
-  const token = cookies.get('__session');
+  const token = cookies.get(process.env.NODE_ENV === 'production' ? '__session' : '__session_stories');
   if (!token) return undefined;
 
   try {
@@ -102,7 +102,7 @@ export const findOneAuthenticatedUser = async (event: RequestEvent) => {
 
     return user;
   } catch {
-    cookies.delete('__session', { domain: url.hostname, path: '/' });
+    cookies.delete(process.env.NODE_ENV === 'production' ? '__session' : '__session_stories', { domain: url.hostname, path: '/' });
     return undefined;
   }
 }

@@ -8,10 +8,12 @@
 		type Edge,
 		type Node,
 		type OnConnectEnd,
-		type OnDelete
+		type OnDelete,
+		type ColorMode
 	} from '@xyflow/svelte';
 	import MediaEdge from './MediaEdge.svelte';
 	import MediaNode from './MediaNode.svelte';
+	import { mode } from 'mode-watcher';
 
 	type Props = {
 		story: Awaited<ReturnType<typeof findOneStoryById>> | undefined;
@@ -181,13 +183,14 @@
 	ondelete={remove}
 	proOptions={{ hideAttribution: true }}
 	snapGrid={[400, 200]}
+	colorMode={mode.current}
 >
 	<Background patternColor="#6a7282" gap={50} />
 	<Controls />
 </SvelteFlow>
 
-<style lang="postcss">
+<!-- <style lang="postcss">
 	:root {
 		--xy-background-color: #f9fafb;
 	}
-</style>
+</style> -->

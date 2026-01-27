@@ -1,6 +1,6 @@
 import { env } from '$env/dynamic/private';
 import { db } from '$lib/db/database';
-import { type Translatable } from '$lib/db/schemas/0-utils';
+import { type Orientationable, type Translatable } from '$lib/db/schemas/0-utils';
 
 export const DummyDataStoryQuizOfCities = async (storyReference: string, clientId?: string, userId?: string) => {
 
@@ -17,7 +17,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .values({
         clientId,
         reference: storyReference,
-        name: JSON.stringify({ en: 'Quiz of Cities' } as Translatable),
+        name: JSON.stringify({ en: 'Quiz of Cities', nl: 'Stedenquiz' } as Translatable),
         configuration: null,
         isPublished: true,
         isPublic: true,
@@ -34,8 +34,8 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .insertInto('video')
       .values({
         name: 'Play/Pause',
-        source: JSON.stringify({ default: '/videos/play-pause/stream.m3u8' } as Translatable), // TODO: Fix as type
-        thumbnail: JSON.stringify({ default: '/videos/play-pause.jpg' } as Translatable), // TODO: Fix as type
+        source: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/play-pause/stream.m3u8' } as Orientationable),
+        thumbnail: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/play-pause.jpg' } as Orientationable),
         captions: null,
         duration: 15,
       })
@@ -47,8 +47,8 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .insertInto('video')
       .values({
         name: 'Countdown',
-        source: JSON.stringify({ default: '/videos/countdown/stream.m3u8' } as Translatable), // TODO: Fix as type
-        // thumbnail: JSON.stringify({ default: '/videos/countdown.jpg' } as Translatable),
+        source: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/countdown/stream.m3u8' } as Orientationable),
+        thumbnail: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/countdown.jpg' } as Orientationable),
         captions: null,
         duration: 10,
       })
@@ -60,7 +60,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .insertInto('video')
       .values({
         name: 'City of Barcelona',
-        source: JSON.stringify({ default: '/videos/city-Barcelona/stream.m3u8' } as Translatable), // TODO: Fix as type
+        source: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/city-Barcelona/stream.m3u8' } as Orientationable),
         thumbnail: null,
         captions: null,
         duration: 5,
@@ -73,7 +73,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .insertInto('video')
       .values({
         name: 'Thumbs-down',
-        source: JSON.stringify({ default: '/videos/thumbs-down/stream.m3u8' } as Translatable), // TODO: Fix as type
+        source: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/thumbs-down/stream.m3u8' } as Orientationable),
         thumbnail: null,
         captions: null,
         duration: 9,
@@ -86,7 +86,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .insertInto('video')
       .values({
         name: 'Thumbs-up',
-        source: JSON.stringify({ default: '/videos/thumbs-up/stream.m3u8' } as Translatable), // TODO: Fix as type
+        source: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/thumbs-up/stream.m3u8' } as Orientationable),
         thumbnail: null,
         captions: null,
         duration: 5,
@@ -99,7 +99,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .insertInto('video')
       .values({
         name: 'City of Luzern',
-        source: JSON.stringify({ default: '/videos/city-Luzern/stream.m3u8' } as Translatable), // TODO: Fix as type
+        source: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/city-Luzern/stream.m3u8' } as Orientationable),
         thumbnail: null,
         captions: null,
         duration: 5,
@@ -112,7 +112,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .insertInto('video')
       .values({
         name: 'Game over',
-        source: JSON.stringify({ default: '/videos/game-over/stream.m3u8' } as Translatable), // TODO: Fix as type
+        source: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/game-over/stream.m3u8' } as Orientationable),
         thumbnail: null,
         captions: null,
         duration: 10,
@@ -190,12 +190,6 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
     const agCityLuzernQ1 = await trx
       .insertInto('quizQuestionTemplateAnswerGroup')
       .values({ reference: 'city-luzern-q1', name: 'City options: Luzern', doRandomize: false })
-      .returning('id')
-      .executeTakeFirstOrThrow();
-
-    const agGameOverQ1 = await trx
-      .insertInto('quizQuestionTemplateAnswerGroup')
-      .values({ reference: 'game-over-q1', name: 'Option to: Start over?' })
       .returning('id')
       .executeTakeFirstOrThrow();
 
@@ -334,17 +328,6 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .returning('id')
       .executeTakeFirstOrThrow();
 
-    const aiGameOverStartOver = await trx
-      .insertInto('quizQuestionTemplateAnswerItem')
-      .values({
-        quizQuestionTemplateAnswerGroupId: agGameOverQ1.id,
-        order: 1,
-        value: JSON.stringify(true),
-        label: JSON.stringify({ en: 'Start over' } as Translatable),
-      })
-      .returning('id')
-      .executeTakeFirstOrThrow();
-
     // -------------------------
     // 7) Question templates (must reference quiz template + maybe answer group)
     // -------------------------
@@ -408,22 +391,6 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         configuration: null,
         isRequired: true,
         quizQuestionTemplateAnswerGroupId: agCityLuzernQ1.id,
-      })
-      .returning('id')
-      .executeTakeFirstOrThrow();
-
-    const qqtGameOver1 = await trx
-      .insertInto('quizQuestionTemplate')
-      .values({
-        quizTemplateId: quizGameOver.id,
-        order: 1,
-        answerTemplateReference: 'select-single',
-        title: JSON.stringify({ en: 'Start over?' } as Translatable),
-        instruction: null,
-        placeholder: null,
-        configuration: null,
-        isRequired: true,
-        quizQuestionTemplateAnswerGroupId: agGameOverQ1.id,
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -574,8 +541,8 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         storyId: story.id,
         backgroundType: 'video',
         backgroundConfiguration: null,
-        foregroundType: 'quiz',
-        foregroundConfiguration: JSON.stringify({ start: 0.5 }),
+        foregroundType: null,
+        foregroundConfiguration: null,
         defaultNextPartId: null,
         videoId: videoGameOver.id,
         announcementTemplateId: null,
@@ -618,16 +585,6 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .returning('id')
       .executeTakeFirstOrThrow();
 
-    const qlGameOver = await trx
-      .insertInto('quizLogicForPart')
-      .values({
-        quizTemplateId: quizGameOver.id,
-        defaultNextPartId: null,
-        hitpolicy: 'first',
-      })
-      .returning('id')
-      .executeTakeFirstOrThrow();
-
     // -------------------------
     // 10) Quiz logic rules (needs quizLogicForPart + next part)
     // -------------------------
@@ -660,17 +617,6 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         name: 'Correct: Luzern',
         quizLogicForPartId: qlCityLuzern.id,
         nextPartId: partCityLuzernThumbsUp.id,
-      })
-      .returning('id')
-      .executeTakeFirstOrThrow();
-
-    const qlrGameOver1 = await trx
-      .insertInto('quizLogicRule')
-      .values({
-        order: 1,
-        name: 'Game over',
-        quizLogicForPartId: qlGameOver.id,
-        nextPartId: partPlayPause.id,
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -714,16 +660,6 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         quizLogicRuleId: qlrCityLuzern1.id,
         quizQuestionTemplateId: qqtCityLuzern1.id,
         quizQuestionTemplateAnswerItemId: aiCityLuzernLuzern.id,
-      })
-      .executeTakeFirstOrThrow();
-
-    // game-over rule 1: start over == true
-    await trx
-      .insertInto('quizLogicRuleInput')
-      .values({
-        quizLogicRuleId: qlrGameOver1.id,
-        quizQuestionTemplateId: qqtGameOver1.id,
-        quizQuestionTemplateAnswerItemId: aiGameOverStartOver.id,
       })
       .executeTakeFirstOrThrow();
 
@@ -793,15 +729,6 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       })
       .where('id', '=', partCityLuzern.id)
       .executeTakeFirstOrThrow();
-
-    await trx
-      .updateTable('part')
-      .set({
-        quizLogicForPartId: qlGameOver.id,
-      })
-      .where('id', '=', partGameOver.id)
-      .executeTakeFirstOrThrow();
-
 
   });
 };

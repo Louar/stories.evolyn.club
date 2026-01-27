@@ -27,7 +27,7 @@ export const actions = {
 
     try {
       delete locals.authusr;
-      cookies.delete('__session', { domain: url.hostname, path: '/' });
+      cookies.delete(process.env.NODE_ENV === 'production' ? '__session' : '__session_stories', { domain: url.hostname, path: '/' });
       await authenticate(email, password, url.hostname, locals, cookies);
     } catch (e) {
       if (e instanceof Error) return message(form, { error: true, reason: e.message });
@@ -113,7 +113,7 @@ const authenticate = async (email: string, password: string, hostname: string, l
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
   };
-  if (cookies) cookies.set('__session', token, options);
+  if (cookies) cookies.set(process.env.NODE_ENV === 'production' ? '__session' : '__session_stories', token, options);
 
   return { id: user.id };
 };

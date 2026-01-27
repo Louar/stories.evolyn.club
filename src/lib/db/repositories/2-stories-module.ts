@@ -1,10 +1,23 @@
 import { db } from '$lib/db/database';
+import { formObjectPreprocessor, translatableValidator } from '$lib/db/schemas/0-utils';
 import { error } from '@sveltejs/kit';
 import type { NotNull } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
+import z from 'zod/v4';
 import type { Rule } from '../../../routes/stories/[storyReference]/[...settings]/types';
 import { Language, Orientation, selectByOrientation, selectLocalizedField } from '../schemas/0-utils';
 import { LogicHitpolicy } from '../schemas/2-story-module';
+
+
+export const storySchema = z.object({
+  reference: z.string().min(1),
+  name: z.preprocess(
+    formObjectPreprocessor,
+    translatableValidator
+  ),
+  isPublished: z.boolean().default(false),
+  isPublic: z.boolean().default(true),
+});
 
 export const findOneStoryById = async (clientId: string, storyId: string) => {
 
@@ -18,6 +31,8 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
       'story.id',
       'story.reference',
       'story.name',
+      'story.isPublished',
+      'story.isPublic',
 
       jsonArrayFrom(
         eb.selectFrom('video')
@@ -165,6 +180,7 @@ export const findOneStoryByReference = async (clientId: string, storyReference: 
     .selectFrom('story')
     .where('story.reference', '=', storyReference)
     .where('story.clientId', '=', clientId)
+    .where('story.isPublished', '=', true)
     .where('story.isPublic', '=', true)
     .select((eb) => [
       'story.reference',
@@ -294,7 +310,8 @@ export const findOneStoryByReference = async (clientId: string, storyReference: 
           .orderBy('part.isInitial', 'desc')
       ).as('parts'),
     ])
-    .executeTakeFirstOrThrow();
+    .executeTakeFirst();
+  if (!rawstory) return;
 
   const story = {
     reference: rawstory.reference,

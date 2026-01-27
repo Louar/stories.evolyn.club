@@ -285,15 +285,6 @@
 										</Button>
 									</div>
 								</Field.Field>
-
-								<!-- <Field.Field class="block space-x-2">
-											<div class="flex items-center space-x-2">
-												<Switch id="required" />
-												<Field.Label for="required" class="text-sm font-normal"
-													>Required question</Field.Label
-												>
-											</div>
-										</Field.Field> -->
 							</Collapsible.Content>
 						</Collapsible.Root>
 					</Field.Set>

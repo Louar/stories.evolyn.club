@@ -24,7 +24,6 @@ export const POST = (async ({ request, params }) => {
         .set({ defaultNextPartId: target })
         .executeTakeFirstOrThrow();
     } else if (handle === 'default-after-quiz') {
-      console.log('default-after-quiz', source, target);
       await trx
         .updateTable('quizLogicForPart')
         .set({ defaultNextPartId: target })

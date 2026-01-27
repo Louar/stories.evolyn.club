@@ -129,6 +129,9 @@ export const selectByOrientation = <DB, TB extends keyof DB & string>(eb: Expres
     sql<string | null>`${eb.ref(column)}->>${Orientation.portrait}`,
   );
 }
+export const orientateOrientationableField = (obj?: Orientationable | null, orientation?: Orientation | null) => {
+  return obj?.[orientation ?? 'default'] ?? obj?.default ?? obj?.[Orientation.portrait];
+}
 
 export const formatDuration = (duration: number, percentage: number = 1) => {
   const seconds = duration * percentage;

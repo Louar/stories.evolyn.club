@@ -1,5 +1,6 @@
 import { findOneStoryByReference } from '$lib/db/repositories/2-stories-module';
 import { Language, Orientation } from '$lib/db/schemas/0-utils';
+import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = (async ({ locals, params }) => {
@@ -21,6 +22,7 @@ export const load: PageServerLoad = (async ({ locals, params }) => {
   const orientation = setOrientation(settings);
 
   const story = await findOneStoryByReference(clientId, params.storyReference, orientation, language);
+  if (!story) error(404, `The story '${params.storyReference}' was not found. It may not exist, or may not be published, yet.`);
 
   const players = story?.parts?.map((part, index) => ({
     id: part.id,

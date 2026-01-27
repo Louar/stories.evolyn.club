@@ -117,7 +117,7 @@
 	};
 </script>
 
-<div class="flex w-75 flex-col rounded-lg border border-stone-400 bg-white py-3 shadow-md">
+<div class="flex w-75 flex-col rounded-lg border border-card bg-card py-3 shadow-md">
 	<div class="relative grid w-full gap-2">
 		<!-- Media Selector -->
 		<div class="relative px-2">

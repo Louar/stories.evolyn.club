@@ -46,7 +46,7 @@ export const GET = (async ({ url, params, cookies, locals }) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
   };
-  cookies.set('__session', token, options);
+  cookies.set(process.env.NODE_ENV === 'production' ? '__session' : '__session_stories', token, options);
 
   throw redirect(302, '/editor/stories');
 }) satisfies RequestHandler;

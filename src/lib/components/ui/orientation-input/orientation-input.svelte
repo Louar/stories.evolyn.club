@@ -3,8 +3,8 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import {
+		orientateOrientationableField,
 		Orientation,
-		translateLocalizedField,
 		type Orientationable
 	} from '$lib/db/schemas/0-utils';
 	import { EDITORS } from '$lib/states/editors.svelte';
@@ -76,8 +76,8 @@
 		type="text"
 		value={value?.[EDITORS.orientation] ?? ''}
 		oninput={(e) => (value = { ...value, [EDITORS.orientation]: e.currentTarget.value })}
-		placeholder={translateLocalizedField(value)?.length
-			? translateLocalizedField(value)
+		placeholder={orientateOrientationableField(value)?.length
+			? orientateOrientationableField(value)
 			: placeholder}
 		{...restProps}
 	/>

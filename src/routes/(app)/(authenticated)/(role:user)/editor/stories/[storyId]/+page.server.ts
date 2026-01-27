@@ -11,7 +11,6 @@ export const load: PageServerLoad = (async ({ locals, params }) => {
   const storyId = params.storyId;
 
   if (storyId === 'new') {
-    console.log('new');
     const newStoryId = await db.transaction().execute(async (trx) => {
       const { id: newStoryId } = await trx
         .insertInto('story')
