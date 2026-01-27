@@ -1,4 +1,4 @@
-import { LogicHitpolicy } from '$lib/db/schemas/2-story-module';
+import { LogicHitpolicy, StoryPermissionRole } from '$lib/db/schemas/2-story-module';
 import type { Kysely, Migration } from 'kysely';
 import { sql } from 'kysely';
 
@@ -11,7 +11,10 @@ export const InitStoryModule: Migration = {
     await db.schema.createType('logic_hitpolicy')
       .asEnum(Object.values(LogicHitpolicy))
       .execute();
-
+    await db.schema.dropType('story_permission_role').ifExists().execute();
+    await db.schema.createType('story_permission_role')
+      .asEnum(Object.values(StoryPermissionRole))
+      .execute();
 
     // Create Video table
     await db.schema.createTable('video')
@@ -91,6 +94,27 @@ export const InitStoryModule: Migration = {
       .addColumn('updated_at', 'timestamptz', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
       .addColumn('updated_by', 'uuid', (col) => col.references('user.id').onDelete('set null'))
       .addUniqueConstraint('unique_story_per_client', ['client_id', 'reference'])
+      .execute();
+
+    // Create Story Permission table
+    await db.schema.createTable('story_permission')
+      .ifNotExists()
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
+      .addColumn('story_id', 'uuid', (col) => col.references('story.id').onDelete('cascade').notNull())
+      .addColumn('user_id', 'uuid', (col) => col.references('user.id').onDelete('cascade').notNull())
+      .addColumn('role', sql`story_permission_role`, (col) => col.defaultTo(StoryPermissionRole.owner).notNull())
+      .addColumn('created_at', 'timestamptz', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+      .addUniqueConstraint('unique_permission_per_story_and_user', ['story_id', 'user_id'])
+      .execute();
+
+    // Create the Story Auth Code table
+    await db.schema.createTable('story_auth_code')
+      .ifNotExists()
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`coalesce(uuidv7(), uuidv4())`).notNull())
+      .addColumn('story_id', 'uuid', (col) => col.references('client.id').onDelete('cascade').notNull())
+      .addColumn('value', 'text', (col) => col.notNull())
+      .addColumn('used_at', 'timestamptz')
+      .addUniqueConstraint('unique_value_per_story', ['story_id', 'value'])
       .execute();
 
     // Create Part table
@@ -185,6 +209,8 @@ export const InitStoryModule: Migration = {
 
     await db.schema.dropTable('quiz_logic_for_part').ifExists().execute();
     await db.schema.dropTable('part').ifExists().execute();
+    await db.schema.dropTable('story_auth_code').ifExists().execute();
+    await db.schema.dropTable('story_permission').ifExists().execute();
     await db.schema.dropTable('story').ifExists().execute();
     await db.schema.dropTable('quiz_question_template').ifExists().execute();
     await db.schema.dropTable('quiz_question_template_answer_item').ifExists().execute();
@@ -194,5 +220,6 @@ export const InitStoryModule: Migration = {
     await db.schema.dropTable('video').ifExists().execute();
 
     await db.schema.dropType('logic_hitpolicy').ifExists().execute();
+    await db.schema.dropType('story_permission_role').ifExists().execute();
   },
 };

@@ -26,6 +26,14 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       })
       .returning('id')
       .executeTakeFirstOrThrow();
+    await trx
+      .insertInto('storyPermission')
+      .values({
+        storyId: story.id,
+        userId: userId,
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow();
 
     // -------------------------
     // 2) Videos

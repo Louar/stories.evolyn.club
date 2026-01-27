@@ -5,7 +5,6 @@ import type { DaysOfWeek, Language, MediaColumn, TranslatableColumn } from './0-
 
 export const UserRole = {
   admin: 'admin',
-  organizer: 'organizer',
   user: 'user'
 } as const;
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];

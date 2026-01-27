@@ -6,8 +6,17 @@ export const LogicHitpolicy = {
 } as const;
 export type LogicHitpolicy = (typeof LogicHitpolicy)[keyof typeof LogicHitpolicy];
 
+export const StoryPermissionRole = {
+  viewer: 'viewer',
+  editor: 'editor',
+  owner: 'owner',
+} as const;
+export type StoryPermissionRole = (typeof StoryPermissionRole)[keyof typeof StoryPermissionRole];
+
 export type StoryModuleSchema = {
   story: Story;
+  storyPermission: StoryPermission;
+  storyAuthCode: StoryAuthCode;
   part: Part;
   video: Video;
   videoAvailableToStory: VideoAvailableToStory;
@@ -36,6 +45,21 @@ type Story = {
   updatedAt: ColumnType<Date, never, never>;
   updatedBy: string | null;
 };
+
+type StoryPermission = {
+  id: Generated<string>;
+  userId: string;
+  storyId: string;
+  role: ColumnType<StoryPermissionRole, StoryPermissionRole | null, StoryPermissionRole | null>;
+  createdAt: ColumnType<Date, never, never>;
+};
+
+type StoryAuthCode = {
+  id: Generated<string>;
+  storyId: string;
+  value: string;
+  usedAt: ColumnType<Date, Date | null, Date | null>;
+}
 
 type Part = {
   id: Generated<string>;

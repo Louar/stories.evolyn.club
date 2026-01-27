@@ -7,6 +7,7 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = (async ({ locals, params }) => {
 
   const clientId = locals.client.id;
+  const userId = locals.authusr!.id;
 
   const storyId = params.storyId;
 
@@ -20,6 +21,16 @@ export const load: PageServerLoad = (async ({ locals, params }) => {
           name: JSON.stringify({ en: 'New story' } as Translatable),
           isPublic: true,
           isPublished: true,
+          createdBy: userId,
+          updatedBy: userId,
+        })
+        .returning('id')
+        .executeTakeFirstOrThrow();
+      await trx
+        .insertInto('storyPermission')
+        .values({
+          storyId: newStoryId,
+          userId,
         })
         .returning('id')
         .executeTakeFirstOrThrow();
@@ -36,8 +47,9 @@ export const load: PageServerLoad = (async ({ locals, params }) => {
     });
 
     redirect(302, `/editor/stories/${newStoryId}`);
+  } else {
+    const story = await findOneStoryById(clientId, storyId);
+    return { story };
   }
 
-  const story = await findOneStoryById(clientId, storyId);
-  return { story };
 });

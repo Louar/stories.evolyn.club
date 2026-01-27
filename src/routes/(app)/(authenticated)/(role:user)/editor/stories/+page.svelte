@@ -10,9 +10,11 @@
 	let stories = $derived(data.stories);
 </script>
 
-<Header>
-	<h1 class="overflow-hidden text-sm whitespace-nowrap">Mijn stories</h1>
-</Header>
+<div class="mx-auto w-full max-w-xl">
+	<Header>
+		<h1 class="overflow-hidden text-sm whitespace-nowrap">Mijn stories</h1>
+	</Header>
+</div>
 
 <div class="mx-auto w-full max-w-xl">
 	{#if stories.length}
