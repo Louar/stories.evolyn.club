@@ -15,7 +15,7 @@ export const createClientGameBus = async (trx: Transaction<Schema>): Promise<Cur
   const client = await trx.insertInto('client')
     .values({
       reference: 'gamebus',
-      name: 'GameBus',
+      name: 'GameBus Stories',
       description: JSON.stringify({
         default: `# GameBus Stories`,
       } as Translatable),
@@ -93,7 +93,7 @@ export const createClientGameBus = async (trx: Transaction<Schema>): Promise<Cur
       manifest: JSON.stringify(
         {
           name: 'GameBus Stories',
-          short_name: 'GameBus Stories',
+          short_name: 'Stories',
           description: 'Maak je eigen stories.',
           lang: 'nl-NL',
           scope: '/',
@@ -118,7 +118,7 @@ export const createClientGameBus = async (trx: Transaction<Schema>): Promise<Cur
       ),
       isFindableBySearchEngines: true,
       plausibleDomain: undefined,
-      authenticationMethods: JSON.stringify([ClientAuthenticationMethod.code]),
+      authenticationMethods: JSON.stringify([ClientAuthenticationMethod.code, ClientAuthenticationMethod.password]),
       accessTokenKey: 'ZShYjmJE00hSkA1k8zoXULaLzYsArjFgeCQJLZ5bYVM=',
       onboardingSchema: undefined,
       // createdBy: userId,
