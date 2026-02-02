@@ -10,9 +10,14 @@
 	import type { findOneVideoById } from '$lib/db/repositories/2-stories-module';
 	import { formatFormError } from '$lib/db/schemas/0-utils';
 	import { EDITORS } from '$lib/states/editors.svelte';
-	import SquarePlus from '@lucide/svelte/icons/square-plus';
+	import CircleCheckIcon from '@lucide/svelte/icons/circle-check';
+	import CircleXIcon from '@lucide/svelte/icons/circle-x';
+	import LoaderIcon from '@lucide/svelte/icons/loader-circle';
+	import SquarePlusIcon from '@lucide/svelte/icons/square-plus';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
+	import { z } from 'zod/v4';
 	import type { $ZodIssue } from 'zod/v4/core';
+	import VideoValidator from './VideoValidator.svelte';
 
 	type Props = {
 		storyId: string;
@@ -37,6 +42,10 @@
 	};
 	let video = $state(defaultVideo);
 	let error = $state<$ZodIssue[] | null>(null);
+
+	let isLoading = $state(false);
+	let hasError: boolean | undefined = $state(undefined);
+	let src = $state<string | undefined>();
 
 	const persist = async (event: Event) => {
 		event.preventDefault();
@@ -64,9 +73,19 @@
 			video = defaultVideo;
 		}
 	};
+
+	const setError = async (error: boolean | undefined) => {
+		hasError = error;
+		src = undefined;
+		isLoading = false;
+	};
+	const setDuration = async (duration: number | undefined) => {
+		if (duration) video.duration = duration;
+		else video.duration = 0;
+	};
 </script>
 
-<form onsubmit={persist}>
+<form>
 	<Dialog.Content
 		class="scrollbar-none max-h-[90vh] overflow-y-auto pt-0 sm:max-w-200"
 		showCloseButton={false}
@@ -112,7 +131,7 @@
 							: ''}"
 						onclick={() => (video = defaultVideo)}
 					>
-						<SquarePlus />
+						<SquarePlusIcon />
 						New
 					</Toggle>
 				</div>
@@ -124,7 +143,9 @@
 							<TrashIcon />
 						</Button>
 					{/if}
-					<Button type="submit" onclick={persist}>Save video</Button>
+					<Button type="submit" disabled={isLoading || hasError} onclick={persist}>
+						Save video
+					</Button>
 				</div>
 			</div>
 
@@ -140,14 +161,37 @@
 				</Field.Error>
 			</Field.Field>
 			<Field.Field>
-				<Field.Label>Source</Field.Label>
+				<Field.Label>
+					Source
+					{#if isLoading}
+						<LoaderIcon class="size-4 animate-spin text-muted-foreground" />
+					{/if}
+					{#if !isLoading && hasError === false}
+						<CircleCheckIcon
+							class="size-4 rounded-full border border-emerald-500 bg-emerald-500 text-white"
+						/>
+					{:else if !isLoading && hasError === true}
+						<CircleXIcon
+							class="size-4 rounded-full border border-rose-500 bg-rose-500 text-white"
+						/>
+					{/if}
+				</Field.Label>
 				<OrientationInput
 					bind:value={video.source}
 					placeholder=".m3u8 stream URL, or YouTube URL"
+					oninput={(e) => {
+						const url = z.url().min(1).safeParse(e.currentTarget.value)?.data;
+						src = url;
+						if (url?.length) isLoading = true;
+					}}
 				/>
 				<Field.Error>
 					{formatFormError(error, `source.*`)}
 				</Field.Error>
+
+				{#if src?.length}
+					<VideoValidator {src} {setError} {setDuration} />
+				{/if}
 			</Field.Field>
 			<Field.Field>
 				<Field.Label>Thumbnail (optional)</Field.Label>
@@ -158,7 +202,12 @@
 			</Field.Field>
 			<Field.Field>
 				<Field.Label>Duration (in seconds)</Field.Label>
-				<Input type="number" bind:value={video.duration} placeholder="Duration..." />
+				<Input
+					type="number"
+					bind:value={video.duration}
+					placeholder="Duration..."
+					class="text-muted-foreground"
+				/>
 				<Field.Error>
 					{formatFormError(error, `duration`)}
 				</Field.Error>

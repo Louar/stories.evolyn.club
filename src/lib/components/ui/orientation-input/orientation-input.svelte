@@ -30,6 +30,7 @@
 		value = $bindable(),
 		class: className,
 		placeholder,
+		oninput,
 		...restProps
 	}: Props = $props();
 </script>
@@ -75,7 +76,10 @@
 		class={cn('w-full', className)}
 		type="text"
 		value={value?.[EDITORS.orientation] ?? ''}
-		oninput={(e) => (value = { ...value, [EDITORS.orientation]: e.currentTarget.value })}
+		oninput={(e) => {
+			value = { ...value, [EDITORS.orientation]: e.currentTarget.value };
+			oninput?.(e);
+		}}
 		placeholder={orientateOrientationableField(value)?.length
 			? orientateOrientationableField(value)
 			: placeholder}
