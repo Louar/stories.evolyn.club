@@ -4,7 +4,7 @@
 	import * as Item from '$lib/components/ui/item/index.js';
 	import BookOpenIcon from '@lucide/svelte/icons/book-open';
 	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
-	import Header from '$lib/components/nav/app-header.svelte';
+	import Header from '$lib/components/app/header/app-header.svelte';
 
 	let { data } = $props();
 	let stories = $derived(data.stories);

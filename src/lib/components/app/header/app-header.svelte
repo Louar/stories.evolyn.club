@@ -1,5 +1,5 @@
 <script lang="ts">
-	import HeaderBlank from '$lib/components/nav/app-header-blank.svelte';
+	import HeaderBlank from '$lib/components/app/header/app-header-blank.svelte';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import type { Snippet } from 'svelte';
