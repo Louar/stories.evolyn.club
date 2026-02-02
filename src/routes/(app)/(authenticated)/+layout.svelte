@@ -5,6 +5,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { useSidebar } from '$lib/components/ui/sidebar';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import { UserRole } from '$lib/db/schemas/1-client-user-module.js';
 	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
@@ -103,12 +104,21 @@
 		<Sidebar.Content class="pt-2">
 			<Sidebar.Menu>
 				<Sidebar.MenuItem class="px-2">
-					<Sidebar.MenuButton isActive={page.route.id?.includes('/editor/stories')}>
+					<Sidebar.MenuButton isActive={page.route.id?.endsWith('/editor/stories')}>
 						{#snippet child({ props })}
 							<a href="/editor/stories" {...props}>Stories</a>
 						{/snippet}
 					</Sidebar.MenuButton>
 				</Sidebar.MenuItem>
+				{#if authusr.roles?.includes(UserRole.admin)}
+					<Sidebar.MenuItem class="px-2">
+						<Sidebar.MenuButton isActive={page.route.id?.endsWith('/editor/stories/all')}>
+							{#snippet child({ props })}
+								<a href="/editor/stories/all" {...props}>All stories</a>
+							{/snippet}
+						</Sidebar.MenuButton>
+					</Sidebar.MenuItem>
+				{/if}
 			</Sidebar.Menu>
 		</Sidebar.Content>
 		<Sidebar.Footer class="pb-safe-or-2 border-t px-0 empty:border-0"></Sidebar.Footer>

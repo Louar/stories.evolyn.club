@@ -12,16 +12,13 @@
 
 <div class="mx-auto w-full max-w-xl">
 	<Header>
-		<h1 class="overflow-hidden text-sm whitespace-nowrap">My stories</h1>
+		<h1 class="overflow-hidden text-sm whitespace-nowrap">All stories</h1>
 	</Header>
 </div>
 
 <div class="mx-auto w-full max-w-xl">
 	{#if stories.length}
 		<div class="grid w-full gap-4 p-4">
-			<div class="flex gap-2">
-				<Button href="/editor/stories/new" data-sveltekit-preload-data="tap">Create story</Button>
-			</div>
 			{#each stories as story}
 				<a href="/editor/stories/{story.id}">
 					<Item.Root variant="outline">
@@ -49,6 +46,11 @@
 				<Empty.Title>No stories yet</Empty.Title>
 				<Empty.Description>Create your first story to get started.</Empty.Description>
 			</Empty.Header>
+			<Empty.Content>
+				<div class="flex gap-2">
+					<Button href="/editor/stories/new">Create story</Button>
+				</div>
+			</Empty.Content>
 		</Empty.Root>
 	{/if}
 </div>
