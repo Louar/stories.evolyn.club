@@ -13,6 +13,16 @@ export const StoryPermissionRole = {
 } as const;
 export type StoryPermissionRole = (typeof StoryPermissionRole)[keyof typeof StoryPermissionRole];
 
+export const PartBackgroundType = {
+  video: 'video',
+} as const;
+export type PartBackgroundType = (typeof PartBackgroundType)[keyof typeof PartBackgroundType];
+export const PartForegroundType = {
+  announcement: 'announcement',
+  quiz: 'quiz',
+} as const;
+export type PartForegroundType = (typeof PartForegroundType)[keyof typeof PartForegroundType];
+
 export type StoryModuleSchema = {
   story: Story;
   storyPermission: StoryPermission;

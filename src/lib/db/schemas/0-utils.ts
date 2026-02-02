@@ -100,7 +100,7 @@ export const selectLocalizedField = <DB, TB extends keyof DB & string>(eb: Expre
     sql<string | null>`${eb.ref(column)}->>${Language.English}`,
   );
 }
-export const translateLocalizedField = (obj?: Translatable | null, language?: Language | null) => {
+export const translateLocalizedField = (obj?: Translatable | null, language?: Language | 'default' | null) => {
   return obj?.[language ?? 'default'] ?? obj?.default ?? obj?.[Language.English];
 }
 

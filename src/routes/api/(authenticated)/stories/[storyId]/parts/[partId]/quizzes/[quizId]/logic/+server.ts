@@ -10,7 +10,7 @@ const ruleInputSchema = z.object({
   id: z.string().optional(),
   quizQuestionTemplateId: z.string().min(1).refine(val => val !== 'none', 'A quiz must be selected'),
   quizQuestionTemplateAnswerItemId: z.string().min(1), // .nullable(),
-  // value: z.string().nullable(),
+  value: z.string().nullable().default(null),
 });
 const ruleSchema = z.object({
   id: z.string().optional(),
@@ -99,22 +99,22 @@ export const POST = (async ({ request, params }) => {
         .execute();
 
       // Create / update the remaining rule inputs
-      for (const input of inputs) {
+      for (const { quizQuestionTemplateId, quizQuestionTemplateAnswerItemId, value, ...input } of inputs) {
         await trx
           .insertInto('quizLogicRuleInput')
           .values({
             id: input.id?.startsWith('new') ? undefined : input.id,
             quizLogicRuleId: rule.id,
-            quizQuestionTemplateId: input.quizQuestionTemplateId,
-            quizQuestionTemplateAnswerItemId: input.quizQuestionTemplateAnswerItemId,
-            // value: JSON.stringify(rule.value),
+            quizQuestionTemplateId,
+            quizQuestionTemplateAnswerItemId,
+            value: JSON.stringify(value),
           })
           .onConflict((oc) =>
             oc.columns(['id']).doUpdateSet({
               quizLogicRuleId: rule.id,
-              quizQuestionTemplateId: input.quizQuestionTemplateId,
-              quizQuestionTemplateAnswerItemId: input.quizQuestionTemplateAnswerItemId,
-              // value: JSON.stringify(rule.value),
+              quizQuestionTemplateId,
+              quizQuestionTemplateAnswerItemId,
+              value: JSON.stringify(value),
             })
           )
           .executeTakeFirstOrThrow();

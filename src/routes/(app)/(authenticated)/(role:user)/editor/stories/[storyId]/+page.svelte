@@ -4,7 +4,6 @@
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
 	import { navigationMenuTriggerStyle } from '$lib/components/ui/navigation-menu/navigation-menu-trigger.svelte';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
-	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import type {
 		findOneAnnouncementById,
 		findOneQuizById,
@@ -13,6 +12,7 @@
 	} from '$lib/db/repositories/2-stories-module.js';
 	import { translateLocalizedField } from '$lib/db/schemas/0-utils.js';
 	import { EDITORS } from '$lib/states/editors.svelte.js';
+	import HouseIcon from '@lucide/svelte/icons/house';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
 	import TvMinimalPlayIcon from '@lucide/svelte/icons/tv-minimal-play';
 	import { SvelteFlowProvider } from '@xyflow/svelte';
@@ -107,10 +107,9 @@
 			<NavigationMenu.Item>
 				<NavigationMenu.Link>
 					{#snippet child()}
-						<!-- <a href="/editor/stories" class={navigationMenuTriggerStyle()}>
-							<House class="size-4" />
-						</a> -->
-						<Sidebar.Trigger class={navigationMenuTriggerStyle()} />
+						<a href="/editor/stories" class={navigationMenuTriggerStyle()}>
+							<HouseIcon class="size-5" />
+						</a>
 					{/snippet}
 				</NavigationMenu.Link>
 			</NavigationMenu.Item>

@@ -10,7 +10,8 @@
 		findOneQuizLogicById,
 		findOneStoryById
 	} from '$lib/db/repositories/2-stories-module';
-	import { formatFormError } from '$lib/db/schemas/0-utils';
+	import { formatFormError, translateLocalizedField } from '$lib/db/schemas/0-utils';
+	import { EDITORS } from '$lib/states/editors.svelte';
 	import { moveArrayItem } from '$lib/utils';
 	import { DragDropProvider } from '@dnd-kit-svelte/svelte';
 	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
@@ -177,6 +178,9 @@
 
 									<div class="space-y-3">
 										{#each rule.inputs as input, i (input.id)}
+											{@const question = quiz.questions.find(
+												(q) => q.id === input.quizQuestionTemplateId
+											)}
 											<div
 												class="flex gap-2 rounded-md border bg-card/50 p-3 transition-colors"
 												class:hidden={input.isRemoved}
@@ -188,22 +192,21 @@
 														name="quizQuestionTemplateId"
 														bind:value={input.quizQuestionTemplateId}
 													>
-														{@const question = quiz.questions.find(
-															(q) => q.id === input.quizQuestionTemplateId
-														)}
 														<Select.Trigger
 															class="w-full {question ? '' : 'text-muted-foreground'}"
 														>
 															{@html !question
 																? 'Select a question...'
-																: `<p><span class="mr-1 text-muted-foreground">${question.order}.</span>${question.title}</p>`}
+																: `<p><span class="mr-1 text-muted-foreground">${question.order}.</span>${translateLocalizedField(question.title, EDITORS.language)}</p>`}
 														</Select.Trigger>
 														<Select.Content>
 															<Select.Group>
 																<ol class="list-inside list-decimal marker:text-muted-foreground">
 																	{#each quiz.questions as question (question.id)}
 																		<Select.Item value={question.id}>
-																			<li>{question.title}</li>
+																			<li>
+																				{translateLocalizedField(question.title, EDITORS.language)}
+																			</li>
 																		</Select.Item>
 																	{/each}
 																</ol>
@@ -224,20 +227,18 @@
 														type="single"
 														name="quizQuestionTemplateId"
 														value={input.quizQuestionTemplateAnswerItemId ?? 'none'}
+														disabled={!question}
 														onValueChange={(value) =>
 															(input.quizQuestionTemplateAnswerItemId =
 																value === 'none' ? null : value)}
 													>
-														{@const question = quiz.questions.find(
-															(q) => q.id === input.quizQuestionTemplateId
-														)}
 														{@const answer = question?.answerOptions?.find(
 															(o) => o.id === input.quizQuestionTemplateAnswerItemId
 														)}
 														<Select.Trigger class="w-full {answer ? '' : 'text-muted-foreground'}">
 															{@html !answer
 																? 'Select an answer option...'
-																: `<p><span class="mr-1 text-muted-foreground">${answer.order}.</span>${answer.label}</p>`}
+																: `<p><span class="mr-1 text-muted-foreground">${answer.order}.</span>${translateLocalizedField(answer.label, EDITORS.language)}</p>`}
 														</Select.Trigger>
 														<Select.Content>
 															{#if question?.answerOptions?.length}
@@ -245,7 +246,9 @@
 																	<ol class="list-inside list-decimal marker:text-muted-foreground">
 																		{#each question.answerOptions as option (option.id)}
 																			<Select.Item value={option.id}>
-																				<li>{option.label}</li>
+																				<li>
+																					{translateLocalizedField(option.label, EDITORS.language)}
+																				</li>
 																			</Select.Item>
 																		{/each}
 																	</ol>

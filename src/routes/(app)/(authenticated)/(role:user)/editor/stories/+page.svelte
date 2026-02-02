@@ -20,7 +20,7 @@
 	{#if stories.length}
 		<div class="grid w-full gap-4 p-4">
 			<div class="flex gap-2">
-				<Button href="/editor/stories/new">Create story</Button>
+				<Button href="/editor/stories/new" data-sveltekit-preload-data="tap">Create story</Button>
 			</div>
 			{#each stories as story}
 				<a href="/editor/stories/{story.id}">

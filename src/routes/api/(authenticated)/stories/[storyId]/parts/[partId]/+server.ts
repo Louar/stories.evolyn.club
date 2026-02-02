@@ -1,14 +1,14 @@
 import { db } from '$lib/db/database';
 import { findOnePartById } from '$lib/db/repositories/2-stories-module';
-import { LogicHitpolicy } from '$lib/db/schemas/2-story-module.js';
+import { LogicHitpolicy, PartBackgroundType, PartForegroundType } from '$lib/db/schemas/2-story-module.js';
 import { json } from '@sveltejs/kit';
 import z from 'zod/v4';
 import type { RequestHandler } from './$types';
 
 const partSchema = z.object({
-  backgroundType: z.string().nullish(),
+  backgroundType: z.enum(PartBackgroundType).nullable().catch(null),
   backgroundConfiguration: z.record(z.string(), z.unknown()).nullish(),
-  foregroundType: z.string().nullish(),
+  foregroundType: z.enum(PartForegroundType).nullable().catch(null),
   foregroundConfiguration: z.record(z.string(), z.unknown()).nullish(),
   isInitial: z.boolean().default(false),
   defaultNextPartId: z.string().nullish(),

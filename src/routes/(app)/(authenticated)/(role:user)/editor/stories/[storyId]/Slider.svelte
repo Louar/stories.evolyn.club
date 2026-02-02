@@ -82,7 +82,7 @@
 		</SliderPrimitive.Thumb>
 		<SliderPrimitive.ThumbLabel
 			index={0}
-			class="mb-3 rounded-md bg-muted px-2 py-1 text-xs text-nowrap text-foreground"
+			class="mb-3 rounded-md border bg-muted px-2 py-1 text-xs text-nowrap text-foreground"
 		>
 			{formatDuration(duration, range?.[0] ?? 0)}
 		</SliderPrimitive.ThumbLabel>
@@ -99,7 +99,7 @@
 			index={1}
 			class="{!hasOverlay
 				? 'hidden'
-				: ''} z-20 mb-3 rounded-md bg-muted px-2 py-1 text-xs text-nowrap text-foreground"
+				: ''} z-20 mb-3 rounded-md border bg-muted px-2 py-1 text-xs text-nowrap text-foreground"
 		>
 			{formatDuration(duration, range?.[1] ?? 0)}
 		</SliderPrimitive.ThumbLabel>
@@ -112,7 +112,7 @@
 		</SliderPrimitive.Thumb>
 		<SliderPrimitive.ThumbLabel
 			index={2}
-			class="mb-3 rounded-md bg-muted px-2 py-1 text-xs text-nowrap text-foreground"
+			class="mb-3 rounded-md border bg-muted px-2 py-1 text-xs text-nowrap text-foreground"
 		>
 			{formatDuration(duration, range?.[2] ?? 0)}
 		</SliderPrimitive.ThumbLabel>

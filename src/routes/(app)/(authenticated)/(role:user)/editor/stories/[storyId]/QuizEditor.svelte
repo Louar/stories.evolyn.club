@@ -10,7 +10,7 @@
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
 	import { TranslatableInput } from '$lib/components/ui/translatable-input';
 	import type { findOneQuizById } from '$lib/db/repositories/2-stories-module';
-	import { formatFormError } from '$lib/db/schemas/0-utils';
+	import { formatFormError, translateLocalizedField } from '$lib/db/schemas/0-utils';
 	import { EDITORS } from '$lib/states/editors.svelte';
 	import { moveArrayItem } from '$lib/utils';
 	import { DragDropProvider } from '@dnd-kit-svelte/svelte';
@@ -99,6 +99,14 @@
 
 	const persist = async (event: Event) => {
 		event.preventDefault();
+
+		for (const question of quiz.questions) {
+			if (!question.answerOptions?.length) continue;
+			for (const option of question.answerOptions) {
+				const value = translateLocalizedField(option.label, 'default');
+				if (value?.length) option.value = value;
+			}
+		}
 
 		const result = await fetch(`/api/stories/${storyId}/quizzes/${quiz.id ?? 'new'}/questions`, {
 			method: 'POST',

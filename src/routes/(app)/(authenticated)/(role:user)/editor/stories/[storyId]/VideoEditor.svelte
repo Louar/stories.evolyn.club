@@ -85,7 +85,7 @@
 	};
 </script>
 
-<form>
+<form onsubmit={persist}>
 	<Dialog.Content
 		class="scrollbar-none max-h-[90vh] overflow-y-auto pt-0 sm:max-w-200"
 		showCloseButton={false}

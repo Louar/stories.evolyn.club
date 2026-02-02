@@ -364,13 +364,13 @@
 	</div>
 
 	<!-- Quiz Handles -->
-	{#if part.foregroundType === 'quiz' && part.quizLogicForPart?.rules?.length}
+	{#if part.foregroundType === 'quiz'}
 		<Separator class="mt-1 mb-3" />
 		<div class="grid w-full gap-2">
 			{#each part.quizLogicForPart?.rules as rule}
 				<div class="relative px-2">
 					<p class="text-sm">
-						{rule.name || `Rule ${rule.order}`}
+						{rule.name}
 					</p>
 					<Handle
 						type="source"

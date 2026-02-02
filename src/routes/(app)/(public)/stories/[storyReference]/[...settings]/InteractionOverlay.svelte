@@ -8,7 +8,9 @@
 
 	type Props = {
 		questions: Extract<
-			Awaited<ReturnType<typeof findOneStoryByReference>>['parts'][number]['foreground'],
+			NonNullable<
+				Awaited<ReturnType<typeof findOneStoryByReference>>
+			>['parts'][number]['foreground'],
 			{ questions: any }
 		>['questions'];
 
