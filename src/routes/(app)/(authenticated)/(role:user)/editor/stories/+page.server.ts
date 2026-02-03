@@ -1,6 +1,11 @@
 import { db } from '$lib/db/database';
 import { selectLocalizedField } from '$lib/db/schemas/0-utils';
+import { fail, message, superValidate } from 'sveltekit-superforms';
+import { zod4 } from 'sveltekit-superforms/adapters';
+import YAML from 'yaml';
 import type { PageServerLoad } from './$types';
+import { schemaOfAttachments } from './schemas';
+
 
 export const load: PageServerLoad = (async ({ locals }) => {
 
@@ -20,7 +25,38 @@ export const load: PageServerLoad = (async ({ locals }) => {
       'story.isPublic',
       'story.isPublished',
     ])
-    .execute()
+    .execute();
 
-  return { stories };
+  const form = await superValidate(zod4(schemaOfAttachments), { errors: false });
+
+  return { form, stories };
 });
+
+
+export const actions = {
+  upload: async ({ request, fetch }) => {
+    const form = await superValidate(request, zod4(schemaOfAttachments));
+    if (!form.valid) return fail(400, { form });
+
+    const { attachments } = form.data;
+
+    for (const attachment of attachments) {
+
+      let yaml;
+      try {
+        yaml = YAML.parse(await attachment.text());
+      } catch {
+        // return setError(form, 'attachments', 'Invalid YAML');
+      }
+      const res = await fetch(`/api/stories/io`, { method: 'POST', body: JSON.stringify(yaml) });
+      console.log(res.ok, res.status, res.statusText);
+      if (!res.ok) {
+        console.log(await res.json());
+        return fail(400, { form });
+      }
+    }
+
+    return message(form, 'Form posted successfully!');
+  }
+};
+

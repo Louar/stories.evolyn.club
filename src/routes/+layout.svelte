@@ -2,6 +2,7 @@
 	import favicon from '$lib/assets/evolyn-logo.svg';
 	import { ModeWatcher } from 'mode-watcher';
 
+	import { Toaster } from 'svelte-sonner';
 	import './layout.css';
 
 	let { data, children } = $props();
@@ -49,4 +50,5 @@
 </svelte:head>
 
 <ModeWatcher />
+<Toaster />
 {@render children?.()}

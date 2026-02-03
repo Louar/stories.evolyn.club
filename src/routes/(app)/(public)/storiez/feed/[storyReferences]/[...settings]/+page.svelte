@@ -124,7 +124,7 @@
 		{/each}
 	</div>
 
-	<!-- ✅ STATIC OVERLAY (does not scroll) -->
+	<!-- Static overlay -->
 	<div class="pointer-events-none absolute inset-0 z-50">
 		<!-- top gradient -->
 		<div class="absolute inset-x-0 top-0 h-28 bg-linear-to-b from-black/60 to-transparent"></div>

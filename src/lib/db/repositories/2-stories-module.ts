@@ -98,7 +98,7 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
                   jsonObjectFrom(
                     eb.selectFrom('quizQuestionTemplateAnswerGroup')
                       .whereRef('quizQuestionTemplateAnswerGroup.id', '=', 'quizQuestionTemplate.quizQuestionTemplateAnswerGroupId')
-                      .select(['quizQuestionTemplateAnswerGroup.id', 'quizQuestionTemplateAnswerGroup.doRandomize'])
+                      .select(['quizQuestionTemplateAnswerGroup.id', 'quizQuestionTemplateAnswerGroup.reference', 'quizQuestionTemplateAnswerGroup.doRandomize'])
                       .$narrowType<{ id: NotNull, doRandomize: NotNull }>()
                   ).as('answerGroup'),
                   eb.lit<boolean>(false).as('isRemoved'),
@@ -135,6 +135,7 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
                 .whereRef('quizLogicForPart.id', '=', 'part.quizLogicForPartId')
                 .select((eb) => [
                   'quizLogicForPart.hitpolicy',
+                  'quizLogicForPart.quizTemplateId',
                   'quizLogicForPart.defaultNextPartId',
                   jsonArrayFrom(
                     eb.selectFrom('quizLogicRule')
@@ -525,7 +526,7 @@ export const findOneQuizById = async (quizId: string) => {
             jsonObjectFrom(
               eb.selectFrom('quizQuestionTemplateAnswerGroup')
                 .whereRef('quizQuestionTemplateAnswerGroup.id', '=', 'quizQuestionTemplate.quizQuestionTemplateAnswerGroupId')
-                .select(['quizQuestionTemplateAnswerGroup.id', 'quizQuestionTemplateAnswerGroup.doRandomize'])
+                .select(['quizQuestionTemplateAnswerGroup.id', 'quizQuestionTemplateAnswerGroup.reference', 'quizQuestionTemplateAnswerGroup.doRandomize'])
                 .$narrowType<{ id: NotNull, doRandomize: NotNull }>()
             ).as('answerGroup'),
             eb.lit<boolean>(false).as('isRemoved'),
@@ -537,12 +538,12 @@ export const findOneQuizById = async (quizId: string) => {
   return quiz;
 }
 
-// TODO: remove reliance on language parameter
 export const findOneQuizLogicById = async (logicId: string) => {
   const logic = await db.selectFrom('quizLogicForPart')
     .where('quizLogicForPart.id', '=', logicId)
     .select((eb) => [
       'quizLogicForPart.hitpolicy',
+      'quizLogicForPart.quizTemplateId',
       'quizLogicForPart.defaultNextPartId',
       jsonArrayFrom(
         eb.selectFrom('quizLogicRule')

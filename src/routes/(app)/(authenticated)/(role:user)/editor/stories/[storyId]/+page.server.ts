@@ -7,12 +7,12 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = (async ({ locals, params }) => {
 
   const clientId = locals.client.id;
-  const userId = locals.authusr!.id;
-
   const storyId = params.storyId;
 
   if (storyId === 'new') {
     const newStoryId = await db.transaction().execute(async (trx) => {
+      const userId = locals.authusr!.id;
+
       const { id: newStoryId } = await trx
         .insertInto('story')
         .values({
