@@ -118,7 +118,7 @@ export const POST = (async ({ locals, request }) => {
                 quizQuestionTemplateAnswerGroupId: ag.id,
                 order: ao.order,
                 value: JSON.stringify(ao.value),
-                label: JSON.stringify(ao.value),
+                label: JSON.stringify(ao.label),
               })
               .returning('id')
               .executeTakeFirstOrThrow();
@@ -169,7 +169,7 @@ export const POST = (async ({ locals, request }) => {
         })
         .returning('id')
         .executeTakeFirstOrThrow();
-      if (part_raw.id?.length) mapOfQuestions.set(part_raw.id, part.id);
+      if (part_raw.id?.length) mapOfParts.set(part_raw.id, part.id);
     }
 
     // 6. Quiz logic for part
@@ -219,6 +219,7 @@ export const POST = (async ({ locals, request }) => {
     for (const part_raw of story_raw.parts) {
       if (!part_raw.id?.length) continue;
       const currentPartId = mapOfParts.get(part_raw.id);
+      console.log(currentPartId);
       if (!currentPartId?.length) continue;
 
       let defaultNextPartId: string | undefined = undefined;

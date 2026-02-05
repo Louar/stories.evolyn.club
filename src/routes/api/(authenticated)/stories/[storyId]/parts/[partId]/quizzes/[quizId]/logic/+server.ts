@@ -107,14 +107,14 @@ export const POST = (async ({ request, params }) => {
             quizLogicRuleId: rule.id,
             quizQuestionTemplateId,
             quizQuestionTemplateAnswerItemId,
-            value: JSON.stringify(value),
+            value: value ? JSON.stringify(value) : null,
           })
           .onConflict((oc) =>
             oc.columns(['id']).doUpdateSet({
               quizLogicRuleId: rule.id,
               quizQuestionTemplateId,
               quizQuestionTemplateAnswerItemId,
-              value: JSON.stringify(value),
+              value: value ? JSON.stringify(value) : null,
             })
           )
           .executeTakeFirstOrThrow();
