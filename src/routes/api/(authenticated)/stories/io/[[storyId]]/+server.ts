@@ -219,7 +219,6 @@ export const POST = (async ({ locals, request }) => {
     for (const part_raw of story_raw.parts) {
       if (!part_raw.id?.length) continue;
       const currentPartId = mapOfParts.get(part_raw.id);
-      console.log(currentPartId);
       if (!currentPartId?.length) continue;
 
       let defaultNextPartId: string | undefined = undefined;
@@ -228,6 +227,7 @@ export const POST = (async ({ locals, request }) => {
       let quizLogicForPartId: string | undefined = undefined;
       if (part_raw.quizLogicForPartId) quizLogicForPartId = mapOfPartsWithLogic.get(part_raw.id);
 
+      if (!defaultNextPartId?.length && !quizLogicForPartId?.length) continue;
       await trx
         .updateTable('part')
         .set({

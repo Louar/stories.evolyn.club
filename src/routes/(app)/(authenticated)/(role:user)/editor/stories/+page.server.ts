@@ -49,9 +49,8 @@ export const actions = {
         // return setError(form, 'attachments', 'Invalid YAML');
       }
       const res = await fetch(`/api/stories/io`, { method: 'POST', body: JSON.stringify(yaml) });
-      console.log(res.ok, res.status, res.statusText);
       if (!res.ok) {
-        console.log(await res.json());
+        console.error(await res.json());
         return fail(400, { form });
       }
     }
