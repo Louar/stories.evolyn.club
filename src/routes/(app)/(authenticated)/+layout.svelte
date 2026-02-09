@@ -106,7 +106,7 @@
 				<Sidebar.MenuItem class="px-2">
 					<Sidebar.MenuButton isActive={page.route.id?.endsWith('/editor/stories')}>
 						{#snippet child({ props })}
-							<a href="/editor/stories" {...props}>Stories</a>
+							<a href="/editor/stories" {...props}>My stories</a>
 						{/snippet}
 					</Sidebar.MenuButton>
 				</Sidebar.MenuItem>
