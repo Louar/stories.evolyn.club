@@ -6,8 +6,8 @@ Stories lets you build, edit, and publish interactive _“stories”_. A story i
 
 Stories includes:
 
-- A public story player that plays videos, shows overlays, and follows branching rules
-- A story editor for authenticated users
+- A **public story player** that plays videos, shows overlays, and follows branching rules
+- A **story editor** for authenticated users
 - YAML import/export for offline editing or bulk migration
 
 ## Core concepts
@@ -24,17 +24,17 @@ A story is the full interactive experience a viewer plays through.
 
 A part is one step in the story. Every part has:
 
-- Background layer (required)
-- Foreground layer (optional)
+- **Background layer** (required)
+- **Foreground layer** (optional)
 
-Parts are connected using branching logic, which decides which part plays next.
+Parts are connected using **branching logic**, which decides which part plays next.
 
 ### Part layers
 
 #### Background layer (required)
 
-Currently, a background layer is always a video.
-Supported video sources are (1) .m3u8 stream URLs and (2) YouTube URLs.
+Currently, a background layer is always a **video**.
+Supported video sources are (1) **.m3u8 stream URLs** and (2) **YouTube URLs**.
 
 #### Foreground layer (optional)
 
@@ -46,7 +46,7 @@ Available foreground types are currently:
    - Use announcements for: instructions, reminders, and/or short explanations.
 2. **Quiz**
    - A quiz asks the viewer one or more questions.
-   - Quizzes can also control branching, for example: “If the user answered B to question 1, go to Part 4”.
+   - Quizzes can also control branching, for example: “If the user answered _B_ to _Question 1_, go to _Part 4_”.
 
 ### Branching rules
 
@@ -58,7 +58,7 @@ Stories supports two types of branching:
 
 Each part can define a **default next part**. This is the part that plays automatically when the video finishes.
 Use this when your story should continue normally without requiring input.
-Example: Part A finishes → Part B starts
+Example: Part A finishes → Part B starts.
 
 #### 2. Quiz-based branching
 
@@ -71,7 +71,7 @@ Quiz branching uses rules such as:
 Quiz rules are evaluated when the quiz is completed.
 You can also define a **fallback part** (default rule) for answers that do not match any specific rule.
 
-⚠️ **Important:** If you use quiz branching, avoid setting a normal default next part for the video ending unless you want the quiz to be time-limited. _Otherwise the video may end and continue before the viewer answers._
+⚠️ **Important:** If you use quiz branching, _avoid setting a normal default next part for the video_ ending unless you want the quiz to be time-limited. Otherwise the video may end and continue before the viewer answers.
 
 ## Getting Started
 
@@ -85,26 +85,22 @@ You can also define a **fallback part** (default rule) for answers that do not m
 
 ## Creating Stories in the editor
 
-In the Story editor, Stories are displayed as a canvas of cards.
-Each card represents one part.
+In the Story editor, Stories are displayed as a **canvas of cards**.
+Each card represents one **part**.
 
 You can:
 
 - drag parts around to organize your layout
 - drag a connector from one part to another to define what plays next
 - drag a connector into empty space to create a new part automatically
-- delete parts or connections: click the element, and press Backspace.
+- delete parts or connections: click the element, and press **Backspace**.
 
 ## Configuring a Part
 
 Each part can contain:
 
-1. Video (background)
-   For each part, select a video from your library and optionally trim it by using the slider to select a start and end time.
-2. Overlay (foreground)
-   Optionally add an overlay: announcement, or quiz.
-   If the part contains a quiz, you can also define rules for what plays next (see _'Quiz branching is configured per part, not per quiz'_).
-   You can set the moment the overlay should show by dragging the star-icon on the slider.
+1. **Video (background).** For each part, select a video from your library and optionally trim it by using the slider to select a start and end time.
+2. **Overlay (foreground).** Optionally add an overlay: announcement, or quiz. If the part contains a quiz, you can also define rules for what plays next (see _"Quiz branching is configured per part, not per quiz"_). You can set the moment the overlay should show by dragging the star-icon (⭐️) on the slider.
 
 ## Reusable Story assets
 
@@ -121,7 +117,7 @@ Before you can fully build parts, you usually need to define story-wide assets i
 You maintain a story video library.
 
 - Videos are referenced through URLs. Currently, .m3u8 stream URLs and YouTube URLs are allowed.
-- Optionally, for video’s a poster or thumbnail can be configured, which would be displayed before the story starts playing. Posters are only shown for the first part, so they do not interrupt the story flow.
+- Optionally, for video’s a poster or thumbnail can be configured, which would be displayed before the story starts playing. Posters are only shown for the **first part**, so they do not interrupt the story flow.
 
 ### Announcements
 
@@ -203,7 +199,7 @@ window.addEventListener('message', (event: MessageEvent) => {
 
 ```
 
-⚠️ Always validate event.origin. Never trust messages from unknown domains.
+⚠️ Always validate `event.origin`. Never trust messages from unknown domains.
 
 ## API
 
