@@ -71,7 +71,7 @@ Quiz branching uses rules such as:
 Quiz rules are evaluated when the quiz is completed.
 You can also define a **fallback part** (default rule) for answers that do not match any specific rule.
 
-⚠️ **Important:** If you use quiz branching, avoid setting a normal default next part for the video ending unless you want the quiz to be time-limited. ==Otherwise the video may end and continue before the viewer answers.==
+⚠️ **Important:** If you use quiz branching, avoid setting a normal default next part for the video ending unless you want the quiz to be time-limited. _Otherwise the video may end and continue before the viewer answers._
 
 ## Getting Started
 
@@ -132,7 +132,7 @@ Create reusable announcement templates and translations.
 Create reusable quiz templates, add questions, answer options, and reorder them.
 
 ⚠️ **Quiz branching is configured per part, not per quiz.**
-This means ==the same quiz can be reused in multiple parts==, and each part can send the viewer to different next parts.
+This means _the same quiz can be reused in multiple parts_, and each part can send the viewer to different next parts.
 To edit the branching rules for the quiz in the current part, click the cog icon (⚙️) next to the selected quiz name.
 
 ## Advanced editor concepts
