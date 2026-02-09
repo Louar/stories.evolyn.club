@@ -14,7 +14,7 @@ export const DummyDataDefaultClientAndUsers: Migration = {
       .values({
         reference: env.SECRET_DEFAULT_CLIENT_REFERENCE,
         name: 'Evolyn Stories',
-        domains: JSON.stringify(['localhost:5174', 'stories.evolyn.club', 'stories.beta.evolyn.club']),
+        domains: JSON.stringify(['localhost:5174', 'localhost:4173', 'stories.evolyn.club', 'stories.beta.evolyn.club']),
         css: JSON.stringify({
           ":root": {
             "--radius": "0.625rem",
