@@ -14,7 +14,7 @@ export const PUT = (async ({ request, locals, params }) => {
   if (!story) error(404, `Story not found`);
 
   const { reference, name, ...rest } = body.data;
-  const isUnique = db.selectFrom('story').where('clientId', '=', clientId).where('id', '!=', params.storyId).where('reference', '=', reference);
+  const isUnique = db.selectFrom('story').where('clientId', '=', clientId).where('id', '!=', params.storyId).where('reference', '=', reference).select('id').executeTakeFirst();
   if (!isUnique) error(422, `Reference already exists`);
 
   await db

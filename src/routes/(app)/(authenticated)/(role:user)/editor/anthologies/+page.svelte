@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import Header from '$lib/components/app/header/app-header.svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as Empty from '$lib/components/ui/empty/index.js';
@@ -24,10 +23,17 @@
 	import { toast } from 'svelte-sonner';
 	import { filesProxy, superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
+	import Editor from './editor.svelte';
 	import { schemaOfAttachments } from './schemas';
 
 	let { data } = $props();
 	let anthologies = $derived(data.anthologies);
+	type Anthology = (typeof anthologies)[number];
+	let isEditorOpen: boolean = $state(false);
+	let anthologyToEdit: Anthology | undefined = $state();
+	$effect(() => {
+		if (anthologyToEdit?.id) isEditorOpen = true;
+	});
 
 	let isUploadPanelOpen = $state(false);
 	// svelte-ignore state_referenced_locally
@@ -58,22 +64,32 @@
 
 <div class="mx-auto w-full max-w-xl">
 	<Header>
-		<h1 class="overflow-hidden text-sm whitespace-nowrap">My stories</h1>
+		<h1 class="overflow-hidden text-sm whitespace-nowrap">My anthologies</h1>
 	</Header>
 </div>
+
+{#if isEditorOpen}
+	<Editor bind:isEditorOpen bind:anthology={anthologyToEdit} {data} />
+{/if}
 
 <div class="mx-auto w-full max-w-xl">
 	{#if anthologies.length}
 		<div class="grid w-full gap-4 p-4">
 			<div class="flex gap-2">
-				<Button href="/editor/anthologies/new" data-sveltekit-preload-data="tap">
+				<Button onclick={() => (isEditorOpen = true)}>
 					<PlusIcon class="size-4" />
 					Create anthology
 				</Button>
 				{@render upload()}
 			</div>
 			{#each anthologies as anthology}
-				<Item.Root variant="outline" onclick={() => goto(`/editor/anthologies/${anthology.id}`)}>
+				<Item.Root
+					variant="outline"
+					onclick={() => {
+						anthologyToEdit = anthology;
+						isEditorOpen = true;
+					}}
+				>
 					<Item.Content>
 						<Item.Title>{anthology.name}</Item.Title>
 						<Item.Description>
@@ -91,12 +107,16 @@
 							<FileDownIcon class="size-4" />
 							Download
 						</a>
-						<a
-							href="/editor/anthologies/{anthology.id}"
-							class={buttonVariants({ variant: 'ghost', size: 'icon' })}
+						<Button
+							onclick={() => {
+								anthologyToEdit = anthology;
+								isEditorOpen = true;
+							}}
+							variant="ghost"
+							size="icon"
 						>
 							<ChevronRightIcon class="size-4" />
-						</a>
+						</Button>
 					</Item.Actions>
 				</Item.Root>
 			{/each}
@@ -112,7 +132,7 @@
 			</Empty.Header>
 			<Empty.Content>
 				<div class="flex gap-2">
-					<Button href="/editor/anthologies/new" data-sveltekit-preload-data="tap">
+					<Button onclick={() => (isEditorOpen = true)}>
 						<PlusIcon class="size-4" />
 						Create anthology
 					</Button>

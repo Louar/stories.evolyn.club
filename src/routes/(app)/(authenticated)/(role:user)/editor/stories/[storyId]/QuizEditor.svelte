@@ -59,6 +59,7 @@
 			answerOptions: [],
 			answerGroup: {
 				id: 'new',
+				reference: '',
 				doRandomize: false
 			},
 			isRemoved: false // Front-end purposes

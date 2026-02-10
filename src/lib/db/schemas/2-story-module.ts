@@ -67,7 +67,7 @@ type Anthology = {
   isPublic: ColumnType<boolean, boolean | null, boolean>;
   createdAt: ColumnType<Date, never, never>;
   createdBy: string | null;
-  updatedAt: ColumnType<Date, never, never>;
+  updatedAt: ColumnType<Date, never, Date | never>;
   updatedBy: string | null;
 };
 
@@ -97,7 +97,7 @@ type Story = {
   isPublic: ColumnType<boolean, boolean | null, boolean>;
   createdAt: ColumnType<Date, never, never>;
   createdBy: string | null;
-  updatedAt: ColumnType<Date, never, never>;
+  updatedAt: ColumnType<Date, never, Date | never>;
   updatedBy: string | null;
 };
 
