@@ -27,7 +27,7 @@
 	import { schemaOfAttachments } from './schemas';
 
 	let { data } = $props();
-	let stories = $derived(data.stories);
+	let anthologies = $derived(data.anthologies);
 
 	let isUploadPanelOpen = $state(false);
 	// svelte-ignore state_referenced_locally
@@ -63,28 +63,28 @@
 </div>
 
 <div class="mx-auto w-full max-w-xl">
-	{#if stories.length}
+	{#if anthologies.length}
 		<div class="grid w-full gap-4 p-4">
 			<div class="flex gap-2">
-				<Button href="/editor/stories/new" data-sveltekit-preload-data="tap">
+				<Button href="/editor/anthologies/new" data-sveltekit-preload-data="tap">
 					<PlusIcon class="size-4" />
-					Create story
+					Create anthology
 				</Button>
 				{@render upload()}
 			</div>
-			{#each stories as story}
-				<Item.Root variant="outline" onclick={() => goto(`/editor/stories/${story.id}`)}>
+			{#each anthologies as anthology}
+				<Item.Root variant="outline" onclick={() => goto(`/editor/anthologies/${anthology.id}`)}>
 					<Item.Content>
-						<Item.Title>{story.name}</Item.Title>
+						<Item.Title>{anthology.name}</Item.Title>
 						<Item.Description>
-							Status: {story.isPublished ? 'Published' : 'Draft'}, Visibility: {story.isPublic
+							Status: {anthology.isPublished ? 'Published' : 'Draft'}, Visibility: {anthology.isPublic
 								? 'Public'
 								: 'Private'}
 						</Item.Description>
 					</Item.Content>
 					<Item.Actions>
 						<a
-							href="/api/stories/io/{story.id}"
+							href="/api/anthologies/io/{anthology.id}"
 							data-sveltekit-preload-data="tap"
 							class={buttonVariants({ variant: 'outline', size: 'sm' })}
 						>
@@ -92,7 +92,7 @@
 							Download
 						</a>
 						<a
-							href="/editor/stories/{story.id}"
+							href="/editor/anthologies/{anthology.id}"
 							class={buttonVariants({ variant: 'ghost', size: 'icon' })}
 						>
 							<ChevronRightIcon class="size-4" />
@@ -107,14 +107,14 @@
 				<Empty.Media variant="icon">
 					<BookOpenIcon />
 				</Empty.Media>
-				<Empty.Title>No stories yet</Empty.Title>
-				<Empty.Description>Create your first story to get started.</Empty.Description>
+				<Empty.Title>No anthologies yet</Empty.Title>
+				<Empty.Description>Create your first anthology to get started.</Empty.Description>
 			</Empty.Header>
 			<Empty.Content>
 				<div class="flex gap-2">
-					<Button href="/editor/stories/new" data-sveltekit-preload-data="tap">
+					<Button href="/editor/anthologies/new" data-sveltekit-preload-data="tap">
 						<PlusIcon class="size-4" />
-						Create story
+						Create anthology
 					</Button>
 					{@render upload()}
 				</div>
@@ -127,13 +127,13 @@
 	<Popover.Root bind:open={isUploadPanelOpen}>
 		<Popover.Trigger class={buttonVariants({ variant: 'outline', size: 'default' })}>
 			<FileUpIcon class="size-4" />
-			Upload stories
+			Upload anthologies
 		</Popover.Trigger>
 		<Popover.Content class="w-80" align="start">
 			<div class="grid gap-4">
 				<div class="space-y-2">
-					<h4 class="leading-none font-medium">Upload stories</h4>
-					<p class="text-sm text-muted-foreground">Upload story .YAMLs.</p>
+					<h4 class="leading-none font-medium">Upload anthologies</h4>
+					<p class="text-sm text-muted-foreground">Upload anthology .YAMLs.</p>
 				</div>
 				<div class="grid gap-2">
 					<form

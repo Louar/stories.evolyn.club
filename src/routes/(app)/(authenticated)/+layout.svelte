@@ -104,6 +104,13 @@
 		<Sidebar.Content class="pt-2">
 			<Sidebar.Menu>
 				<Sidebar.MenuItem class="px-2">
+					<Sidebar.MenuButton isActive={page.route.id?.endsWith('/editor/anthologies')}>
+						{#snippet child({ props })}
+							<a href="/editor/anthologies" {...props}>My anthologies</a>
+						{/snippet}
+					</Sidebar.MenuButton>
+				</Sidebar.MenuItem>
+				<Sidebar.MenuItem class="px-2">
 					<Sidebar.MenuButton isActive={page.route.id?.endsWith('/editor/stories')}>
 						{#snippet child({ props })}
 							<a href="/editor/stories" {...props}>My stories</a>

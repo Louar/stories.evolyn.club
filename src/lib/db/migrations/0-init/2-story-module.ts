@@ -221,7 +221,7 @@ export const InitStoryModule: Migration = {
       .addColumn('created_by', 'uuid', (col) => col.references('user.id').onDelete('set null'))
       .addColumn('updated_at', 'timestamptz', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
       .addColumn('updated_by', 'uuid', (col) => col.references('user.id').onDelete('set null'))
-      .addUniqueConstraint('unique_story_per_client', ['client_id', 'reference'])
+      .addUniqueConstraint('unique_anthology_per_client', ['client_id', 'reference'])
       .execute();
 
     // Create Anthology Permission table

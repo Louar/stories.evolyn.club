@@ -19,6 +19,39 @@ export const storySchema = z.object({
   isPublic: z.boolean().default(true),
 });
 
+export const findOneAnthologyByReference = async (clientId: string, anthologyReference: string, language?: Language) => {
+
+  if (!clientId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) error(404, 'De client-ID is ongeldig.');
+
+  const anthology = await db
+    .selectFrom('anthology')
+    .where('anthology.reference', '=', anthologyReference)
+    .where('anthology.clientId', '=', clientId)
+    .where('anthology.isPublished', '=', true)
+    .where('anthology.isPublic', '=', true)
+    .select((eb) => [
+      'anthology.id',
+      'anthology.reference',
+      selectLocalizedField(eb, 'anthology.name', language).as('name'),
+      jsonArrayFrom(
+        eb.selectFrom('anthologyPosition')
+          .whereRef('anthologyPosition.anthologyId', '=', 'anthology.id')
+          .leftJoin('story', 'story.id', 'anthologyPosition.storyId')
+          .select((eb) => [
+            'anthologyPosition.order',
+            'story.id',
+            'story.reference',
+            selectLocalizedField(eb, 'story.name', language).as('name'),
+          ])
+          .$narrowType<{ order: NotNull, id: NotNull, reference: NotNull }>()
+          .orderBy('anthologyPosition.order', 'asc')
+      ).as('stories'),
+    ])
+    .executeTakeFirst();
+
+  return anthology;
+}
+
 export const findOneStoryById = async (clientId: string, storyId: string) => {
 
   if (!clientId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) error(404, 'De client-ID is ongeldig.');
