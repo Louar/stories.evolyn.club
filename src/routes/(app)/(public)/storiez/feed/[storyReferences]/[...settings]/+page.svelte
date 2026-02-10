@@ -133,7 +133,7 @@
 		<div class="absolute inset-x-0 bottom-0 h-44 bg-linear-to-t from-black/70 to-transparent"></div>
 
 		<!-- captions / meta (use active) -->
-		<div class="absolute right-16 bottom-6 left-4">
+		<div class="absolute right-16 bottom-10 left-4">
 			<!-- <div class="text-sm opacity-90">###</div> -->
 			<div class="mt-1 text-base leading-snug font-semibold">
 				{stories[active]?.name}
@@ -147,14 +147,14 @@
 			<button
 				type="button"
 				class="grid h-12 w-12 place-items-center rounded-full bg-white/10 backdrop-blur"
-				onclick={(e) => scrollToIndex(active - 1)}
+				onclick={() => scrollToIndex(active - 1)}
 			>
 				<ArrowUpIcon class="size-8" />
 			</button>
 			<button
 				type="button"
 				class="grid h-12 w-12 place-items-center rounded-full bg-white/10 backdrop-blur"
-				onclick={(e) => scrollToIndex(active + 1)}
+				onclick={() => scrollToIndex(active + 1)}
 			>
 				<ArrowDownIcon class="size-8" />
 			</button>

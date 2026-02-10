@@ -86,12 +86,13 @@
 		}
 	};
 	$effect(() => {
-		if (doEnd) {
-			player.pause();
-			endWatching();
-		}
+		if (doEnd) stopAndEndWatching();
 	});
-	const endWatching = async () => {
+	const stopAndEndWatching = async () => {
+		await player.pause();
+		endWatching();
+	};
+	const endWatching = () => {
 		pauseWatching();
 
 		if (PLAYERS.watchDurations[id] > 0) {
@@ -119,11 +120,12 @@
 	$effect(() => {
 		if (canPlay && doPlay && PLAYERS.didUserInteract) restart();
 	});
-	const restart = () => {
+	const restart = async () => {
 		player.currentTime = 0;
 		PLAYERS.watchDurations[id] = 0;
 		PLAYERS.watchTimePercentages[id] = 0;
-		player.play();
+		await player.play();
+		doEnd = false;
 		isEnded = false;
 	};
 
