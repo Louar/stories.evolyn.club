@@ -15,6 +15,7 @@
 	let orientation = $derived(data.orientation);
 	// svelte-ignore state_referenced_locally
 	let playersOfStories = $state(data.playersOfStories);
+	let storiesRestart: Record<number, boolean> = $state({});
 
 	let container: HTMLDivElement | null = null;
 
@@ -53,14 +54,33 @@
 	};
 	const scrollToIndex = async (next: number) => {
 		if (!container) return;
+
+		playersOfStories = playersOfStories.map((storyPlayers) =>
+			storyPlayers.map((p) => ({
+				...p,
+				doPlay: false,
+				doRestart: false,
+				almostEnded: false,
+				isEnded: false,
+				doEnd: true,
+				didHandleEnd: false
+			}))
+		);
+
 		const i = Math.max(0, Math.min(stories.length - 1, next));
 		active = i;
+		const playersOfNextStory = playersOfStories[active];
 
+		storiesRestart[active] = true;
 		container
 			.querySelector<HTMLElement>(`[data-index="${i}"]`)
 			?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
 		await waitForScrollEnd(container);
+		storiesRestart[active] = false;
+
+		const initialPartOfNextStory = playersOfNextStory.find((p) => p.isInitialPart);
+		if (initialPartOfNextStory && PLAYERS.didUserInteract) initialPartOfNextStory.doPlay = true;
 	};
 
 	const onKeydown = (e: KeyboardEvent) => {
@@ -138,12 +158,9 @@
 						if (stories.length - 1 > i) {
 							await new Promise((r) => setTimeout(r, 1000));
 							scrollToIndex(i + 1);
-							if (!isStoryCompleted(stories[i + 1].id)) {
-								const initial = playersOfStories[i + 1].find((p) => p.isInitialPart);
-								if (initial && PLAYERS.didUserInteract) initial.doPlay = true;
-							}
 						}
 					}}
+					doRestart={storiesRestart[i]}
 					class="rounded-3xl"
 				/>
 			</section>

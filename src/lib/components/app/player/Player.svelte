@@ -57,6 +57,7 @@
 	let canPlay = $state(false);
 	let almostEnded = $state(false);
 	let isEnded = $state(false);
+	let didHandleEnd = $state(false);
 
 	let timer = $state<ReturnType<typeof setInterval> | null>(null);
 
@@ -95,6 +96,7 @@
 	const stopAndEndWatching = async () => {
 		await player.pause();
 		endWatching();
+		if (isEnded) didHandleEnd = true;
 	};
 	const endWatching = () => {
 		pauseWatching();
@@ -115,7 +117,8 @@
 	});
 
 	$effect(() => {
-		if (PLAYERS.didUserInteract && isEnded) {
+		if (PLAYERS.didUserInteract && isEnded && !didHandleEnd) {
+			didHandleEnd = true;
 			doPlay = false;
 			playNext();
 		}
@@ -135,6 +138,7 @@
 		almostEnded = false;
 		isEnded = false;
 		doEnd = false;
+		didHandleEnd = false;
 	};
 
 	$effect(() => {

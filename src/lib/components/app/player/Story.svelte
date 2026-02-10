@@ -15,6 +15,7 @@
 		story: NonNullable<Awaited<ReturnType<typeof findOneStoryByReference>>>;
 		orientation: Orientation | undefined;
 		players: Player[];
+		doRestart?: boolean;
 		onnext: (() => void) | undefined;
 
 		class?: ClassValue | null | undefined;
@@ -23,6 +24,7 @@
 		story = $bindable(),
 		orientation = $bindable(),
 		players = $bindable(),
+		doRestart = $bindable(false),
 		onnext,
 		class: className
 	}: Props = $props();
@@ -117,6 +119,10 @@
 				(part.foreground?.start ?? 0) * part.background?.duration
 		);
 	};
+
+	$effect(() => {
+		if (doRestart) pid = story?.parts?.[0]?.id;
+	});
 </script>
 
 <div
@@ -164,6 +170,7 @@
 							}
 						}}
 						playNext={() => {
+							player.doEnd = true;
 							const nextPlayer = players.find((p) => p.id === player.next);
 							if (nextPlayer) {
 								nextPlayer.doBuffer = true;
