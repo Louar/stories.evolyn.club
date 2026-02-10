@@ -1,4 +1,4 @@
-import { LogicHitpolicy, StoryPermissionRole } from '$lib/db/schemas/2-story-module';
+import { AnthologyPermissionRole, LogicHitpolicy, StoryPermissionRole } from '$lib/db/schemas/2-story-module';
 import type { Kysely, Migration } from 'kysely';
 import { sql } from 'kysely';
 
@@ -10,6 +10,10 @@ export const InitStoryModule: Migration = {
     await db.schema.dropType('logic_hitpolicy').ifExists().execute();
     await db.schema.createType('logic_hitpolicy')
       .asEnum(Object.values(LogicHitpolicy))
+      .execute();
+    await db.schema.dropType('anthology_permission_role').ifExists().execute();
+    await db.schema.createType('anthology_permission_role')
+      .asEnum(Object.values(AnthologyPermissionRole))
       .execute();
     await db.schema.dropType('story_permission_role').ifExists().execute();
     await db.schema.createType('story_permission_role')
@@ -133,6 +137,16 @@ export const InitStoryModule: Migration = {
       .addColumn('position', 'jsonb')
       .execute();
 
+    // Create PartTransition table
+    await db.schema.createTable('part_transition')
+      .ifNotExists()
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`uuidv7()`).notNull())
+      .addColumn('session', 'text')
+      .addColumn('from_part_id', 'uuid', (col) => col.references('part.id').onDelete('cascade').notNull())
+      .addColumn('to_part_id', 'uuid', (col) => col.references('part.id').onDelete('cascade').notNull())
+      .addColumn('created_at', 'timestamptz', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+      .execute();
+
     // Create QuizLogicForPart table
     await db.schema.createTable('quiz_logic_for_part')
       .ifNotExists()
@@ -193,9 +207,51 @@ export const InitStoryModule: Migration = {
       .addUniqueConstraint('unique_quiz_template_per_story', ['story_id', 'quiz_template_id'])
       .execute();
 
+    // Create Anthology table
+    await db.schema.createTable('anthology')
+      .ifNotExists()
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`uuidv7()`).notNull())
+      .addColumn('client_id', 'uuid', (col) => col.references('client.id').onDelete('cascade').notNull())
+      .addColumn('reference', 'text', col => col.notNull())
+      .addColumn('name', 'jsonb', (col) => col.notNull())
+      .addColumn('configuration', 'jsonb')
+      .addColumn('is_published', 'boolean', col => col.defaultTo(false).notNull())
+      .addColumn('is_public', 'boolean', col => col.defaultTo(false).notNull())
+      .addColumn('created_at', 'timestamptz', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+      .addColumn('created_by', 'uuid', (col) => col.references('user.id').onDelete('set null'))
+      .addColumn('updated_at', 'timestamptz', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+      .addColumn('updated_by', 'uuid', (col) => col.references('user.id').onDelete('set null'))
+      .addUniqueConstraint('unique_story_per_client', ['client_id', 'reference'])
+      .execute();
+
+    // Create Anthology Permission table
+    await db.schema.createTable('anthology_permission')
+      .ifNotExists()
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`uuidv7()`).notNull())
+      .addColumn('anthology_id', 'uuid', (col) => col.references('anthology.id').onDelete('cascade').notNull())
+      .addColumn('user_id', 'uuid', (col) => col.references('user.id').onDelete('cascade').notNull())
+      .addColumn('role', sql`anthology_permission_role`, (col) => col.defaultTo(AnthologyPermissionRole.owner).notNull())
+      .addColumn('created_at', 'timestamptz', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+      .addUniqueConstraint('unique_permission_per_anthology_and_user', ['anthology_id', 'user_id'])
+      .execute();
+
+    // Create AnthologyPosition table
+    await db.schema.createTable('anthology_position')
+      .ifNotExists()
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`uuidv7()`).notNull())
+      .addColumn('anthology_id', 'uuid', (col) => col.references('anthology.id').onDelete('cascade').notNull())
+      .addColumn('story_id', 'uuid', (col) => col.references('story.id').onDelete('cascade').notNull())
+      .addColumn('order', 'smallint', (col) => col.notNull())
+      .addColumn('configuration', 'jsonb')
+      .addUniqueConstraint('unique_story_per_position_in_anthology', ['anthology_id', 'story_id', 'order'])
+      .execute();
   },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async down(db: Kysely<any>) {
+    await db.schema.dropTable('anthology_position').ifExists().execute();
+    await db.schema.dropTable('anthology_permission').ifExists().execute();
+    await db.schema.dropTable('anthology').ifExists().execute();
+
     await db.schema.dropTable('quiz_template_available_to_story').ifExists().execute();
     await db.schema.dropTable('announcement_template_available_to_story').ifExists().execute();
     await db.schema.dropTable('video_available_to_story').ifExists().execute();
@@ -208,6 +264,7 @@ export const InitStoryModule: Migration = {
       .execute();
 
     await db.schema.dropTable('quiz_logic_for_part').ifExists().execute();
+    await db.schema.dropTable('part_transition').ifExists().execute();
     await db.schema.dropTable('part').ifExists().execute();
     await db.schema.dropTable('story_auth_code').ifExists().execute();
     await db.schema.dropTable('story_permission').ifExists().execute();
@@ -220,6 +277,7 @@ export const InitStoryModule: Migration = {
     await db.schema.dropTable('video').ifExists().execute();
 
     await db.schema.dropType('logic_hitpolicy').ifExists().execute();
+    await db.schema.dropType('anthology_permission_role').ifExists().execute();
     await db.schema.dropType('story_permission_role').ifExists().execute();
   },
 };

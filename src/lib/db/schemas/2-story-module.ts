@@ -6,6 +6,13 @@ export const LogicHitpolicy = {
 } as const;
 export type LogicHitpolicy = (typeof LogicHitpolicy)[keyof typeof LogicHitpolicy];
 
+export const AnthologyPermissionRole = {
+  viewer: 'viewer',
+  editor: 'editor',
+  owner: 'owner',
+} as const;
+export type AnthologyPermissionRole = (typeof AnthologyPermissionRole)[keyof typeof AnthologyPermissionRole];
+
 export const StoryPermissionRole = {
   viewer: 'viewer',
   editor: 'editor',
@@ -24,10 +31,14 @@ export const PartForegroundType = {
 export type PartForegroundType = (typeof PartForegroundType)[keyof typeof PartForegroundType];
 
 export type StoryModuleSchema = {
+  anthology: Anthology;
+  anthologyPermission: AnthologyPermission;
+  anthologyPosition: AnthologyPosition;
   story: Story;
   storyPermission: StoryPermission;
   storyAuthCode: StoryAuthCode;
   part: Part;
+  partTransition: PartTransition;
   video: Video;
   videoAvailableToStory: VideoAvailableToStory;
   announcementTemplate: AnnouncementTemplate;
@@ -40,6 +51,40 @@ export type StoryModuleSchema = {
   quizLogicForPart: QuizLogicForPart;
   quizLogicRule: QuizLogicRule;
   quizLogicRuleInput: QuizLogicRuleInput;
+};
+
+export type AnthologyConfiguration = {
+  showPerformanceOverview: boolean;
+};
+
+type Anthology = {
+  id: Generated<string>;
+  clientId: string;
+  reference: string;
+  name: TranslatableColumn;
+  configuration: JSONColumnType<AnthologyConfiguration> | null;
+  isPublished: ColumnType<boolean, boolean | null, boolean>;
+  isPublic: ColumnType<boolean, boolean | null, boolean>;
+  createdAt: ColumnType<Date, never, never>;
+  createdBy: string | null;
+  updatedAt: ColumnType<Date, never, never>;
+  updatedBy: string | null;
+};
+
+type AnthologyPermission = {
+  id: Generated<string>;
+  userId: string;
+  anthologyId: string;
+  role: ColumnType<AnthologyPermissionRole, AnthologyPermissionRole | null, AnthologyPermissionRole | null>;
+  createdAt: ColumnType<Date, never, never>;
+};
+
+type AnthologyPosition = {
+  id: Generated<string>;
+  anthologyId: string;
+  storyId: string;
+  order: number;
+  configuration: JSONColumnType<object> | null;
 };
 
 type Story = {
@@ -84,6 +129,14 @@ type Part = {
   announcementTemplateId: string | null;
   quizLogicForPartId: string | null;
   position: JSONColumnType<{ x: number; y: number }> | null;
+};
+
+type PartTransition = {
+  id: Generated<string>;
+  session: string | null;
+  fromPartId: string;
+  toPartId: string;
+  createdAt: ColumnType<Date, never, never>;
 };
 
 type Video = {
