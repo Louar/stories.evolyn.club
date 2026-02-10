@@ -2,6 +2,7 @@
 	import type { findOneStoryByReference } from '$lib/db/repositories/2-stories-module.js';
 	import { Orientation } from '$lib/db/schemas/0-utils.js';
 	import { PLAYERS } from '$lib/states/players.svelte.js';
+	import { STORIES } from '$lib/states/stories.svelte.js';
 	import { cn } from '$lib/utils.js';
 	import type { ClassValue } from 'clsx';
 	import { onMount } from 'svelte';
@@ -14,6 +15,7 @@
 		story: NonNullable<Awaited<ReturnType<typeof findOneStoryByReference>>>;
 		orientation: Orientation | undefined;
 		players: Player[];
+		onnext: (() => void) | undefined;
 
 		class?: ClassValue | null | undefined;
 	};
@@ -21,6 +23,7 @@
 		story = $bindable(),
 		orientation = $bindable(),
 		players = $bindable(),
+		onnext,
 		class: className
 	}: Props = $props();
 
@@ -37,16 +40,19 @@
 		const output = executeLogic(logic, input);
 		if (!output?.next || typeof output.next !== 'string') return;
 
-		const player = players.find((p) => p.id === output.next);
-		if (!player) return;
+		const current = players.find((p) => p.id === pid);
+		const next = players.find((p) => p.id === output.next);
+		if (!current || !next) return;
 
-		if (pid === output.next) {
-			player.doRestart = true;
+		current.doPlay = false;
+
+		if (current.id === next.id) {
+			next.doRestart = true;
 		} else {
 			players.find((player) => player.id === pid)!.doEnd = true;
 			pid = output.next;
-			player.doBuffer = true;
-			player.doPlay = true;
+			next.doBuffer = true;
+			next.doPlay = true;
 		}
 	};
 	const executeLogic = (
@@ -99,6 +105,18 @@
 			{} as OutputFromLogic<Logic>
 		);
 	};
+
+	const hasOverlay = (
+		part: (typeof story.parts)[number],
+		player: (typeof players)[number] | undefined
+	) => {
+		return (
+			PLAYERS.didUserInteract &&
+			part.foreground &&
+			(player?.start ?? 0) + (player?.time ?? 0) >=
+				(part.foreground?.start ?? 0) * part.background?.duration
+		);
+	};
 </script>
 
 <div
@@ -139,6 +157,7 @@
 						bind:doRestart={player.doRestart}
 						bind:doEnd={player.doEnd}
 						bind:time={player.time}
+						isOverlaid={hasOverlay(part, player)}
 						bufferNext={() => {
 							if (nextPlayers?.length) {
 								nextPlayers.forEach((nextPlayer) => (nextPlayer.doBuffer = true));
@@ -168,12 +187,17 @@
 									},
 									'*'
 								);
+								STORIES.averageWatchTimePercentages[story.id] = Math.max(
+									STORIES.averageWatchTimePercentages[story.id] ?? 0,
+									watchTimePercentage
+								);
+								if (onnext) onnext();
 							}
 						}}
 					/>
 				{/if}
 
-				{#if PLAYERS.didUserInteract && part.foreground && (player?.start ?? 0) + (player?.time ?? 0) >= (part.foreground?.start ?? 0) * part.background?.duration}
+				{#if hasOverlay(part, player)}
 					{#if part.foregroundType === 'announcement' && 'title' in part.foreground && 'message' in part.foreground}
 						<AnnouncementOverlay
 							title={part.foreground?.title}

@@ -1,9 +1,14 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import Story from '$lib/components/app/player/Story.svelte';
+	import { PLAYERS } from '$lib/states/players.svelte';
+	import { STORIES } from '$lib/states/stories.svelte.js';
 	import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
 	import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
+	import CheckIcon from '@lucide/svelte/icons/circle-check';
 	import { onDestroy, onMount } from 'svelte';
+	import { Confetti } from 'svelte-confetti';
+	import { fade } from 'svelte/transition';
 
 	let { data } = $props();
 	let stories = $derived(data.stories);
@@ -29,6 +34,7 @@
 
 			const finish = () => {
 				cleanup();
+				isScrolling = false;
 				resolve();
 			};
 
@@ -39,6 +45,7 @@
 				timer = window.setTimeout(() => finish(), timeout);
 			};
 
+			isScrolling = true;
 			target.addEventListener('scroll', onScroll, { passive: true });
 			target.addEventListener('scrollend', onScrollEnd, { passive: true });
 			onScroll();
@@ -49,14 +56,11 @@
 		const i = Math.max(0, Math.min(stories.length - 1, next));
 		active = i;
 
-		isScrolling = true;
 		container
 			.querySelector<HTMLElement>(`[data-index="${i}"]`)
 			?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
 		await waitForScrollEnd(container);
-
-		isScrolling = false;
 	};
 
 	const onKeydown = (e: KeyboardEvent) => {
@@ -104,6 +108,10 @@
 		window.removeEventListener('keydown', onKeydown);
 		io?.disconnect();
 	});
+
+	const isStoryCompleted = (storyId: string) => {
+		return STORIES.averageWatchTimePercentages[storyId] > 10;
+	};
 </script>
 
 <svelte:head>
@@ -111,7 +119,10 @@
 </svelte:head>
 
 <!-- Fullscreen shell -->
-<div class="relative h-dvh w-dvw overflow-hidden bg-black text-white">
+<div class="relative h-dvh w-dvw overflow-hidden text-white">
+	<!-- Background -->
+	<div class="absolute inset-0 -z-20 bg-black"></div>
+
 	<!-- Scroll container (snap) -->
 	<div
 		bind:this={container}
@@ -119,7 +130,22 @@
 	>
 		{#each stories as story, i}
 			<section data-index={i} class="relative h-full w-full snap-start snap-always">
-				<Story {story} {orientation} players={playersOfStories[i]} class="rounded-3xl" />
+				<Story
+					{story}
+					{orientation}
+					players={playersOfStories[i]}
+					onnext={async () => {
+						if (stories.length - 1 > i) {
+							await new Promise((r) => setTimeout(r, 1000));
+							scrollToIndex(i + 1);
+							if (!isStoryCompleted(stories[i + 1].id)) {
+								const initial = playersOfStories[i + 1].find((p) => p.isInitialPart);
+								if (initial && PLAYERS.didUserInteract) initial.doPlay = true;
+							}
+						}
+					}}
+					class="rounded-3xl"
+				/>
 			</section>
 		{/each}
 	</div>
@@ -135,7 +161,7 @@
 		<!-- captions / meta (use active) -->
 		<div class="absolute right-16 bottom-10 left-4">
 			<!-- <div class="text-sm opacity-90">###</div> -->
-			<div class="mt-1 text-base leading-snug font-semibold">
+			<div class="mt-1 line-clamp-2 text-lg leading-snug font-semibold md:line-clamp-1">
 				{stories[active]?.name}
 			</div>
 			<!-- <div class="mt-1 text-sm opacity-80">#demo #svelte5 #tailwind</div> -->
@@ -143,7 +169,15 @@
 
 		<!-- right-side actions placeholder -->
 		<div class="pointer-events-auto absolute right-4 bottom-8 flex flex-col items-center gap-4">
-			<!-- <div class="grid h-12 w-12 place-items-center rounded-full bg-white/10 backdrop-blur"></div> -->
+			{#if !isScrolling && isStoryCompleted(stories[active].id)}
+				<Confetti x={[-1, -0.25]} y={[0, 0.5]} xSpread={0.4} duration={750} />
+				<div
+					transition:fade={{ duration: 150 }}
+					class="grid h-12 w-12 place-items-center rounded-full bg-emerald-300/20 text-emerald-500 backdrop-blur"
+				>
+					<CheckIcon class="size-8" />
+				</div>
+			{/if}
 			<button
 				type="button"
 				class="grid h-12 w-12 place-items-center rounded-full bg-white/10 backdrop-blur"

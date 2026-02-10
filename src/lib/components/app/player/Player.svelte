@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { PLAYERS } from '$lib/states/players.svelte';
 	import { cn } from '$lib/utils';
+	import PlayIcon from '@lucide/svelte/icons/play';
+	import LoaderIcon from '@lucide/svelte/icons/loader-circle';
 	import type { ClassValue } from 'clsx';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
@@ -21,6 +23,7 @@
 		doRestart: boolean;
 		doEnd: boolean;
 		time: number;
+		isOverlaid: boolean;
 
 		bufferNext: () => void;
 		playNext: () => void;
@@ -41,6 +44,7 @@
 		doRestart = $bindable(false),
 		doEnd = $bindable(false),
 		time = $bindable(0),
+		isOverlaid = $bindable(false),
 
 		bufferNext,
 		playNext,
@@ -121,26 +125,28 @@
 		if (canPlay && doPlay && PLAYERS.didUserInteract) restart();
 	});
 	const restart = async () => {
+		time = 0;
 		player.currentTime = 0;
 		PLAYERS.watchDurations[id] = 0;
 		PLAYERS.watchTimePercentages[id] = 0;
 		await player.play();
-		doEnd = false;
+		doPlay = true;
+		doRestart = false;
+		almostEnded = false;
 		isEnded = false;
+		doEnd = false;
 	};
 
 	$effect(() => {
-		if (doRestart) {
-			player.currentTime = 0;
-			PLAYERS.watchDurations[id] = 0;
-			PLAYERS.watchTimePercentages[id] = 0;
-			isEnded = false;
-			doPlay = true;
-			doRestart = false;
-		}
+		if (doRestart) restart();
 	});
 </script>
 
+<div
+	class="pointer-events-none absolute inset-0 -z-10 grid place-items-center text-white opacity-50"
+>
+	<LoaderIcon class="size-14 animate-spin" />
+</div>
 <media-player
 	bind:this={player}
 	class={cn('group relative size-full overflow-hidden', className)}
@@ -162,7 +168,7 @@
 	<media-provider>
 		{#if poster && isInitialPart}
 			<media-poster
-				class="absolute inset-0 bg-black opacity-0 transition-opacity data-visible:opacity-100"
+				class="absolute inset-0 opacity-0 transition-opacity data-visible:opacity-100"
 				src={poster}
 			>
 			</media-poster>
@@ -174,43 +180,23 @@
 	>
 		<media-controls-group class="pointer-events-auto grid h-full w-full place-items-center">
 			<media-play-button class="group size-full outline-none">
-				<!-- onclick={() => (PLAYERS.didUserInteract = true)}
-					onkeydown={() => (PLAYERS.didUserInteract = true)}
-					role="button"
-					tabindex="-1" -->
 				<button
 					type="button"
 					aria-label="Play"
 					class="grid size-full place-items-center px-2 pt-10 outline-none"
 					onclick={() => (PLAYERS.didUserInteract = true)}
 				>
-					{#if !PLAYERS.didUserInteract}
+					{#if !isOverlaid}
 						<div
 							out:fade
-							class="grid size-24 cursor-pointer place-items-center rounded-full bg-black/50 ring-black backdrop-blur-md transition-colors outline-none group-hover:bg-black/30 group-data-focus:ring-4"
+							class="hidden size-24 cursor-pointer place-items-center rounded-full bg-black/50 text-white ring-black backdrop-blur-md transition-colors outline-none group-hover:bg-black/30 group-data-focus:ring-4 group-data-paused:grid"
 						>
-							<media-icon type="play" class="hidden size-12 group-data-paused:block">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									fill="#ffffff"
-									viewBox="0 0 256 256"
-									class="opacity-80 transition-colors group-hover:opacity-100"
-									><path
-										d="M240,128a15.74,15.74,0,0,1-7.6,13.51L88.32,229.65a16,16,0,0,1-16.2.3A15.86,15.86,0,0,1,64,216.13V39.87a15.86,15.86,0,0,1,8.12-13.82,16,16,0,0,1,16.2.3L232.4,114.49A15.74,15.74,0,0,1,240,128Z"
-									></path></svg
-								>
-							</media-icon>
-							<media-icon type="pause" class="size-12 group-data-paused:hidden">
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									fill="#ffffff"
-									viewBox="0 0 256 256"
-									class="opacity-80 transition-colors group-hover:opacity-100"
-									><path
-										d="M216,48V208a16,16,0,0,1-16,16H160a16,16,0,0,1-16-16V48a16,16,0,0,1,16-16h40A16,16,0,0,1,216,48ZM96,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V48A16,16,0,0,0,96,32Z"
-									></path></svg
-								>
-							</media-icon>
+							<PlayIcon
+								class="hidden size-12 opacity-80 transition-colors group-hover:opacity-100 group-data-paused:block"
+							/>
+							<!-- <PauseIcon
+								class="size-12 opacity-80 transition-colors group-hover:opacity-100 group-data-paused:hidden"
+							/> -->
 						</div>
 					{/if}
 				</button>
@@ -254,6 +240,7 @@
 			@apply aspect-square;
 		}
 	}
+
 	:global(media-player[data-started]:not([data-user-initiated]) .controls) {
 		@apply pointer-events-none opacity-0;
 	}
