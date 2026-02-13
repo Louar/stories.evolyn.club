@@ -9,7 +9,6 @@ export const load: PageServerLoad = (async ({ locals }) => {
 
   const stories = await db
     .selectFrom('story')
-    .leftJoin('storyPermission', 'storyPermission.storyId', 'story.id')
     .where('story.clientId', '=', clientId)
     .select((eb) => [
       'story.id',

@@ -144,11 +144,7 @@
 			<NavigationMenu.Item>
 				<NavigationMenu.Link>
 					{#snippet child()}
-						<a
-							href="/stories/{story.reference}"
-							target="_blank"
-							class={navigationMenuTriggerStyle()}
-						>
+						<a href="/s/{story.reference}" target="_blank" class={navigationMenuTriggerStyle()}>
 							<TvMinimalPlayIcon class="size-5" />
 						</a>
 					{/snippet}

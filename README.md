@@ -12,9 +12,9 @@ Stories includes:
 
 ## Core concepts
 
-### 🚧 Anthology
+### Anthology
 
-An anthology is a list of stories. Anthologies are currently work in progress.
+An anthology is a list of stories that are played in sequence.
 
 ### Story
 

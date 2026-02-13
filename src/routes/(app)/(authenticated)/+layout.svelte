@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import AvatarMedia from '$lib/components/ui/avatar-media/avatar-media.svelte';
-
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+	import { Separator } from '$lib/components/ui/separator/index.js';
 	import { useSidebar } from '$lib/components/ui/sidebar';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { UserRole } from '$lib/db/schemas/1-client-user-module.js';
@@ -66,23 +66,13 @@
 								</div>
 							</DropdownMenu.Label>
 							<DropdownMenu.Separator />
-							<DropdownMenu.Group>
-								<!-- <DropdownMenu.Item onclick={() => setOpenMobile(false)}>
-						{#snippet child({ props })}
-							<a href="/{page.params.x}/settings/account" {...props}>
-								<BadgeCheckIcon />
-								<span>Account</span>
-								<ChevronRightIcon class="ml-auto" />
-							</a>
-						{/snippet}
-					</DropdownMenu.Item> -->
-							</DropdownMenu.Group>
+							<DropdownMenu.Group></DropdownMenu.Group>
 							<DropdownMenu.Separator />
 							<DropdownMenu.Group>
 								<DropdownMenu.Item onclick={toggleMode}>
 									<SunIcon class="scale-100 transition-all! dark:scale-0 dark:-rotate-90" />
 									<MoonIcon class="absolute scale-0 transition-all! dark:scale-100 dark:rotate-0" />
-									Wijzig thema
+									Change theme
 								</DropdownMenu.Item>
 							</DropdownMenu.Group>
 							<DropdownMenu.Separator />
@@ -90,7 +80,7 @@
 								{#snippet child({ props })}
 									<a href="/auth/logout" {...props}>
 										<LogOutIcon />
-										<span>Uitloggen</span>
+										<span>Sign out</span>
 										<ChevronRightIcon class="ml-auto" />
 									</a>
 								{/snippet}
@@ -118,6 +108,14 @@
 					</Sidebar.MenuButton>
 				</Sidebar.MenuItem>
 				{#if authusr.roles?.includes(UserRole.admin)}
+					<Separator class="my-2 px-2" />
+					<Sidebar.MenuItem class="px-2">
+						<Sidebar.MenuButton isActive={page.route.id?.endsWith('/editor/anthologies/all')}>
+							{#snippet child({ props })}
+								<a href="/editor/anthologies/all" {...props}>All anthologies</a>
+							{/snippet}
+						</Sidebar.MenuButton>
+					</Sidebar.MenuItem>
 					<Sidebar.MenuItem class="px-2">
 						<Sidebar.MenuButton isActive={page.route.id?.endsWith('/editor/stories/all')}>
 							{#snippet child({ props })}

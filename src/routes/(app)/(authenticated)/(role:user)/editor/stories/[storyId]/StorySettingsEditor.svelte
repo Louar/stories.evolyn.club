@@ -103,17 +103,13 @@
 					<Field.Label for="ispublished" class="text-sm font-normal">Is published?</Field.Label>
 				</div>
 				<div class="block">
-					<CopyButton
-						text={`${page.url.origin}/stories/${story.reference}`}
-						size="sm"
-						variant="outline"
-					>
+					<CopyButton text={`${page.url.origin}/s/${story.reference}`} size="sm" variant="outline">
 						{#snippet icon()}
 							<CopyIcon />
 						{/snippet}
 						<span class="text-sm">Share url:</span>
 						<span class="font-mono text-sm font-light" class:line-through={!story.isPublished}>
-							{`${page.url.origin}/stories/${story.reference}`}
+							{`${page.url.origin}/s/${story.reference}`}
 						</span>
 					</CopyButton>
 				</div>
