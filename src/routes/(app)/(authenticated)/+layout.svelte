@@ -39,8 +39,8 @@
 										class="size-8 rounded-full"
 									/>
 									<div class="grid flex-1 text-left text-sm leading-tight">
-										<span class="truncate text-xs text-muted-foreground">Mijn account</span>
-										<span class="truncate font-medium">{authusr.name ?? 'Anoniem account'}</span>
+										<span class="truncate text-xs text-muted-foreground">My account</span>
+										<span class="truncate font-medium">{authusr.name ?? 'Anonymous account'}</span>
 									</div>
 									<ChevronsUpDownIcon class="ml-auto size-4" />
 								</Sidebar.MenuButton>
@@ -60,13 +60,11 @@
 										class="size-8 rounded-full"
 									/>
 									<div class="grid flex-1 text-left text-sm leading-tight">
-										<span class="truncate text-xs text-muted-foreground">Mijn account</span>
-										<span class="truncate font-medium">{authusr.name ?? 'Anoniem account'}</span>
+										<span class="truncate text-xs text-muted-foreground">My account</span>
+										<span class="truncate font-medium">{authusr.name ?? 'Anonymous account'}</span>
 									</div>
 								</div>
 							</DropdownMenu.Label>
-							<DropdownMenu.Separator />
-							<DropdownMenu.Group></DropdownMenu.Group>
 							<DropdownMenu.Separator />
 							<DropdownMenu.Group>
 								<DropdownMenu.Item onclick={toggleMode}>
