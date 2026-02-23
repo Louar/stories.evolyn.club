@@ -73,8 +73,8 @@
 		showCloseButton={false}
 	>
 		<Dialog.Header class="sticky top-0 z-50 -mx-6 bg-background/50 pt-6 backdrop-blur-md">
-			<div class="flex justify-between gap-2 px-6">
-				<div class="flex w-full items-center gap-2">
+			<div class="flex flex-col justify-between gap-2 px-6 md:flex-row">
+				<div class="flex grow flex-wrap items-center gap-2">
 					{#if announcements && announcements.length > 0}
 						<Dialog.Title>Edit:</Dialog.Title>
 						<div>
@@ -121,7 +121,7 @@
 					</Toggle>
 				</div>
 
-				<div class="flex gap-2">
+				<div class="flex flex-wrap gap-2">
 					<LanguageSelector />
 					<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
 					{#if announcement.id && announcement.id !== 'new'}

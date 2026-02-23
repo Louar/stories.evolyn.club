@@ -10,7 +10,6 @@
 	import { TranslatableInput } from '$lib/components/ui/translatable-input';
 	import type { findOneStoryById, storySchema } from '$lib/db/repositories/2-stories-module';
 	import { formatFormError } from '$lib/db/schemas/0-utils';
-	import CopyIcon from '@lucide/svelte/icons/copy';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import z from 'zod/v4';
 	import type { $ZodIssue } from 'zod/v4/core';
@@ -63,12 +62,12 @@
 		showCloseButton={false}
 	>
 		<Dialog.Header class="sticky top-0 z-50 -mx-6 bg-background/50 pt-6 backdrop-blur-md">
-			<div class="flex justify-between gap-2 px-6">
-				<div class="flex w-full items-center gap-2">
+			<div class="flex flex-col justify-between gap-2 px-6 md:flex-row">
+				<div class="flex grow flex-wrap items-center gap-2">
 					<Dialog.Title>Edit story settings</Dialog.Title>
 				</div>
 
-				<div class="flex gap-2">
+				<div class="flex flex-wrap gap-2">
 					<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
 					<Button variant="destructive" size="icon" onclick={remove}>
 						<TrashIcon />
@@ -103,12 +102,17 @@
 					<Field.Label for="ispublished" class="text-sm font-normal">Is published?</Field.Label>
 				</div>
 				<div class="block">
-					<CopyButton text={`${page.url.origin}/s/${story.reference}`} size="sm" variant="outline">
-						{#snippet icon()}
-							<CopyIcon />
-						{/snippet}
+					<CopyButton
+						text={`${page.url.origin}/s/${story.reference}`}
+						class="max-w-full"
+						size="sm"
+						variant="outline"
+					>
 						<span class="text-sm">Share url:</span>
-						<span class="font-mono text-sm font-light" class:line-through={!story.isPublished}>
+						<span
+							class="inline-block max-w-full truncate align-bottom font-mono text-sm font-light"
+							class:line-through={!story.isPublished}
+						>
 							{`${page.url.origin}/s/${story.reference}`}
 						</span>
 					</CopyButton>

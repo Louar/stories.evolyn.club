@@ -85,12 +85,12 @@
 
 <form onsubmit={persist}>
 	<Dialog.Content
-		class="scrollbar-none max-h-[90vh] overflow-y-auto pt-0 sm:max-w-200"
+		class="scrollbar-none max-h-[90vh] overflow-y-auto pt-0 md:max-w-190"
 		showCloseButton={false}
 	>
 		<Dialog.Header class="sticky top-0 z-50 -mx-6 bg-background/50 pt-6 backdrop-blur-md">
-			<div class="flex justify-between gap-2 px-6">
-				<div class="space-y-2 text-left">
+			<div class="flex flex-col justify-between gap-2 px-6 md:flex-row">
+				<div class="grow space-y-2 text-left">
 					<Dialog.Title>Edit rules</Dialog.Title>
 					<Dialog.Description>Quiz: {quiz.name}</Dialog.Description>
 				</div>
@@ -98,7 +98,7 @@
 					<XIcon />
 				</Dialog.Close> -->
 
-				<div class="flex gap-2">
+				<div class="flex flex-wrap gap-2">
 					<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
 					<Button type="submit" onclick={persist}>Save logic</Button>
 				</div>
@@ -182,10 +182,10 @@
 												(q) => q.id === input.quizQuestionTemplateId
 											)}
 											<div
-												class="flex gap-2 rounded-md border bg-card/50 p-3 transition-colors"
+												class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-2 rounded-md border bg-card/50 p-3 transition-colors"
 												class:hidden={input.isRemoved}
 											>
-												<Field.Field class="w-1/2">
+												<Field.Field class="w-full">
 													<Field.Label for="question">Question</Field.Label>
 													<Select.Root
 														type="single"
@@ -195,9 +195,14 @@
 														<Select.Trigger
 															class="w-full {question ? '' : 'text-muted-foreground'}"
 														>
-															{@html !question
-																? 'Select a question...'
-																: `<p><span class="mr-1 text-muted-foreground">${question.order}.</span>${translateLocalizedField(question.title, EDITORS.language)}</p>`}
+															{#if !question}
+																Select a question...
+															{:else}
+																<p class="truncate">
+																	<span class="mr-1 text-muted-foreground">{question.order}.</span
+																	>{translateLocalizedField(question.title, EDITORS.language)}
+																</p>
+															{/if}
 														</Select.Trigger>
 														<Select.Content>
 															<Select.Group>
@@ -221,7 +226,7 @@
 														)?.message}
 													</Field.Error>
 												</Field.Field>
-												<Field.Field class="w-1/2">
+												<Field.Field class="w-full">
 													<Field.Label for="value">Answer</Field.Label>
 													<Select.Root
 														type="single"
@@ -236,9 +241,14 @@
 															(o) => o.id === input.quizQuestionTemplateAnswerItemId
 														)}
 														<Select.Trigger class="w-full {answer ? '' : 'text-muted-foreground'}">
-															{@html !answer
-																? 'Select an answer option...'
-																: `<p><span class="mr-1 text-muted-foreground">${answer.order}.</span>${translateLocalizedField(answer.label, EDITORS.language)}</p>`}
+															{#if !answer}
+																Select an answer option...
+															{:else}
+																<p class="truncate">
+																	<span class="mr-1 text-muted-foreground">{answer.order}.</span
+																	>{translateLocalizedField(answer.label, EDITORS.language)}
+																</p>
+															{/if}
 														</Select.Trigger>
 														<Select.Content>
 															{#if question?.answerOptions?.length}
