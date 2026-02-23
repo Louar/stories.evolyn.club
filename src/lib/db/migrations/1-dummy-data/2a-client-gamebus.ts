@@ -153,8 +153,8 @@ export const createClientGameBus = async (trx: Transaction<Schema>): Promise<Cur
       password: `{bcrypt}${hash}`,
       firstName: env.SECRET_DEFAULT_USER_FIRST_NAME,
       lastName: env.SECRET_DEFAULT_USER_LAST_NAME,
-      roles: [UserRole.admin, UserRole.user],
-      language: Language.Dutch,
+      roles: [UserRole.admin, UserRole.editor],
+      language: Language.Nederlands,
       emailConfirmed: true,
       isActive: true,
     })

@@ -8,7 +8,7 @@
 
 <div class="w-full">
 	<div class="relative mx-auto w-full max-w-lg py-6">
-		<Button href="/editor/stories" class="absolute top-0 right-0 mt-7">Open editor</Button>
+		<Button href="/edit/stories" class="absolute top-0 right-0 mt-7">Open editor</Button>
 		<div class="prose">
 			{@html html}
 		</div>

@@ -53,6 +53,9 @@
 	.aspect-portrait {
 		@apply aspect-9/16;
 	}
+	[data-slot='grid-wrapper'] .highlight {
+		@apply bg-accent/80;
+	}
 }
 
 html::-webkit-scrollbar,
@@ -60,10 +63,21 @@ body::-webkit-scrollbar,
 .scrollbar-none::-webkit-scrollbar {
 	display: none;
 }
-
 html,
 body,
 .scrollbar-none {
 	-ms-overflow-style: none;
 	scrollbar-width: none;
+}
+
+html.dark .shiki,
+html.dark .shiki span {
+	color: var(--shiki-dark) !important;
+	background-color: var(--shiki-dark-bg) !important;
+}
+html .shiki-bg-transparent .shiki,
+html .shiki-bg-transparent .shiki span,
+html.dark .shiki-bg-transparent .shiki,
+html.dark .shiki-bg-transparent .shiki span {
+	background-color: transparent !important;
 }

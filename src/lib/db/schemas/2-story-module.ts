@@ -77,6 +77,9 @@ type AnthologyPermission = {
   anthologyId: string;
   role: ColumnType<AnthologyPermissionRole, AnthologyPermissionRole | null, AnthologyPermissionRole | null>;
   createdAt: ColumnType<Date, never, never>;
+  createdBy: string | null;
+  updatedAt: ColumnType<Date, never, Date | never>;
+  updatedBy: string | null;
 };
 
 type AnthologyPosition = {
@@ -107,6 +110,9 @@ type StoryPermission = {
   storyId: string;
   role: ColumnType<StoryPermissionRole, StoryPermissionRole | null, StoryPermissionRole | null>;
   createdAt: ColumnType<Date, never, never>;
+  createdBy: string | null;
+  updatedAt: ColumnType<Date, never, Date | never>;
+  updatedBy: string | null;
 };
 
 type StoryAuthCode = {

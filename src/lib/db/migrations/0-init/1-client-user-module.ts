@@ -16,6 +16,7 @@ export const InitClientUserModule: Migration = {
       .addColumn('logo', 'jsonb')
       .addColumn('favicon', 'jsonb')
       .addColumn('splash', 'jsonb')
+      .addColumn('hero', 'jsonb')
       .addColumn('css', 'json')
       .addColumn('manifest', 'json')
       .addColumn('is_findable_by_search_engines', 'boolean', (col) => col.defaultTo(false).notNull())

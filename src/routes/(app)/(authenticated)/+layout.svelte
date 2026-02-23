@@ -92,32 +92,70 @@
 		<Sidebar.Content class="pt-2">
 			<Sidebar.Menu>
 				<Sidebar.MenuItem class="px-2">
-					<Sidebar.MenuButton isActive={page.route.id?.endsWith('/editor/anthologies')}>
+					<Sidebar.MenuButton
+						onclick={() => sidebar?.setOpenMobile(false)}
+						isActive={page.url.pathname?.startsWith('/edit/anthologies') &&
+							!page.url.searchParams.get('show')}
+					>
 						{#snippet child({ props })}
-							<a href="/editor/anthologies" {...props}>My anthologies</a>
+							<a href="/edit/anthologies" {...props}>My anthologies</a>
 						{/snippet}
 					</Sidebar.MenuButton>
 				</Sidebar.MenuItem>
 				<Sidebar.MenuItem class="px-2">
-					<Sidebar.MenuButton isActive={page.route.id?.endsWith('/editor/stories')}>
+					<Sidebar.MenuButton
+						onclick={() => sidebar?.setOpenMobile(false)}
+						isActive={page.url.pathname?.startsWith('/edit/stories') &&
+							!page.url.searchParams.get('show')}
+					>
 						{#snippet child({ props })}
-							<a href="/editor/stories" {...props}>My stories</a>
+							<a href="/edit/stories" {...props}>My stories</a>
 						{/snippet}
 					</Sidebar.MenuButton>
 				</Sidebar.MenuItem>
 				{#if authusr.roles?.includes(UserRole.admin)}
 					<Separator class="my-2 px-2" />
 					<Sidebar.MenuItem class="px-2">
-						<Sidebar.MenuButton isActive={page.route.id?.endsWith('/editor/anthologies/all')}>
+						<Sidebar.MenuButton
+							onclick={() => sidebar?.setOpenMobile(false)}
+							isActive={page.url.pathname?.startsWith('/edit/anthologies') &&
+								page.url.searchParams.get('show') === 'all'}
+						>
 							{#snippet child({ props })}
-								<a href="/editor/anthologies/all" {...props}>All anthologies</a>
+								<a href="/edit/anthologies?show=all" {...props}>All anthologies</a>
 							{/snippet}
 						</Sidebar.MenuButton>
 					</Sidebar.MenuItem>
 					<Sidebar.MenuItem class="px-2">
-						<Sidebar.MenuButton isActive={page.route.id?.endsWith('/editor/stories/all')}>
+						<Sidebar.MenuButton
+							onclick={() => sidebar?.setOpenMobile(false)}
+							isActive={page.url.pathname?.startsWith('/edit/stories') &&
+								page.url.searchParams.get('show') === 'all'}
+						>
 							{#snippet child({ props })}
-								<a href="/editor/stories/all" {...props}>All stories</a>
+								<a href="/edit/stories?show=all" {...props}>All stories</a>
+							{/snippet}
+						</Sidebar.MenuButton>
+					</Sidebar.MenuItem>
+
+					<Separator class="my-1 px-2" />
+					<Sidebar.MenuItem class="px-2">
+						<Sidebar.MenuButton
+							onclick={() => sidebar?.setOpenMobile(false)}
+							isActive={page.url.pathname?.startsWith('/edit/clients')}
+						>
+							{#snippet child({ props })}
+								<a href="/edit/clients" {...props}>Clients</a>
+							{/snippet}
+						</Sidebar.MenuButton>
+					</Sidebar.MenuItem>
+					<Sidebar.MenuItem class="px-2">
+						<Sidebar.MenuButton
+							onclick={() => sidebar?.setOpenMobile(false)}
+							isActive={page.url.pathname?.startsWith('/edit/users')}
+						>
+							{#snippet child({ props })}
+								<a href="/edit/users" {...props}>Users</a>
 							{/snippet}
 						</Sidebar.MenuButton>
 					</Sidebar.MenuItem>
@@ -127,7 +165,7 @@
 		<Sidebar.Footer class="pb-safe-or-2 border-t px-0 empty:border-0"></Sidebar.Footer>
 	</Sidebar.Root>
 
-	<Sidebar.Inset>
+	<Sidebar.Inset class="overflow-x-hidden">
 		<div class="w-full">
 			{@render children?.()}
 		</div>

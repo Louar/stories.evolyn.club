@@ -2,7 +2,7 @@
 	import highlighter from '$lib/client/shiki';
 	import Textarea from '$lib/components/ui/textarea/textarea.svelte';
 	import { translateLocalizedField, type Translatable } from '$lib/db/schemas/0-utils';
-	import { EDITORS } from '$lib/states/editors.svelte';
+	import { UI } from '$lib/states/ui.svelte';
 	import { cn, type WithElementRef, type WithoutChildren } from '$lib/utils.js';
 	import type { HTMLTextareaAttributes } from 'svelte/elements';
 	import LanguageSelector from '../language-selector/language-selector.svelte';
@@ -43,13 +43,13 @@
 			bind:this={preview}
 			class="absolute inset-0 -z-10 overflow-hidden rounded-md [&>pre]:h-full [&>pre]:px-3 [&>pre]:py-2 [&>pre]:font-mono! [&>pre]:text-sm! [&>pre]:wrap-break-word [&>pre]:whitespace-pre-wrap"
 		>
-			{@html localize(value?.[EDITORS.language])}
+			{@html localize(value?.[UI.language])}
 		</div>
 		<Textarea
 			spellcheck="false"
-			value={value?.[EDITORS.language] ?? ''}
+			value={value?.[UI.language] ?? ''}
 			oninput={(e) => {
-				value = { ...value, [EDITORS.language]: e.currentTarget.value };
+				value = { ...value, [UI.language]: e.currentTarget.value };
 			}}
 			class={cn(
 				'scrollbar-none max-h-196 bg-transparent font-mono text-sm! text-transparent caret-foreground',
@@ -64,8 +64,8 @@
 		/>
 	{:else}
 		<Textarea
-			value={value?.[EDITORS.language] ?? ''}
-			oninput={(e) => (value = { ...value, [EDITORS.language]: e.currentTarget.value })}
+			value={value?.[UI.language] ?? ''}
+			oninput={(e) => (value = { ...value, [UI.language]: e.currentTarget.value })}
 			placeholder={translateLocalizedField(value)?.length
 				? translateLocalizedField(value)
 				: placeholder}

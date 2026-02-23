@@ -31,6 +31,8 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .values({
         storyId: story.id,
         userId: userId,
+        createdBy: userId,
+        updatedBy: userId,
       })
       .returning('id')
       .executeTakeFirstOrThrow();

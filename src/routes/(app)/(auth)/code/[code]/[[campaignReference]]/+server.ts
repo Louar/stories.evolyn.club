@@ -48,5 +48,5 @@ export const GET = (async ({ url, params, cookies, locals }) => {
   };
   cookies.set(process.env.NODE_ENV === 'production' ? '__session' : '__session_stories', token, options);
 
-  throw redirect(302, '/editor/stories');
+  throw redirect(302, '/edit/stories');
 }) satisfies RequestHandler;

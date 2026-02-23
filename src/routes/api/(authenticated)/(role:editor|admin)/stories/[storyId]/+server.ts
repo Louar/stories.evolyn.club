@@ -1,0 +1,61 @@
+import { db } from '$lib/db/database';
+import { storySchema } from '$lib/db/repositories/2-stories-module';
+import { canModifyStory } from '$lib/server/utils.server';
+import { clean } from '$lib/utils';
+import { error, json } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
+
+export const PUT = (async ({ locals, params, request }) => {
+  const clientId = locals.client.id;
+  const userId = locals.authusr!.id;
+
+  await canModifyStory(locals, params.storyId);
+
+  const body = storySchema.safeParse(clean(await request.json()));
+  if (!body.success) return json(body.error.issues, { status: 422 });
+
+  const story = db.selectFrom('story').where('clientId', '=', clientId).where('id', '=', params.storyId).select('id').executeTakeFirst();
+  if (!story) error(404, `Story not found`);
+
+  const { reference, name, ...rest } = body.data;
+  const isUnique = db.selectFrom('story').where('clientId', '=', clientId).where('id', '!=', params.storyId).where('reference', '=', reference).select('id').executeTakeFirst();
+  if (!isUnique) error(422, `Reference already exists`);
+
+  await db
+    .insertInto('story')
+    .values({
+      clientId,
+      id: params.storyId,
+      reference,
+      name: JSON.stringify(name),
+      ...rest,
+      createdBy: userId,
+      updatedBy: userId,
+    })
+    .onConflict((oc) =>
+      oc.columns(['id']).doUpdateSet({
+        reference,
+        name: JSON.stringify(name),
+        ...rest,
+        updatedAt: new Date(),
+        updatedBy: userId,
+      })
+    )
+    .returning('id')
+    .executeTakeFirstOrThrow();
+
+  return json({ success: true });
+}) satisfies RequestHandler;
+
+export const DELETE = (async ({ locals, params }) => {
+  const clientId = locals.client.id;
+
+  await canModifyStory(locals, params.storyId);
+
+  await db.deleteFrom('story')
+    .where('clientId', '=', clientId)
+    .where('id', '=', params.storyId)
+    .executeTakeFirstOrThrow();
+
+  return json({ success: true });
+}) satisfies RequestHandler;

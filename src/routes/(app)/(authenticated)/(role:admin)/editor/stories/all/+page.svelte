@@ -20,7 +20,7 @@
 	{#if stories.length}
 		<div class="grid w-full gap-4 p-4">
 			{#each stories as story}
-				<a href="/editor/stories/{story.id}">
+				<a href="/edit/stories/{story.id}">
 					<Item.Root variant="outline">
 						<Item.Content>
 							<Item.Title>{story.name}</Item.Title>
@@ -48,7 +48,7 @@
 			</Empty.Header>
 			<Empty.Content>
 				<div class="flex gap-2">
-					<Button href="/editor/stories/new">Create story</Button>
+					<Button href="/edit/stories/new/flow">Create story</Button>
 				</div>
 			</Empty.Content>
 		</Empty.Root>

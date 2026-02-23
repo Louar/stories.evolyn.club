@@ -3,17 +3,17 @@ import { z } from 'zod/v4';
 import type { $ZodIssue } from 'zod/v4/core';
 
 export const MediaCollection = {
+  externals: 'externals',
   internals: 'internals',
   clients: 'clients',
   users: 'users',
-  externals: 'externals',
 } as const;
 export type MediaCollection = (typeof MediaCollection)[keyof typeof MediaCollection];
 
 export const mediaValidator = z.object({
   collection: z.enum(MediaCollection),
   filename: z.string().min(1),
-}).strict();
+});
 export type Media = z.infer<typeof mediaValidator>;
 export type MediaColumn = JSONColumnType<Media>;
 
@@ -59,19 +59,22 @@ export type DaysOfWeek = (typeof DaysOfWeek)[keyof typeof DaysOfWeek];
 // Adapted from https://gist.github.com/eilonmore/77f9fc3ddfd939f1513d7a8ed2641321
 export enum Language {
   'English' = 'en',
-  'Bulgarian' = 'bg',
-  'Catalan' = 'ca',
-  'Danish' = 'da',
-  'German' = 'de',
-  'Spanish' = 'es',
-  'Finnish' = 'fi',
-  'French' = 'fr',
-  'Italian' = 'it',
-  'Dutch' = 'nl',
-  'Norwegian' = 'no',
-  'Portuguese' = 'pt',
-  'Swedish' = 'sv',
+  'български' = 'bg',
+  'Català' = 'ca',
+  'Dansk' = 'da',
+  'Deutsch' = 'de',
+  'Español' = 'es',
+  'Suomi' = 'fi',
+  'Français' = 'fr',
+  'Italiano' = 'it',
+  'Nederlands' = 'nl',
+  'Norsk' = 'no',
+  'Português' = 'pt',
+  'Svenska' = 'sv',
 }
+export const LanguageReverse = Object.fromEntries(
+  Object.entries(Language).map(([k, v]) => [v, k])
+) as Record<Language, keyof typeof Language>;
 export enum LanguageFlag {
   'default' = '🌐',
   'en' = '🇺🇸',
@@ -107,6 +110,23 @@ export const selectLocalizedField = <DB, TB extends keyof DB & string>(eb: Expre
 export const translateLocalizedField = (obj?: Translatable | null, language?: Language | 'default' | null) => {
   return obj?.[language ?? 'default'] ?? obj?.default ?? obj?.[Language.English];
 }
+export const areTranslatablesEqual = (a?: Translatable | null, b?: Translatable | null) => {
+  if (a == null && b == null) return true; // both null/undefined
+  if (a == null || b == null) return false;
+
+  const keys = [...Object.values(Language), 'default'] as const;
+
+  return keys.every((key) => {
+    const aHas = Object.prototype.hasOwnProperty.call(a, key);
+    const bHas = Object.prototype.hasOwnProperty.call(b, key);
+
+    if (aHas !== bHas) return false;
+    if (aHas && a[key] !== b[key]) return false;
+
+    return true;
+  });
+};
+
 
 export const expressionValidator = z.object({
   expression: z.record(z.string(), z.unknown()),

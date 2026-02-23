@@ -108,6 +108,9 @@ export const InitStoryModule: Migration = {
       .addColumn('user_id', 'uuid', (col) => col.references('user.id').onDelete('cascade').notNull())
       .addColumn('role', sql`story_permission_role`, (col) => col.defaultTo(StoryPermissionRole.owner).notNull())
       .addColumn('created_at', 'timestamptz', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+      .addColumn('created_by', 'uuid', (col) => col.references('user.id').onDelete('set null'))
+      .addColumn('updated_at', 'timestamptz', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+      .addColumn('updated_by', 'uuid', (col) => col.references('user.id').onDelete('set null'))
       .addUniqueConstraint('unique_permission_per_story_and_user', ['story_id', 'user_id'])
       .execute();
 
@@ -232,6 +235,9 @@ export const InitStoryModule: Migration = {
       .addColumn('user_id', 'uuid', (col) => col.references('user.id').onDelete('cascade').notNull())
       .addColumn('role', sql`anthology_permission_role`, (col) => col.defaultTo(AnthologyPermissionRole.owner).notNull())
       .addColumn('created_at', 'timestamptz', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+      .addColumn('created_by', 'uuid', (col) => col.references('user.id').onDelete('set null'))
+      .addColumn('updated_at', 'timestamptz', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+      .addColumn('updated_by', 'uuid', (col) => col.references('user.id').onDelete('set null'))
       .addUniqueConstraint('unique_permission_per_anthology_and_user', ['anthology_id', 'user_id'])
       .execute();
 

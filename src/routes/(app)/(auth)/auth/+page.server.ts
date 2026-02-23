@@ -34,7 +34,7 @@ export const actions = {
       else return message(form, { error: true, reason: 'Oeps, inloggen mislukt. Probeer het nog eens.' });
     }
 
-    throw redirect(302, '/editor/stories');
+    throw redirect(302, '/edit/stories');
   },
   register: async ({ request, cookies, url, locals }) => {
     const clientId = locals.client.id;
@@ -50,7 +50,7 @@ export const actions = {
       .executeTakeFirst();
     if (user) return message(form, { error: true, reason: 'An account already exists for this email address.' });
 
-    const roles: UserRole[] = [UserRole.user];
+    const roles: UserRole[] = [UserRole.editor];
     if (((await db.selectFrom('user').where('clientId', '=', clientId).select(sql`COUNT(*)`.as('count')).executeTakeFirst())?.count || 0) === 0) roles.push(UserRole.admin);
 
     const salt = await bcrypt.genSalt();
@@ -80,7 +80,7 @@ export const actions = {
       else return message(form, { error: true, reason: 'Oeps, registreren mislukt. Probeer het nog eens.' });
     }
 
-    throw redirect(302, '/editor/stories');
+    throw redirect(302, '/edit/stories');
   }
 };
 

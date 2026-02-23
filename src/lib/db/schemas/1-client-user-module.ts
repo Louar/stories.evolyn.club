@@ -4,8 +4,9 @@ import type { Language, MediaColumn, TranslatableColumn } from './0-utils';
 
 
 export const UserRole = {
+  participant: 'participant',
+  editor: 'editor',
   admin: 'admin',
-  user: 'user'
 } as const;
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
@@ -34,6 +35,7 @@ type Client = {
   logo: MediaColumn | null;
   favicon: MediaColumn | null;
   splash: MediaColumn | null;
+  hero: MediaColumn | null;
   css: JSONColumnType<Record<string, Record<string, string>>> | null;
   manifest: JSONColumnType<object> | null;
   isFindableBySearchEngines: ColumnType<boolean, boolean | null, boolean>;

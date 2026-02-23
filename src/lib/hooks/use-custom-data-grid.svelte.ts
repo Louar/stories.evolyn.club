@@ -145,9 +145,7 @@ export interface UseDataGridOptions<TData extends RowData> {
 		rowSelection?: RowSelectionState;
 	};
 	onDataChange?: (data: TData[]) => void;
-	onRowAdd?: (
-		event?: MouseEvent
-	) => Partial<CellPosition> | void | Promise<Partial<CellPosition> | void>;
+	onRowAdd?: ((event?: MouseEvent) => Partial<CellPosition> | void | Promise<Partial<CellPosition> | void>) | boolean;
 	onRowsAdd?: (count: number) => void | Promise<void>;
 	// onRowChange?: (originalRows: TData[], updatedRowIndices: number[], updates: CellUpdate[]) => void | Promise<void>;
 	onRowChange?: (updates: CellUpdate[]) => RowChangeResult | Promise<RowChangeResult>;
@@ -405,7 +403,7 @@ export function useDataGrid<TData extends RowData>(
 		}
 		: undefined;
 
-	const resolvedOnRowAdd = onRowAddProp ?? defaultOnRowAdd;
+	const resolvedOnRowAdd = typeof onRowAddProp === 'boolean' ? onRowAddProp === false ? undefined : defaultOnRowAdd : onRowAddProp ?? defaultOnRowAdd;
 	const resolvedOnRowsAdd = onRowsAddProp ?? defaultOnRowsAdd;
 	const resolvedOnRowsDelete = onRowsDeleteProp ?? defaultOnRowsDelete;
 	const resolvedOnRowChange = onRowChangeProp ?? defaultOnRowChange;
@@ -2304,7 +2302,7 @@ export function useDataGrid<TData extends RowData>(
 		get columnSizeVars() {
 			return getColumnSizeVars();
 		},
-		onRowAdd: handleRowAdd,
+		onRowAdd: typeof onRowAddProp === 'boolean' ? onRowAddProp === false ? undefined : handleRowAdd : handleRowAdd,
 		setDataGridRef: (el: HTMLDivElement | null) => {
 			dataGridRef = el;
 		},

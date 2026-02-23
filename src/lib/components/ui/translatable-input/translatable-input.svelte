@@ -5,6 +5,7 @@
 	import { cn, type WithElementRef } from '$lib/utils.js';
 	import type { HTMLInputAttributes, HTMLInputTypeAttribute } from 'svelte/elements';
 	import LanguageSelector from '../language-selector/language-selector.svelte';
+	import { UI } from '$lib/states/ui.svelte';
 
 	type Props = {
 		value?: Translatable | null;
@@ -30,8 +31,8 @@
 	<Input
 		class={cn('w-full', className)}
 		type="text"
-		value={value?.[EDITORS.language] ?? ''}
-		oninput={(e) => (value = { ...value, [EDITORS.language]: e.currentTarget.value })}
+		value={value?.[UI.language] ?? ''}
+		oninput={(e) => (value = { ...value, [UI.language]: e.currentTarget.value })}
 		placeholder={translateLocalizedField(value)?.length
 			? translateLocalizedField(value)
 			: placeholder}
