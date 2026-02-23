@@ -11,11 +11,11 @@
 
 <header
 	class={cn(
-		'sticky top-0 z-20 mx-auto -mb-4 flex h-24 shrink-0 items-center gap-2 bg-linear-to-b from-background from-65% to-transparent pb-8',
+		'pointer-events-none sticky top-0 z-20 mx-auto -mb-4 flex h-24 shrink-0 items-center gap-2 bg-linear-to-b from-background from-65% to-transparent pb-8',
 		className
 	)}
 >
-	<div class="flex w-full items-center gap-2 px-4">
+	<div class="pointer-events-auto flex w-full items-center gap-2 px-4">
 		{@render children?.()}
 	</div>
 </header>

@@ -6,7 +6,7 @@
 	import './layout.css';
 
 	let { data, children } = $props();
-	const { client } = data;
+	const { client } = $derived(data);
 </script>
 
 <svelte:head>

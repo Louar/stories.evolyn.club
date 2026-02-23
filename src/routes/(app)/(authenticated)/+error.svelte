@@ -1,16 +1,14 @@
 <script lang="ts">
-	import RotateCcwIcon from '@lucide/svelte/icons/rotate-ccw';
-	import WindIcon from '@lucide/svelte/icons/wind';
-
+	import { page } from '$app/state';
 	import Header from '$lib/components/app/header/app-header.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-
-	import { page } from '$app/state';
+	import RotateCcwIcon from '@lucide/svelte/icons/rotate-ccw';
+	import WindIcon from '@lucide/svelte/icons/wind';
 </script>
 
 <Header>
-	<h1 class="overflow-hidden text-sm whitespace-nowrap">Oeps, er ging iets mis&hellip;</h1>
+	<h1 class="overflow-hidden text-sm whitespace-nowrap">Oops, something went wrong&hellip;</h1>
 </Header>
 
 <div class="w-full px-2">
@@ -19,13 +17,13 @@
 			<WindIcon class="mx-auto size-32 text-muted-foreground" />
 		</Card.Content>
 		<Card.Header class="text-center">
-			<Card.Title>Oeps, er ging iets mis&hellip;</Card.Title>
+			<Card.Title>Oops, something went wrong&hellip;</Card.Title>
 			<Card.Description class="empty:hidden">
 				{@html page.error?.message}
 			</Card.Description>
 			<Button size="sm" onclick={() => window.location.reload()} class="mx-auto mt-2 w-fit">
 				<RotateCcwIcon />
-				Probeer opnieuw
+				Try again
 			</Button>
 		</Card.Header>
 	</Card.Root>

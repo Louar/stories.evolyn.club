@@ -88,10 +88,14 @@ export enum LanguageFlag {
   'pt' = '🇵🇹',
   'sv' = '🇸🇪',
 }
-export const translatableValidator = z.record(z.union([z.enum(['default']), z.enum(Language)]), z.string().min(1).optional()).refine(
-  (data) => data.default || data[Language.English], { message: `Translation must include at least 'default' or 'en'` }
-);
-export type Translatable = Partial<z.infer<typeof translatableValidator>>; // Record<'default' | Language, string>;
+export const translatableValidator = z
+  .partialRecord(
+    z.enum(Language).or(z.enum(['default'])),
+    z.string().min(1)
+  ).refine(
+    (data) => data.default || data[Language.English], { message: `Translation must include at least 'default' or 'en'` }
+  );
+export type Translatable = z.infer<typeof translatableValidator>; // Record<'default' | Language, string>;
 export type TranslatableColumn = JSONColumnType<Translatable>;
 export const selectLocalizedField = <DB, TB extends keyof DB & string>(eb: ExpressionBuilder<DB, TB>, column: StringReference<DB, TB>, language?: Language | null) => {
   return eb.fn.coalesce(
