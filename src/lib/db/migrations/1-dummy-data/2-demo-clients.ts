@@ -14,12 +14,11 @@ export type CurrentClient = {
   manifest: object | null;
   isFindableBySearchEngines: boolean;
   plausibleDomain: string | null;
-  authenticationMethods: ClientAuthenticationMethod[] | null;
+  authenticationMethods: ClientAuthenticationMethod[];
   accessTokenKey: string;
   redirectAuthorized: string | null;
   redirectUnauthorized: string | null;
   onboardingSchema: JSONSchema.BaseSchema | null;
-  defaultCampaignReference: string | null;
 };
 
 export const DEMO_CLIENTS = [

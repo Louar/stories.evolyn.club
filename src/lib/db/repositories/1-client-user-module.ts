@@ -3,7 +3,6 @@ import { db } from '$lib/db/database';
 import { selectLocalizedField, type Language } from '$lib/db/schemas/0-utils';
 import { error, type RequestEvent } from '@sveltejs/kit';
 import jwt from 'jsonwebtoken';
-import { sql } from 'kysely';
 import { DEMO_CLIENTS } from '../migrations/1-dummy-data/2-demo-clients';
 
 
@@ -11,7 +10,7 @@ export const findOneClientByOrigin = async (origin: string) => {
 
   const client = await db.transaction().execute(async (trx) => {
     let client = await trx.selectFrom('client')
-      .where((eb) => sql<boolean>`${eb.ref('client.domains')} @> ${JSON.stringify([origin])}`)
+      .where((eb) => eb('client.domains', '@>', eb.val([origin])))
       .select([
         'client.id',
         'client.reference',

@@ -54,8 +54,15 @@ export const handle: Handle = async ({ event, resolve }) => {
 	// Authenticated (non-admin) trying to access '/' with client.redirectAuthorized set
 	if (routeFilePath === '/' && locals.client.redirectAuthorized && authusr && !authusr?.roles?.includes(UserRole.admin)) redirect(302, locals.client.redirectAuthorized);
 
-	// Not admin, trying to access (role:admin)/**
-	if (routeFilePath?.includes('(role:admin)') && !authusr?.roles?.includes(UserRole.admin)) redirect(302, '/');
+	// Not $RoleX, trying to access (role:$RoleX|$RoleY|$RoleZ)/**
+	const roles: UserRole[] = routeFilePath
+		?.split('/')
+		?.find(r => r.startsWith('(role:') && r.endsWith(')'))
+		?.replace('(role:', '')
+		?.replace(')', '')
+		?.split('|')
+		?.filter((r: string): r is UserRole => Object.values(UserRole).includes(r as UserRole)) ?? [];
+	if (roles?.length && !authusr?.roles?.some(r => roles.includes(r))) redirect(302, '/');
 
 	return resolve(event);
 

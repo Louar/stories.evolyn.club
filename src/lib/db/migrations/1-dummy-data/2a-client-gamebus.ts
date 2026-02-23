@@ -19,7 +19,7 @@ export const createClientGameBus = async (trx: Transaction<Schema>): Promise<Cur
       description: JSON.stringify({
         default: `# GameBus Stories`,
       } as Translatable),
-      domains: JSON.stringify(DEMO_CLIENTS.find(client => client.reference === 'gamebus')?.domains),
+      domains: DEMO_CLIENTS.find(client => client.reference === 'gamebus')!.domains,
       favicon: JSON.stringify({ collection: MediaCollection.clients, filename: 'gamebus-logo.png' } as Media),
       css: JSON.stringify({
         ":root": {
@@ -118,13 +118,13 @@ export const createClientGameBus = async (trx: Transaction<Schema>): Promise<Cur
       ),
       isFindableBySearchEngines: true,
       plausibleDomain: undefined,
-      authenticationMethods: JSON.stringify([ClientAuthenticationMethod.code, ClientAuthenticationMethod.password]),
-      accessTokenKey: 'ZShYjmJE00hSkA1k8zoXULaLzYsArjFgeCQJLZ5bYVM=',
+      authenticationMethods: [ClientAuthenticationMethod.code, ClientAuthenticationMethod.password],
+      accessTokenKey: 'VlxkYqAkpZCPm4Ds1ZAOQUlZFAZVMx3oUh4GDya8jRo=',
       onboardingSchema: undefined,
       // createdBy: userId,
       // updatedBy: userId,
     })
-    .returning((eb) => [
+    .returning([
       'client.id',
       'client.reference',
       'client.name',
@@ -138,8 +138,8 @@ export const createClientGameBus = async (trx: Transaction<Schema>): Promise<Cur
       'client.accessTokenKey',
       'client.redirectAuthorized',
       'client.redirectUnauthorized',
-      'client.onboardingSchema',
-      eb.val(null).as('defaultCampaignReference')
+      'client.accessTokenKey',
+      'client.onboardingSchema'
     ])
     .executeTakeFirstOrThrow();
 
@@ -153,7 +153,7 @@ export const createClientGameBus = async (trx: Transaction<Schema>): Promise<Cur
       password: `{bcrypt}${hash}`,
       firstName: env.SECRET_DEFAULT_USER_FIRST_NAME,
       lastName: env.SECRET_DEFAULT_USER_LAST_NAME,
-      roles: JSON.stringify([UserRole.admin, UserRole.user]),
+      roles: [UserRole.admin, UserRole.user],
       language: Language.Dutch,
       emailConfirmed: true,
       isActive: true,

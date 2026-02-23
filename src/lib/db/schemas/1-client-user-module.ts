@@ -1,6 +1,6 @@
 import type { ColumnType, Generated, JSONColumnType } from 'kysely';
 import type { JSONSchema } from 'zod/v4/core';
-import type { DaysOfWeek, Language, MediaColumn, TranslatableColumn } from './0-utils';
+import type { Language, MediaColumn, TranslatableColumn } from './0-utils';
 
 
 export const UserRole = {
@@ -15,22 +15,6 @@ export const ClientAuthenticationMethod = {
 } as const;
 export type ClientAuthenticationMethod = (typeof ClientAuthenticationMethod)[keyof typeof ClientAuthenticationMethod];
 
-export const NotificationChannelSubscriptionSubject = {
-  account: 'account',
-  campaign: 'campaign',
-  group: 'group',
-  mission: 'mission',
-} as const;
-export type NotificationChannelSubscriptionSubject = (typeof NotificationChannelSubscriptionSubject)[keyof typeof NotificationChannelSubscriptionSubject];
-
-export const NotificationLogStatus = {
-  created: 'created',
-  delivered: 'delivered',
-  opened: 'opened',
-} as const;
-export type NotificationLogStatus = (typeof NotificationLogStatus)[keyof typeof NotificationLogStatus];
-
-
 export type ClientUserModuleSchema = {
   client: Client;
   clientMedia: ClientMedia;
@@ -39,9 +23,6 @@ export type ClientUserModuleSchema = {
   authCode: AuthCode;
   license: License;
   licenseAgreement: LicenseAgreement;
-  notificationDevice: NotificationDevice;
-  notificationChannelSubscription: NotificationChannelSubscription;
-  notificationLog: NotificationLog;
 };
 
 type Client = {
@@ -49,7 +30,7 @@ type Client = {
   reference: string; // unique
   name: string;
   description: TranslatableColumn | null;
-  domains: JSONColumnType<string[]>;
+  domains: string[];
   logo: MediaColumn | null;
   favicon: MediaColumn | null;
   splash: MediaColumn | null;
@@ -57,7 +38,7 @@ type Client = {
   manifest: JSONColumnType<object> | null;
   isFindableBySearchEngines: ColumnType<boolean, boolean | null, boolean>;
   plausibleDomain: string | null;
-  authenticationMethods: JSONColumnType<ClientAuthenticationMethod[]> | null;
+  authenticationMethods: ClientAuthenticationMethod[];
   accessTokenKey: string;
   redirectAuthorized: string | null;
   redirectUnauthorized: string | null;
@@ -90,7 +71,7 @@ type User = {
   lastName: string | null;
   picture: MediaColumn | null;
   password: string | null;
-  roles: JSONColumnType<UserRole[]>;
+  roles: UserRole[];
   language: Language | null;
   pronouns: string | null;
   address: JSONColumnType<object> | null;
@@ -149,50 +130,3 @@ type LicenseAgreement = {
   createdAt: ColumnType<Date, never, never>;
   updatedAt: ColumnType<Date, never, Date>;
 }
-
-type NotificationDevice = {
-  id: Generated<string>;
-  userId: string;
-  clientId: string;
-  agent: string | null;
-  name: string | null;
-  subscription: JSONColumnType<{
-    endpoint: string;
-    expirationTime?: null | number;
-    keys: {
-      p256dh: string;
-      auth: string;
-    };
-  }> | null;
-  createdAt: ColumnType<Date, never, never>;
-  createdBy: string | null;
-  updatedAt: ColumnType<Date, never, Date>;
-  updatedBy: string | null;
-};
-
-type NotificationChannelSubscription = {
-  id: Generated<string>;
-  userId: string;
-  clientId: string;
-  notificationDeviceId: string;
-  subjects: JSONColumnType<NotificationChannelSubscriptionSubject[]> | null;
-  maxNrOfNotificationsPerDay: ColumnType<number, never, number>;
-  minutesOfCooldown: ColumnType<number, never, number>;
-  daysOfWeek: JSONColumnType<DaysOfWeek[]>;
-  hoursOfDay: JSONColumnType<[number, number][]>;
-  createdAt: ColumnType<Date, never, never>;
-  createdBy: string | null;
-  updatedAt: ColumnType<Date, never, Date>;
-  updatedBy: string | null;
-};
-
-type NotificationLog = {
-  id: Generated<string>;
-  userId: string;
-  notificationChannelSubscriptionId: string | null;
-  status: ColumnType<NotificationLogStatus, NotificationLogStatus | null, NotificationLogStatus>;
-  payload: JSONColumnType<Record<string, unknown>> | null;
-  createdAt: ColumnType<Date, never, never>;
-  deliveredAt: Date | null;
-  openedAt: Date | null;
-};
