@@ -40,7 +40,8 @@
 	}: Props = $props();
 
 	// Provide row selection getter via context for header checkbox reactivity
-	setContext<() => RowSelectionState>('getRowSelection', getRowSelection);
+	// svelte-ignore state_referenced_locally
+		setContext<() => RowSelectionState>('getRowSelection', getRowSelection);
 
 	// Selection version - read from the reactive getter in selectionState
 	const selectionVersion = $derived(selectionState?.version ?? 0);
@@ -201,7 +202,7 @@
 <svelte:window onmouseup={handleWindowMouseUp} />
 
 <TooltipProvider>
-	<div data-slot="grid-wrapper" class={cn('relative flex w-full flex-col', className)}>
+	<div data-slot="grid-wrapper" class="relative flex w-full flex-col">
 		{#if searchState}
 			<DataGridSearch
 				searchOpen={searchState.searchOpen}
@@ -228,7 +229,10 @@
 			data-slot="grid"
 			tabindex={0}
 			bind:this={dataGridRef}
-			class="scrollbar-none relative grid overflow-auto overscroll-none rounded-2xl border shadow-xs select-none focus:outline-none"
+			class={cn(
+				'scrollbar-none relative grid overflow-auto overscroll-none rounded-lg border select-none focus:outline-none',
+				className
+			)}
 			style="{columnSizeStyle}; max-height: {height}px;"
 			oncontextmenu={onGridContextMenu}
 			onmouseup={handleGridMouseUp}
@@ -293,6 +297,7 @@
 				role="rowgroup"
 				data-slot="grid-body"
 				class="relative grid"
+				class:-mb-px={!onRowAdd}
 				style="height: {totalSize}px;"
 			>
 				{#key visibilityKey}
