@@ -127,7 +127,12 @@
 				{ isTrigger: true, label: 'Stories', url: `/edit/stories` }
 			],
 			[
-				{ isTrigger: true, label: 'Permissions', url: `/edit/stories/${page.params.storyId}/` },
+				{
+					isTrigger: true,
+					label: 'Permissions',
+					url: `/edit/stories/${page.params.storyId}/permissions`
+				},
+				{ label: 'Assets', url: `/edit/stories/${page.params.storyId}/assets` },
 				{ label: 'Flow', url: `/edit/stories/${page.params.storyId}/flow` }
 			]
 		]}

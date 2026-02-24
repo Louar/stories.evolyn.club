@@ -340,6 +340,7 @@ export function useDataGrid<TData extends RowData>(
 			const pos = (rowIndex: number, columnIds: string[]) =>
 				columnIds.map((columnId) => ({ rowIndex, columnId }));
 
+			let hasError = false;
 			const results = await Promise.all(
 				Object.entries(patches).map(async ([id, patch]) => {
 					const rowIndex = patch.index;
@@ -355,7 +356,8 @@ export function useDataGrid<TData extends RowData>(
 								method: 'POST',
 								body: JSON.stringify(row)
 							});
-							if (res.ok) {
+							if (!res.ok) hasError = true;
+							else {
 								const nextRows = [...rows];
 								nextRows[patch.index] = await res.json();
 								setData?.(nextRows);
@@ -368,7 +370,8 @@ export function useDataGrid<TData extends RowData>(
 						}
 
 						if (!res) return { validated: [], errors: [] as CellPosition[] };
-						if (res.ok) return { validated: pos(rowIndex, columnIds), errors: [] as CellPosition[] };
+						if (!res.ok) hasError = true;
+						else return { validated: pos(rowIndex, columnIds), errors: [] as CellPosition[] };
 
 						if (res.status === 422) {
 							const errorCols = new SvelteSet(
@@ -393,7 +396,7 @@ export function useDataGrid<TData extends RowData>(
 			const validated = results.flatMap((r) => r.validated);
 			const errors = results.flatMap((r) => r.errors);
 
-			if (errors.length) {
+			if (hasError || errors.length) {
 				toast.error('Failed to patch all rows', { closeButton: true, duration: Infinity });
 			} else {
 				toast.success('All rows patched');

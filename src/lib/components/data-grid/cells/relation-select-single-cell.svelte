@@ -148,7 +148,10 @@
 						<Command.Group class="max-h-75 scroll-py-1 overflow-x-hidden overflow-y-auto">
 							{#each options as option (option.value)}
 								{@const isItemSelected = option.value === nextValue}
-								<Command.Item value={option.title} onSelect={() => commit(option.value)}>
+								<Command.Item
+									value="{option.value} {option.title}"
+									onSelect={() => commit(option.value)}
+								>
 									<CheckIcon
 										class={cn(
 											'mt-0.5 size-4 shrink-0 self-start',

@@ -17,6 +17,7 @@
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
 	import FileDownIcon from '@lucide/svelte/icons/file-down';
+	import FilePlusIcon from '@lucide/svelte/icons/file-plus';
 	import FileUpIcon from '@lucide/svelte/icons/file-up';
 	import LoaderCircleIcon from '@lucide/svelte/icons/loader-circle';
 	import PlusIcon from '@lucide/svelte/icons/plus';
@@ -89,6 +90,12 @@
 							class={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
 						>
 							<UserLockIcon />
+						</a>
+						<a
+							href="/edit/stories/{story.id}/assets"
+							class={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
+						>
+							<FilePlusIcon />
 						</a>
 						<a
 							href="/api/stories/io/{story.id}"
