@@ -203,6 +203,8 @@
 	bind:nodes
 	bind:edges
 	fitView
+	maxZoom={1}
+	minZoom={0.25}
 	defaultEdgeOptions={{ type: 'media' }}
 	onconnectend={connect}
 	ondelete={remove}
