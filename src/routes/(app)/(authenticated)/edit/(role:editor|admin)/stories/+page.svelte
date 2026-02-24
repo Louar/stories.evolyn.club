@@ -1,18 +1,6 @@
 <script lang="ts">
-	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 	import Header from '$lib/components/app/header/app-header.svelte';
-	import {
-		DataGrid,
-		DataGridFilterMenu,
-		DataGridKeyboardShortcuts,
-		DataGridRowHeightMenu,
-		DataGridSortMenu,
-		DataGridViewMenu,
-		getFilterFn,
-		RowSelectHeader
-	} from '$lib/components/data-grid';
-	import DataGridLanguageSelectMenu from '$lib/components/data-grid/data-grid-language-select-menu.svelte';
-	import BreadcrumbMenu from '$lib/components/ui/breadcrumb-menu/breadcrumb-menu.svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as Empty from '$lib/components/ui/empty/index.js';
 	import {
@@ -22,145 +10,25 @@
 		type FileDropZoneProps
 	} from '$lib/components/ui/file-drop-zone';
 	import * as Form from '$lib/components/ui/form/index.js';
+	import * as Item from '$lib/components/ui/item/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
-	import { renderComponent } from '$lib/components/ui/table-tanstack/index.js';
-	import { hasTranslatableFields, useDataGrid } from '$lib/hooks/use-custom-data-grid.svelte';
-	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
-	import { cn } from '$lib/utils.js';
 	import BookOpenIcon from '@lucide/svelte/icons/book-open';
 	import CheckIcon from '@lucide/svelte/icons/check';
+	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
+	import FileDownIcon from '@lucide/svelte/icons/file-down';
 	import FileUpIcon from '@lucide/svelte/icons/file-up';
 	import LoaderCircleIcon from '@lucide/svelte/icons/loader-circle';
 	import PlusIcon from '@lucide/svelte/icons/plus';
+	import UserLockIcon from '@lucide/svelte/icons/user-lock';
 	import XIcon from '@lucide/svelte/icons/x';
-	import type { ColumnDef } from '@tanstack/table-core';
 	import { toast } from 'svelte-sonner';
 	import { filesProxy, superForm } from 'sveltekit-superforms';
 	import { zod4Client } from 'sveltekit-superforms/adapters';
 	import { schemaOfAttachments } from './schemas';
 
 	let { data } = $props();
-
-	let rows = $derived(data.stories);
-	type Row = (typeof rows)[number];
-
-	const filterFn = getFilterFn<Row>();
-	const windowSize = useWindowSize({ defaultHeight: 800 });
-	const gridHeight = $derived(Math.max(250, windowSize.height - 150));
-
-	const columns: ColumnDef<Row, unknown>[] = [
-		{
-			id: 'select-row',
-			size: 40,
-			enableSorting: false,
-			enableHiding: false,
-			enableResizing: false,
-			header: ({ table }) => renderComponent(RowSelectHeader, { table }),
-			meta: { cell: { variant: 'row-select' } }
-		},
-		{
-			id: 'edit-flow',
-			header: 'Edit flow',
-			accessorFn: () => `Edit flow`,
-			meta: {
-				cell: { variant: 'relation-follow', url: `${page.url.pathname}/{row}/flow` },
-				readOnly: true
-			},
-			filterFn
-		},
-		{
-			accessorKey: 'id',
-			header: 'ID',
-			meta: { cell: { variant: 'text-short' }, readOnly: true },
-			filterFn
-		},
-		{
-			accessorKey: 'name',
-			header: 'Name',
-			meta: { cell: { variant: 'text-translated-short' } },
-			filterFn
-		},
-		{
-			accessorKey: 'editors',
-			header: 'Editors',
-			meta: {
-				cell: { variant: 'relation-follow', url: `${page.url.pathname}/{row}/permissions` },
-				readOnly: true
-			},
-			filterFn
-		},
-		{
-			id: 'url',
-			header: 'URL',
-			accessorFn: (row) => `${page.url.origin}/s/${row.reference}`,
-			meta: { cell: { variant: 'text-short' }, readOnly: true },
-			filterFn
-		},
-		{
-			accessorKey: 'configuration',
-			header: 'Configuration',
-			meta: { cell: { variant: 'json-yaml' } },
-			filterFn
-		},
-		{
-			accessorKey: 'isPublished',
-			header: 'Published',
-			meta: { cell: { variant: 'checkbox' } },
-			filterFn
-		},
-		{
-			accessorKey: 'isPublic',
-			header: 'Public',
-			meta: { cell: { variant: 'checkbox' }, readOnly: true },
-			filterFn
-		},
-		{
-			accessorKey: 'createdAt',
-			header: 'Created at',
-			meta: { cell: { variant: 'date-time' }, readOnly: true },
-			filterFn
-		},
-		{
-			accessorKey: 'createdBy',
-			header: 'Created by',
-			meta: { cell: { variant: 'badge-item' }, readOnly: true },
-			filterFn
-		},
-		{
-			accessorKey: 'updatedAt',
-			header: 'Updated at',
-			meta: { cell: { variant: 'date-time' }, readOnly: true },
-			filterFn
-		},
-		{
-			accessorKey: 'updatedBy',
-			header: 'Updated by',
-			meta: { cell: { variant: 'badge-item' }, readOnly: true },
-			filterFn
-		}
-	];
-
-	const dataGrid = useDataGrid<Row>({
-		columns,
-		data: () => rows,
-		getRowId: (row) => row.id,
-		endpoint: `/api/stories`,
-		onDataChange: (nextRows) => (rows = nextRows),
-		enableSearch: true,
-		enablePaste: true,
-		onRowAdd: false,
-		onRowsAdd: (count: number) => {},
-		initialState: {
-			sorting: [{ id: 'id', desc: false }],
-			columnVisibility: { id: false, configuration: false },
-			columnPinning: { left: ['select-row'] }
-		}
-	} as const);
-
-	const { table, ...dataGridProps } = dataGrid;
-
-	const showLanguageMenu = $derived(hasTranslatableFields(columns));
+	let stories = $derived(data.stories);
 
 	let isUploadPanelOpen = $state(false);
 	// svelte-ignore state_referenced_locally
@@ -189,44 +57,56 @@
 	const files = filesProxy(form, 'attachments');
 </script>
 
-<Header class="mx-auto w-full max-w-6xl">
-	<BreadcrumbMenu
-		menus={[
-			[
-				{ label: 'Anthologies', url: `/edit/anthologies` },
-				{ isTrigger: true, label: 'Stories', url: `/edit/stories` }
-			]
-		]}
-	/>
-</Header>
+<div class="mx-auto w-full max-w-xl">
+	<Header>
+		<h1 class="overflow-hidden text-sm whitespace-nowrap">My stories</h1>
+	</Header>
+</div>
 
-<div class="mx-auto w-full max-w-6xl space-y-4 px-4">
-	{#if rows.length}
-		<div role="toolbar" aria-orientation="horizontal" class="flex items-center justify-between">
-			<DataGridKeyboardShortcuts enableSearch={!!dataGridProps.searchState} />
-			<div class="flex w-full items-center gap-1">
-				<DataGridFilterMenu {table} />
-				<DataGridSortMenu {table} />
-				<DataGridRowHeightMenu {table} />
-				<DataGridViewMenu {table} />
-				{#if showLanguageMenu}
-					<DataGridLanguageSelectMenu class="ml-auto" />
-				{/if}
-				<Button
-					href="/edit/stories/new/flow"
-					data-sveltekit-preload-data="tap"
-					variant="outline"
-					size="sm"
-					class="h-8 font-normal"
-				>
+<div class="mx-auto w-full max-w-xl">
+	{#if stories.length}
+		<div class="grid w-full gap-4 p-4">
+			<div class="flex gap-2">
+				<Button href="/edit/stories/new/flow" data-sveltekit-preload-data="tap">
 					<PlusIcon class="size-4" />
-					Create
+					Create story
 				</Button>
 				{@render upload()}
 			</div>
+			{#each stories as story}
+				<Item.Root variant="outline" onclick={() => goto(`/edit/stories/${story.id}/flow`)}>
+					<Item.Content>
+						<Item.Title>{story.name}</Item.Title>
+						<Item.Description>
+							Status: {story.isPublished ? 'Published' : 'Draft'}, Visibility: {story.isPublic
+								? 'Public'
+								: 'Private'}
+						</Item.Description>
+					</Item.Content>
+					<Item.Actions>
+						<a
+							href="/edit/stories/{story.id}/permissions"
+							class={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
+						>
+							<UserLockIcon />
+						</a>
+						<a
+							href="/api/stories/io/{story.id}"
+							data-sveltekit-preload-data="tap"
+							class={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
+						>
+							<FileDownIcon />
+						</a>
+						<a
+							href="/edit/stories/{story.id}/flow"
+							class={buttonVariants({ variant: 'ghost', size: 'icon' })}
+						>
+							<ChevronRightIcon class="size-4" />
+						</a>
+					</Item.Actions>
+				</Item.Root>
+			{/each}
 		</div>
-
-		<DataGrid {...dataGridProps} {table} height={gridHeight} />
 	{:else}
 		<Empty.Root>
 			<Empty.Header>
@@ -238,14 +118,9 @@
 			</Empty.Header>
 			<Empty.Content>
 				<div class="flex gap-2">
-					<Button
-						href="/edit/stories/new/flow"
-						data-sveltekit-preload-data="tap"
-						size="sm"
-						class="h-8 font-normal"
-					>
+					<Button href="/edit/stories/new/flow" data-sveltekit-preload-data="tap">
 						<PlusIcon class="size-4" />
-						Create
+						Create story
 					</Button>
 					{@render upload()}
 				</div>
@@ -256,11 +131,9 @@
 
 {#snippet upload()}
 	<Popover.Root bind:open={isUploadPanelOpen}>
-		<Popover.Trigger
-			class={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'h-8 font-normal')}
-		>
-			<FileUpIcon class="text-muted-foreground" />
-			Upload
+		<Popover.Trigger class={buttonVariants({ variant: 'outline', size: 'default' })}>
+			<FileUpIcon class="size-4" />
+			Upload stories
 		</Popover.Trigger>
 		<Popover.Content class="w-80" align="start">
 			<div class="grid gap-4">
