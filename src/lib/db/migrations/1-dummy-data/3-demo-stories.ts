@@ -16,7 +16,7 @@ export const createDemoStories = async (clientId: string) => {
       } catch (e) {
         if (process.env.NODE_ENV !== 'production') {
           console.warn(`Failed to create story ${reference}.`);
-          console.log(e);
+          console.debug(e);
         }
       }
     }
