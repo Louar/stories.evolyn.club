@@ -51,6 +51,8 @@ export const POST = (async ({ locals, request }) => {
       .values({
         storyId: story.id,
         userId: userId,
+        createdBy: userId,
+        updatedBy: userId,
       })
       .returning('id')
       .executeTakeFirstOrThrow();
