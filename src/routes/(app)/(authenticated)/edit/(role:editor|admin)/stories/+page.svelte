@@ -128,7 +128,7 @@
 									</DropdownMenu.Item>
 									<DropdownMenu.Item>
 										{#snippet child({ props })}
-											<a href="/edit/stories/{story.id}/io" {...props}>
+											<a href="/api/stories/{story.id}/io" {...props}>
 												<FileDownIcon />
 												Download
 											</a>

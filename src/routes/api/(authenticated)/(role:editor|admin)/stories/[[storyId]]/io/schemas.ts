@@ -26,6 +26,7 @@ const answerOptionSchema = z.object({
 
 const answerGroupSchema = z.object({
   id: z.string().min(1).optional(),
+  // reference: z.string().min(1).optional(),
   doRandomize: z.boolean(),
 });
 

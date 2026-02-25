@@ -3,7 +3,7 @@ import { findOneStoryById } from '$lib/db/repositories/2-stories-module';
 import { requireParam } from '$lib/server/utils.server';
 import { json } from '@sveltejs/kit';
 import YAML from 'yaml';
-import type { RequestHandler } from './[[storyId]]/$types';
+import type { RequestHandler } from './$types';
 import { schema } from './schemas';
 
 export const GET = (async ({ locals, params }) => {
@@ -32,11 +32,20 @@ export const POST = (async ({ locals, request }) => {
 
   const storyId = await db.transaction().execute(async (trx) => {
     // 1. Story
+    let storyReference = story_raw.reference;
+    const exists = await trx
+      .selectFrom('story')
+      .where('story.reference', '=', storyReference)
+      .where('story.clientId', '=', clientId)
+      .select(['story.id'])
+      .executeTakeFirst();
+    if (exists) storyReference += `-${crypto.randomUUID().toString().slice(0, 8)}`;
+
     const story = await trx
       .insertInto('story')
       .values({
         clientId,
-        reference: `${story_raw.reference}-${crypto.randomUUID().toString().slice(0, 8)}`,
+        reference: storyReference,
         name: JSON.stringify(story_raw.name),
         configuration: JSON.stringify(story_raw.configuration),
         isPublished: story_raw.isPublished,
@@ -109,7 +118,7 @@ export const POST = (async ({ locals, request }) => {
         if (question_raw.answerGroup && question_raw.answerOptions?.length) {
           ag = await trx
             .insertInto('quizQuestionTemplateAnswerGroup')
-            .values({ reference: 'play-pause-q1', name: 'Yes / No 1', doRandomize: true })
+            .values({ doRandomize: question_raw.answerGroup.doRandomize })
             .returning('id')
             .executeTakeFirstOrThrow();
 
