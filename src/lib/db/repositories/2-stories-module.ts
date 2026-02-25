@@ -379,7 +379,7 @@ export const findOneStoryByReference = async (clientId: string, storyReference: 
             const rule: Rule = {
               _id: String(r.order ?? ''),
               _description: r.name ?? '',
-              next: r.nextPartId ?? rawlogic.defaultNextPartId ?? null,
+              next: r.nextPartId ?? null,
             };
 
             const ruleInputs = Array.isArray(r.inputs) ? r.inputs : [];

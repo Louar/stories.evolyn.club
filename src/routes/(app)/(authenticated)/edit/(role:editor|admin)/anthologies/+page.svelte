@@ -100,7 +100,7 @@
 					</Item.Content>
 					<Item.Actions>
 						<a
-							href="/api/anthologies/io/{anthology.id}"
+							href="/api/anthologies/{anthology.id}/io"
 							data-sveltekit-preload-data="tap"
 							class={buttonVariants({ variant: 'outline', size: 'sm' })}
 						>

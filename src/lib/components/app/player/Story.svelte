@@ -4,8 +4,11 @@
 	import { PLAYERS } from '$lib/states/players.svelte.js';
 	import { STORIES } from '$lib/states/stories.svelte.js';
 	import { cn } from '$lib/utils.js';
+	import RestartIcon from '@lucide/svelte/icons/rotate-ccw';
 	import type { ClassValue } from 'clsx';
 	import { onMount } from 'svelte';
+	import { Confetti } from 'svelte-confetti';
+	import { fade } from 'svelte/transition';
 	import AnnouncementOverlay from './AnnouncementOverlay.svelte';
 	import InteractionOverlay from './InteractionOverlay.svelte';
 	import PlayerComponent from './Player.svelte';
@@ -16,7 +19,7 @@
 		orientation: Orientation | undefined;
 		players: Player[];
 		doRestart?: boolean;
-		onnext: (() => void) | undefined;
+		onnext?: (() => void) | undefined;
 
 		class?: ClassValue | null | undefined;
 	};
@@ -31,20 +34,29 @@
 
 	let pid: string | undefined = $state();
 	let start: number | undefined = $state();
+	let isEnded = $state(false);
 
 	onMount(() => {
 		pid = story?.parts?.[0]?.id;
 		start = new Date().getTime();
 	});
 
+	const restart = () => {
+		isEnded = false;
+		pid = story?.parts?.[0]?.id;
+		start = new Date().getTime();
+		const player = players.find((player) => player.id === pid);
+		if (player && PLAYERS.didUserInteract) player.doRestart = true;
+	};
+
 	const submit = (logic: Logic | undefined, input: InputFromLogic<Logic>) => {
 		if (!logic || !input) return;
 		const output = executeLogic(logic, input);
-		if (!output?.next || typeof output.next !== 'string') return;
+		if (!output?.next || typeof output.next !== 'string') return end();
 
 		const current = players.find((p) => p.id === pid);
 		const next = players.find((p) => p.id === output.next);
-		if (!current || !next) return;
+		if (!current || !next) return end();
 
 		current.doPlay = false;
 
@@ -57,6 +69,31 @@
 			next.doPlay = true;
 		}
 	};
+
+	const end = () => {
+		const watchTime = Math.round(Object.values(PLAYERS.watchDurations)?.reduce((a, b) => a + b, 0));
+		const percentages = Object.values(PLAYERS.watchTimePercentages);
+		const watchTimePercentage = Math.round(
+			percentages?.reduce((a, b) => a + b, 0) / percentages.length
+		);
+		STORIES.averageWatchTimePercentages[story.id] = Math.max(
+			STORIES.averageWatchTimePercentages[story.id] ?? 0,
+			watchTimePercentage
+		);
+		parent.postMessage(
+			{
+				isCompleted: true,
+				start,
+				end: new Date().getTime(),
+				watchTime,
+				watchTimePercentage
+			},
+			'*'
+		);
+		isEnded = true;
+		if (onnext) onnext();
+	};
+
 	const executeLogic = (
 		logic: Logic,
 		input: InputFromLogic<Logic>
@@ -121,7 +158,7 @@
 	};
 
 	$effect(() => {
-		if (doRestart) pid = story?.parts?.[0]?.id;
+		if (doRestart) restart();
 	});
 </script>
 
@@ -177,34 +214,13 @@
 								nextPlayer.doPlay = true;
 								pid = nextPlayer.id;
 							} else if (!nextPlayers?.length) {
-								const watchTime = Math.round(
-									Object.values(PLAYERS.watchDurations)?.reduce((a, b) => a + b, 0)
-								);
-								const percentages = Object.values(PLAYERS.watchTimePercentages);
-								const watchTimePercentage = Math.round(
-									percentages?.reduce((a, b) => a + b, 0) / percentages.length
-								);
-								parent.postMessage(
-									{
-										isCompleted: true,
-										start,
-										end: new Date().getTime(),
-										watchTime,
-										watchTimePercentage
-									},
-									'*'
-								);
-								STORIES.averageWatchTimePercentages[story.id] = Math.max(
-									STORIES.averageWatchTimePercentages[story.id] ?? 0,
-									watchTimePercentage
-								);
-								if (onnext) onnext();
+								end();
 							}
 						}}
 					/>
 				{/if}
 
-				{#if hasOverlay(part, player)}
+				{#if !isEnded && hasOverlay(part, player)}
 					{#if part.foregroundType === 'announcement' && 'title' in part.foreground && 'message' in part.foreground}
 						<AnnouncementOverlay
 							title={part.foreground?.title}
@@ -220,5 +236,34 @@
 				{/if}
 			</div>
 		{/each}
+		{#if isEnded}
+			<div
+				class="absolute inset-0 z-20 bg-black/20 backdrop-blur-md"
+				in:fade={{ duration: 250 }}
+			></div>
+			<div
+				class="absolute inset-0 z-30 grid place-items-center"
+				in:fade={{ delay: 500, duration: 250 }}
+			>
+				<Confetti
+					noGravity
+					x={[-1.5, 1.5]}
+					y={[-1.5, 1.5]}
+					size={25}
+					delay={[0, 150]}
+					duration={750}
+					iterationCount={2}
+				/>
+				<div class="absolute inset-0 z-30 grid place-items-center">
+					<button
+						onclick={restart}
+						out:fade
+						class="group grid size-24 cursor-pointer place-items-center rounded-full bg-black/50 text-white ring-black backdrop-blur-md transition-colors outline-none group-hover:bg-black/30 group-data-focus:ring-4"
+					>
+						<RestartIcon class="size-12 opacity-80 transition-colors group-hover:opacity-100" />
+					</button>
+				</div>
+			</div>
+		{/if}
 	{/if}
 </div>

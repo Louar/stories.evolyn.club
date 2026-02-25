@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import Header from '$lib/components/app/header/app-header.svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Empty from '$lib/components/ui/empty/index.js';
 	import {
 		displaySize,
@@ -13,13 +14,19 @@
 	import * as Item from '$lib/components/ui/item/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
+	import BookCheckIcon from '@lucide/svelte/icons/book-check';
 	import BookOpenIcon from '@lucide/svelte/icons/book-open';
+	import BookXIcon from '@lucide/svelte/icons/book-x';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
 	import FileDownIcon from '@lucide/svelte/icons/file-down';
 	import FilePlusIcon from '@lucide/svelte/icons/file-plus';
 	import FileUpIcon from '@lucide/svelte/icons/file-up';
 	import LoaderCircleIcon from '@lucide/svelte/icons/loader-circle';
+	import LockIcon from '@lucide/svelte/icons/lock';
+	import LockOpenIcon from '@lucide/svelte/icons/lock-open';
+	import MoreHorizontalIcon from '@lucide/svelte/icons/more-horizontal';
+	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import UserLockIcon from '@lucide/svelte/icons/user-lock';
 	import XIcon from '@lucide/svelte/icons/x';
@@ -76,34 +83,70 @@
 			</div>
 			{#each stories as story}
 				<Item.Root variant="outline" onclick={() => goto(`/edit/stories/${story.id}/flow`)}>
-					<Item.Content>
+					<Item.Content class=" min-w-0">
 						<Item.Title>{story.name}</Item.Title>
-						<Item.Description>
-							Status: {story.isPublished ? 'Published' : 'Draft'}, Visibility: {story.isPublic
-								? 'Public'
-								: 'Private'}
+						<Item.Description class="flex items-center gap-1">
+							{#if story.isPublished}
+								<BookCheckIcon class="size-3.5" />
+							{:else}
+								<BookXIcon class="size-3.5" />
+							{/if}
+							{#if story.isPublic}
+								<LockOpenIcon class="size-3.5" />
+							{:else}
+								<LockIcon class="size-3.5" />
+							{/if}
+							<span class="truncate pl-2">{story.reference}</span>
 						</Item.Description>
 					</Item.Content>
 					<Item.Actions>
-						<a
-							href="/edit/stories/{story.id}/permissions"
-							class={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
-						>
-							<UserLockIcon />
-						</a>
-						<a
-							href="/edit/stories/{story.id}/assets"
-							class={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
-						>
-							<FilePlusIcon />
-						</a>
-						<a
-							href="/api/stories/{story.id}/io"
-							data-sveltekit-preload-data="tap"
-							class={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
-						>
-							<FileDownIcon />
-						</a>
+						<DropdownMenu.Root>
+							<DropdownMenu.Trigger>
+								{#snippet child({ props })}
+									<Button {...props} variant="outline" size="icon-sm">
+										<MoreHorizontalIcon />
+									</Button>
+								{/snippet}
+							</DropdownMenu.Trigger>
+							<DropdownMenu.Content class="w-56" align="end">
+								<DropdownMenu.Group>
+									<DropdownMenu.Item>
+										{#snippet child({ props })}
+											<a href="/edit/stories/{story.id}/permissions" {...props}>
+												<UserLockIcon />
+												Permissions
+											</a>
+										{/snippet}
+									</DropdownMenu.Item>
+									<DropdownMenu.Item>
+										{#snippet child({ props })}
+											<a href="/edit/stories/{story.id}/assets" {...props}>
+												<FilePlusIcon />
+												Assets
+											</a>
+										{/snippet}
+									</DropdownMenu.Item>
+									<DropdownMenu.Item>
+										{#snippet child({ props })}
+											<a href="/edit/stories/{story.id}/io" {...props}>
+												<FileDownIcon />
+												Download
+											</a>
+										{/snippet}
+									</DropdownMenu.Item>
+									<DropdownMenu.Separator />
+									<DropdownMenu.Item>
+										{#snippet child({ props })}
+											<a href="/edit/stories/{story.id}/flow" {...props}>
+												<PencilIcon />
+												Edit
+											</a>
+										{/snippet}
+									</DropdownMenu.Item>
+								</DropdownMenu.Group>
+							</DropdownMenu.Content>
+						</DropdownMenu.Root>
+
 						<a
 							href="/edit/stories/{story.id}/flow"
 							class={buttonVariants({ variant: 'ghost', size: 'icon' })}

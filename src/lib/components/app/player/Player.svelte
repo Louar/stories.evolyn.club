@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { PLAYERS } from '$lib/states/players.svelte';
 	import { cn } from '$lib/utils';
-	import PlayIcon from '@lucide/svelte/icons/play';
 	import LoaderIcon from '@lucide/svelte/icons/loader-circle';
+	import PlayIcon from '@lucide/svelte/icons/play';
 	import type { ClassValue } from 'clsx';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';

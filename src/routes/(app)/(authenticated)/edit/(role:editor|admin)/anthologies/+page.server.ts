@@ -78,7 +78,7 @@ export const actions = {
       } catch {
         // return setError(form, 'attachments', 'Invalid YAML');
       }
-      const res = await fetch(`/api/anthologies/io`, { method: 'POST', body: JSON.stringify(yaml) });
+      const res = await fetch(`/api/io/anthologies`, { method: 'POST', body: JSON.stringify(yaml) });
       if (!res.ok) {
         console.error(await res.json());
         return fail(400, { form });
