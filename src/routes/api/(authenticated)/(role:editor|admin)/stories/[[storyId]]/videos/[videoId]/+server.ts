@@ -1,7 +1,7 @@
 import { db } from '$lib/db/database';
 import { findOneVideoById } from '$lib/db/repositories/2-stories-module';
 import { formObjectPreprocessor, orientationableUrlValidator } from '$lib/db/schemas/0-utils';
-import { canModifyStory } from '$lib/server/utils.server';
+import { canModifyStory, requireParam } from '$lib/server/utils.server';
 import { json } from '@sveltejs/kit';
 import z from 'zod/v4';
 import type { RequestHandler } from './$types';
@@ -20,7 +20,8 @@ const videoSchema = z.object({
 });
 
 export const POST = (async ({ locals, params, request }) => {
-  await canModifyStory(locals, params.storyId);
+  const storyId = requireParam(params.storyId, 'The story path parameter is required');
+  await canModifyStory(locals, storyId);
 
   const body = videoSchema.safeParse(await request.json());
   if (!body.success) return json(body.error.issues, { status: 422 });
@@ -51,7 +52,7 @@ export const POST = (async ({ locals, params, request }) => {
     await trx
       .insertInto('videoAvailableToStory')
       .values({
-        storyId: params.storyId,
+        storyId,
         videoId: video.id,
       })
       .onConflict((oc) => oc.columns(['storyId', 'videoId']).doNothing())
@@ -66,7 +67,8 @@ export const POST = (async ({ locals, params, request }) => {
 }) satisfies RequestHandler;
 
 export const DELETE = (async ({ locals, params }) => {
-  await canModifyStory(locals, params.storyId);
+  const storyId = requireParam(params.storyId, 'The story path parameter is required');
+  await canModifyStory(locals, storyId);
 
   await db.deleteFrom('video')
     .where('id', '=', params.videoId)

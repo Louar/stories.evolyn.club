@@ -1,5 +1,5 @@
 import { db } from '$lib/db/database';
-import { canModifyStory } from '$lib/server/utils.server';
+import { canModifyStory, requireParam } from '$lib/server/utils.server';
 import { json } from '@sveltejs/kit';
 import z from 'zod/v4';
 import type { RequestHandler } from './$types';
@@ -10,7 +10,8 @@ const schema = z.object({
 });
 
 export const POST = (async ({ locals, params, request }) => {
-  await canModifyStory(locals, params.storyId);
+  const storyId = requireParam(params.storyId, 'The story path parameter is required');
+  await canModifyStory(locals, storyId);
 
   const body = schema.safeParse(await request.json());
   if (!body.success) return json(body.error.issues, { status: 422 });
@@ -46,7 +47,8 @@ export const POST = (async ({ locals, params, request }) => {
 }) satisfies RequestHandler;
 
 export const DELETE = (async ({ locals, params, request }) => {
-  await canModifyStory(locals, params.storyId);
+  const storyId = requireParam(params.storyId, 'The story path parameter is required');
+  await canModifyStory(locals, storyId);
 
   const body = schema.safeParse(await request.json());
   if (!body.success) return json(body.error.issues, { status: 422 });

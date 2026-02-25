@@ -1,7 +1,7 @@
 import { db } from '$lib/db/database';
 import { findOnePartById } from '$lib/db/repositories/2-stories-module';
 import { LogicHitpolicy, PartBackgroundType, PartForegroundType } from '$lib/db/schemas/2-story-module.js';
-import { canModifyStory } from '$lib/server/utils.server';
+import { canModifyStory, requireParam } from '$lib/server/utils.server';
 import { json } from '@sveltejs/kit';
 import z from 'zod/v4';
 import type { RequestHandler } from './$types';
@@ -21,7 +21,8 @@ const partSchema = z.object({
 });
 
 export const POST = (async ({ locals, params, request }) => {
-  await canModifyStory(locals, params.storyId);
+  const storyId = requireParam(params.storyId, 'The story path parameter is required');
+  await canModifyStory(locals, storyId);
 
   const body = partSchema.safeParse(await request.json());
   if (!body.success) return json(body.error.issues, { status: 422 });
@@ -33,7 +34,7 @@ export const POST = (async ({ locals, params, request }) => {
       .insertInto('part')
       .values({
         id: params.partId === 'new' ? undefined : params.partId,
-        storyId: params.storyId,
+        storyId,
         position: position ? JSON.stringify(position) : null,
         backgroundConfiguration: backgroundConfiguration ? JSON.stringify(backgroundConfiguration) : null,
         foregroundConfiguration: foregroundConfiguration ? JSON.stringify(foregroundConfiguration) : null,
@@ -85,7 +86,8 @@ export const POST = (async ({ locals, params, request }) => {
 });
 
 export const DELETE = (async ({ locals, params }) => {
-  await canModifyStory(locals, params.storyId);
+  const storyId = requireParam(params.storyId, 'The story path parameter is required');
+  await canModifyStory(locals, storyId);
 
   await db.deleteFrom('part')
     .where('id', '=', params.partId)

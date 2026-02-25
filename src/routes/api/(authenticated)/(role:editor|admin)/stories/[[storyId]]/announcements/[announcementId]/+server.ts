@@ -1,7 +1,7 @@
 import { db } from '$lib/db/database';
 import { findOneAnnouncementById } from '$lib/db/repositories/2-stories-module';
 import { formObjectPreprocessor, translatableValidator } from '$lib/db/schemas/0-utils';
-import { canModifyStory } from '$lib/server/utils.server';
+import { canModifyStory, requireParam } from '$lib/server/utils.server';
 import { json } from '@sveltejs/kit';
 import z from 'zod/v4';
 import type { RequestHandler } from './$types';
@@ -19,7 +19,8 @@ const announcementSchema = z.object({
 });
 
 export const POST = (async ({ locals, params, request }) => {
-  await canModifyStory(locals, params.storyId);
+  const storyId = requireParam(params.storyId, 'The story path parameter is required');
+  await canModifyStory(locals, storyId);
 
   const body = announcementSchema.safeParse(await request.json());
   if (!body.success) return json(body.error.issues, { status: 422 });
@@ -48,7 +49,7 @@ export const POST = (async ({ locals, params, request }) => {
     await trx
       .insertInto('announcementTemplateAvailableToStory')
       .values({
-        storyId: params.storyId,
+        storyId,
         announcementTemplateId: announcement.id,
       })
       .onConflict((oc) => oc.columns(['storyId', 'announcementTemplateId']).doNothing())
@@ -63,7 +64,8 @@ export const POST = (async ({ locals, params, request }) => {
 }) satisfies RequestHandler;
 
 export const DELETE = (async ({ locals, params }) => {
-  await canModifyStory(locals, params.storyId);
+  const storyId = requireParam(params.storyId, 'The story path parameter is required');
+  await canModifyStory(locals, storyId);
 
   await db.deleteFrom('announcementTemplate')
     .where('id', '=', params.announcementId)

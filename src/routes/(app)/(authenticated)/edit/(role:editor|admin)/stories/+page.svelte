@@ -98,7 +98,7 @@
 							<FilePlusIcon />
 						</a>
 						<a
-							href="/api/stories/io/{story.id}"
+							href="/api/stories/{story.id}/io"
 							data-sveltekit-preload-data="tap"
 							class={buttonVariants({ variant: 'outline', size: 'icon-sm' })}
 						>

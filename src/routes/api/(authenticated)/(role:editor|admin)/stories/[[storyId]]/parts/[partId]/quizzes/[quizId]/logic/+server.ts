@@ -1,7 +1,7 @@
 import { db } from '$lib/db/database';
 import { findOneQuizLogicById } from '$lib/db/repositories/2-stories-module';
 import { LogicHitpolicy } from '$lib/db/schemas/2-story-module';
-import { canModifyStory } from '$lib/server/utils.server';
+import { canModifyStory, requireParam } from '$lib/server/utils.server';
 import { clean } from '$lib/utils';
 import { json } from '@sveltejs/kit';
 import z from 'zod/v4';
@@ -26,7 +26,8 @@ const logicSchema = z.object({
 });
 
 export const POST = (async ({ locals, params, request }) => {
-  await canModifyStory(locals, params.storyId);
+  const storyId = requireParam(params.storyId, 'The story path parameter is required');
+  await canModifyStory(locals, storyId);
 
   const body = logicSchema.safeParse(clean(await request.json()));
   if (!body.success) return json(body.error.issues, { status: 422 });

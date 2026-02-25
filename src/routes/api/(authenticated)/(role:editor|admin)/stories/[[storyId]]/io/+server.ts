@@ -1,14 +1,14 @@
 import { db } from '$lib/db/database';
 import { findOneStoryById } from '$lib/db/repositories/2-stories-module';
-import { error, json } from '@sveltejs/kit';
+import { requireParam } from '$lib/server/utils.server';
+import { json } from '@sveltejs/kit';
 import YAML from 'yaml';
-import type { RequestHandler } from './$types';
+import type { RequestHandler } from './[[storyId]]/$types';
 import { schema } from './schemas';
 
 export const GET = (async ({ locals, params }) => {
   const clientId = locals.client.id;
-  const storyId = params.storyId;
-  if (!storyId?.length) error(422, 'Story ID is missing on path')
+  const storyId = requireParam(params.storyId, 'The story path parameter is required');
 
   const story = await findOneStoryById(clientId, storyId);
 
