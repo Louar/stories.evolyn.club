@@ -111,7 +111,23 @@
 				}
 
 				if (!isScrolling && best && best.ratio >= 0.7 && best.index !== active) {
+					playersOfStories = playersOfStories.map((storyPlayers) =>
+						storyPlayers.map((p) => ({
+							...p,
+							doPlay: false,
+							doRestart: false,
+							almostEnded: false,
+							isEnded: false,
+							doEnd: true,
+							didHandleEnd: false
+						}))
+					);
+
 					active = best.index;
+					const playersOfNextStory = playersOfStories[active];
+					const initialPartOfNextStory = playersOfNextStory.find((p) => p.isInitialPart);
+					if (initialPartOfNextStory && PLAYERS.didUserInteract)
+						initialPartOfNextStory.doPlay = true;
 				}
 			},
 			{
