@@ -26,21 +26,26 @@
 
 	const update = (next: number[], bounds = { min: -Infinity, max: Infinity }) => {
 		// Fallback for unexpected shapes
-		// if (!Array.isArray(next) || next.length !== 3) {
-		// 	range = next;
-		// 	return;
-		// }
-		// let [a, b, c] = next;
-		// // 1) Clamp to slider bounds (optional but recommended)
-		// a = Math.min(Math.max(a, bounds.min), bounds.max);
-		// b = Math.min(Math.max(b, bounds.min), bounds.max);
-		// c = Math.min(Math.max(c, bounds.min), bounds.max);
-		// // 2) Ensure endpoints don't cross
-		// const min = Math.min(a, c);
-		// const max = Math.max(a, c);
-		// // 3) Ensure middle stays between endpoints
-		// const mid = Math.min(Math.max(b, min), max);
-		// range = [min, mid, max];
+		if (!Array.isArray(next) || next.length !== 3) {
+			range = next;
+			return;
+		}
+
+		let [a, b, c] = next;
+
+		// 1) Clamp to slider bounds (optional but recommended)
+		a = Math.min(Math.max(a, bounds.min), bounds.max);
+		b = Math.min(Math.max(b, bounds.min), bounds.max);
+		c = Math.min(Math.max(c, bounds.min), bounds.max);
+
+		// 2) Ensure endpoints don't cross
+		const min = Math.min(a, c);
+		const max = Math.max(a, c);
+
+		// 3) Ensure middle stays between endpoints
+		const mid = Math.min(Math.max(b, min), max);
+
+		range = [min, mid, max];
 	};
 </script>
 
