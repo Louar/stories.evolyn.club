@@ -121,8 +121,7 @@
 								</Select.Trigger>
 								<Select.Content align="start">
 									<Select.Group>
-										<!-- <Select.GroupHeading>Videos</Select.GroupHeading> -->
-										{#each videos as video}
+										{#each videos as video (video.id)}
 											<Select.Item class="block" value={video.id}>
 												<p>{video.name}</p>
 											</Select.Item>

@@ -47,10 +47,13 @@
 
 	let duration = $derived(videos.find((video) => video.id === part.videoId)?.duration ?? 0);
 	let range = $state([
+		// eslint-disable-next-line svelte/no-unused-svelte-ignore
 		// svelte-ignore state_referenced_locally
 		part.backgroundConfiguration?.start ?? 0,
+		// eslint-disable-next-line svelte/no-unused-svelte-ignore
 		// svelte-ignore state_referenced_locally
 		part.foregroundConfiguration?.start ?? 0.5,
+		// eslint-disable-next-line svelte/no-unused-svelte-ignore
 		// svelte-ignore state_referenced_locally
 		part.backgroundConfiguration?.end ?? 1
 	]);
@@ -100,7 +103,7 @@
 		id?: string;
 		logic?: Awaited<ReturnType<typeof findOneQuizLogicById>>;
 	}) => {
-		const { action, id, logic } = output;
+		const { action, logic } = output;
 		if (action === 'persist' && logic) {
 			part.quizLogicForPart = logic;
 		}
@@ -174,7 +177,7 @@
 								}}
 								class="grid gap-2"
 							>
-								{#each videos as video}
+								{#each videos as video (video.id)}
 									<Label
 										class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {part.videoId ===
 										video.id
@@ -259,7 +262,7 @@
 								}}
 								class="grid grid-cols-2 gap-2"
 							>
-								{#each overlayOptions as option}
+								{#each overlayOptions as option (option.value)}
 									<Label
 										class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {part.foregroundType ===
 										option.value
@@ -288,7 +291,7 @@
 									}}
 									class="grid gap-2"
 								>
-									{#each announcements as announcement}
+									{#each announcements as announcement (announcement.id)}
 										<Label
 											class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {part.announcementTemplateId ===
 											announcement.id
@@ -318,7 +321,7 @@
 									}}
 									class="grid gap-2"
 								>
-									{#each quizzes as quiz}
+									{#each quizzes as quiz (quiz.id)}
 										<Label
 											class="flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-muted {part.quizTemplateId ===
 											quiz.id
@@ -372,7 +375,7 @@
 	{#if part.foregroundType === 'quiz'}
 		<Separator class="mt-1 mb-3" />
 		<div class="grid w-full gap-2">
-			{#each part.quizLogicForPart?.rules as rule}
+			{#each part.quizLogicForPart?.rules as rule (rule.id)}
 				<div class="relative px-2">
 					<p class="text-sm">
 						{rule.name}

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
 	import { navigationMenuTriggerStyle } from '$lib/components/ui/navigation-menu/navigation-menu-trigger.svelte';
@@ -42,7 +43,7 @@
 	}) => {
 		const { action } = output;
 		if (action === 'delete') {
-			goto('/edit/stories');
+			goto(resolve('/edit/stories'));
 		} else if (action === 'persist' && data) {
 			story = { ...story, ...data };
 		}
@@ -107,7 +108,7 @@
 			<NavigationMenu.Item>
 				<NavigationMenu.Link>
 					{#snippet child()}
-						<a href="/edit/stories" class={navigationMenuTriggerStyle()}>
+						<a href={resolve('/edit/stories')} class={navigationMenuTriggerStyle()}>
 							<HouseIcon class="size-5" />
 						</a>
 					{/snippet}
@@ -144,7 +145,11 @@
 			<NavigationMenu.Item>
 				<NavigationMenu.Link>
 					{#snippet child()}
-						<a href="/s/{story.reference}" target="_blank" class={navigationMenuTriggerStyle()}>
+						<a
+							href={resolve('/s/{story.reference}')}
+							target="_blank"
+							class={navigationMenuTriggerStyle()}
+						>
 							<TvMinimalPlayIcon class="size-5" />
 						</a>
 					{/snippet}

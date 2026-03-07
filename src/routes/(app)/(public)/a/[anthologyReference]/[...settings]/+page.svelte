@@ -164,7 +164,7 @@
 		bind:this={container}
 		class="scrollbar-none h-full w-full snap-y snap-mandatory overflow-y-scroll overscroll-contain scroll-smooth"
 	>
-		{#each stories as story, i}
+		{#each stories as story, i (story.id)}
 			<section data-index={i} class="relative h-full w-full snap-start snap-always">
 				<Story
 					{story}
