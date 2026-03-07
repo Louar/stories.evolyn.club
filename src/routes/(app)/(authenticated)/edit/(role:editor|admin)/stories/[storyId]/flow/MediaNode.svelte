@@ -364,7 +364,7 @@
 			{/if}
 		</div>
 
-		{#if part.backgroundType === 'video'}
+		{#if part.backgroundType === 'video' && part.videoId}
 			<div class="flex gap-3 p-4">
 				<Slider bind:range {duration} hasOverlay={!!part.foregroundType} />
 			</div>
