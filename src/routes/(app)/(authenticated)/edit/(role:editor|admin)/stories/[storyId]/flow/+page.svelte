@@ -146,7 +146,7 @@
 				<NavigationMenu.Link>
 					{#snippet child()}
 						<a
-							href={resolve('/s/{story.reference}')}
+							href={resolve(`/s/${story.reference}`)}
 							target="_blank"
 							class={navigationMenuTriggerStyle()}
 						>
