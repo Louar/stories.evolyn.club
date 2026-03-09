@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import Header from '$lib/components/app/header/app-header.svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
@@ -48,7 +49,7 @@
 			if (f.valid) isUploadPanelOpen = false;
 		}
 	});
-	const { form: fd, enhance, message, delayed } = form;
+	const { enhance, message, delayed } = form;
 	message.subscribe((message) => {
 		if (message) {
 			toast.success(message.text, {
@@ -81,8 +82,11 @@
 				</Button>
 				{@render upload()}
 			</div>
-			{#each stories as story}
-				<Item.Root variant="outline" onclick={() => goto(`/edit/stories/${story.id}/flow`)}>
+			{#each stories as story (story.id)}
+				<Item.Root
+					variant="outline"
+					onclick={() => goto(resolve(`/edit/stories/${story.id}/flow`))}
+				>
 					<Item.Content class=" min-w-0">
 						<Item.Title>{story.name}</Item.Title>
 						<Item.Description class="flex items-center gap-1">
@@ -112,7 +116,7 @@
 								<DropdownMenu.Group>
 									<DropdownMenu.Item>
 										{#snippet child({ props })}
-											<a href="/edit/stories/{story.id}/permissions" {...props}>
+											<a href={resolve(`/edit/stories/${story.id}/permissions`)} {...props}>
 												<UserLockIcon />
 												Permissions
 											</a>
@@ -120,7 +124,7 @@
 									</DropdownMenu.Item>
 									<DropdownMenu.Item>
 										{#snippet child({ props })}
-											<a href="/edit/stories/{story.id}/assets" {...props}>
+											<a href={resolve(`/edit/stories/${story.id}/assets`)} {...props}>
 												<FilePlusIcon />
 												Assets
 											</a>
@@ -128,7 +132,7 @@
 									</DropdownMenu.Item>
 									<DropdownMenu.Item>
 										{#snippet child({ props })}
-											<a href="/api/stories/{story.id}/io" {...props}>
+											<a href={resolve(`/api/stories/${story.id}/io`)} {...props}>
 												<FileDownIcon />
 												Download
 											</a>
@@ -137,7 +141,7 @@
 									<DropdownMenu.Separator />
 									<DropdownMenu.Item>
 										{#snippet child({ props })}
-											<a href="/edit/stories/{story.id}/flow" {...props}>
+											<a href={resolve(`/edit/stories/${story.id}/flow`)} {...props}>
 												<PencilIcon />
 												Edit
 											</a>
@@ -148,7 +152,7 @@
 						</DropdownMenu.Root>
 
 						<a
-							href="/edit/stories/{story.id}/flow"
+							href={resolve(`/edit/stories/${story.id}/flow`)}
 							class={buttonVariants({ variant: 'ghost', size: 'icon' })}
 						>
 							<ChevronRightIcon class="size-4" />

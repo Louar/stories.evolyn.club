@@ -11,7 +11,6 @@
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { Switch } from '$lib/components/ui/switch';
 	import { TranslatableInput } from '$lib/components/ui/translatable-input';
-	import { formatFormError } from '$lib/db/schemas/0-utils';
 	import { moveArrayItem } from '$lib/utils';
 	import { DragDropProvider } from '@dnd-kit-svelte/svelte';
 	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
@@ -83,6 +82,7 @@
 			sortable.initialIndex,
 			sortable.index
 		) as typeof $fd.positions;
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 		positions?.filter((q) => !q.isRemoved)?.forEach((q, i) => (q.order = i + 1)) ?? [];
 		$fd.positions = positions;
 	};
@@ -120,56 +120,47 @@
 					</Form.Field>
 					<Form.Field {form} name="nameRaw">
 						<Form.Control>
-							{#snippet children({ props })}
-								<div class="space-y-2">
-									<Form.Label>Naam</Form.Label>
-									<TranslatableInput bind:value={$fd.nameRaw} languageselector={true} />
-									<Form.FieldErrors />
-								</div>
-							{/snippet}
+							<div class="space-y-2">
+								<Form.Label>Naam</Form.Label>
+								<TranslatableInput bind:value={$fd.nameRaw} languageselector={true} />
+								<Form.FieldErrors />
+							</div>
 						</Form.Control>
 					</Form.Field>
 
 					<Form.Field {form} name="isPublished">
 						<Form.Control>
-							{#snippet children({ props })}
-								<div class="flex items-center space-x-2">
-									<Switch id="ispublished" bind:checked={$fd.isPublished} />
-									<Field.Label for="ispublished" class="text-sm font-normal"
-										>Is published?</Field.Label
-									>
-								</div>
-								<div class="block">
-									<CopyButton
-										text={`${page.url.origin}/a/${$fd.reference}`}
-										size="sm"
-										variant="outline"
-									>
-										{#snippet icon()}
-											<CopyIcon />
-										{/snippet}
-										<span class="text-sm">Share url:</span>
-										<span
-											class="font-mono text-sm font-light"
-											class:line-through={!$fd.isPublished}
-										>
-											{`${page.url.origin}/a/${$fd.reference}`}
-										</span>
-									</CopyButton>
-								</div>
-							{/snippet}
+							<div class="flex items-center space-x-2">
+								<Switch id="ispublished" bind:checked={$fd.isPublished} />
+								<Field.Label for="ispublished" class="text-sm font-normal"
+									>Is published?</Field.Label
+								>
+							</div>
+							<div class="block">
+								<CopyButton
+									text={`${page.url.origin}/a/${$fd.reference}`}
+									size="sm"
+									variant="outline"
+								>
+									{#snippet icon()}
+										<CopyIcon />
+									{/snippet}
+									<span class="text-sm">Share url:</span>
+									<span class="font-mono text-sm font-light" class:line-through={!$fd.isPublished}>
+										{`${page.url.origin}/a/${$fd.reference}`}
+									</span>
+								</CopyButton>
+							</div>
 						</Form.Control>
 					</Form.Field>
 
 					{#if $fd.isPublished}
 						<Form.Field {form} name="isPublic">
 							<Form.Control>
-								{#snippet children({ props })}
-									<div class="flex items-center space-x-2">
-										<Switch id="ispublic" disabled bind:checked={$fd.isPublic} />
-										<Field.Label for="ispublic" class="text-sm font-normal">Is public?</Field.Label>
-									</div>
-								{/snippet}
+								<div class="flex items-center space-x-2">
+									<Switch id="ispublic" disabled bind:checked={$fd.isPublic} />
+									<Field.Label for="ispublic" class="text-sm font-normal">Is public?</Field.Label>
+								</div>
 							</Form.Control>
 						</Form.Field>
 					{/if}
@@ -213,7 +204,7 @@
 														</Select.Trigger>
 														<Select.Content align="start">
 															<Select.Group>
-																{#each stories as item}
+																{#each stories as item (item.id)}
 																	<Select.Item class="block" value={item.id}>
 																		<p>{item.name}</p>
 																	</Select.Item>

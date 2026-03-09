@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import Header from '$lib/components/app/header/app-header.svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Empty from '$lib/components/ui/empty/index.js';
 	import {
 		displaySize,
@@ -12,13 +14,20 @@
 	import * as Item from '$lib/components/ui/item/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
+	import BookCheckIcon from '@lucide/svelte/icons/book-check';
 	import BookOpenIcon from '@lucide/svelte/icons/book-open';
+	import BookXIcon from '@lucide/svelte/icons/book-x';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
 	import FileDownIcon from '@lucide/svelte/icons/file-down';
 	import FileUpIcon from '@lucide/svelte/icons/file-up';
 	import LoaderCircleIcon from '@lucide/svelte/icons/loader-circle';
+	import LockIcon from '@lucide/svelte/icons/lock';
+	import LockOpenIcon from '@lucide/svelte/icons/lock-open';
+	import MoreHorizontalIcon from '@lucide/svelte/icons/more-horizontal';
+	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import PlusIcon from '@lucide/svelte/icons/plus';
+	import UserLockIcon from '@lucide/svelte/icons/user-lock';
 	import XIcon from '@lucide/svelte/icons/x';
 	import { toast } from 'svelte-sonner';
 	import { filesProxy, superForm } from 'sveltekit-superforms';
@@ -45,7 +54,7 @@
 			if (f.valid) isUploadPanelOpen = false;
 		}
 	});
-	const { form: fd, enhance, message, delayed } = form;
+	const { enhance, message, delayed } = form;
 	message.subscribe((message) => {
 		if (message) {
 			toast.success(message.text, {
@@ -82,7 +91,7 @@
 				</Button>
 				{@render upload()}
 			</div>
-			{#each anthologies as anthology}
+			{#each anthologies as anthology (anthology.id)}
 				<Item.Root
 					variant="outline"
 					onclick={() => {
@@ -90,23 +99,62 @@
 						isEditorOpen = true;
 					}}
 				>
-					<Item.Content>
+					<Item.Content class=" min-w-0">
 						<Item.Title>{anthology.name}</Item.Title>
-						<Item.Description>
-							Status: {anthology.isPublished ? 'Published' : 'Draft'}, Visibility: {anthology.isPublic
-								? 'Public'
-								: 'Private'}
+						<Item.Description class="flex items-center gap-1">
+							{#if anthology.isPublished}
+								<BookCheckIcon class="size-3.5" />
+							{:else}
+								<BookXIcon class="size-3.5" />
+							{/if}
+							{#if anthology.isPublic}
+								<LockOpenIcon class="size-3.5" />
+							{:else}
+								<LockIcon class="size-3.5" />
+							{/if}
+							<span class="truncate pl-2">{anthology.reference}</span>
 						</Item.Description>
 					</Item.Content>
 					<Item.Actions>
-						<a
-							href="/api/anthologies/{anthology.id}/io"
-							data-sveltekit-preload-data="tap"
-							class={buttonVariants({ variant: 'outline', size: 'sm' })}
-						>
-							<FileDownIcon class="size-4" />
-							Download
-						</a>
+						<DropdownMenu.Root>
+							<DropdownMenu.Trigger>
+								{#snippet child({ props })}
+									<Button {...props} variant="outline" size="icon-sm">
+										<MoreHorizontalIcon />
+									</Button>
+								{/snippet}
+							</DropdownMenu.Trigger>
+							<DropdownMenu.Content class="w-56" align="end">
+								<DropdownMenu.Group>
+									<DropdownMenu.Item>
+										{#snippet child({ props })}
+											<a href={resolve(`/edit/anthologies/${anthology.id}/permissions`)} {...props}>
+												<UserLockIcon />
+												Permissions
+											</a>
+										{/snippet}
+									</DropdownMenu.Item>
+									<DropdownMenu.Item disabled>
+										{#snippet child({ props })}
+											<a href={resolve(`/api/anthologies/${anthology.id}/io`)} {...props}>
+												<FileDownIcon />
+												Download
+											</a>
+										{/snippet}
+									</DropdownMenu.Item>
+									<DropdownMenu.Separator />
+									<DropdownMenu.Item
+										onclick={() => {
+											anthologyToEdit = anthology;
+											isEditorOpen = true;
+										}}
+									>
+										<PencilIcon />
+										Edit
+									</DropdownMenu.Item>
+								</DropdownMenu.Group>
+							</DropdownMenu.Content>
+						</DropdownMenu.Root>
 						<Button
 							onclick={() => {
 								anthologyToEdit = anthology;
@@ -145,7 +193,7 @@
 
 {#snippet upload()}
 	<Popover.Root bind:open={isUploadPanelOpen}>
-		<Popover.Trigger class={buttonVariants({ variant: 'outline', size: 'default' })}>
+		<Popover.Trigger disabled class={buttonVariants({ variant: 'outline', size: 'default' })}>
 			<FileUpIcon class="size-4" />
 			Upload anthologies
 		</Popover.Trigger>
