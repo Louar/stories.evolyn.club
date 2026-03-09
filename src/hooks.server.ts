@@ -40,7 +40,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	// Not authenticated ...
-	if (!authusr) {
+	if (!authusr && !routeFilePath?.includes('(public)')) {
 		// ... tyring to access anything except /auth/** with client.redirectUnauthorized set
 		if (locals.client.redirectUnauthorized) redirect(302, locals.client.redirectUnauthorized);
 
