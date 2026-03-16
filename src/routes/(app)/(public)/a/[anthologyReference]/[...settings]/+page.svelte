@@ -30,6 +30,10 @@
 	let io: IntersectionObserver | null = null;
 	let hasHydratedProgress = $state(false);
 
+	let showMetaInfo = $state(false);
+	let metaInfoDelayTimer: ReturnType<typeof setTimeout> | null = null;
+	const META_INFO_FADE_IN_DELAY_MS = 350;
+
 	type StoryWatchProgress = Record<string, number>;
 
 	const isValidPersistedProgress = (value: unknown): value is StoryWatchProgress => {
@@ -122,6 +126,33 @@
 			if (initialPartOfNextStory && PLAYERS.didUserInteract) initialPartOfNextStory.doPlay = true;
 		}
 	};
+
+	$effect(() => {
+		const shouldShowMetaInfo =
+			!!stories[active]?.name?.length && !PLAYERS.isAnyPartPlaying && !PLAYERS.isAnyOverlayActive;
+
+		if (metaInfoDelayTimer) {
+			clearTimeout(metaInfoDelayTimer);
+			metaInfoDelayTimer = null;
+		}
+
+		if (!shouldShowMetaInfo) {
+			showMetaInfo = false;
+			return;
+		}
+
+		metaInfoDelayTimer = setTimeout(() => {
+			showMetaInfo = true;
+			metaInfoDelayTimer = null;
+		}, META_INFO_FADE_IN_DELAY_MS);
+
+		return () => {
+			if (metaInfoDelayTimer) {
+				clearTimeout(metaInfoDelayTimer);
+				metaInfoDelayTimer = null;
+			}
+		};
+	});
 
 	const onKeydown = (e: KeyboardEvent) => {
 		if (e.key === 'ArrowDown') {
@@ -295,7 +326,7 @@
 		<div class="absolute inset-x-0 bottom-0 h-44 bg-linear-to-t from-black/70 to-transparent"></div>
 
 		<!-- Meta information -->
-		{#if stories[active]?.name?.length && !PLAYERS.isAnyPartPlaying && !PLAYERS.isAnyOverlayActive}
+		{#if showMetaInfo}
 			<div transition:fade={{ duration: 150 }} class="absolute right-16 bottom-10 left-4">
 				<!-- <div class="text-sm opacity-90">###</div> -->
 				<div class="mt-1 line-clamp-2 text-lg leading-snug font-semibold md:line-clamp-1">
