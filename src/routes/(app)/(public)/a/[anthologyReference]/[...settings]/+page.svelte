@@ -14,6 +14,9 @@
 
 	let { data } = $props();
 	let anthology = $derived(data.anthology);
+	let progressStorage = $derived(
+		anthology?.reference?.length ? `anthology-progress:${anthology.reference}` : undefined
+	);
 	let stories = $derived(data.stories);
 	let orientation = $derived(data.orientation);
 	// svelte-ignore state_referenced_locally
@@ -25,6 +28,38 @@
 	let active = $state(0);
 	let isScrolling = $state(false);
 	let io: IntersectionObserver | null = null;
+	let hasHydratedProgress = $state(false);
+
+	type StoryWatchProgress = Record<string, number>;
+
+	const isValidPersistedProgress = (value: unknown): value is StoryWatchProgress => {
+		if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+		return Object.values(value).every(
+			(entry) => typeof entry === 'number' && Number.isFinite(entry)
+		);
+	};
+
+	const readProgress = (): StoryWatchProgress => {
+		if (!browser) return {};
+		if (!progressStorage) return {};
+		const raw = localStorage.getItem(progressStorage);
+		if (!raw) return {};
+
+		try {
+			const parsed: unknown = JSON.parse(raw);
+			if (!isValidPersistedProgress(parsed)) return {};
+			return parsed;
+		} catch {
+			return {};
+		}
+	};
+
+	const writeProgress = (progress: StoryWatchProgress) => {
+		if (!browser) return;
+		if (!progressStorage) return;
+		if (!Object.keys(progress)?.length) return;
+		localStorage.setItem(progressStorage, JSON.stringify(progress));
+	};
 
 	const waitForScrollEnd = (target: HTMLElement, { timeout = 120 } = {}) => {
 		return new Promise<void>((resolve) => {
@@ -101,6 +136,19 @@
 
 	onMount(() => {
 		if (!browser) return;
+
+		const currentStoryIds = new Set(stories.map((story) => story.id));
+		const persistedProgress = readProgress();
+		for (const [storyId, persistedPercentage] of Object.entries(persistedProgress)) {
+			if (!currentStoryIds.has(storyId)) continue;
+			const currentPercentage = STORIES.averageWatchTimePercentages[storyId] ?? 0;
+			STORIES.averageWatchTimePercentages[storyId] = Math.max(
+				currentPercentage,
+				persistedPercentage
+			);
+		}
+		hasHydratedProgress = true;
+
 		window.addEventListener('keydown', onKeydown, { passive: false });
 
 		io = new IntersectionObserver(
@@ -155,6 +203,20 @@
 	const isStoryCompleted = (storyId: string) => {
 		return STORIES.averageWatchTimePercentages[storyId] > 10;
 	};
+
+	$effect(() => {
+		if (!browser || !hasHydratedProgress) return;
+
+		const currentStoryIds = new Set(stories.map((story) => story.id));
+		const progressForCurrentAnthology: StoryWatchProgress = {};
+		for (const storyId of currentStoryIds) {
+			const percentage = STORIES.averageWatchTimePercentages[storyId];
+			if (typeof percentage !== 'number' || !Number.isFinite(percentage)) continue;
+			progressForCurrentAnthology[storyId] = percentage;
+		}
+
+		writeProgress(progressForCurrentAnthology);
+	});
 </script>
 
 <svelte:head>

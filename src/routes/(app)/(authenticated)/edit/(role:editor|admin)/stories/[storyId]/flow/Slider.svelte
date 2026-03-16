@@ -22,7 +22,7 @@
 		orientation = 'horizontal'
 	}: Props = $props();
 
-	let step = $derived(1 / (duration * 2));
+	let step = $derived(1 / (duration * 4));
 
 	const update = (next: number[], bounds = { min: -Infinity, max: Infinity }) => {
 		// Fallback for unexpected shapes
