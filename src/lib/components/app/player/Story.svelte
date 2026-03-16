@@ -12,7 +12,7 @@
 	import AnnouncementOverlay from './AnnouncementOverlay.svelte';
 	import InteractionOverlay from './InteractionOverlay.svelte';
 	import PlayerComponent from './Player.svelte';
-	import type { InputFromLogic, Logic, OutputFromLogic, Player } from './types.js';
+	import type { InputFromLogic, Logic, OutputFromLogic, Player, Rule } from './types.js';
 
 	type Props = {
 		story: NonNullable<Awaited<ReturnType<typeof findOneStoryByReference>>>;
@@ -128,7 +128,7 @@
 
 				return matches ? { rule, score, idx } : null;
 			})
-			.filter(Boolean) as Array<{ rule: any; score: number; idx: number }>;
+			.filter(Boolean) as Array<{ rule: Rule; score: number; idx: number }>;
 
 		if (candidates.length === 0) return null;
 
@@ -188,6 +188,7 @@
 					].filter((p): p is (typeof players)[number] => p !== undefined)}
 					<PlayerComponent
 						id={player.id}
+						title={story.name ?? undefined}
 						class={orientation ?? Orientation.portrait}
 						src={player.source}
 						poster={player?.thumbnail}

@@ -11,6 +11,7 @@
 
 	type Props = {
 		id: string;
+		title?: string | undefined;
 		src: string;
 		poster?: string | null | undefined;
 		start?: number | undefined;
@@ -32,6 +33,7 @@
 	};
 	let {
 		id,
+		title,
 		src,
 		poster,
 		start,
@@ -155,7 +157,7 @@
 	bind:this={player}
 	class={cn('group relative size-full overflow-hidden', className)}
 	{src}
-	title={id}
+	{title}
 	load="custom"
 	playsinline
 	clipStartTime={start ?? 0}
