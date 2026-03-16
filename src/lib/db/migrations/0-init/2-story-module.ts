@@ -140,16 +140,6 @@ export const InitStoryModule: Migration = {
       .addColumn('position', 'jsonb')
       .execute();
 
-    // Create PartTransition table
-    await db.schema.createTable('part_transition')
-      .ifNotExists()
-      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`uuidv7()`).notNull())
-      .addColumn('session', 'text')
-      .addColumn('from_part_id', 'uuid', (col) => col.references('part.id').onDelete('cascade').notNull())
-      .addColumn('to_part_id', 'uuid', (col) => col.references('part.id').onDelete('cascade').notNull())
-      .addColumn('created_at', 'timestamptz', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
-      .execute();
-
     // Create QuizLogicForPart table
     await db.schema.createTable('quiz_logic_for_part')
       .ifNotExists()
@@ -251,9 +241,36 @@ export const InitStoryModule: Migration = {
       .addColumn('configuration', 'jsonb')
       .addUniqueConstraint('unique_story_per_position_in_anthology', ['anthology_id', 'story_id', 'order'])
       .execute();
+
+    // Create EventTransition table
+    await db.schema.createTable('event_transition')
+      .ifNotExists()
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`uuidv7()`).notNull())
+      .addColumn('url', 'text', (col) => col.notNull())
+      .addColumn('session', 'text')
+      .addColumn('created_at', 'timestamptz', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+      .addColumn('from_part_id', 'uuid', (col) => col.references('part.id').onDelete('cascade').notNull())
+      .addColumn('to_part_id', 'uuid', (col) => col.references('part.id').onDelete('cascade').notNull())
+      .execute();
+
+    // Create EventInteraction table
+    await db.schema.createTable('event_interaction')
+      .ifNotExists()
+      .addColumn('id', 'uuid', (col) => col.primaryKey().defaultTo(sql`uuidv7()`).notNull())
+      .addColumn('url', 'text', (col) => col.notNull())
+      .addColumn('session', 'text')
+      .addColumn('created_at', 'timestamptz', (col) => col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull())
+      .addColumn('part_id', 'uuid', (col) => col.references('part.id').onDelete('cascade').notNull())
+      .addColumn('quiz_question_template_id', 'uuid', (col) => col.references('quiz_question_template.id').onDelete('cascade').notNull())
+      .addColumn('quiz_question_template_answer_item_id', 'uuid', (col) => col.references('quiz_question_template_answer_item.id').onDelete('cascade'))
+      .addColumn('value', 'jsonb')
+      .execute();
   },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async down(db: Kysely<any>) {
+    await db.schema.dropTable('event_interaction').ifExists().execute();
+    await db.schema.dropTable('event_transition').ifExists().execute();
+
     await db.schema.dropTable('anthology_position').ifExists().execute();
     await db.schema.dropTable('anthology_permission').ifExists().execute();
     await db.schema.dropTable('anthology').ifExists().execute();
@@ -270,7 +287,6 @@ export const InitStoryModule: Migration = {
       .execute();
 
     await db.schema.dropTable('quiz_logic_for_part').ifExists().execute();
-    await db.schema.dropTable('part_transition').ifExists().execute();
     await db.schema.dropTable('part').ifExists().execute();
     await db.schema.dropTable('story_auth_code').ifExists().execute();
     await db.schema.dropTable('story_permission').ifExists().execute();

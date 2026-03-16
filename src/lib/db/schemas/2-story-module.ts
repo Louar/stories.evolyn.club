@@ -38,7 +38,6 @@ export type StoryModuleSchema = {
   storyPermission: StoryPermission;
   storyAuthCode: StoryAuthCode;
   part: Part;
-  partTransition: PartTransition;
   video: Video;
   videoAvailableToStory: VideoAvailableToStory;
   announcementTemplate: AnnouncementTemplate;
@@ -51,6 +50,8 @@ export type StoryModuleSchema = {
   quizLogicForPart: QuizLogicForPart;
   quizLogicRule: QuizLogicRule;
   quizLogicRuleInput: QuizLogicRuleInput;
+  eventTransition: EventTransition;
+  eventInteraction: EventInteraction;
 };
 
 export type AnthologyConfiguration = {
@@ -137,14 +138,6 @@ type Part = {
   position: JSONColumnType<{ x: number; y: number }> | null;
 };
 
-type PartTransition = {
-  id: Generated<string>;
-  session: string | null;
-  fromPartId: string;
-  toPartId: string;
-  createdAt: ColumnType<Date, never, never>;
-};
-
 type Video = {
   id: Generated<string>;
   name: string;
@@ -229,6 +222,26 @@ type QuizLogicRule = {
 type QuizLogicRuleInput = {
   id: Generated<string>;
   quizLogicRuleId: string;
+  quizQuestionTemplateId: string;
+  quizQuestionTemplateAnswerItemId: string | null;
+  value: JSONColumnType<object> | null;
+};
+
+type EventTransition = {
+  id: Generated<string>;
+  url: string;
+  session: string | null;
+  createdAt: ColumnType<Date, never, never>;
+  fromPartId: string;
+  toPartId: string;
+};
+
+type EventInteraction = {
+  id: Generated<string>;
+  url: string;
+  session: string | null;
+  createdAt: ColumnType<Date, never, never>;
+  partId: string;
   quizQuestionTemplateId: string;
   quizQuestionTemplateAnswerItemId: string | null;
   value: JSONColumnType<object> | null;
