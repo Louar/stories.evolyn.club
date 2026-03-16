@@ -217,15 +217,18 @@
 
 		writeProgress(progressForCurrentAnthology);
 	});
+
+	$effect(() => {
+		if (active < stories.length) return;
+		if (PLAYERS.isAnyOverlayActive) PLAYERS.isAnyOverlayActive = false;
+	});
 </script>
 
 <svelte:head>
 	<title>{anthology.name || stories[active]?.name}</title>
 </svelte:head>
 
-<!-- Fullscreen shell -->
 <div class="relative h-dvh w-dvw overflow-hidden text-white">
-	<!-- Background -->
 	<div class="absolute inset-0 -z-20 bg-black"></div>
 
 	<!-- Scroll container (snap) -->
@@ -239,6 +242,7 @@
 					{story}
 					{orientation}
 					players={playersOfStories[i]}
+					isActiveStory={active === i}
 					onnext={async () => {
 						if (stories.length - 1 + 1 > i) {
 							await new Promise((r) => setTimeout(r, 1000));
@@ -257,7 +261,7 @@
 				class:aspect-video={orientation === Orientation.landscape}
 				class:aspect-square={orientation === Orientation.square}
 			>
-				<ul class="grid gap-2">
+				<ul class="grid gap-2 p-4">
 					{#each stories as story, i (i)}
 						<li class="inline-flex items-center gap-2">
 							{#if isStoryCompleted(story.id)}
@@ -285,16 +289,13 @@
 		</section>
 	</div>
 
-	<!-- Static decorative overlay (below foreground overlays) -->
+	<!-- Static overlay -->
 	<div class="pointer-events-none absolute inset-0 z-10">
-		<!-- top gradient -->
 		<div class="absolute inset-x-0 top-0 h-28 bg-linear-to-b from-black/60 to-transparent"></div>
-
-		<!-- bottom gradient -->
 		<div class="absolute inset-x-0 bottom-0 h-44 bg-linear-to-t from-black/70 to-transparent"></div>
 
-		<!-- captions / meta (use active) -->
-		{#if active < stories.length && !PLAYERS.isAnyPartPlaying}
+		<!-- Meta information -->
+		{#if stories[active]?.name?.length && !PLAYERS.isAnyPartPlaying && !PLAYERS.isAnyOverlayActive}
 			<div transition:fade={{ duration: 150 }} class="absolute right-16 bottom-10 left-4">
 				<!-- <div class="text-sm opacity-90">###</div> -->
 				<div class="mt-1 line-clamp-2 text-lg leading-snug font-semibold md:line-clamp-1">
@@ -305,42 +306,42 @@
 		{/if}
 	</div>
 
-	<!-- Navigation actions (always above foreground overlays) -->
-	<div class="pointer-events-none absolute inset-0 z-50">
-		<div
-			class="story-actions pointer-events-auto absolute right-4 bottom-8 flex flex-col items-center gap-4"
-		>
-			{#if !isScrolling && stories[active]?.id && isStoryCompleted(stories[active].id)}
-				<Confetti x={[-1, -0.25]} y={[0, 0.5]} xSpread={0.4} duration={750} />
-				<div
-					transition:fade={{ duration: 150 }}
-					class="grid h-12 w-12 place-items-center rounded-full bg-emerald-300/20 text-emerald-500 backdrop-blur"
+	<!-- Navigation actions -->
+	{#if !PLAYERS.isAnyOverlayActive}
+		<div class="pointer-events-none absolute inset-0 z-50">
+			<div class="pointer-events-auto absolute right-4 bottom-10 flex flex-col items-center gap-4">
+				{#if !isScrolling && stories[active]?.id && isStoryCompleted(stories[active].id)}
+					<Confetti x={[-1, -0.25]} y={[0, 0.5]} xSpread={0.4} duration={750} />
+					<div
+						transition:fade={{ duration: 150 }}
+						class="grid h-12 w-12 place-items-center rounded-full bg-emerald-300/20 text-emerald-500 backdrop-blur"
+					>
+						<CheckIcon class="size-8" />
+					</div>
+				{/if}
+				<button
+					type="button"
+					class="grid h-12 w-12 place-items-center rounded-full bg-white/10 backdrop-blur"
+					onclick={() => scrollToIndex(active - 1)}
 				>
-					<CheckIcon class="size-8" />
-				</div>
-			{/if}
-			<button
-				type="button"
-				class="grid h-12 w-12 place-items-center rounded-full bg-white/10 backdrop-blur"
-				onclick={() => scrollToIndex(active - 1)}
-			>
-				<ArrowUpIcon class="size-8" />
-			</button>
-			<button
-				type="button"
-				class="grid h-12 w-12 place-items-center rounded-full bg-white/10 backdrop-blur"
-				onclick={() => scrollToIndex(active + 1)}
-			>
-				<ArrowDownIcon class="size-8" />
-			</button>
+					<ArrowUpIcon class="size-8" />
+				</button>
+				<button
+					type="button"
+					class="grid h-12 w-12 place-items-center rounded-full bg-white/10 backdrop-blur"
+					onclick={() => scrollToIndex(active + 1)}
+				>
+					<ArrowDownIcon class="size-8" />
+				</button>
+			</div>
 		</div>
-	</div>
+	{/if}
 
 	<!-- Active indicator -->
 	{#if active < stories.length}
 		<div
 			transition:fade={{ duration: 150 }}
-			class="pointer-events-none absolute top-4 left-4 z-10 rounded-full bg-white/10 px-3 py-1 text-xs backdrop-blur"
+			class="pointer-events-none absolute top-4 left-4 z-50 rounded-full bg-white/10 px-3 py-1 text-xs backdrop-blur"
 		>
 			{active + 1} / {stories.length}
 		</div>
@@ -351,20 +352,5 @@
 	@reference 'tailwindcss';
 	:global(body) {
 		@apply bg-transparent;
-	}
-
-	.story-actions {
-		right: max(1rem, env(safe-area-inset-right));
-		bottom: max(2rem, env(safe-area-inset-bottom));
-	}
-
-	@media (max-width: 767px) and (orientation: landscape) {
-		.story-actions {
-			left: 50%;
-			right: auto;
-			bottom: max(0.75rem, env(safe-area-inset-bottom));
-			transform: translateX(-50%);
-			flex-direction: row;
-		}
 	}
 </style>

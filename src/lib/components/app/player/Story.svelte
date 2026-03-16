@@ -6,7 +6,7 @@
 	import { cn } from '$lib/utils.js';
 	import RestartIcon from '@lucide/svelte/icons/rotate-ccw';
 	import type { ClassValue } from 'clsx';
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { Confetti } from 'svelte-confetti';
 	import { fade } from 'svelte/transition';
 	import AnnouncementOverlay from './AnnouncementOverlay.svelte';
@@ -18,6 +18,7 @@
 		story: NonNullable<Awaited<ReturnType<typeof findOneStoryByReference>>>;
 		orientation: Orientation | undefined;
 		players: Player[];
+		isActiveStory?: boolean;
 		doRestart?: boolean;
 		onnext?: (() => void) | undefined;
 
@@ -27,6 +28,7 @@
 		story = $bindable(),
 		orientation = $bindable(),
 		players = $bindable(),
+		isActiveStory = false,
 		doRestart = $bindable(false),
 		onnext,
 		class: className
@@ -35,7 +37,6 @@
 	let pid: string | undefined = $state();
 	let start: number | undefined = $state();
 	let isEnded = $state(false);
-	let overlayTrackedPartId: string | undefined = $state();
 
 	onMount(() => {
 		pid = story?.parts?.[0]?.id;
@@ -158,43 +159,18 @@
 		);
 	};
 
-	const syncAnyOverlayActive = () => {
-		PLAYERS.isAnyOverlayActive = Object.keys(PLAYERS.activeOverlayPartIds).length > 0;
+	const isActiveOverlay = () => {
+		if (!pid || isEnded) return false;
+		const activePart = story.parts.find((part) => part.id === pid);
+		if (!activePart) return false;
+		const activePlayer = players.find((player) => player.id === pid);
+		return hasOverlay(activePart, activePlayer);
 	};
 
 	$effect(() => {
-		const currentPartId = pid;
-		const currentPart = currentPartId
-			? story?.parts?.find((part) => part.id === currentPartId)
-			: undefined;
-		const currentPlayer = currentPartId
-			? players.find((player) => player.id === currentPartId)
-			: undefined;
-		const overlayIsActive =
-			!!currentPartId && !!currentPart && !isEnded && hasOverlay(currentPart, currentPlayer);
-
-		if (overlayTrackedPartId && overlayTrackedPartId !== currentPartId) {
-			delete PLAYERS.activeOverlayPartIds[overlayTrackedPartId];
-			overlayTrackedPartId = undefined;
-		}
-
-		if (overlayIsActive && currentPartId) {
-			PLAYERS.activeOverlayPartIds[currentPartId] = true;
-			overlayTrackedPartId = currentPartId;
-		} else if (currentPartId) {
-			delete PLAYERS.activeOverlayPartIds[currentPartId];
-			overlayTrackedPartId = undefined;
-		}
-
-		syncAnyOverlayActive();
-	});
-
-	onDestroy(() => {
-		if (overlayTrackedPartId) {
-			delete PLAYERS.activeOverlayPartIds[overlayTrackedPartId];
-			overlayTrackedPartId = undefined;
-			syncAnyOverlayActive();
-		}
+		if (!isActiveStory) return;
+		const next = isActiveOverlay();
+		if (PLAYERS.isAnyOverlayActive !== next) PLAYERS.isAnyOverlayActive = next;
 	});
 
 	$effect(() => {

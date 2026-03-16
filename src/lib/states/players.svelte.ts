@@ -2,13 +2,13 @@ export const PLAYERS: {
   didUserInteract: boolean;
   watchDurations: Record<string, number>;
   watchTimePercentages: Record<string, number>;
-  playingPartIds: Record<string, true>;
   isAnyPartPlaying: boolean;
+  isAnyOverlayActive: boolean;
 }
   = $state({
     didUserInteract: false,
     watchDurations: {}, // in seconds
     watchTimePercentages: {},
-    playingPartIds: {},
     isAnyPartPlaying: false,
+    isAnyOverlayActive: false,
   });

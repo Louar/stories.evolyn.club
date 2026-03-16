@@ -4,7 +4,7 @@
 	import LoaderIcon from '@lucide/svelte/icons/loader-circle';
 	import PlayIcon from '@lucide/svelte/icons/play';
 	import type { ClassValue } from 'clsx';
-	import { onDestroy, onMount } from 'svelte';
+	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import 'vidstack/bundle';
 	import type { MediaPlayerElement } from 'vidstack/elements';
@@ -79,26 +79,8 @@
 		});
 	});
 
-	onDestroy(() => {
-		pauseWatching();
-	});
-
-	const syncAnyPartPlaying = () => {
-		PLAYERS.isAnyPartPlaying = Object.keys(PLAYERS.playingPartIds).length > 0;
-	};
-
-	const setPartPlaying = () => {
-		PLAYERS.playingPartIds[id] = true;
-		syncAnyPartPlaying();
-	};
-
-	const setPartNotPlaying = () => {
-		delete PLAYERS.playingPartIds[id];
-		syncAnyPartPlaying();
-	};
-
 	const startWatching = () => {
-		setPartPlaying();
+		PLAYERS.isAnyPartPlaying = true;
 		if (timer) clearInterval(timer);
 		timer = setInterval(
 			() => (PLAYERS.watchDurations[id] = (PLAYERS.watchDurations[id] ?? 0) + 0.1),
@@ -106,7 +88,7 @@
 		);
 	};
 	const pauseWatching = () => {
-		setPartNotPlaying();
+		PLAYERS.isAnyPartPlaying = false;
 		if (timer) {
 			clearInterval(timer);
 			timer = null;

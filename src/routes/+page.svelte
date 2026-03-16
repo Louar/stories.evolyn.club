@@ -1,4 +1,5 @@
 <script lang="ts">
+	/* eslint-disable svelte/no-at-html-tags */
 	import { marked } from '$lib/client/marked';
 	import { Button } from '$lib/components/ui/button';
 	import readme from '../../README.md?raw';
