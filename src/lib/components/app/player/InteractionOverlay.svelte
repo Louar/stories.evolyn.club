@@ -2,6 +2,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import type { findOneStoryByReference } from '$lib/db/repositories/2-stories-module';
+	import { cn } from '$lib/utils';
 	import type { ClassValue } from 'clsx';
 	import { fade, fly } from 'svelte/transition';
 	import type { InputFromLogic, Logic } from './types';
@@ -11,7 +12,7 @@
 			NonNullable<
 				Awaited<ReturnType<typeof findOneStoryByReference>>
 			>['parts'][number]['foreground'],
-			{ questions: any }
+			{ questions: unknown }
 		>['questions'];
 
 		logic: Logic | undefined;
@@ -56,10 +57,13 @@
 </script>
 
 <div class="absolute inset-0 z-20 bg-black/20 backdrop-blur-md" in:fade={{ duration: 250 }}></div>
-{#each questions as question, ii}
+{#each questions as question, ii (ii)}
 	{#if i === ii}
 		<div
-			class="scrollbar-none absolute inset-0 z-30 flex overflow-y-auto px-8 py-16 text-white md:py-20"
+			class={cn(
+				'scrollbar-none absolute inset-0 z-30 flex overflow-y-auto p-8 text-white md:py-20',
+				className
+			)}
 		>
 			<div class="mx-auto mt-auto flex min-h-min w-full max-w-sm flex-col gap-4">
 				<!-- <p transition:fade>{i}</p> -->
@@ -92,7 +96,7 @@
 							next();
 						}}
 					>
-						{#each answerOptions as answerOption, jj}
+						{#each answerOptions as answerOption, jj (jj)}
 							<div
 								in:fly|global={{
 									y: 20,

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { cn } from '$lib/utils';
+	/* eslint-disable svelte/no-at-html-tags */
 	import type { ClassValue } from 'clsx';
 	import { fade, fly } from 'svelte/transition';
 
@@ -12,7 +14,7 @@
 
 <div class="absolute inset-0 z-20 bg-black/20 backdrop-blur-md" in:fade={{ duration: 250 }}></div>
 
-<div class="absolute inset-0 z-30 flex overflow-y-auto px-8 py-16 text-white md:py-20">
+<div class={cn('absolute inset-0 z-30 flex overflow-y-auto p-8 text-white md:py-20', className)}>
 	<div class="mx-auto mt-auto flex min-h-min w-full max-w-sm flex-col gap-4">
 		<!-- <p transition:fade>{i}</p> -->
 		<div

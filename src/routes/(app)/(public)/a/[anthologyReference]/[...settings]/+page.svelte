@@ -285,8 +285,8 @@
 		</section>
 	</div>
 
-	<!-- Static overlay -->
-	<div class="pointer-events-none absolute inset-0 z-50">
+	<!-- Static decorative overlay (below foreground overlays) -->
+	<div class="pointer-events-none absolute inset-0 z-10">
 		<!-- top gradient -->
 		<div class="absolute inset-x-0 top-0 h-28 bg-linear-to-b from-black/60 to-transparent"></div>
 
@@ -294,7 +294,7 @@
 		<div class="absolute inset-x-0 bottom-0 h-44 bg-linear-to-t from-black/70 to-transparent"></div>
 
 		<!-- captions / meta (use active) -->
-		{#if active < stories.length}
+		{#if active < stories.length && !PLAYERS.isAnyPartPlaying}
 			<div transition:fade={{ duration: 150 }} class="absolute right-16 bottom-10 left-4">
 				<!-- <div class="text-sm opacity-90">###</div> -->
 				<div class="mt-1 line-clamp-2 text-lg leading-snug font-semibold md:line-clamp-1">
@@ -303,9 +303,13 @@
 				<!-- <div class="mt-1 text-sm opacity-80">#demo #svelte5 #tailwind</div> -->
 			</div>
 		{/if}
+	</div>
 
-		<!-- right-side actions placeholder -->
-		<div class="pointer-events-auto absolute right-4 bottom-8 flex flex-col items-center gap-4">
+	<!-- Navigation actions (always above foreground overlays) -->
+	<div class="pointer-events-none absolute inset-0 z-50">
+		<div
+			class="story-actions pointer-events-auto absolute right-4 bottom-8 flex flex-col items-center gap-4"
+		>
 			{#if !isScrolling && stories[active]?.id && isStoryCompleted(stories[active].id)}
 				<Confetti x={[-1, -0.25]} y={[0, 0.5]} xSpread={0.4} duration={750} />
 				<div
@@ -330,22 +334,37 @@
 				<ArrowDownIcon class="size-8" />
 			</button>
 		</div>
-
-		<!-- Active indicator -->
-		{#if active < stories.length}
-			<div
-				transition:fade={{ duration: 150 }}
-				class="absolute top-4 left-4 rounded-full bg-white/10 px-3 py-1 text-xs backdrop-blur"
-			>
-				{active + 1} / {stories.length}
-			</div>
-		{/if}
 	</div>
+
+	<!-- Active indicator -->
+	{#if active < stories.length}
+		<div
+			transition:fade={{ duration: 150 }}
+			class="pointer-events-none absolute top-4 left-4 z-10 rounded-full bg-white/10 px-3 py-1 text-xs backdrop-blur"
+		>
+			{active + 1} / {stories.length}
+		</div>
+	{/if}
 </div>
 
 <style lang="postcss">
 	@reference 'tailwindcss';
 	:global(body) {
 		@apply bg-transparent;
+	}
+
+	.story-actions {
+		right: max(1rem, env(safe-area-inset-right));
+		bottom: max(2rem, env(safe-area-inset-bottom));
+	}
+
+	@media (max-width: 767px) and (orientation: landscape) {
+		.story-actions {
+			left: 50%;
+			right: auto;
+			bottom: max(0.75rem, env(safe-area-inset-bottom));
+			transform: translateX(-50%);
+			flex-direction: row;
+		}
 	}
 </style>

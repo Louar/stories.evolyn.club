@@ -6,7 +6,7 @@
 	import { cn } from '$lib/utils.js';
 	import RestartIcon from '@lucide/svelte/icons/rotate-ccw';
 	import type { ClassValue } from 'clsx';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import { Confetti } from 'svelte-confetti';
 	import { fade } from 'svelte/transition';
 	import AnnouncementOverlay from './AnnouncementOverlay.svelte';
@@ -35,6 +35,7 @@
 	let pid: string | undefined = $state();
 	let start: number | undefined = $state();
 	let isEnded = $state(false);
+	let overlayTrackedPartId: string | undefined = $state();
 
 	onMount(() => {
 		pid = story?.parts?.[0]?.id;
@@ -156,6 +157,45 @@
 				(part.foreground?.start ?? 0) * part.background?.duration
 		);
 	};
+
+	const syncAnyOverlayActive = () => {
+		PLAYERS.isAnyOverlayActive = Object.keys(PLAYERS.activeOverlayPartIds).length > 0;
+	};
+
+	$effect(() => {
+		const currentPartId = pid;
+		const currentPart = currentPartId
+			? story?.parts?.find((part) => part.id === currentPartId)
+			: undefined;
+		const currentPlayer = currentPartId
+			? players.find((player) => player.id === currentPartId)
+			: undefined;
+		const overlayIsActive =
+			!!currentPartId && !!currentPart && !isEnded && hasOverlay(currentPart, currentPlayer);
+
+		if (overlayTrackedPartId && overlayTrackedPartId !== currentPartId) {
+			delete PLAYERS.activeOverlayPartIds[overlayTrackedPartId];
+			overlayTrackedPartId = undefined;
+		}
+
+		if (overlayIsActive && currentPartId) {
+			PLAYERS.activeOverlayPartIds[currentPartId] = true;
+			overlayTrackedPartId = currentPartId;
+		} else if (currentPartId) {
+			delete PLAYERS.activeOverlayPartIds[currentPartId];
+			overlayTrackedPartId = undefined;
+		}
+
+		syncAnyOverlayActive();
+	});
+
+	onDestroy(() => {
+		if (overlayTrackedPartId) {
+			delete PLAYERS.activeOverlayPartIds[overlayTrackedPartId];
+			overlayTrackedPartId = undefined;
+			syncAnyOverlayActive();
+		}
+	});
 
 	$effect(() => {
 		if (doRestart) restart();
