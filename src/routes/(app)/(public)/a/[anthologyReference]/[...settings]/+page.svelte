@@ -1,16 +1,19 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import Story from '$lib/components/app/player/Story.svelte';
+	import { Orientation } from '$lib/db/schemas/0-utils.js';
 	import { PLAYERS } from '$lib/states/players.svelte';
 	import { STORIES } from '$lib/states/stories.svelte.js';
 	import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
 	import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
 	import CheckIcon from '@lucide/svelte/icons/circle-check';
+	import CircleXIcon from '@lucide/svelte/icons/circle-x';
 	import { onDestroy, onMount } from 'svelte';
 	import { Confetti } from 'svelte-confetti';
 	import { fade } from 'svelte/transition';
 
 	let { data } = $props();
+	let anthology = $derived(data.anthology);
 	let stories = $derived(data.stories);
 	let orientation = $derived(data.orientation);
 	// svelte-ignore state_referenced_locally
@@ -67,20 +70,22 @@
 			}))
 		);
 
-		const i = Math.max(0, Math.min(stories.length - 1, next));
+		const i = Math.max(0, Math.min(stories.length - 1 + 1, next));
 		active = i;
 		const playersOfNextStory = playersOfStories[active];
 
-		storiesRestart[active] = true;
+		if (playersOfNextStory) storiesRestart[active] = true;
 		container
 			.querySelector<HTMLElement>(`[data-index="${i}"]`)
 			?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
 		await waitForScrollEnd(container);
-		storiesRestart[active] = false;
+		if (playersOfNextStory) {
+			storiesRestart[active] = false;
 
-		const initialPartOfNextStory = playersOfNextStory.find((p) => p.isInitialPart);
-		if (initialPartOfNextStory && PLAYERS.didUserInteract) initialPartOfNextStory.doPlay = true;
+			const initialPartOfNextStory = playersOfNextStory.find((p) => p.isInitialPart);
+			if (initialPartOfNextStory && PLAYERS.didUserInteract) initialPartOfNextStory.doPlay = true;
+		}
 	};
 
 	const onKeydown = (e: KeyboardEvent) => {
@@ -125,9 +130,11 @@
 
 					active = best.index;
 					const playersOfNextStory = playersOfStories[active];
-					const initialPartOfNextStory = playersOfNextStory.find((p) => p.isInitialPart);
-					if (initialPartOfNextStory && PLAYERS.didUserInteract)
-						initialPartOfNextStory.doPlay = true;
+					if (playersOfNextStory) {
+						const initialPartOfNextStory = playersOfNextStory.find((p) => p.isInitialPart);
+						if (initialPartOfNextStory && PLAYERS.didUserInteract)
+							initialPartOfNextStory.doPlay = true;
+					}
 				}
 			},
 			{
@@ -151,7 +158,7 @@
 </script>
 
 <svelte:head>
-	<title>{stories[active]?.name}</title>
+	<title>{anthology.name || stories[active]?.name}</title>
 </svelte:head>
 
 <!-- Fullscreen shell -->
@@ -171,7 +178,7 @@
 					{orientation}
 					players={playersOfStories[i]}
 					onnext={async () => {
-						if (stories.length - 1 > i) {
+						if (stories.length - 1 + 1 > i) {
 							await new Promise((r) => setTimeout(r, 1000));
 							scrollToIndex(i + 1);
 						}
@@ -181,6 +188,39 @@
 				/>
 			</section>
 		{/each}
+		<section data-index={stories.length} class="relative h-full w-full snap-start snap-always">
+			<div
+				class="relative mx-auto grid max-h-dvh max-w-dvw items-center overflow-hidden"
+				class:aspect-portrait={!orientation || orientation === Orientation.portrait}
+				class:aspect-video={orientation === Orientation.landscape}
+				class:aspect-square={orientation === Orientation.square}
+			>
+				<ul class="grid gap-2">
+					{#each stories as story, i (i)}
+						<li class="inline-flex items-center gap-2">
+							{#if isStoryCompleted(story.id)}
+								<div
+									transition:fade={{ duration: 150 }}
+									class="grid size-8 shrink-0 place-items-center rounded-full bg-emerald-300/20 text-emerald-500"
+								>
+									<CheckIcon class="size-6" />
+								</div>
+							{:else}
+								<div
+									transition:fade={{ duration: 150 }}
+									class="grid size-8 shrink-0 place-items-center rounded-full bg-rose-300/20 text-rose-500"
+								>
+									<CircleXIcon class="size-6" />
+								</div>
+							{/if}
+							<p class="line-clamp-1 text-lg">
+								{story.name}
+							</p>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		</section>
 	</div>
 
 	<!-- Static overlay -->
@@ -192,17 +232,19 @@
 		<div class="absolute inset-x-0 bottom-0 h-44 bg-linear-to-t from-black/70 to-transparent"></div>
 
 		<!-- captions / meta (use active) -->
-		<div class="absolute right-16 bottom-10 left-4">
-			<!-- <div class="text-sm opacity-90">###</div> -->
-			<div class="mt-1 line-clamp-2 text-lg leading-snug font-semibold md:line-clamp-1">
-				{stories[active]?.name}
+		{#if active < stories.length}
+			<div transition:fade={{ duration: 150 }} class="absolute right-16 bottom-10 left-4">
+				<!-- <div class="text-sm opacity-90">###</div> -->
+				<div class="mt-1 line-clamp-2 text-lg leading-snug font-semibold md:line-clamp-1">
+					{stories[active]?.name}
+				</div>
+				<!-- <div class="mt-1 text-sm opacity-80">#demo #svelte5 #tailwind</div> -->
 			</div>
-			<!-- <div class="mt-1 text-sm opacity-80">#demo #svelte5 #tailwind</div> -->
-		</div>
+		{/if}
 
 		<!-- right-side actions placeholder -->
 		<div class="pointer-events-auto absolute right-4 bottom-8 flex flex-col items-center gap-4">
-			{#if !isScrolling && isStoryCompleted(stories[active].id)}
+			{#if !isScrolling && stories[active]?.id && isStoryCompleted(stories[active].id)}
 				<Confetti x={[-1, -0.25]} y={[0, 0.5]} xSpread={0.4} duration={750} />
 				<div
 					transition:fade={{ duration: 150 }}
@@ -228,9 +270,14 @@
 		</div>
 
 		<!-- Active indicator -->
-		<div class="absolute top-4 left-4 rounded-full bg-white/10 px-3 py-1 text-xs backdrop-blur">
-			{active + 1} / {stories.length}
-		</div>
+		{#if active < stories.length}
+			<div
+				transition:fade={{ duration: 150 }}
+				class="absolute top-4 left-4 rounded-full bg-white/10 px-3 py-1 text-xs backdrop-blur"
+			>
+				{active + 1} / {stories.length}
+			</div>
+		{/if}
 	</div>
 </div>
 
