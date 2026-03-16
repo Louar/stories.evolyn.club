@@ -1,4 +1,9 @@
 <script lang="ts">
+	import {
+		initPlayerEvents,
+		logInteractionEvent,
+		logTransitionEvent
+	} from '$lib/client/player-events.js';
 	import type { findOneStoryByReference } from '$lib/db/repositories/2-stories-module.js';
 	import { Orientation } from '$lib/db/schemas/0-utils.js';
 	import { PLAYERS } from '$lib/states/players.svelte.js';
@@ -39,11 +44,16 @@
 	let isEnded = $state(false);
 
 	onMount(() => {
+		initPlayerEvents(story.id);
 		pid = story?.parts?.[0]?.id;
 		start = new Date().getTime();
 	});
 
 	const restart = () => {
+		const fromPartId = pid;
+		const toPartId = story?.parts?.[0]?.id;
+		if (fromPartId && toPartId) logTransitionEvent(story.id, fromPartId, toPartId);
+
 		isEnded = false;
 		pid = story?.parts?.[0]?.id;
 		start = new Date().getTime();
@@ -59,6 +69,7 @@
 		const current = players.find((p) => p.id === pid);
 		const next = players.find((p) => p.id === output.next);
 		if (!current || !next) return end();
+		logTransitionEvent(story.id, current.id, next.id);
 
 		current.doPlay = false;
 
@@ -227,6 +238,7 @@
 							player.doEnd = true;
 							const nextPlayer = players.find((p) => p.id === player.next);
 							if (nextPlayer) {
+								logTransitionEvent(story.id, player.id, nextPlayer.id);
 								nextPlayer.doBuffer = true;
 								nextPlayer.doPlay = true;
 								pid = nextPlayer.id;
@@ -248,7 +260,24 @@
 						{@const questions = part.foreground?.doRandomize
 							? part.foreground?.questions?.sort(() => Math.random() - 0.5)
 							: part.foreground?.questions}
-						<InteractionOverlay {questions} logic={part.foreground?.logic} {submit} />
+						<InteractionOverlay
+							partId={part.id}
+							{questions}
+							logic={part.foreground?.logic}
+							{submit}
+							oninteraction={({
+								quizQuestionTemplateId,
+								quizQuestionTemplateAnswerItemId,
+								value
+							}) => {
+								logInteractionEvent(story.id, {
+									partId: part.id,
+									quizQuestionTemplateId,
+									quizQuestionTemplateAnswerItemId,
+									value
+								});
+							}}
+						/>
 					{/if}
 				{/if}
 			</div>

@@ -290,7 +290,7 @@
 	</div>
 
 	<!-- Static overlay -->
-	<div class="pointer-events-none absolute inset-0 z-10">
+	<div class="pointer-events-none absolute inset-0 z-40">
 		<div class="absolute inset-x-0 top-0 h-28 bg-linear-to-b from-black/60 to-transparent"></div>
 		<div class="absolute inset-x-0 bottom-0 h-44 bg-linear-to-t from-black/70 to-transparent"></div>
 

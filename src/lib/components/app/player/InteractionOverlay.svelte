@@ -8,6 +8,8 @@
 	import type { InputFromLogic, Logic } from './types';
 
 	type Props = {
+		partId: string;
+
 		questions: Extract<
 			NonNullable<
 				Awaited<ReturnType<typeof findOneStoryByReference>>
@@ -19,13 +21,21 @@
 
 		submit: (logic: Logic | undefined, input: InputFromLogic<Logic>) => void;
 
+		oninteraction: (args: {
+			quizQuestionTemplateId: string;
+			quizQuestionTemplateAnswerItemId: string | null;
+			value: unknown;
+		}) => void;
+
 		class?: ClassValue | null | undefined;
 	};
 	let {
+		partId,
 		questions,
 		logic,
 
 		submit,
+		oninteraction,
 
 		class: className
 	}: Props = $props();
@@ -44,12 +54,20 @@
 		}
 	};
 
-	const set = (id: string, raw: string) => {
+	const set = (id: string, raw: string, answerItemId: string | null) => {
 		let value: unknown;
 		try {
 			value = JSON.parse(raw);
 		} catch {
 			return false;
+		}
+
+		if (partId?.length) {
+			oninteraction({
+				quizQuestionTemplateId: id,
+				quizQuestionTemplateAnswerItemId: answerItemId,
+				value: answerItemId ? null : value
+			});
 		}
 
 		input[id] = value;
@@ -92,7 +110,8 @@
 					<RadioGroup.Root
 						class="gap-2"
 						onValueChange={(value) => {
-							set(question.id, value);
+							const matched = answerOptions?.find((answerOption) => answerOption.value === value);
+							set(question.id, value, matched?.id ?? null);
 							next();
 						}}
 					>

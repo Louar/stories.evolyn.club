@@ -225,9 +225,9 @@
 						class="absolute z-20 h-full w-(--slider-fill) rounded-sm bg-white will-change-[width]"
 					></div>
 				</div>
-				<div
+				<!-- <div
 					class="absolute top-1/2 left-(--slider-fill) z-20 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-3 border-white bg-neutral-300 opacity-0 ring-neutral-200/40 transition-opacity will-change-[left] group-data-active:opacity-100 group-data-dragging:ring-4"
-				></div>
+				></div> -->
 			</media-time-slider>
 		</media-controls-group>
 	</media-controls>

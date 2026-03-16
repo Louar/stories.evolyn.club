@@ -285,6 +285,7 @@ export const findOneStoryByReference = async (clientId: string, storyReference: 
                                 .leftJoin('quizQuestionTemplateAnswerItem', 'quizQuestionTemplateAnswerItem.quizQuestionTemplateAnswerGroupId', 'quizQuestionTemplateAnswerGroup.id')
                                 .orderBy('quizQuestionTemplateAnswerItem.order', 'asc')
                                 .select((eb) => [
+                                  'quizQuestionTemplateAnswerItem.id',
                                   'quizQuestionTemplateAnswerItem.order',
                                   // 'quizQuestionTemplateAnswerItem.value',
                                   eb.cast<string>('quizQuestionTemplateAnswerItem.value', 'text').as('value'),

@@ -156,12 +156,12 @@
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
 						<Button
-							onclick={() => {
-								anthologyToEdit = anthology;
-								isEditorOpen = true;
-							}}
+							href="/a/{anthology.reference}"
+							target="_blank"
+							disabled={!anthology.reference?.length}
 							variant="ghost"
 							size="icon"
+							onclick={(e) => e.stopPropagation()}
 						>
 							<ChevronRightIcon class="size-4" />
 						</Button>

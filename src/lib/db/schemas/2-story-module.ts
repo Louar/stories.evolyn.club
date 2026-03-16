@@ -230,8 +230,8 @@ type QuizLogicRuleInput = {
 type EventTransition = {
   id: Generated<string>;
   url: string;
-  session: string | null;
-  createdAt: ColumnType<Date, never, never>;
+  session: string;
+  createdAt: ColumnType<Date, Date | string, never>;
   fromPartId: string;
   toPartId: string;
 };
@@ -239,8 +239,8 @@ type EventTransition = {
 type EventInteraction = {
   id: Generated<string>;
   url: string;
-  session: string | null;
-  createdAt: ColumnType<Date, never, never>;
+  session: string;
+  createdAt: ColumnType<Date, Date | string, never>;
   partId: string;
   quizQuestionTemplateId: string;
   quizQuestionTemplateAnswerItemId: string | null;
