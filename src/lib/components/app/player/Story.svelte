@@ -187,7 +187,9 @@
 	});
 
 	$effect(() => {
-		if (doRestart) restart();
+		if (!doRestart) return;
+		doRestart = false;
+		restart();
 	});
 </script>
 
