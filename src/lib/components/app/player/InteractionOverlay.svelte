@@ -22,9 +22,10 @@
 		submit: (logic: Logic | undefined, input: InputFromLogic<Logic>) => void;
 
 		oninteraction: (args: {
-			quizQuestionTemplateId: string;
+			quizQuestionTemplate: (typeof questions)[number];
 			quizQuestionTemplateAnswerItemId: string | null;
 			value: unknown;
+			raw_value: unknown;
 		}) => void;
 
 		class?: ClassValue | null | undefined;
@@ -54,28 +55,33 @@
 		}
 	};
 
-	const set = (id: string, raw: string, answerItemId: string | null) => {
-		let value: unknown;
+	const set = (
+		quizQuestionTemplate: (typeof questions)[number],
+		raw: string,
+		quizQuestionTemplateAnswerItemId: string | null
+	) => {
+		let raw_value: unknown;
 		try {
-			value = JSON.parse(raw);
+			raw_value = JSON.parse(raw);
 		} catch {
 			return false;
 		}
 
 		if (partId?.length) {
 			oninteraction({
-				quizQuestionTemplateId: id,
-				quizQuestionTemplateAnswerItemId: answerItemId,
-				value: answerItemId ? null : value
+				quizQuestionTemplate,
+				quizQuestionTemplateAnswerItemId,
+				value: quizQuestionTemplateAnswerItemId ? null : raw_value,
+				raw_value
 			});
 		}
 
-		input[id] = value;
+		input[quizQuestionTemplate.id] = raw_value;
 	};
 </script>
 
 <div class="absolute inset-0 z-20 bg-black/20 backdrop-blur-md" in:fade={{ duration: 250 }}></div>
-{#each questions as question, ii (ii)}
+{#each questions as question, ii (question.id)}
 	{#if i === ii}
 		<div
 			class={cn(
@@ -84,7 +90,6 @@
 			)}
 		>
 			<div class="mx-auto mt-auto flex min-h-min w-full max-w-sm flex-col gap-4">
-				<!-- <p transition:fade>{i}</p> -->
 				<div
 					in:fly|global={{
 						y: 20,
@@ -111,11 +116,11 @@
 						class="gap-2"
 						onValueChange={(value) => {
 							const matched = answerOptions?.find((answerOption) => answerOption.value === value);
-							set(question.id, value, matched?.id ?? null);
+							set(question, value, matched?.id ?? null);
 							next();
 						}}
 					>
-						{#each answerOptions as answerOption, jj (jj)}
+						{#each answerOptions as answerOption, jj (answerOption.id)}
 							<div
 								in:fly|global={{
 									y: 20,

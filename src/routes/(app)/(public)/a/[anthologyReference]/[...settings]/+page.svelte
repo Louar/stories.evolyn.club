@@ -256,7 +256,7 @@
 </script>
 
 <svelte:head>
-	<title>{anthology.name || stories[active]?.name}</title>
+	<title>{anthology.name ?? stories[active]?.name}</title>
 </svelte:head>
 
 <div class="relative h-dvh w-dvw overflow-hidden text-white">

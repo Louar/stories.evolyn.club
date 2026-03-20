@@ -89,6 +89,7 @@
 		const watchTimePercentage = Math.round(
 			percentages?.reduce((a, b) => a + b, 0) / percentages.length
 		);
+		const events = JSON.stringify(STORIES.events[story.id] ?? []);
 		STORIES.averageWatchTimePercentages[story.id] = Math.max(
 			STORIES.averageWatchTimePercentages[story.id] ?? 0,
 			watchTimePercentage
@@ -99,7 +100,8 @@
 				start,
 				end: new Date().getTime(),
 				watchTime,
-				watchTimePercentage
+				watchTimePercentage,
+				events
 			},
 			'*'
 		);
@@ -266,15 +268,17 @@
 							logic={part.foreground?.logic}
 							{submit}
 							oninteraction={({
-								quizQuestionTemplateId,
+								quizQuestionTemplate,
 								quizQuestionTemplateAnswerItemId,
-								value
+								value,
+								raw_value
 							}) => {
 								logInteractionEvent(story.id, {
 									partId: part.id,
-									quizQuestionTemplateId,
+									quizQuestionTemplate,
 									quizQuestionTemplateAnswerItemId,
-									value
+									value,
+									raw_value
 								});
 							}}
 						/>
