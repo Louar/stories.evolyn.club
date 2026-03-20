@@ -123,7 +123,10 @@
 			storiesRestart[active] = false;
 
 			const initialPartOfNextStory = playersOfNextStory.find((p) => p.isInitialPart);
-			if (initialPartOfNextStory && PLAYERS.didUserInteract) initialPartOfNextStory.doPlay = true;
+			if (initialPartOfNextStory) {
+				if (!initialPartOfNextStory.doBuffer) initialPartOfNextStory.doBuffer = true;
+				if (PLAYERS.didUserInteract) initialPartOfNextStory.doPlay = true;
+			}
 		}
 	};
 
@@ -211,8 +214,10 @@
 					const playersOfNextStory = playersOfStories[active];
 					if (playersOfNextStory) {
 						const initialPartOfNextStory = playersOfNextStory.find((p) => p.isInitialPart);
-						if (initialPartOfNextStory && PLAYERS.didUserInteract)
-							initialPartOfNextStory.doPlay = true;
+						if (initialPartOfNextStory) {
+							if (!initialPartOfNextStory.doBuffer) initialPartOfNextStory.doBuffer = true;
+							if (PLAYERS.didUserInteract) initialPartOfNextStory.doPlay = true;
+						}
 					}
 				}
 			},

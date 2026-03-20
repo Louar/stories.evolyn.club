@@ -30,7 +30,7 @@ export const load: PageServerLoad = (async ({ locals, params }) => {
   const stories: NonNullable<Awaited<ReturnType<typeof findOneStoryByReference>>>[] = [];
   const playersOfStories: Player[][] = [];
 
-  for (const { reference: storyReference } of anthology.stories) {
+  for (const [storyIndex, { reference: storyReference }] of anthology.stories.entries()) {
     const story = await findOneStoryByReference(clientId, storyReference, orientation, language);
     if (!story) error(404, `The story '${storyReference}' was not found. It may not exist, or may not be published, yet.`);
 
@@ -45,7 +45,7 @@ export const load: PageServerLoad = (async ({ locals, params }) => {
       isInitialPart: index === 0,
       next: part.defaultNextPartId ?? undefined,
 
-      doBuffer: index === 0,
+      doBuffer: storyIndex === 0 && index === 0,
       doPlay: false,
       doRestart: false,
       doEnd: false,
