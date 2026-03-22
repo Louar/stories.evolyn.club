@@ -1,5 +1,6 @@
 <script lang="ts" generics="TData">
 	import highlighter from '$lib/client/shiki';
+	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import { PopoverContent } from '$lib/components/ui/popover/index.js';
 	import TranslatableTextarea from '$lib/components/ui/translatable-textarea/translatable-textarea.svelte';
 	import {
@@ -9,7 +10,6 @@
 		type Translatable
 	} from '$lib/db/schemas/0-utils';
 	import { UI } from '$lib/states/ui.svelte';
-	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import { cn } from '$lib/utils.js';
 	import { Popover as PopoverPrimitive } from 'bits-ui';
 	import DataGridCellWrapper from '../data-grid-cell-wrapper.svelte';
@@ -110,7 +110,7 @@
 
 	function handleBlur() {
 		if (!isEditing) return;
-		saveAndClose();
+		// saveAndClose();
 	}
 
 	function handleTextareaKeyDown(event: KeyboardEvent) {

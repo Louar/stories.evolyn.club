@@ -1,7 +1,7 @@
 <script lang="ts" generics="TData">
+	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import { PopoverContent } from '$lib/components/ui/popover/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
-	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import { Popover as PopoverPrimitive } from 'bits-ui';
 	import DataGridCellWrapper from '../data-grid-cell-wrapper.svelte';
 
@@ -39,7 +39,7 @@
 		}
 	});
 
-	// Debounced auto-save (300ms delay)
+	// Debounced auto-save
 	function debouncedSave(newValue: string) {
 		if (saveTimeoutId) {
 			clearTimeout(saveTimeoutId);
@@ -48,7 +48,7 @@
 			if (!readOnly) {
 				table.options.meta?.onDataUpdate?.({ rowIndex, columnId, value: newValue });
 			}
-		}, 300);
+		}, 3000);
 	}
 
 	function handleSave() {
@@ -98,11 +98,11 @@
 	}
 
 	function handleBlur() {
-		const meta = table.options.meta;
-		if (!readOnly && value !== initialValue) {
-			meta?.onDataUpdate?.({ rowIndex, columnId, value });
-		}
-		meta?.onCellEditingStop?.();
+		// const meta = table.options.meta;
+		// if (!readOnly && value !== initialValue) {
+		// 	meta?.onDataUpdate?.({ rowIndex, columnId, value });
+		// }
+		// meta?.onCellEditingStop?.();
 	}
 
 	function handleInput(event: Event) {
