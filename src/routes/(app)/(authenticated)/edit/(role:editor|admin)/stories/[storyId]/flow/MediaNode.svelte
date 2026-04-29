@@ -11,6 +11,7 @@
 	import { formatDuration } from '$lib/db/schemas/0-utils';
 	import { EDITORS } from '$lib/states/editors.svelte';
 	import CheckIcon from '@lucide/svelte/icons/check';
+	import CirclePlayIcon from '@lucide/svelte/icons/circle-play';
 	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
 	import CogIcon from '@lucide/svelte/icons/cog';
 	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
@@ -127,6 +128,12 @@
 
 <div class="flex w-75 flex-col rounded-lg border bg-card py-3 shadow-md">
 	<div class="relative flex flex-col gap-2">
+		{#if part.isInitial}
+			<div class="inline-flex items-center gap-1.5 px-2">
+				<CirclePlayIcon class="size-3 text-muted-foreground" />
+				<p class="text-xs text-muted-foreground">Initial part</p>
+			</div>
+		{/if}
 		<!-- Media Selector -->
 		<div class="relative px-2">
 			<Dialog.Root>
