@@ -64,7 +64,7 @@ export const actions = {
           password: `{bcrypt}${hash}`,
           firstName,
           lastName,
-          roles: JSON.stringify(roles),
+          roles,
         })
         .executeTakeFirstOrThrow();
     } catch (e) {
