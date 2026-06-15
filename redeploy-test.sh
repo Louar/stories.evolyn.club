@@ -1,29 +1,33 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -Eeuo pipefail
 
-set -e # Exit immediately if any command fails
+REMOTE_HOST="ams-kowedes-com"
+REMOTE_DIR="/var/apps/evolyn.club/stories/_LATEST"
+APP_NAME="stories.evolyn.club"
 
 abort() {
-  printf "\n#########################\n"
-  printf "${RED}Error! FAILED TO COMPLETE${NORMAL}\n"
+  echo "Deployment failed" >&2
   exit 1
 }
 
-# Create build
-npm run build || abort
+trap abort ERR
 
-LOCATION="/var/apps/evolyn.club/stories"
+rm -rf build
+npm run build
 
-# Backup
-ssh ams-kowedes-com cp -r -- $LOCATION/_LATEST/build $LOCATION/_BU/build || abort
+# Sync build output + package files in one shot
+rsync -az \
+  ./build \
+  ./package.json \
+  ./package-lock.json \
+  ./svelte.config.js \
+  "${REMOTE_HOST}:${REMOTE_DIR}/"
 
-# Copy new files
-scp -r ./build ams-kowedes-com:$LOCATION/_LATEST || abort
-scp package-lock.json ams-kowedes-com:$LOCATION/_LATEST || abort
-scp package.json ams-kowedes-com:$LOCATION/_LATEST || abort
-
-sleep 6
-
-# Restart the service
-# Make sure package-lock.json, package.json, svelte.config.js are already uploaded
-# npm ci --no-audit --no-fund
-ssh ams-kowedes-com "source ~/.nvm/nvm.sh && pm2 -s restart stories.evolyn.club && pm2 -s reset stories.evolyn.club && pm2 show stories.evolyn.club"
+# Restart or reload after sync completes
+ssh "$REMOTE_HOST" "
+  cd '$REMOTE_DIR' &&
+  source ~/.nvm/nvm.sh &&
+  # npm ci --no-audit --no-fund &&
+  pm2 reload $APP_NAME || pm2 restart $APP_NAME &&
+  pm2 show $APP_NAME
+"
