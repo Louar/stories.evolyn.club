@@ -5,7 +5,6 @@
 	import PlayIcon from '@lucide/svelte/icons/play';
 	import type { ClassValue } from 'clsx';
 	import { onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
 	import 'vidstack/bundle';
 	import type { MediaPlayerElement } from 'vidstack/elements';
 
@@ -21,6 +20,7 @@
 
 		doBuffer: boolean;
 		doPlay: boolean;
+		doPause: boolean;
 		doRestart: boolean;
 		doEnd: boolean;
 		time: number;
@@ -43,6 +43,7 @@
 
 		doBuffer = $bindable(false),
 		doPlay = $bindable(false),
+		doPause = $bindable(false),
 		doRestart = $bindable(false),
 		doEnd = $bindable(false),
 		time = $bindable(0),
@@ -60,12 +61,16 @@
 	let almostEnded = $state(false);
 	let isEnded = $state(false);
 	let didHandleEnd = $state(false);
+	let isPlaying = $state(false);
 
 	let timer = $state<ReturnType<typeof setInterval> | null>(null);
 
 	onMount(() => {
 		player?.subscribe(({ canPlay: canplay }) => {
 			canPlay = canplay;
+		});
+		player?.subscribe(({ playing, paused }) => {
+			isPlaying = playing && !paused;
 		});
 		player?.subscribe(({ currentTime }) => {
 			if (player?.duration) {
@@ -129,7 +134,28 @@
 	});
 
 	$effect(() => {
-		if (canPlay && doPlay && PLAYERS.didUserInteract) restart();
+		if (!doPlay || !PLAYERS.didUserInteract) return;
+
+		if (canPlay && !isPlaying) restart();
+
+		const interval = setInterval(() => {
+			if (canPlay && !isPlaying) {
+				clearInterval(interval);
+				restart();
+			}
+		}, 100);
+
+		const timeout = setTimeout(() => {
+			clearInterval(interval);
+		}, 5000);
+
+		return () => {
+			clearInterval(interval);
+			clearTimeout(timeout);
+		};
+	});
+	$effect(() => {
+		if (doRestart) restart();
 	});
 	const restart = async () => {
 		time = 0;
@@ -137,7 +163,8 @@
 		PLAYERS.watchDurations[id] = 0;
 		PLAYERS.watchTimePercentages[id] = 0;
 		await player.play();
-		doPlay = true;
+		doPlay = false;
+		doPause = false;
 		doRestart = false;
 		almostEnded = false;
 		isEnded = false;
@@ -146,8 +173,12 @@
 	};
 
 	$effect(() => {
-		if (doRestart) restart();
+		if (doPause && isPlaying) pause();
 	});
+	const pause = async () => {
+		await player.pause();
+		doPause = false;
+	};
 </script>
 
 <div
@@ -187,28 +218,24 @@
 		class="pointer-events-none absolute inset-0 z-20 flex size-full flex-col bg-linear-to-t from-black/10 to-transparent opacity-0 transition-opacity data-visible:opacity-100"
 	>
 		<media-controls-group class="pointer-events-auto grid h-full w-full place-items-center">
-			<media-play-button class="group size-full outline-none">
-				<button
-					type="button"
-					aria-label="Play"
-					class="grid size-full place-items-center px-2 pt-10 outline-none"
-					onclick={() => (PLAYERS.didUserInteract = true)}
-				>
-					{#if !isOverlaid}
-						<div
-							out:fade
-							class="hidden size-24 cursor-pointer place-items-center rounded-full bg-black/50 text-white ring-black backdrop-blur-md transition-colors outline-none group-hover:bg-black/30 group-data-focus:ring-4 group-data-paused:grid"
-						>
-							<PlayIcon
-								class="hidden size-12 opacity-80 transition-colors group-hover:opacity-100 group-data-paused:block"
-							/>
-							<!-- <PauseIcon
-								class="size-12 opacity-80 transition-colors group-hover:opacity-100 group-data-paused:hidden"
-							/> -->
-						</div>
-					{/if}
-				</button>
-			</media-play-button>
+			<button
+				type="button"
+				aria-label="Play"
+				class="group grid size-full place-items-center px-2 pt-10 outline-none"
+				onclick={() => {
+					PLAYERS.didUserInteract = true;
+					if (isPlaying) player?.pause();
+					else player?.play();
+				}}
+			>
+				{#if !isOverlaid && !isPlaying}
+					<div
+						class="grid size-24 cursor-pointer place-items-center rounded-full bg-black/50 text-white ring-black backdrop-blur-md transition-colors outline-none group-hover:bg-black/30 group-data-focus:ring-4"
+					>
+						<PlayIcon class="size-12 opacity-80 transition-colors group-hover:opacity-100" />
+					</div>
+				{/if}
+			</button>
 		</media-controls-group>
 		<div class="flex-1"></div>
 		<media-controls-group class="pointer-events-auto flex w-full items-center px-2">
@@ -216,7 +243,7 @@
 				class="group relative mx-2 inline-flex h-10 w-full cursor-pointer touch-none items-center outline-none select-none aria-hidden:hidden"
 			>
 				<div
-					class="relative z-0 h-2 w-full rounded-sm bg-white/20 ring-black backdrop-blur-md group-data-focus:ring-2"
+					class="relative z-0 h-2 w-full overflow-hidden rounded-sm bg-white/20 ring-black backdrop-blur-md group-data-focus:ring-2"
 				>
 					<div
 						class="absolute z-10 h-full w-(--slider-progress) rounded-sm bg-white/20 will-change-[width]"
@@ -225,9 +252,6 @@
 						class="absolute z-20 h-full w-(--slider-fill) rounded-sm bg-white will-change-[width]"
 					></div>
 				</div>
-				<!-- <div
-					class="absolute top-1/2 left-(--slider-fill) z-20 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-3 border-white bg-neutral-300 opacity-0 ring-neutral-200/40 transition-opacity will-change-[left] group-data-active:opacity-100 group-data-dragging:ring-4"
-				></div> -->
 			</media-time-slider>
 		</media-controls-group>
 	</media-controls>

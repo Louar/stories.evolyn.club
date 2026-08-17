@@ -47,6 +47,7 @@ export const load: PageServerLoad = (async ({ locals, params }) => {
 
       doBuffer: storyIndex === 0 && index === 0,
       doPlay: false,
+      doPause: false,
       doRestart: false,
       doEnd: false,
       time: 0,

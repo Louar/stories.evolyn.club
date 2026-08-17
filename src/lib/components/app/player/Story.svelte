@@ -61,22 +61,23 @@
 		if (player && PLAYERS.didUserInteract) player.doRestart = true;
 	};
 
-	const submit = (logic: Logic | undefined, input: InputFromLogic<Logic>) => {
+	const submit = async (logic: Logic | undefined, input: InputFromLogic<Logic>) => {
 		if (!logic || !input) return;
 		const output = executeLogic(logic, input);
-		if (!output?.next || typeof output.next !== 'string') return end();
-
 		const current = players.find((p) => p.id === pid);
+		if (!output?.next || typeof output.next !== 'string') {
+			if (current) current.doPause = true;
+			return end();
+		}
+
 		const next = players.find((p) => p.id === output.next);
 		if (!current || !next) return end();
 		logTransitionEvent(story.id, current.id, next.id);
 
-		current.doPlay = false;
-
 		if (current.id === next.id) {
 			next.doRestart = true;
 		} else {
-			players.find((player) => player.id === pid)!.doEnd = true;
+			current.doEnd = true;
 			pid = output.next;
 			next.doBuffer = true;
 			next.doPlay = true;
@@ -229,6 +230,7 @@
 						isInitialPart={player?.isInitialPart}
 						bind:doBuffer={player.doBuffer}
 						bind:doPlay={player.doPlay}
+						bind:doPause={player.doPause}
 						bind:doRestart={player.doRestart}
 						bind:doEnd={player.doEnd}
 						bind:time={player.time}

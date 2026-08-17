@@ -173,7 +173,7 @@ The public story player is designed (with a transparent body) to be embedded thr
 	width="100%"
 	src="{src}"
 	sandbox="allow-scripts allow-same-origin allow-presentation"
-	allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+	allow="autoplay; encrypted-media; picture-in-picture; fullscreen; accelerometer; gyroscope; compute-pressure"
 >
 </iframe>
 ```

@@ -4,7 +4,7 @@ import type { Translatable } from '$lib/db/schemas/0-utils';
 import { UserRole } from '$lib/db/schemas/1-client-user-module';
 import { hasPermission } from '$lib/server/utils.server';
 import { error, redirect } from '@sveltejs/kit';
-import type { PageServerLoad } from '../$types';
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = (async ({ locals, params }) => {
   const clientId = locals.client.id;

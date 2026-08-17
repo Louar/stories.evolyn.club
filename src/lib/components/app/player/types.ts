@@ -44,6 +44,7 @@ export type Player = {
   next: string | undefined;
   doBuffer: boolean;
   doPlay: boolean;
+  doPause: boolean;
   doRestart: boolean;
   doEnd: boolean;
   time: number;
