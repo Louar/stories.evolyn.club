@@ -27,9 +27,79 @@
  * @see https://svelte.dev/docs/svelte/svelte-reactivity#createSubscriber
  */
 
+import {
+	DEBOUNCE_DELAY,
+	DEFAULT_COLUMN_SIZE,
+	DEFAULT_ROW_HEIGHT,
+	MAX_COLUMN_SIZE,
+	MIN_COLUMN_SIZE,
+	OVERSCAN
+} from '$lib/components/data-grid/config/data-grid.js';
+import {
+	clearCellMedia,
+	getSelectedRows,
+	isAcknowledgedNullClearCurrent,
+	isCellMutationSnapshotCurrent,
+	shouldRestoreCellMutation,
+	snapshotCellKeys,
+	snapshotCellMutations
+} from '$lib/components/data-grid/data-grid-actions.js';
+import {
+	getEmptyCellValue,
+	parseCellValue,
+	parseClipboardRows,
+	serializeCellValue
+} from '$lib/components/data-grid/data-grid-cell-values.js';
+import type { VersionedCellUpdate } from '$lib/components/data-grid/data-grid-mutations.js';
+import {
+	appendLocalDraftRows,
+	areEditValuesEqual,
+	buildPatchData,
+	clearAccumulatedValidationUpdates,
+	cloneEditValue,
+	createKeyedSequencer,
+	createRowIdentityRegistry,
+	deleteRowsByPersistence,
+	expandValidationColumnIds,
+	getColumnIdsForPatchError,
+	getDraftValidationDisposition,
+	getEarliestPendingValue,
+	groupCellUpdates,
+	mergeAccumulatedValidationUpdates,
+	mergePatchData,
+	mergeVersionedCellUpdates,
+	mergeVersionedCellUpdatesForRow,
+	migrateAccumulatedValidationRow,
+	migrateCellKeyRowId,
+	migrateCellPositionRowId,
+	removeAccumulatedValidationRows,
+	setImmutableValue
+} from '$lib/components/data-grid/data-grid-mutations.js';
+import {
+	DATA_GRID_PREFERENCES_VERSION,
+	DEFAULT_DATA_GRID_PERSISTENCE_SLICES,
+	decodeDataGridPreferences,
+	getAppliedDataGridPreferenceState,
+	getDataGridPreferencesContentSnapshot,
+	getDataGridPreferencesKey,
+	reconcileDataGridPreferences,
+	serializeDataGridPreferencesSnapshot,
+	type DataGridPersistenceIdentity,
+	type DataGridPersistenceSlices,
+	type DataGridPreferences
+} from '$lib/components/data-grid/data-grid-preferences.js';
+import type { PatchErrorToastItem } from '$lib/components/data-grid/patch-error-toast.svelte';
+import PatchErrorToast from '$lib/components/data-grid/patch-error-toast.svelte';
 import type {
 	CellPosition,
+	CellSaveState,
 	ContextMenuState,
+	DataGridClearResult,
+	DataGridCreateResult,
+	DataGridDataAdapter,
+	DataGridDeleteResult,
+	DataGridMutationResult,
+	DataGridStatusProps,
 	FileCellData,
 	NavigationDirection,
 	PasteDialogState,
@@ -38,8 +108,18 @@ import type {
 	SelectionState,
 	UpdateCell
 } from '$lib/components/data-grid/types/data-grid.js';
-import { getCellKey, getRowHeightValue, parseCellKey } from '$lib/components/data-grid/types/data-grid.js';
-import { Language, MediaCollection, translateLocalizedField, type Media, type Translatable } from '$lib/db/schemas/0-utils';
+import {
+	parseCellKey as decodeCellKey,
+	getCellKey as encodeCellKey,
+	getRowHeightValue
+} from '$lib/components/data-grid/types/data-grid.js';
+import {
+	Language,
+	MediaCollection,
+	translateLocalizedField,
+	type Media,
+	type Translatable
+} from '$lib/db/schemas/0-utils';
 import { UI } from '$lib/states/ui.svelte';
 import {
 	createTable,
@@ -48,6 +128,7 @@ import {
 	getSortedRowModel,
 	type ColumnDef,
 	type ColumnFiltersState,
+	type ColumnOrderState,
 	type ColumnPinningState,
 	type ColumnSizingInfoState,
 	type ColumnSizingState,
@@ -66,7 +147,7 @@ import {
 	observeElementRect,
 	type VirtualItem
 } from '@tanstack/virtual-core';
-import { untrack } from 'svelte';
+import { tick, untrack } from 'svelte';
 import { toast } from 'svelte-sonner';
 import { SvelteMap, SvelteSet, createSubscriber } from 'svelte/reactivity';
 
@@ -74,15 +155,27 @@ import { SvelteMap, SvelteSet, createSubscriber } from 'svelte/reactivity';
 // Types
 // ============================================
 
-export type CellUpdate = UpdateCell & { rowId?: string; };
-type RowChangeResult = void | { validated?: CellPosition[], errors?: CellPosition[] };
+export type CellUpdate = UpdateCell;
+type RowChangeResult = void | {
+	validated?: CellPosition[];
+	errors?: CellPosition[];
+	failed?: CellPosition[];
+};
+type PatchErrorBody = { errors?: Record<string, string[] | string> };
+type PatchErrorDetail = { rowId: string; items: PatchErrorToastItem[] };
+type DefaultRowValue<TData extends RowData> =
+	| Record<string, unknown>
+	| ((params: {
+		draft: Partial<TData>;
+		rowIndex: number;
+		rows: readonly TData[];
+	}) => Record<string, unknown> | void);
 
 export interface UploadMediaParams {
 	collection: MediaCollection;
 	files: File[];
 	rowId: string;
 	columnId: string;
-	missionTemplateId: string;
 	onDraftUpdate?: (rowId: string, columnId: string, fileCell: FileCellData[]) => void;
 	onLatestUpload?: (rowId: string, columnId: string, media: Media) => void;
 }
@@ -92,22 +185,32 @@ export const hasTranslatableFields = <TData extends RowData>(
 ) => {
 	return columns.some((c) =>
 		['text-translated-short', 'text-translated-long'].includes(c.meta?.cell?.variant ?? '')
-	)
+	);
+};
+
+const formatPatchErrorItems = (body: PatchErrorBody | undefined): PatchErrorToastItem[] => {
+	const errors = body?.errors ?? {};
+	return Object.entries(errors).map(([field, value]) => {
+		const values = Array.isArray(value) ? value : [value];
+		return {
+			field: field.replaceAll('_', ' '),
+			messages: values.filter(Boolean)
+		};
+	});
 };
 
 export const uploadMedia = async ({
 	collection: inputCollection,
 	files,
 	rowId,
-	columnId,
-	missionTemplateId,
+	columnId
 }: UploadMediaParams): Promise<FileCellData[]> => {
 	const file = files[0];
 	if (!file) return [];
 	const formData = new FormData();
 	formData.set('file', file);
 	const res = await fetch(
-		`/api/media/${inputCollection}/${file.name.toLowerCase().replace(' ', '-')}?id=${missionTemplateId}`,
+		`/api/media/${inputCollection}/${file.name.toLowerCase().replace(' ', '-')}`,
 		{ method: 'POST', body: formData }
 	);
 	if (!res.ok) throw new Error(`Failed to upload ${columnId}`);
@@ -122,15 +225,102 @@ export const uploadMedia = async ({
 	];
 };
 
-export interface UseDataGridOptions<TData extends RowData> {
+export class DataGridAdapterError extends Error {
+	constructor(
+		message: string,
+		readonly status: number,
+		readonly body?: unknown
+	) {
+		super(message);
+		this.name = 'DataGridAdapterError';
+	}
+}
+
+async function readErrorBody(response: Response): Promise<unknown> {
+	const contentType = response.headers.get('content-type') ?? '';
+	try {
+		return contentType.includes('json') ? await response.json() : await response.text();
+	} catch {
+		return undefined;
+	}
+}
+
+async function requireJsonResponse<T>(response: Response, action: string): Promise<T> {
+	if (!response.ok) {
+		throw new DataGridAdapterError(
+			`Failed to ${action}`,
+			response.status,
+			await readErrorBody(response)
+		);
+	}
+	return (await response.json()) as T;
+}
+
+export function createEndpointDataGridAdapter<TData extends RowData>(
+	endpoint: string
+): DataGridDataAdapter<TData> {
+	const jsonHeaders = { 'Content-Type': 'application/json' };
+	return {
+		async create({ row }) {
+			const response = await fetch(endpoint, {
+				method: 'POST',
+				headers: jsonHeaders,
+				body: JSON.stringify(row)
+			});
+			return requireJsonResponse<TData>(response, 'create row');
+		},
+		async update({ rowId, changes }) {
+			const response = await fetch(`${endpoint}/${encodeURIComponent(rowId)}`, {
+				method: 'PATCH',
+				headers: jsonHeaders,
+				body: JSON.stringify(changes)
+			});
+			return requireJsonResponse<TData>(response, `update row ${rowId}`);
+		},
+		async delete({ rowId }) {
+			const response = await fetch(`${endpoint}/${encodeURIComponent(rowId)}`, {
+				method: 'DELETE'
+			});
+			return response.ok;
+		},
+		async download({ rowIds }) {
+			if (typeof document === 'undefined') return;
+			for (const rowId of rowIds) {
+				const response = await fetch(`${endpoint}/${encodeURIComponent(rowId)}/io`);
+				if (!response.ok) {
+					throw new DataGridAdapterError(
+						`Failed to download row ${rowId}`,
+						response.status,
+						await readErrorBody(response)
+					);
+				}
+				const disposition = response.headers.get('content-disposition') ?? '';
+				const filename = disposition.match(/filename="?([^";]+)"?/i)?.[1] ?? `row-${rowId}.yaml`;
+				const url = URL.createObjectURL(await response.blob());
+				const anchor = document.createElement('a');
+				anchor.href = url;
+				anchor.download = filename;
+				anchor.click();
+				URL.revokeObjectURL(url);
+			}
+		}
+	};
+}
+
+export interface UseDataGridOptions<TData extends RowData> extends DataGridStatusProps {
 	columns: ColumnDef<TData, unknown>[];
 	/** Pass data as a getter function for reactivity: () => data */
 	data: TData[] | (() => TData[]);
 	/** API base path for default row handlers (e.g. /api/courses) */
 	endpoint?: string;
+	/** Overrides the endpoint-backed CRUD/download adapter. */
+	dataAdapter?: DataGridDataAdapter<TData>;
+	/** Column ids to include in every PATCH payload by default */
+	defaultPatchColumnIds?: string[];
+	/** Defaults applied when creating a new row through the built-in POST handler */
+	defaultRow?: DefaultRowValue<TData>;
 	rowHeight?: RowHeightValue;
-	autoFocus?: boolean | { rowIndex?: number; columnId?: string };
-	enableColumnSelection?: boolean;
+	autoFocus?: boolean | Partial<CellPosition>;
 	enableSearch?: boolean;
 	enablePaste?: boolean;
 	readOnly?: boolean;
@@ -142,24 +332,45 @@ export interface UseDataGridOptions<TData extends RowData> {
 		columnVisibility?: VisibilityState;
 		columnPinning?: ColumnPinningState;
 		columnSizing?: ColumnSizingState;
+		columnOrder?: ColumnOrderState;
 		rowSelection?: RowSelectionState;
 	};
 	onDataChange?: (data: TData[]) => void;
-	onRowAdd?: ((event?: MouseEvent) => Partial<CellPosition> | void | Promise<Partial<CellPosition> | void>) | boolean;
-	onRowsAdd?: (count: number) => void | Promise<void>;
+	/** Persistence is disabled unless all explicit identity fields are provided. */
+	persistence?: DataGridPersistenceIdentity & {
+		debounceMs?: number;
+		storage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+		slices?: DataGridPersistenceSlices;
+	};
+	onRowAdd?:
+	| ((
+		event?: MouseEvent
+	) =>
+		| Partial<CellPosition>
+		| DataGridCreateResult<TData>
+		| void
+		| Promise<Partial<CellPosition> | DataGridCreateResult<TData> | void>)
+	| boolean;
+	onRowsAdd?: (count: number) => DataGridCreateResult<TData> | Promise<DataGridCreateResult<TData>>;
 	// onRowChange?: (originalRows: TData[], updatedRowIndices: number[], updates: CellUpdate[]) => void | Promise<void>;
 	onRowChange?: (updates: CellUpdate[]) => RowChangeResult | Promise<RowChangeResult>;
-	onRowsDelete?: (rows: TData[], rowIndices: number[]) => void | Promise<void>;
+	onRowsDelete?: (
+		rows: TData[],
+		rowIndices: number[]
+	) => DataGridDeleteResult | boolean | Promise<DataGridDeleteResult | boolean>;
+	onDownload?: ((rows: TData[]) => void | Promise<void>) | boolean;
 	onPaste?: (updates: UpdateCell[]) => void | Promise<void>;
 	onFilesUpload?: (params: {
 		files: File[];
 		rowIndex: number;
+		rowId: string;
 		columnId: string;
 		row: TData;
 	}) => Promise<FileCellData[]>;
 	onFilesDelete?: (params: {
 		fileIds: string[];
 		rowIndex: number;
+		rowId: string;
 		columnId: string;
 		row: TData;
 	}) => void | Promise<void>;
@@ -167,10 +378,10 @@ export interface UseDataGridOptions<TData extends RowData> {
 
 export interface UseDataGridReturn<TData extends RowData> {
 	// Refs
-	dataGridRef: HTMLDivElement | null;
-	headerRef: HTMLDivElement | null;
+	readonly dataGridRef: HTMLDivElement | null;
+	readonly headerRef: HTMLDivElement | null;
 	rowMapRef: Map<number, HTMLDivElement>;
-	footerRef: HTMLDivElement | null;
+	readonly footerRef: HTMLDivElement | null;
 
 	// Table instance
 	table: Table<TData>;
@@ -180,8 +391,6 @@ export interface UseDataGridReturn<TData extends RowData> {
 
 	// Selection state - exposed as getters for use in $derived
 	selectedCellsSet: SvelteSet<string>;
-	selectionState: { readonly version: number };
-	getSelectionVersion: () => number;
 
 	// Row selection state - reactive for header checkbox
 	getRowSelection: () => RowSelectionState;
@@ -191,9 +400,13 @@ export interface UseDataGridReturn<TData extends RowData> {
 
 	// Column size CSS variables
 	columnSizeVars: Record<string, number>;
+	preferences: import('$lib/components/data-grid/types/data-grid.js').DataGridPreferencesController;
+	status: DataGridStatusProps;
 
 	// Row add handler
-	onRowAdd?: (event?: MouseEvent) => Promise<void>;
+	onRowAdd?: (
+		event?: MouseEvent
+	) => Promise<Partial<CellPosition> | DataGridCreateResult<TData> | void>;
 
 	// Setters for refs (for bind:this)
 	setDataGridRef: (el: HTMLDivElement | null) => void;
@@ -216,8 +429,6 @@ interface VirtualizerReturn {
 // Non-navigable columns (skip during keyboard nav)
 // ============================================
 
-const NON_NAVIGABLE_COLUMNS = new Set(['select-single', 'actions']);
-
 // ============================================
 // Main Hook
 // ============================================
@@ -229,187 +440,731 @@ export function useDataGrid<TData extends RowData>(
 		columns,
 		data: dataProp,
 		endpoint,
-		rowHeight: initialRowHeight = 'short',
+		dataAdapter: dataAdapterProp,
+		defaultPatchColumnIds = [],
+		defaultRow,
+		rowHeight: initialRowHeight = DEFAULT_ROW_HEIGHT,
 		autoFocus = false,
-		enableColumnSelection = false,
 		enableSearch = true,
 		enablePaste = true,
 		readOnly = false,
-		overscan = 3,
+		overscan = OVERSCAN,
 		getRowId,
 		initialState,
 		onDataChange,
+		persistence,
 		onRowAdd: onRowAddProp,
 		onRowsAdd: onRowsAddProp,
 		onRowChange: onRowChangeProp,
 		onRowsDelete: onRowsDeleteProp,
+		onDownload: onDownloadProp,
 		onPaste,
 		onFilesUpload,
 		onFilesDelete
 	} = options;
+	const status: DataGridStatusProps = {
+		loading: options.loading,
+		error: options.error,
+		loadingMessage: options.loadingMessage,
+		errorMessage: options.errorMessage,
+		emptyMessage: options.emptyMessage,
+		filteredEmptyMessage: options.filteredEmptyMessage,
+		loadingState: options.loadingState,
+		errorState: options.errorState,
+		emptyState: options.emptyState,
+		filteredEmptyState: options.filteredEmptyState
+	};
 
 	// Support both direct data array and getter function for reactivity
 	// Using a getter function () => data allows Svelte 5 to track changes
-	const getData = typeof dataProp === 'function' ? dataProp : () => dataProp;
+	const getSourceData = typeof dataProp === 'function' ? dataProp : () => dataProp;
+	let dataOverride = $state.raw<TData[] | null>(null);
+	let overrideBase: TData[] | null = null;
+	let searchRevision = $state(0);
+	const getData = () => dataOverride ?? getSourceData();
+	const replaceData = (nextRows: TData[]) => {
+		overrideBase = getSourceData();
+		dataOverride = nextRows;
+		searchRevision++;
+		onDataChange?.(nextRows);
+	};
+	const dataAdapter =
+		dataAdapterProp ?? (endpoint ? createEndpointDataGridAdapter<TData>(endpoint) : undefined);
+	const normalizedColumns: ColumnDef<TData, unknown>[] = columns.map((column) => {
+		const columnRecord = column as ColumnDef<TData, unknown> & {
+			accessorFn?: (row: TData, index: number) => unknown;
+			accessorKey?: string;
+		};
 
-	const setData = onDataChange;
+		if (columnRecord.accessorFn) {
+			return {
+				...column,
+				accessorFn: (row: TData, index: number) =>
+					columnRecord.accessorFn?.(row, index) ?? undefined
+			};
+		}
 
-	const getRowIdValue = (row: TData, index: number): string | null => {
+		if (columnRecord.accessorKey) {
+			return {
+				...column,
+				accessorFn: (row: TData) =>
+					(row as Record<string, unknown>)[columnRecord.accessorKey!] ?? undefined
+			};
+		}
+
+		return column;
+	});
+
+	const rowIdentities = createRowIdentityRegistry<object>();
+	let generatedRowId = 0;
+	let temporaryRowId = 0;
+	const getRowIdValue = (row: TData, index: number): string => {
+		if (typeof row === 'object' && row !== null) {
+			const temporaryId = rowIdentities.getTemporaryId(row);
+			if (temporaryId) return temporaryId;
+		}
 		const id = getRowId?.(row, index) ?? (row as Record<string, unknown>)?.id;
-		return typeof id === 'string' ? id : null;
+		if (typeof id === 'string' || typeof id === 'number') return String(id);
+		if (typeof row === 'object' && row !== null) {
+			const existing = rowIdentities.getGeneratedId(row);
+			if (existing) return existing;
+			const next = `data-grid-row-${++generatedRowId}`;
+			rowIdentities.setGeneratedId(row, next);
+			return next;
+		}
+		return `data-grid-row-${index}`;
+	};
+	const registerTemporaryRow = (row: TData, _index: number, rows: readonly TData[]): string => {
+		const existingIds = new SvelteSet(rows.map((item, index) => getRowIdValue(item, index)));
+		let rowId: string;
+		do rowId = `new-${++temporaryRowId}`;
+		while (existingIds.has(rowId));
+		rowIdentities.registerTemporary(row as object, rowId);
+		return rowId;
 	};
 
-	const defaultOnRowAdd = endpoint
-		? async () => {
-			try {
-				const res = await fetch(`${endpoint}`, { method: 'POST' });
-				let newrow = {} as TData;
-				if (res.ok) newrow = (await res.json()) as TData;
-				const nextRows = [...getData(), newrow];
-				setData?.(nextRows);
+	const carryRowId = (previous: TData, next: TData) => {
+		if (
+			typeof previous === 'object' &&
+			previous !== null &&
+			typeof next === 'object' &&
+			next !== null
+		)
+			rowIdentities.carry(previous, next);
+	};
+	const cellSaveStateMap = new SvelteMap<string, CellSaveState>();
+	const sequenceRowMutation = createKeyedSequencer();
+	const savedStateTimers = new SvelteMap<string, ReturnType<typeof setTimeout>>();
+	const cellMutationGeneration = new SvelteMap<string, number>();
+	const pendingCellMutations = new SvelteMap<
+		string,
+		{ generation: number; previousValue: unknown; update: CellUpdate }
+	>();
+	let accumulatedValidationUpdates: Map<
+		string,
+		Map<string, VersionedCellUpdate<CellUpdate>>
+	> = new SvelteMap();
+	const canonicalCreatedRows = new SvelteMap<string, TData>();
 
-				return {
-					rowIndex: nextRows.length - 1
-				};
-			} catch (error) {
-				toast.error(error instanceof Error ? error.message : `Failed to add a row`, {
-					closeButton: true,
-					duration: Infinity
+	const replaceRowById = (
+		rowId: string,
+		updater: (row: TData) => TData,
+		carryIdentity = true
+	): boolean => {
+		const rows = getData();
+		const sourceIndex = rows.findIndex((row, index) => getRowIdValue(row, index) === rowId);
+		if (sourceIndex < 0) return false;
+		const previous = rows[sourceIndex];
+		if (!previous) return false;
+		const nextRow = updater(previous);
+		if (carryIdentity) carryRowId(previous, nextRow);
+		const nextRows = [...rows];
+		nextRows[sourceIndex] = nextRow;
+		replaceData(nextRows);
+		return true;
+	};
+	const markCellSaved = (key: string) => {
+		const existing = savedStateTimers.get(key);
+		if (existing) clearTimeout(existing);
+		cellSaveStateMap.set(key, { status: 'saved' });
+		savedStateTimers.set(
+			key,
+			setTimeout(() => {
+				if (cellSaveStateMap.get(key)?.status === 'saved')
+					cellSaveStateMap.set(key, { status: 'idle' });
+				savedStateTimers.delete(key);
+			}, 1200)
+		);
+	};
+	const mirrorCellStateToCanonicalRow = (temporaryId: string, canonicalId: string) => {
+		accumulatedValidationUpdates = migrateAccumulatedValidationRow(
+			accumulatedValidationUpdates,
+			temporaryId,
+			canonicalId
+		);
+		for (const column of table.getAllLeafColumns()) {
+			const temporaryKey = encodeCellKey(temporaryId, column.id);
+			const canonicalKey = encodeCellKey(canonicalId, column.id);
+			const saveState = cellSaveStateMap.get(temporaryKey);
+			if (saveState) cellSaveStateMap.set(canonicalKey, saveState);
+			const generation = cellMutationGeneration.get(temporaryKey);
+			if (generation !== undefined) cellMutationGeneration.set(canonicalKey, generation);
+			const pending = pendingCellMutations.get(temporaryKey);
+			if (pending) {
+				pendingCellMutations.set(canonicalKey, {
+					...pending,
+					update: { ...pending.update, rowId: canonicalId }
 				});
 			}
+			if (cellValueMap.has(temporaryKey))
+				cellValueMap.set(canonicalKey, cellValueMap.get(temporaryKey));
+		}
+	};
+	const migrateCellKeySet = (keys: Set<string>, temporaryId: string, canonicalId: string) => {
+		for (const key of [...keys]) {
+			const migratedKey = migrateCellKeyRowId(key, temporaryId, canonicalId);
+			if (migratedKey === key) continue;
+			keys.delete(key);
+			keys.add(migratedKey);
+		}
+	};
+	const migrateUiIdentityToCanonicalRow = (temporaryId: string, canonicalId: string) => {
+		focusedCell = migrateCellPositionRowId(focusedCell, temporaryId, canonicalId);
+		editingCell = migrateCellPositionRowId(editingCell, temporaryId, canonicalId);
+		selectionAnchor = migrateCellPositionRowId(selectionAnchor, temporaryId, canonicalId);
+		if (editingSession?.rowId === temporaryId)
+			editingSession = { ...editingSession, rowId: canonicalId };
+		if (selectionState.selectionRange) {
+			selectionState = {
+				...selectionState,
+				selectionRange: {
+					start: migrateCellPositionRowId(
+						selectionState.selectionRange.start,
+						temporaryId,
+						canonicalId
+					)!,
+					end: migrateCellPositionRowId(
+						selectionState.selectionRange.end,
+						temporaryId,
+						canonicalId
+					)!
+				}
+			};
+		}
+		migrateCellKeySet(selectedCellsSet, temporaryId, canonicalId);
+		migrateCellKeySet(cancelledCellKeys, temporaryId, canonicalId);
+		migrateCellKeySet(hasErrorMatchSet, temporaryId, canonicalId);
+		migrateCellKeySet(searchMatchSet, temporaryId, canonicalId);
+		searchMatches = searchMatches.map((position) =>
+			migrateCellPositionRowId(position, temporaryId, canonicalId)!
+		);
+		if (temporaryId in rowSelection) {
+			const nextRowSelection = { ...rowSelection };
+			nextRowSelection[canonicalId] = nextRowSelection[temporaryId] ?? false;
+			delete nextRowSelection[temporaryId];
+			rowSelection = nextRowSelection;
+		}
+	};
+	const getReconciliationRowId = (rowId: string) =>
+		getData().some((item, index) => getRowIdValue(item, index) === rowId)
+			? rowId
+			: rowIdentities.resolve(rowId);
+	const restoreCanonicalCreatedRow = (canonicalId: string) => {
+		const created = canonicalCreatedRows.get(canonicalId);
+		if (!created) return;
+		if (!getData().some((row, index) => getRowIdValue(row, index) === canonicalId)) {
+			replaceData([...getData(), created]);
+		}
+		canonicalCreatedRows.delete(canonicalId);
+	};
+	const setMutationCellSaveState = (rowId: string, columnId: string, state: CellSaveState) => {
+		cellSaveStateMap.set(encodeCellKey(rowId, columnId), state);
+		const canonicalId = rowIdentities.resolve(rowId);
+		if (canonicalId !== rowId) cellSaveStateMap.set(encodeCellKey(canonicalId, columnId), state);
+	};
+	const getImmutableCellValue = (row: TData, rowIndex: number, columnId: string) => {
+		const accessor = table.getColumn(columnId)?.accessorFn;
+		return accessor ? accessor(row, rowIndex) : (row as Record<string, unknown>)[columnId];
+	};
+
+	function getCellKey(rowIndexOrId: number | string, columnId: string): string {
+		const rowId =
+			typeof rowIndexOrId === 'number' ? table?.getRowModel().rows[rowIndexOrId]?.id : rowIndexOrId;
+		return encodeCellKey(rowId ?? `missing-row-${rowIndexOrId}`, columnId);
+	}
+
+	function parseCellKey(cellKey: string): CellPosition {
+		const decoded = decodeCellKey(cellKey);
+		const rowIndex = decoded.rowId
+			? table?.getRowModel().rows.findIndex((row) => row.id === decoded.rowId)
+			: -1;
+		return { ...decoded, rowIndex: rowIndex >= 0 ? rowIndex : decoded.rowIndex };
+	}
+
+	function getCellMutationSnapshot(
+		rowId: string,
+		columnId: string
+	): { generation: number; value: unknown } | undefined {
+		const rows = getData();
+		const rowIndex = rows.findIndex((row, index) => getRowIdValue(row, index) === rowId);
+		const row = rows[rowIndex];
+		if (!row) return undefined;
+		const key = encodeCellKey(rowId, columnId);
+		return {
+			generation: cellMutationGeneration.get(key) ?? 0,
+			value: cloneEditValue(
+				cellValueMap.has(key)
+					? cellValueMap.get(key)
+					: getImmutableCellValue(row, rowIndex, columnId)
+			)
+		};
+	}
+
+	function getCellPosition(rowIndex: number, columnId: string): CellPosition {
+		return { rowIndex, rowId: table?.getRowModel().rows[rowIndex]?.id, columnId };
+	}
+
+	const resolveDefaultRow = (draft: Partial<TData>, rowIndex: number, rows: readonly TData[]) =>
+		({
+			...(typeof defaultRow === 'function'
+				? (defaultRow({ draft, rowIndex, rows }) ?? {})
+				: (defaultRow ?? {})),
+			...draft
+		}) as Partial<TData>;
+
+	const defaultOnRowAdd = dataAdapter?.create
+		? () => {
+			const added = appendLocalDraftRows(getData(), 1, resolveDefaultRow, registerTemporaryRow);
+			replaceData(added.rows);
+			return { rows: added.drafts, rowIds: added.rowIds, failedCount: 0 };
 		}
 		: undefined;
 
-	const defaultOnRowsAdd = endpoint
-		? async (count: number) => {
-			try {
-				const newrows = await Promise.all(
-					Array.from({ length: count }, async () => {
-						const res = await fetch(`${endpoint}`, { method: 'POST' });
-						if (!res.ok) throw new Error(`Failed to add rows`);
-						return (await res.json()) as TData;
-					})
-				);
-				toast.success(`${newrows.length} row added`);
-				setData?.([...getData(), ...newrows]);
-			} catch (error) {
-				toast.error(error instanceof Error ? error.message : `Failed to add rows`, {
-					closeButton: true,
-					duration: Infinity
-				});
-			}
-		}
-		: undefined;
-
-	const defaultOnRowsDelete = endpoint
-		? async (removedrows: TData[], rowIndices: number[]) => {
-			const toRemoveSet = new SvelteSet(
-				removedrows
-					.map((row, index) => getRowIdValue(row, rowIndices[index] ?? index))
-					.filter((id): id is string => Boolean(id))
+	const defaultOnRowsAdd = dataAdapter?.create
+		? (count: number) => {
+			const added = appendLocalDraftRows(
+				getData(),
+				count,
+				resolveDefaultRow,
+				registerTemporaryRow
 			);
-			const toRemove = Array.from(toRemoveSet);
-
-			const wereRemoved = (
-				await Promise.all(
-					toRemove.map(async (id) => {
-						const res = await fetch(`${endpoint}/${id}`, { method: 'DELETE' });
-						return res.ok ? id : undefined;
-					})
-				)
-			).filter((id): id is string => id !== undefined);
-
-			if (toRemove.length !== wereRemoved.length)
-				toast.error(`Some rows were not removed`, {
-					closeButton: true,
-					duration: Infinity
-				});
-
-			const nextRows = getData().filter((row, index) => {
-				const id = getRowIdValue(row, index);
-				return id ? !wereRemoved.includes(id) : !rowIndices.includes(index);
-			});
-			setData?.(nextRows);
+			replaceData(added.rows);
+			return { rows: added.drafts, rowIds: added.rowIds, failedCount: 0 };
 		}
 		: undefined;
 
-	const defaultOnRowChange = endpoint
-		? async (updates: CellUpdate[]) => {
-			const patches = groupCellUpdates(updates);
+	const defaultOnRowsDelete =
+		dataAdapter?.delete || dataAdapter?.create
+			? async (removedrows: TData[], rowIndices: number[]) => {
+				const removals = removedrows.map((row, index) => ({
+					row,
+					rowId: getRowIdValue(row, rowIndices[index] ?? index)
+				}));
 
-			const pos = (rowIndex: number, columnIds: string[]) =>
-				columnIds.map((columnId) => ({ rowIndex, columnId }));
+				const result = await deleteRowsByPersistence(
+					removals,
+					(rowId) => rowIdentities.isTemporary(rowId),
+					(rowId) => rowIdentities.resolve(rowId),
+					(rowId) => rowIdentities.getSequenceKey(rowId),
+					(key, mutation) => sequenceRowMutation(key, mutation),
+					dataAdapter.delete
+						? ({ row }, rowId) => dataAdapter.delete!({ row, rowId })
+						: undefined,
+					(temporary) => {
+						const temporaryIdSet = new SvelteSet(temporary.map(({ rowId }) => rowId));
+						if (temporaryIdSet.size === 0) return;
+						replaceData(
+							getData().filter((row, index) => !temporaryIdSet.has(getRowIdValue(row, index)))
+						);
+					},
+					(_row, canonicalId) => restoreCanonicalCreatedRow(canonicalId)
+				);
+				const deletedIdentitySet = new SvelteSet(
+					result.deletedRowIds.flatMap((rowId) => [rowId, rowIdentities.resolve(rowId)])
+				);
+				accumulatedValidationUpdates = removeAccumulatedValidationRows(
+					accumulatedValidationUpdates,
+					deletedIdentitySet
+				);
 
-			let hasError = false;
-			const results = await Promise.all(
-				Object.entries(patches).map(async ([id, patch]) => {
-					const rowIndex = patch.index;
-					const columnIds = Object.keys(patch.data);
+				if (result.deletedPersistedRowIds.length > 0) {
+					const removedPersistedIdSet = new SvelteSet(result.deletedPersistedRowIds);
+					for (const rowId of removedPersistedIdSet) canonicalCreatedRows.delete(rowId);
+					replaceData(
+						getData().filter(
+							(row, index) => !removedPersistedIdSet.has(getRowIdValue(row, index))
+						)
+					);
+				}
+				return {
+					deletedRowIds: result.deletedRowIds,
+					failedRowIds: result.failedRowIds
+				};
+			}
+			: undefined;
 
-					try {
-						let res: Response | undefined;
-						if (id?.startsWith('new-')) {
-							const rows = getData();
-							const row = rows[patch.index];
-							if (!row) return { validated: [], errors: [] as CellPosition[] };
-							res = await fetch(`${endpoint}`, {
-								method: 'POST',
-								body: JSON.stringify(row)
-							});
-							if (!res.ok) hasError = true;
-							else {
-								const nextRows = [...rows];
-								nextRows[patch.index] = await res.json();
-								setData?.(nextRows);
+	const defaultOnDownload = dataAdapter?.download
+		? async (rowsToDownload: TData[], rowIndices?: number[]) => {
+			const rowIds = rowsToDownload.map((row, index) =>
+				getRowIdValue(row, rowIndices?.[index] ?? index)
+			);
+			await dataAdapter.download!({ rows: rowsToDownload, rowIds });
+		}
+		: undefined;
+
+	const defaultOnRowChange =
+		dataAdapter?.update || dataAdapter?.create
+			? async (updates: CellUpdate[], options?: { suppressToast?: boolean }) => {
+				const updatesByRow = groupCellUpdates(updates);
+				const getPatchPayload = (row: TData, patchData: Record<string, unknown>) => {
+					if (!defaultPatchColumnIds.length) return patchData;
+					const rowRecord = row as Record<string, unknown>;
+					const extraData: Record<string, unknown> = {};
+					for (const columnId of defaultPatchColumnIds) {
+						if (columnId in rowRecord) extraData[columnId] = rowRecord[columnId];
+					}
+					return { ...extraData, ...patchData };
+				};
+
+				const pos = (rowId: string, columnIds: string[]) => {
+					const rowIndex = table.getRowModel().rows.findIndex((row) => row.id === rowId);
+					return columnIds.map((columnId) => ({
+						rowId,
+						rowIndex: Math.max(0, rowIndex),
+						columnId
+					}));
+				};
+				const errorDetails: PatchErrorDetail[] = [];
+				const results = await Promise.all(
+					Object.entries(updatesByRow).map(async ([rowId]) => {
+						const directEntries = mergeVersionedCellUpdates(
+							undefined,
+							updates
+								.filter((update) => update.rowId === rowId)
+								.flatMap((update) => {
+									const pending = pendingCellMutations.get(encodeCellKey(rowId, update.columnId));
+									return pending ? [pending] : [];
+								})
+						);
+						const patchColumns = table.getAllLeafColumns().map((column) => ({
+							id: column.id,
+							valuePath: column.columnDef.meta?.valuePath
+						}));
+						const validationColumns = table.getAllLeafColumns().map((column) => ({
+							id: column.id,
+							validationDependencies: column.columnDef.meta?.validationDependencies
+						}));
+						let submittedEntries = Array.from(directEntries.values());
+						let columnIds = submittedEntries.map(({ update }) => update.columnId);
+						let mutationRowId = rowId;
+						let generations: Map<string, number> = new SvelteMap(
+							submittedEntries.map(({ generation, update }) => [update.columnId, generation])
+						);
+
+						try {
+							const mutationResult = await sequenceRowMutation(
+								rowIdentities.getSequenceKey(rowId),
+								async () => {
+									const resolvedRowId = rowIdentities.resolve(rowId);
+									mutationRowId = resolvedRowId;
+									const latestRows = getData();
+									const latestIndex = latestRows.findIndex((item, index) => {
+										const currentId = getRowIdValue(item, index);
+										return currentId === rowId || currentId === resolvedRowId;
+									});
+									const latestRow = latestRows[latestIndex];
+									if (!latestRow) throw new Error(`Row ${resolvedRowId} no longer exists`);
+									submittedEntries = mergeVersionedCellUpdatesForRow(
+										accumulatedValidationUpdates,
+										[rowId, resolvedRowId],
+										Array.from(directEntries.values()),
+										resolvedRowId
+									);
+									columnIds = submittedEntries.map(({ update }) => update.columnId);
+									generations = new SvelteMap(
+										submittedEntries.map(({ generation, update }) => [
+											update.columnId,
+											generation
+										])
+									);
+									const patchData: Record<string, unknown> = {};
+									for (const { update } of submittedEntries) {
+										mergePatchData(
+											patchData,
+											buildPatchData(
+												latestRow,
+												update.columnId,
+												update.value,
+												table.getColumn(update.columnId)?.columnDef.meta
+											)
+										);
+									}
+
+									if (rowIdentities.isTemporary(rowId) && dataAdapter.create) {
+										const resolvedDefaultRow =
+											typeof defaultRow === 'function'
+												? (defaultRow({
+													draft: latestRow,
+													rowIndex: latestIndex,
+													rows: latestRows
+												}) ?? {})
+												: (defaultRow ?? {});
+										const created = await dataAdapter.create!({
+											row: { ...resolvedDefaultRow, ...latestRow }
+										});
+										const canonicalId = getRowIdValue(created, latestIndex);
+										rowIdentities.recordCanonical(rowId, canonicalId);
+										canonicalCreatedRows.set(canonicalId, created);
+										mutationRowId = canonicalId;
+										return { row: created, created: true, canonicalId };
+									}
+									if (!dataAdapter.update)
+										throw new Error(`No update capability for row ${resolvedRowId}`);
+									return {
+										row: await dataAdapter.update({
+											row: latestRow,
+											rowId: resolvedRowId,
+											changes: getPatchPayload(latestRow, patchData) as Partial<TData>
+										}),
+										created: false,
+										canonicalId: resolvedRowId
+									};
+								}
+							);
+							const canonicalRow = mutationResult.row;
+							if (mutationResult.created)
+								mirrorCellStateToCanonicalRow(rowId, mutationResult.canonicalId);
+							accumulatedValidationUpdates = clearAccumulatedValidationUpdates(
+								accumulatedValidationUpdates,
+								submittedEntries
+							);
+							if (mutationResult.created)
+								migrateUiIdentityToCanonicalRow(rowId, mutationResult.canonicalId);
+							const reconciled = replaceRowById(
+								getReconciliationRowId(rowId),
+								(currentRow) => {
+									const merged = { ...(currentRow as Record<string, unknown>) };
+									for (const [field, value] of Object.entries(
+										canonicalRow as Record<string, unknown>
+									)) {
+										const fieldColumnIds = getColumnIdsForPatchError(field, patchColumns);
+										if (
+											fieldColumnIds.some((columnId) => {
+												const key = encodeCellKey(mutationResult.canonicalId, columnId);
+												const state = cellSaveStateMap.get(key);
+												return generations.has(columnId)
+													? cellMutationGeneration.get(key) !== generations.get(columnId)
+													: state?.status === 'saving';
+											})
+										)
+											continue;
+										merged[field] = value;
+									}
+									return merged as TData;
+								},
+								!mutationResult.created
+							);
+							if (mutationResult.created && reconciled)
+								canonicalCreatedRows.delete(mutationResult.canonicalId);
+							for (const columnId of columnIds) {
+								const key = encodeCellKey(mutationResult.canonicalId, columnId);
+								if (cellMutationGeneration.get(key) === generations.get(columnId)) {
+									markCellSaved(key);
+									pendingCellMutations.delete(key);
+									pendingCellMutations.delete(encodeCellKey(rowId, columnId));
+									cellValueMap.delete(key);
+									cellValueMap.delete(encodeCellKey(rowId, columnId));
+								}
 							}
-						} else {
-							res = await fetch(`${endpoint}/${id}`, {
-								method: 'PATCH',
-								body: JSON.stringify(patch.data)
-							});
-						}
-
-						if (!res) return { validated: [], errors: [] as CellPosition[] };
-						if (!res.ok) hasError = true;
-						else return { validated: pos(rowIndex, columnIds), errors: [] as CellPosition[] };
-
-						if (res.status === 422) {
-							const errorCols = new SvelteSet(
-								Object.keys((await res.json())?.errors ?? {})
+							const settledColumnIds = columnIds.filter(
+								(columnId) =>
+									cellMutationGeneration.get(
+										encodeCellKey(mutationResult.canonicalId, columnId)
+									) === generations.get(columnId)
+							);
+							const validatedColumnIds = expandValidationColumnIds(
+								settledColumnIds,
+								validationColumns
 							);
 							return {
-								errors: pos(rowIndex, Array.from(errorCols)),
-								validated: pos(
-									rowIndex,
-									columnIds.filter((c) => !errorCols.has(c))
-								)
+								validated: pos(mutationResult.canonicalId, validatedColumnIds),
+								errors: [] as CellPosition[],
+								failed: [] as CellPosition[]
+							};
+						} catch (error) {
+							const errorBody =
+								error instanceof DataGridAdapterError && error.status === 422
+									? ((error.body as PatchErrorBody | undefined) ?? {})
+									: undefined;
+							if (errorBody) {
+								accumulatedValidationUpdates = mergeAccumulatedValidationUpdates(
+									accumulatedValidationUpdates,
+									submittedEntries
+								);
+								errorDetails.push({
+									rowId: mutationRowId,
+									items: formatPatchErrorItems(errorBody)
+								});
+								const errorCols = new SvelteSet(Object.keys(errorBody.errors ?? {}));
+								const matchedErrorColumnIds = new SvelteSet<string>();
+								const matchedErrorMessages = new SvelteMap<string, string>();
+								for (const errorCol of errorCols) {
+									const rawMessages = errorBody.errors?.[errorCol];
+									const message = (Array.isArray(rawMessages) ? rawMessages : [rawMessages])
+										.filter((item): item is string => Boolean(item))
+										.join(', ');
+									for (const id of getColumnIdsForPatchError(errorCol, patchColumns)) {
+										matchedErrorColumnIds.add(id);
+										if (message) matchedErrorMessages.set(id, message);
+									}
+								}
+								const currentSubmittedColumnIds = columnIds.filter(
+									(columnId) =>
+										cellMutationGeneration.get(encodeCellKey(mutationRowId, columnId)) ===
+										generations.get(columnId)
+								);
+								const relevantErrorColumnIds = new SvelteSet(
+									Array.from(matchedErrorColumnIds).filter((columnId) => {
+										const pending = pendingCellMutations.get(
+											encodeCellKey(mutationRowId, columnId)
+										);
+										return !pending || pending.generation === generations.get(columnId);
+									})
+								);
+								const disposition = getDraftValidationDisposition(
+									currentSubmittedColumnIds,
+									relevantErrorColumnIds
+								);
+								const latestRows = getData();
+								const latestIndex = latestRows.findIndex(
+									(item, index) => getRowIdValue(item, index) === mutationRowId
+								);
+								const latestRow = latestRows[latestIndex];
+								for (const columnId of columnIds) {
+									const key = encodeCellKey(mutationRowId, columnId);
+									const pending = pendingCellMutations.get(key);
+									if (cellMutationGeneration.get(key) !== generations.get(columnId)) continue;
+									if (disposition.invalidColumnIds.includes(columnId)) {
+										setMutationCellSaveState(mutationRowId, columnId, {
+											status: 'error',
+											error:
+												matchedErrorMessages.get(columnId) ??
+												(error instanceof Error ? error.message : 'Failed to save cell')
+										});
+									} else setMutationCellSaveState(mutationRowId, columnId, { status: 'idle' });
+									if (pending?.generation === generations.get(columnId))
+										pendingCellMutations.delete(key);
+									if (
+										latestRow &&
+										areEditValuesEqual(
+											getImmutableCellValue(latestRow, latestIndex, columnId),
+											submittedEntries.find(({ update }) => update.columnId === columnId)?.update
+												.value
+										)
+									)
+										cellValueMap.delete(key);
+								}
+								return {
+									errors: pos(mutationRowId, disposition.errorColumnIds),
+									validated: pos(mutationRowId, disposition.validColumnIds),
+									failed: pos(
+										mutationRowId,
+										Array.from(directEntries.values())
+											.filter(
+												(entry) =>
+													cellMutationGeneration.get(
+														encodeCellKey(mutationRowId, entry.update.columnId)
+													) === entry.generation
+											)
+											.map((entry) => entry.update.columnId)
+									)
+								};
+							}
+							accumulatedValidationUpdates = clearAccumulatedValidationUpdates(
+								accumulatedValidationUpdates,
+								submittedEntries
+							);
+							for (const entry of submittedEntries) {
+								const { columnId } = entry.update;
+								const key = encodeCellKey(mutationRowId, columnId);
+								if (cellMutationGeneration.get(key) !== entry.generation) continue;
+								setMutationCellSaveState(mutationRowId, columnId, {
+									status: 'error',
+									error: error instanceof Error ? error.message : 'Failed to save cell'
+								});
+								pendingCellMutations.delete(key);
+								cellValueMap.delete(key);
+								replaceRowById(getReconciliationRowId(mutationRowId), (currentRow) =>
+									setImmutableValue(
+										currentRow,
+										columnId,
+										entry.previousValue,
+										table.getColumn(columnId)?.columnDef.meta
+									)
+								);
+							}
+							return {
+								validated: [] as CellPosition[],
+								errors: pos(
+									mutationRowId,
+									columnIds.filter(
+										(columnId) =>
+											cellMutationGeneration.get(encodeCellKey(mutationRowId, columnId)) ===
+											generations.get(columnId)
+									)
+								),
+								failed: pos(mutationRowId, columnIds)
 							};
 						}
-					} catch (error) {
-						console.error(error);
+					})
+				);
+
+				const validated = results.flatMap((r) => r.validated);
+				const errors = results.flatMap((r) => r.errors);
+				const failed = results.flatMap((r) => r.failed);
+
+				if (options?.suppressToast) {
+					// The caller reports one aggregate outcome after all selected cells settle.
+				} else if (errors.length || errorDetails.length) {
+					if (errorDetails.length) {
+						toast.dismiss();
+						for (const errorDetail of errorDetails) {
+							toast(PatchErrorToast, {
+								componentProps: {
+									items: errorDetail.items
+								},
+								closeButton: true,
+								duration: Infinity
+							});
+						}
+					} else {
+						toast.dismiss();
+						toast.error('Failed to patch all rows', { closeButton: true, duration: Infinity });
 					}
+				} else {
+					toast.dismiss();
+					toast.success('All rows patched');
+				}
 
-					return { validated: [] as CellPosition[], errors: [] as CellPosition[] };
-				})
-			);
-
-			const validated = results.flatMap((r) => r.validated);
-			const errors = results.flatMap((r) => r.errors);
-
-			if (hasError || errors.length) {
-				toast.error('Failed to patch all rows', { closeButton: true, duration: Infinity });
-			} else {
-				toast.success('All rows patched');
+				return { validated, errors, failed };
 			}
+			: undefined;
 
-			return { validated, errors };
-		}
-		: undefined;
-
-	const resolvedOnRowAdd = typeof onRowAddProp === 'boolean' ? onRowAddProp === false ? undefined : defaultOnRowAdd : onRowAddProp ?? defaultOnRowAdd;
+	const resolvedOnRowAdd =
+		typeof onRowAddProp === 'boolean'
+			? onRowAddProp === false
+				? undefined
+				: defaultOnRowAdd
+			: (onRowAddProp ?? defaultOnRowAdd);
 	const resolvedOnRowsAdd = onRowsAddProp ?? defaultOnRowsAdd;
 	const resolvedOnRowsDelete = onRowsDeleteProp ?? defaultOnRowsDelete;
 	const resolvedOnRowChange = onRowChangeProp ?? defaultOnRowChange;
+	const resolvedOnDownload =
+		typeof onDownloadProp === 'boolean'
+			? onDownloadProp
+				? defaultOnDownload
+				: undefined
+			: onDownloadProp;
 
 	// SvelteMap for CELL-LEVEL fine-grained reactivity
 	// Key is "rowIndex:columnId", value is the cell value
@@ -420,12 +1175,6 @@ export function useDataGrid<TData extends RowData>(
 	// When a cell calls cellValueMap.get(key) inside $derived, Svelte tracks that specific key
 	function getCellValueMap(): SvelteMap<string, unknown> {
 		return cellValueMap;
-	}
-
-	// Helper to set cell value with fine-grained reactivity
-	function setCellValue(rowIndex: number, columnId: string, value: unknown): void {
-		const key = getCellKey(rowIndex, columnId);
-		cellValueMap.set(key, value);
 	}
 
 	// Helper to clear cell value cache (called when table state changes)
@@ -445,12 +1194,46 @@ export function useDataGrid<TData extends RowData>(
 	const cellMapRef = new SvelteMap<string, HTMLDivElement>();
 
 	// Table state - use initialState if provided
-	let sorting = $state<SortingState>(initialState?.sorting ?? []);
-	let columnFilters = $state<ColumnFiltersState>(initialState?.columnFilters ?? []);
+	const currentColumnIds = normalizedColumns
+		.map((column) =>
+			typeof column.id === 'string'
+				? column.id
+				: 'accessorKey' in column && typeof column.accessorKey === 'string'
+					? column.accessorKey
+					: undefined
+		)
+		.filter((id): id is string => typeof id === 'string');
+	const defaultColumnSizing = Object.fromEntries(
+		normalizedColumns.flatMap((column) => {
+			const id =
+				typeof column.id === 'string'
+					? column.id
+					: 'accessorKey' in column && typeof column.accessorKey === 'string'
+						? column.accessorKey
+						: undefined;
+			return id && typeof column.size === 'number' ? [[id, column.size]] : [];
+		})
+	);
+	const codeDefaults = {
+		sorting: [...(initialState?.sorting ?? [])],
+		columnFilters: [...(initialState?.columnFilters ?? [])],
+		columnVisibility: { ...(initialState?.columnVisibility ?? {}) },
+		columnPinning: {
+			left: [...(initialState?.columnPinning?.left ?? [])],
+			right: [...(initialState?.columnPinning?.right ?? [])]
+		},
+		columnSizing: { ...defaultColumnSizing, ...(initialState?.columnSizing ?? {}) },
+		columnOrder: [...(initialState?.columnOrder ?? currentColumnIds)],
+		rowHeight: initialRowHeight
+	};
+	let sorting = $state<SortingState>([...codeDefaults.sorting]);
+	let columnFilters = $state<ColumnFiltersState>([...codeDefaults.columnFilters]);
 	let rowSelection = $state<RowSelectionState>(initialState?.rowSelection ?? {});
-	let columnPinning = $state<ColumnPinningState>(initialState?.columnPinning ?? {});
-	let columnVisibility = $state<VisibilityState>(initialState?.columnVisibility ?? {});
-	let columnSizing = $state<ColumnSizingState>(initialState?.columnSizing ?? {});
+	let isDownloading = $state(false);
+	let columnPinning = $state<ColumnPinningState>({ ...codeDefaults.columnPinning });
+	let columnVisibility = $state<VisibilityState>({ ...codeDefaults.columnVisibility });
+	let columnSizing = $state<ColumnSizingState>({ ...codeDefaults.columnSizing });
+	let columnOrder = $state<ColumnOrderState>([...codeDefaults.columnOrder]);
 	let columnSizingInfo = $state<ColumnSizingInfoState>({
 		startOffset: null,
 		startSize: null,
@@ -459,24 +1242,243 @@ export function useDataGrid<TData extends RowData>(
 		isResizingColumn: false,
 		columnSizingStart: []
 	});
-	let rowHeight = $state<RowHeightValue>(initialRowHeight);
+	let rowHeight = $state<RowHeightValue>(codeDefaults.rowHeight);
+	let rowHeightRemeasureVersion = $state(0);
+	const persistenceEnabled = Boolean(
+		persistence?.gridId.trim() && persistence.tenantId.trim() && persistence.userId.trim()
+	);
+	const preferencesKey =
+		persistence && persistenceEnabled ? getDataGridPreferencesKey(persistence) : null;
+	let preferencesReady = $state(!persistenceEnabled);
+	const persistenceSlices = { ...DEFAULT_DATA_GRID_PERSISTENCE_SLICES, ...persistence?.slices };
+	let suppressedPreferenceSnapshot: string | null = null;
+	let latestPreferenceValue: string | null = null;
+	let appliedPreferenceState = getAppliedDataGridPreferenceState(null);
+	let preferenceWriteTimer: ReturnType<typeof setTimeout> | null = null;
+	const preferenceCapabilities = normalizedColumns.flatMap((column) => {
+		const id =
+			typeof column.id === 'string'
+				? column.id
+				: 'accessorKey' in column && typeof column.accessorKey === 'string'
+					? column.accessorKey
+					: undefined;
+		return id
+			? [
+				{
+					id,
+					canSort: column.enableSorting !== false,
+					canFilter: column.enableColumnFilter !== false,
+					canHide: column.enableHiding !== false,
+					minSize: column.minSize ?? MIN_COLUMN_SIZE,
+					maxSize: column.maxSize ?? MAX_COLUMN_SIZE
+				}
+			]
+			: [];
+	});
+
+	function applyPreferences(preferences: DataGridPreferences) {
+		const reconciled = reconcileDataGridPreferences(preferences, preferenceCapabilities);
+		if (persistenceSlices.sorting) sorting = [...(reconciled.sorting ?? codeDefaults.sorting)];
+		if (persistenceSlices.filters)
+			columnFilters = [...(reconciled.columnFilters ?? codeDefaults.columnFilters)];
+		if (persistenceSlices.visibility)
+			columnVisibility = {
+				...codeDefaults.columnVisibility,
+				...(reconciled.columnVisibility ?? {})
+			};
+		if (persistenceSlices.pinning)
+			columnPinning = {
+				left: [...(reconciled.columnPinning?.left ?? codeDefaults.columnPinning.left)],
+				right: [...(reconciled.columnPinning?.right ?? codeDefaults.columnPinning.right)]
+			};
+		if (persistenceSlices.sizing)
+			columnSizing = { ...codeDefaults.columnSizing, ...(reconciled.columnSizing ?? {}) };
+		if (persistenceSlices.columnOrder) {
+			const restoredOrder = reconciled.columnOrder ?? codeDefaults.columnOrder;
+			columnOrder = [
+				...restoredOrder,
+				...currentColumnIds.filter((id) => !restoredOrder.includes(id))
+			];
+		}
+		if (persistenceSlices.rowHeight) {
+			const restoredRowHeight = reconciled.rowHeight ?? codeDefaults.rowHeight;
+			if (rowHeight !== restoredRowHeight) rowHeightRemeasureVersion++;
+			rowHeight = restoredRowHeight;
+		}
+	}
+
+	function restoreCodeDefaults(removeStored: boolean) {
+		cancelPendingPreferenceWrite();
+		appliedPreferenceState = getAppliedDataGridPreferenceState(null);
+		if (removeStored && preferencesKey && typeof window !== 'undefined') {
+			try {
+				const storage = persistence?.storage ?? window.localStorage;
+				storage.removeItem(preferencesKey);
+			} catch {
+				// Storage can be unavailable in privacy-restricted browser contexts.
+			}
+		}
+		sorting = [...codeDefaults.sorting];
+		columnFilters = [...codeDefaults.columnFilters];
+		columnVisibility = { ...codeDefaults.columnVisibility };
+		columnPinning = {
+			left: [...codeDefaults.columnPinning.left],
+			right: [...codeDefaults.columnPinning.right]
+		};
+		columnSizing = { ...codeDefaults.columnSizing };
+		columnOrder = [...codeDefaults.columnOrder];
+		if (rowHeight !== codeDefaults.rowHeight) rowHeightRemeasureVersion++;
+		rowHeight = codeDefaults.rowHeight;
+	}
+
+	function cancelPendingPreferenceWrite() {
+		if (preferenceWriteTimer) clearTimeout(preferenceWriteTimer);
+		preferenceWriteTimer = null;
+		latestPreferenceValue = null;
+	}
+
+	function resetPreferences() {
+		restoreCodeDefaults(true);
+		suppressedPreferenceSnapshot = getPreferenceSnapshot();
+	}
+
+	function getPreferenceSnapshot() {
+		return serializeDataGridPreferencesSnapshot({
+			version: DATA_GRID_PREFERENCES_VERSION,
+			...(persistenceSlices.sorting ? { sorting } : {}),
+			...(persistenceSlices.filters ? { columnFilters } : {}),
+			...(persistenceSlices.visibility ? { columnVisibility } : {}),
+			...(persistenceSlices.pinning ? { columnPinning } : {}),
+			...(persistenceSlices.sizing ? { columnSizing } : {}),
+			...(persistenceSlices.columnOrder ? { columnOrder } : {}),
+			...(persistenceSlices.rowHeight ? { rowHeight } : {})
+		});
+	}
+
+	function getCodeDefaultPreferenceSnapshot() {
+		return serializeDataGridPreferencesSnapshot({
+			version: DATA_GRID_PREFERENCES_VERSION,
+			...(persistenceSlices.sorting ? { sorting: codeDefaults.sorting } : {}),
+			...(persistenceSlices.filters ? { columnFilters: codeDefaults.columnFilters } : {}),
+			...(persistenceSlices.visibility ? { columnVisibility: codeDefaults.columnVisibility } : {}),
+			...(persistenceSlices.pinning ? { columnPinning: codeDefaults.columnPinning } : {}),
+			...(persistenceSlices.sizing ? { columnSizing: codeDefaults.columnSizing } : {}),
+			...(persistenceSlices.columnOrder ? { columnOrder: codeDefaults.columnOrder } : {}),
+			...(persistenceSlices.rowHeight ? { rowHeight: codeDefaults.rowHeight } : {})
+		});
+	}
+
+	const hasPreferences = $derived.by(
+		() => preferencesReady && getPreferenceSnapshot() !== getCodeDefaultPreferenceSnapshot()
+	);
+
+	function flushPreferences() {
+		if (!preferencesKey || !latestPreferenceValue || typeof window === 'undefined') return;
+		const preferenceValue = latestPreferenceValue;
+		cancelPendingPreferenceWrite();
+		const decoded = decodeDataGridPreferences(preferenceValue);
+		if (!decoded.preferences) return;
+		const snapshot = getDataGridPreferencesContentSnapshot(decoded.preferences);
+		if (snapshot === appliedPreferenceState.snapshot) return;
+		try {
+			const storage = persistence?.storage ?? window.localStorage;
+			storage.setItem(preferencesKey, preferenceValue);
+			appliedPreferenceState = getAppliedDataGridPreferenceState(decoded.preferences);
+		} catch {
+			// Persistence is best-effort.
+		}
+	}
+
+	$effect(() => {
+		if (!preferencesKey || typeof window === 'undefined') return;
+		let storage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+		try {
+			storage = persistence?.storage ?? window.localStorage;
+			const stored = storage.getItem(preferencesKey);
+			if (stored && persistence) storage.setItem(preferencesKey, stored);
+			const decoded = decodeDataGridPreferences(stored);
+			if (decoded.status === 'malformed') storage.removeItem(preferencesKey);
+			if (decoded.preferences) {
+				untrack(() => applyPreferences(decoded.preferences!));
+				appliedPreferenceState = getAppliedDataGridPreferenceState(decoded.preferences);
+			}
+		} catch {
+			preferencesReady = true;
+			return;
+		}
+		preferencesReady = true;
+
+		const onStorage = (event: StorageEvent) => {
+			if (event.key !== preferencesKey) return;
+			const decoded = decodeDataGridPreferences(event.newValue);
+			if (decoded.status === 'future') return;
+			if (decoded.status === 'malformed') {
+				try {
+					storage.removeItem(preferencesKey);
+				} catch {
+					/* best-effort */
+				}
+				return;
+			}
+			if (decoded.preferences) {
+				const incomingSnapshot = getDataGridPreferencesContentSnapshot(decoded.preferences);
+				if (decoded.preferences.updatedAt < appliedPreferenceState.updatedAt) return;
+				cancelPendingPreferenceWrite();
+				if (incomingSnapshot === appliedPreferenceState.snapshot) {
+					appliedPreferenceState = {
+						...appliedPreferenceState,
+						updatedAt: Math.max(appliedPreferenceState.updatedAt, decoded.preferences.updatedAt)
+					};
+					return;
+				}
+				applyPreferences(decoded.preferences);
+				appliedPreferenceState = getAppliedDataGridPreferenceState(decoded.preferences);
+				suppressedPreferenceSnapshot = getPreferenceSnapshot();
+			} else {
+				restoreCodeDefaults(false);
+				suppressedPreferenceSnapshot = getPreferenceSnapshot();
+			}
+		};
+		const onPageHide = () => flushPreferences();
+		window.addEventListener('storage', onStorage);
+		window.addEventListener('pagehide', onPageHide);
+		return () => {
+			flushPreferences();
+			window.removeEventListener('storage', onStorage);
+			window.removeEventListener('pagehide', onPageHide);
+		};
+	});
+
+	$effect(() => {
+		if (!preferencesKey || !preferencesReady || typeof window === 'undefined') return;
+		const snapshot = getPreferenceSnapshot();
+		if (suppressedPreferenceSnapshot === snapshot) {
+			suppressedPreferenceSnapshot = null;
+			return;
+		}
+		const serialized = JSON.stringify({ ...JSON.parse(snapshot), updatedAt: Date.now() });
+		latestPreferenceValue = serialized;
+		if (preferenceWriteTimer) clearTimeout(preferenceWriteTimer);
+		preferenceWriteTimer = setTimeout(
+			flushPreferences,
+			persistence?.debounceMs ?? DEBOUNCE_DELAY.preferences
+		);
+	});
 
 	// Cell state
 	let focusedCell = $state<CellPosition | null>(null);
 	let editingCell = $state<CellPosition | null>(null);
+	let editingSession: { rowId: string; columnId: string; value: unknown } | null = null;
+	const cancelledCellKeys = new SvelteSet<string>();
+	// Shared by rendering and metadata consumers; do not mirror selected keys in a second Set.
+	const selectedCellsSet = new SvelteSet<string>();
 	let selectionState = $state<SelectionState>({
-		selectedCells: new SvelteSet(),
+		selectedCells: selectedCellsSet,
 		selectionRange: null,
 		isSelecting: false
 	});
-	let cutCells = new SvelteSet<string>();
-
 	// SvelteSet for fine-grained reactivity on cell selection
 	// Cells can call selectedCellsSet.has(key) in $derived for proper Svelte tracking
-	const selectedCellsSet = new SvelteSet<string>();
-	// Version counter to force cell re-renders when selection changes
-	// Cells read this in $derived to create a reactive dependency
-	let selectionVersion = $state(0);
 
 	// Track the anchor cell for shift+arrow range selection
 	let selectionAnchor = $state<CellPosition | null>(null);
@@ -495,9 +1497,6 @@ export function useDataGrid<TData extends RowData>(
 		clipboardText: ''
 	});
 
-	// Error state
-	let errorMatches = $state<CellPosition[]>([]);
-
 	// SvelteSet for O(1) reactive error match lookups
 	const hasErrorMatchSet = new SvelteSet<string>();
 
@@ -512,38 +1511,9 @@ export function useDataGrid<TData extends RowData>(
 
 	// Helper to sync SvelteSet with regular Set for selection
 	function syncSelectedCellsSet(newCells: Set<string>) {
-		const oldCells = new SvelteSet(selectedCellsSet);
-
 		selectedCellsSet.clear();
 		for (const key of newCells) {
 			selectedCellsSet.add(key);
-		}
-		// Increment version to trigger re-renders in cells
-		selectionVersion++;
-
-		// Direct DOM update - bypass Svelte reactivity for selection highlight
-		// This ensures visible cells update immediately
-		if (dataGridRef) {
-			// Remove highlight from cells no longer selected
-			for (const key of oldCells) {
-				if (!newCells.has(key)) {
-					const cellEl = cellMapRef.get(key);
-					if (cellEl) {
-						cellEl.classList.remove('highlight');
-						cellEl.removeAttribute('data-selected');
-					}
-				}
-			}
-			// Add highlight to newly selected cells
-			for (const key of newCells) {
-				if (!oldCells.has(key)) {
-					const cellEl = cellMapRef.get(key);
-					if (cellEl) {
-						cellEl.classList.add('highlight');
-						cellEl.setAttribute('data-selected', '');
-					}
-				}
-			}
 		}
 	}
 
@@ -566,7 +1536,12 @@ export function useDataGrid<TData extends RowData>(
 	function getNavigableColumns() {
 		return table
 			.getAllColumns()
-			.filter((col) => col.getIsVisible() && !NON_NAVIGABLE_COLUMNS.has(col.id));
+			.filter(
+				(col) =>
+					col.getIsVisible() &&
+					col.columnDef.meta?.navigable !== false &&
+					col.columnDef.meta?.cell?.variant !== 'row-select'
+			);
 	}
 
 	function getFirstNavigableColumnId(): string | null {
@@ -577,6 +1552,41 @@ export function useDataGrid<TData extends RowData>(
 	function getLastNavigableColumnId(): string | null {
 		const cols = getNavigableColumns();
 		return cols[cols.length - 1]?.id ?? null;
+	}
+
+	function getTabTarget(
+		rowIndex: number,
+		columnId: string,
+		direction: 'left' | 'right'
+	): CellPosition | null {
+		const rows = table.getRowModel().rows;
+		const columns = getNavigableColumns();
+		const columnIndex = columns.findIndex((column) => column.id === columnId);
+		if (columnIndex < 0 || rows.length === 0) return null;
+
+		if (direction === 'right') {
+			const nextColumn = columns[columnIndex + 1];
+			if (nextColumn) return getCellPosition(rowIndex, nextColumn.id);
+			const firstColumn = columns[0];
+			return rowIndex < rows.length - 1 && firstColumn
+				? getCellPosition(rowIndex + 1, firstColumn.id)
+				: null;
+		}
+
+		const previousColumn = columns[columnIndex - 1];
+		if (previousColumn) return getCellPosition(rowIndex, previousColumn.id);
+		const lastColumn = columns.at(-1);
+		return rowIndex > 0 && lastColumn ? getCellPosition(rowIndex - 1, lastColumn.id) : null;
+	}
+
+	function resolvePosition(position: CellPosition): CellPosition | null {
+		const rows = table.getRowModel().rows;
+		const rowIndex = position.rowId
+			? rows.findIndex((row) => row.id === position.rowId)
+			: position.rowIndex;
+		return rowIndex >= 0 && rows[rowIndex]
+			? { rowIndex, rowId: rows[rowIndex].id, columnId: position.columnId }
+			: null;
 	}
 
 	function getNextNavigableColumnId(
@@ -592,7 +1602,9 @@ export function useDataGrid<TData extends RowData>(
 	}
 
 	function getIsCellSelected(rowIndex: number, columnId: string): boolean {
-		return selectionState.selectedCells.has(getCellKey(rowIndex, columnId));
+		return selectedCellsSet.has(
+			getCellKey(getCellPosition(rowIndex, columnId).rowId ?? rowIndex, columnId)
+		);
 	}
 
 	function getIsSearchMatch(rowIndex: number, columnId: string): boolean {
@@ -618,21 +1630,22 @@ export function useDataGrid<TData extends RowData>(
 	// ========================================
 
 	function focusCell(rowIndex: number, columnId: string, opts?: { keepAnchor?: boolean }) {
-		focusedCell = { rowIndex, columnId };
+		const position = getCellPosition(rowIndex, columnId);
+		focusedCell = position;
 
-		const cellKey = getCellKey(rowIndex, columnId);
+		const cellKey = getCellKey(position.rowId ?? rowIndex, columnId);
 
 		// Clear selection when focusing new cell (unless holding shift or explicitly keeping anchor)
 		if (!selectionState.isSelecting && !opts?.keepAnchor) {
 			const newCells = new SvelteSet([cellKey]);
 			syncSelectedCellsSet(newCells);
 			selectionState = {
-				selectedCells: newCells,
+				selectedCells: selectedCellsSet,
 				selectionRange: null,
 				isSelecting: false
 			};
 			// Set anchor to the newly focused cell
-			selectionAnchor = { rowIndex, columnId };
+			selectionAnchor = position;
 		}
 
 		// Scroll to row if needed (for virtualization)
@@ -665,7 +1678,9 @@ export function useDataGrid<TData extends RowData>(
 		if (!focusedCell) return;
 
 		const rows = table.getRowModel().rows;
-		const { rowIndex, columnId } = focusedCell;
+		const current = resolvePosition(focusedCell);
+		if (!current) return;
+		const { rowIndex, columnId } = current;
 
 		let newRowIndex = rowIndex;
 		let newColumnId: string | null = columnId;
@@ -732,11 +1747,22 @@ export function useDataGrid<TData extends RowData>(
 
 	function startEditing(rowIndex: number, columnId: string) {
 		if (getIsCellReadOnly(rowIndex, columnId)) return;
-		editingCell = { rowIndex, columnId };
+		const position = getCellPosition(rowIndex, columnId);
+		if (!position.rowId) return;
+		const key = encodeCellKey(position.rowId, columnId);
+		const row = table.getRowModel().rows[rowIndex];
+		const value = cellValueMap.has(key) ? cellValueMap.get(key) : row?.getValue(columnId);
+		editingSession = {
+			rowId: position.rowId,
+			columnId,
+			value: cloneEditValue(value)
+		};
+		editingCell = position;
 	}
 
 	function stopEditing(opts?: { direction?: NavigationDirection; moveToNextRow?: boolean }) {
 		editingCell = null;
+		editingSession = null;
 
 		if (opts?.direction) {
 			navigateCell(opts.direction);
@@ -745,12 +1771,40 @@ export function useDataGrid<TData extends RowData>(
 		}
 	}
 
+	function cancelEditing() {
+		const session = editingSession;
+		if (!session) {
+			editingCell = null;
+			return;
+		}
+		const key = encodeCellKey(session.rowId, session.columnId);
+		const row = table.getRowModel().rows.find((item) => item.id === session.rowId);
+		const currentValue = cellValueMap.has(key)
+			? cellValueMap.get(key)
+			: row?.getValue(session.columnId);
+		cancelledCellKeys.add(key);
+		if (!areEditValuesEqual(currentValue, session.value) && row) {
+			handleDataUpdate(
+				{
+					rowIndex: row.index,
+					rowId: session.rowId,
+					columnId: session.columnId,
+					value: cloneEditValue(session.value)
+				},
+				true
+			);
+		}
+		editingCell = null;
+		editingSession = null;
+		setTimeout(() => cancelledCellKeys.delete(key), 0);
+	}
+
 	// ========================================
 	// Cell Selection
 	// ========================================
 
 	function selectCell(rowIndex: number, columnId: string, event?: MouseEvent) {
-		const cellKey = getCellKey(rowIndex, columnId);
+		const cellKey = getCellKey(getCellPosition(rowIndex, columnId).rowId ?? rowIndex, columnId);
 
 		if (event?.ctrlKey || event?.metaKey) {
 			// Toggle selection
@@ -763,17 +1817,17 @@ export function useDataGrid<TData extends RowData>(
 			syncSelectedCellsSet(newSelected);
 			selectionState = {
 				...selectionState,
-				selectedCells: newSelected
+				selectedCells: selectedCellsSet
 			};
 		} else if (event?.shiftKey && focusedCell) {
 			// Range selection
-			selectRange(focusedCell, { rowIndex, columnId });
+			selectRange(focusedCell, getCellPosition(rowIndex, columnId));
 		} else {
 			// Single selection
 			const newCells = new SvelteSet([cellKey]);
 			syncSelectedCellsSet(newCells);
 			selectionState = {
-				selectedCells: newCells,
+				selectedCells: selectedCellsSet,
 				selectionRange: null,
 				isSelecting: false
 			};
@@ -783,6 +1837,11 @@ export function useDataGrid<TData extends RowData>(
 	}
 
 	function selectRange(start: CellPosition, end: CellPosition, keepSelecting = false) {
+		const resolvedStart = resolvePosition(start);
+		const resolvedEnd = resolvePosition(end);
+		if (!resolvedStart || !resolvedEnd) return;
+		start = resolvedStart;
+		end = resolvedEnd;
 		const cols = getNavigableColumns();
 		const startColIndex = cols.findIndex((c) => c.id === start.columnId);
 		const endColIndex = cols.findIndex((c) => c.id === end.columnId);
@@ -804,7 +1863,7 @@ export function useDataGrid<TData extends RowData>(
 
 		syncSelectedCellsSet(newSelected);
 		selectionState = {
-			selectedCells: newSelected,
+			selectedCells: selectedCellsSet,
 			selectionRange: { start, end },
 			isSelecting: keepSelecting ? selectionState.isSelecting : false
 		};
@@ -823,7 +1882,7 @@ export function useDataGrid<TData extends RowData>(
 
 		syncSelectedCellsSet(newSelected);
 		selectionState = {
-			selectedCells: newSelected,
+			selectedCells: selectedCellsSet,
 			selectionRange: null,
 			isSelecting: false
 		};
@@ -833,7 +1892,7 @@ export function useDataGrid<TData extends RowData>(
 		const newCells = new SvelteSet<string>();
 		syncSelectedCellsSet(newCells);
 		selectionState = {
-			selectedCells: newCells,
+			selectedCells: selectedCellsSet,
 			selectionRange: null,
 			isSelecting: false
 		};
@@ -848,7 +1907,7 @@ export function useDataGrid<TData extends RowData>(
 		if (event.button !== 0) return; // Only left click
 
 		// Set selection anchor for drag selection
-		const cellKey = getCellKey(rowIndex, columnId);
+		const cellKey = getCellKey(getCellPosition(rowIndex, columnId).rowId ?? rowIndex, columnId);
 
 		if (event.ctrlKey || event.metaKey) {
 			// Toggle selection - don't start drag, keep anchor
@@ -861,37 +1920,37 @@ export function useDataGrid<TData extends RowData>(
 			syncSelectedCellsSet(newSelected);
 			selectionState = {
 				...selectionState,
-				selectedCells: newSelected,
+				selectedCells: selectedCellsSet,
 				isSelecting: false
 			};
 			// Update focused cell but keep anchor for future shift-clicks
-			focusedCell = { rowIndex, columnId };
+			focusedCell = getCellPosition(rowIndex, columnId);
 			scrollAndFocusCell(rowIndex, columnId);
 		} else if (event.shiftKey && (selectionAnchor || focusedCell)) {
 			// Range selection from anchor (or focused cell if no anchor) to this cell
 			const anchor = selectionAnchor || focusedCell!;
-			selectRange(anchor, { rowIndex, columnId });
+			selectRange(anchor, getCellPosition(rowIndex, columnId));
 			selectionState = { ...selectionState, isSelecting: false };
 			// Update focused cell but keep anchor for future shift-clicks
-			focusedCell = { rowIndex, columnId };
+			focusedCell = getCellPosition(rowIndex, columnId);
 			scrollAndFocusCell(rowIndex, columnId);
 		} else {
 			// Start drag selection - set this cell as anchor
 			const newCells = new SvelteSet([cellKey]);
 			syncSelectedCellsSet(newCells);
 			selectionState = {
-				selectedCells: newCells,
+				selectedCells: selectedCellsSet,
 				selectionRange: null,
 				isSelecting: true
 			};
-			selectionAnchor = { rowIndex, columnId };
+			selectionAnchor = getCellPosition(rowIndex, columnId);
 			focusCell(rowIndex, columnId);
 		}
 	}
 
 	// Helper to scroll to cell and focus it without changing selection anchor
 	function scrollAndFocusCell(rowIndex: number, columnId: string) {
-		const cellKey = getCellKey(rowIndex, columnId);
+		const cellKey = getCellKey(getCellPosition(rowIndex, columnId).rowId ?? rowIndex, columnId);
 
 		// Scroll to row if needed (for virtualization)
 		if (virtualizer) {
@@ -912,7 +1971,7 @@ export function useDataGrid<TData extends RowData>(
 		if (!selectionState.isSelecting || !selectionAnchor) return;
 
 		// Extend selection from anchor to current cell, keeping isSelecting true
-		selectRange(selectionAnchor, { rowIndex, columnId }, true);
+		selectRange(selectionAnchor, getCellPosition(rowIndex, columnId), true);
 	}
 
 	function onCellMouseUp() {
@@ -923,8 +1982,11 @@ export function useDataGrid<TData extends RowData>(
 	// Clipboard Operations
 	// ========================================
 
-	function copySelectedCells() {
-		if (selectionState.selectedCells.size === 0) return;
+	async function copySelectedCells(
+		selectedCellKeys: ReadonlySet<string> = selectionState.selectedCells,
+		valueSnapshots?: ReadonlyMap<string, { value: unknown }>
+	): Promise<boolean> {
+		if (selectedCellKeys.size === 0) return false;
 
 		const rows = table.getRowModel().rows;
 		const cols = getNavigableColumns();
@@ -935,7 +1997,7 @@ export function useDataGrid<TData extends RowData>(
 		let minCol = Infinity,
 			maxCol = -Infinity;
 
-		for (const cellKey of selectionState.selectedCells) {
+		for (const cellKey of selectedCellKeys) {
 			const { rowIndex, columnId } = parseCellKey(cellKey);
 			const colIndex = cols.findIndex((c) => c.id === columnId);
 			if (colIndex >= 0) {
@@ -954,13 +2016,21 @@ export function useDataGrid<TData extends RowData>(
 
 			const cells: string[] = [];
 			for (let col = minCol; col <= maxCol; col++) {
-				const colId = cols[col]?.id;
-				if (!colId) continue;
+				const column = cols[col];
+				if (!column) continue;
+				const colId = column.id;
 
 				const cellKey = getCellKey(row, colId);
-				if (selectionState.selectedCells.has(cellKey)) {
-					const value = rowData.getValue(colId);
-					cells.push(formatCellValueForCopy(value));
+				if (selectedCellKeys.has(cellKey)) {
+					const capturedValue = valueSnapshots?.get(cellKey)?.value;
+					const cachedValue = cellValueMap.get(cellKey);
+					const value = valueSnapshots?.has(cellKey)
+						? capturedValue
+						: cellValueMap.has(cellKey)
+							? cachedValue
+							: rowData.getValue(colId);
+					const serialize = column.columnDef.meta?.clipboard?.serialize;
+					cells.push(serialize ? serialize(value, rowData.original) : serializeCellValue(value));
 				} else {
 					cells.push('');
 				}
@@ -969,35 +2039,28 @@ export function useDataGrid<TData extends RowData>(
 		}
 
 		const text = lines.join('\n');
-		navigator.clipboard
-			.writeText(text)
-			.then(() => {
-				const cellCount = selectionState.selectedCells.size;
-				toast.success(`${cellCount} cell${cellCount !== 1 ? 's' : ''} copied`);
-			})
-			.catch((error) => {
-				toast.error(error instanceof Error ? error.message : 'Failed to copy to clipboard');
-			});
+		try {
+			await navigator.clipboard.writeText(text);
+			const cellCount = selectedCellKeys.size;
+			toast.success(`${cellCount} cell${cellCount !== 1 ? 's' : ''} copied`);
+			return true;
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : 'Failed to copy to clipboard');
+			return false;
+		}
 	}
 
-	function cutSelectedCells() {
-		const selectedEditableCells = new SvelteSet<string>();
-		const updates: UpdateCell[] = [];
-		for (const cellKey of selectionState.selectedCells) {
-			const { rowIndex, columnId } = parseCellKey(cellKey);
-			if (getIsCellReadOnly(rowIndex, columnId)) continue;
-			selectedEditableCells.add(cellKey);
-			updates.push({ rowIndex, columnId, value: null });
-		}
-		if (selectedEditableCells.size === 0) return;
+	async function cutSelectedCells() {
+		const selectedCellKeys = snapshotCellKeys(selectionState.selectedCells);
+		const mutationSnapshots = snapshotCellMutations(selectedCellKeys, (cellKey) => {
+			const { rowIndex, rowId, columnId } = parseCellKey(cellKey);
+			if (!rowId || getIsCellReadOnly(rowIndex, columnId)) return undefined;
+			return getCellMutationSnapshot(rowId, columnId);
+		});
+		if (mutationSnapshots.size === 0) return;
 
-		const cellCount = selectedEditableCells.size;
-		copySelectedCells();
-		cutCells = new SvelteSet(selectedEditableCells);
-		if (updates.length > 0) {
-			handleDataUpdate(updates);
-		}
-		// Note: Toast for cut is handled separately since copy already shows success
+		if (!(await copySelectedCells(selectedCellKeys, mutationSnapshots))) return;
+		await clearSelectedCells(selectedCellKeys, mutationSnapshots);
 	}
 
 	async function pasteFromClipboard() {
@@ -1005,16 +2068,17 @@ export function useDataGrid<TData extends RowData>(
 
 		try {
 			const text = await navigator.clipboard.readText();
-			if (!text.trim()) return;
+			if (text.length === 0) return;
 
 			const rows = table.getRowModel().rows;
 			const cols = getNavigableColumns();
 
 			// Parse clipboard as TSV
-			const lines = text.split('\n').map((line) => line.split('\t'));
+			const lines = parseClipboardRows(text);
 
 			// Determine paste target
-			const startPos = focusedCell || { rowIndex: 0, columnId: cols[0]?.id || '' };
+			const startPos = resolvePosition(focusedCell || getCellPosition(0, cols[0]?.id || ''));
+			if (!startPos) return;
 			const startColIndex = cols.findIndex((c) => c.id === startPos.columnId);
 
 			// Check if we need more rows
@@ -1036,10 +2100,15 @@ export function useDataGrid<TData extends RowData>(
 		}
 	}
 
-	function performPaste(text: string, startPos: CellPosition, startColIndex: number) {
+	function performPaste(
+		text: string,
+		startPos: CellPosition,
+		startColIndex: number,
+		targetRowIds?: readonly string[]
+	) {
 		const rows = table.getRowModel().rows;
 		const cols = getNavigableColumns();
-		const lines = text.split('\n').map((line) => line.split('\t'));
+		const lines = parseClipboardRows(text);
 
 		const updates: UpdateCell[] = [];
 
@@ -1047,29 +2116,27 @@ export function useDataGrid<TData extends RowData>(
 			const line = lines[lineIdx];
 			if (!line) continue;
 
-			const rowIndex = startPos.rowIndex + lineIdx;
-			if (rowIndex >= rows.length) break;
+			const rowIndex = targetRowIds
+				? rows.findIndex((row) => row.id === targetRowIds[lineIdx])
+				: startPos.rowIndex + lineIdx;
+			if (rowIndex < 0 || rowIndex >= rows.length) break;
+			const targetRow = rows[rowIndex];
+			if (!targetRow) break;
 
 			for (let cellIdx = 0; cellIdx < line.length; cellIdx++) {
 				const colIndex = startColIndex + cellIdx;
 				const col = cols[colIndex];
 				if (!col) break;
 
-				const value = parseCellValueForPaste(line[cellIdx] || '', col.id);
-				updates.push({ rowIndex, columnId: col.id, value });
+				const textValue = line[cellIdx] ?? '';
+				const value = col.columnDef.meta?.clipboard?.parse
+					? col.columnDef.meta.clipboard.parse(textValue, targetRow.original)
+					: parseCellValue(textValue, col.columnDef.meta?.cell?.variant);
+				updates.push({ rowIndex, rowId: targetRow.id, columnId: col.id, value });
 			}
 		}
 
 		if (updates.length > 0) {
-			// Clear cut cells first if we had any (to merge all updates together)
-			if (cutCells.size > 0) {
-				for (const cellKey of cutCells) {
-					const { rowIndex, columnId } = parseCellKey(cellKey);
-					updates.push({ rowIndex, columnId, value: null });
-				}
-				cutCells = new SvelteSet();
-			}
-
 			const editableUpdates = updates.filter(
 				(update) => !getIsCellReadOnly(update.rowIndex, update.columnId)
 			);
@@ -1084,71 +2151,167 @@ export function useDataGrid<TData extends RowData>(
 		}
 	}
 
-	function formatCellValueForCopy(value: unknown): string {
-		if (value === null || value === undefined) return '';
-		if (Array.isArray(value)) return JSON.stringify(value);
-		return String(value);
-	}
-
-	function parseCellValueForPaste(text: string, _columnId: string): unknown {
-		// Try to parse as JSON (for arrays)
-		if (text.startsWith('[') || text.startsWith('{')) {
-			try {
-				return JSON.parse(text);
-			} catch {
-				// Not valid JSON
-			}
-		}
-
-		// Try to parse as number
-		const num = Number(text);
-		if (!isNaN(num) && text.trim() !== '') {
-			return num;
-		}
-
-		// Try to parse as boolean
-		if (text.toLowerCase() === 'true') return true;
-		if (text.toLowerCase() === 'false') return false;
-
-		return text;
-	}
-
 	// ========================================
 	// Delete/Clear Operations
 	// ========================================
 
-	function clearSelectedCells() {
-		if (readOnly) return;
+	async function clearSelectedCells(
+		selectedCellKeys: ReadonlySet<string> = selectionState.selectedCells,
+		expectedSnapshots?: ReadonlyMap<string, { generation: number; value: unknown }>
+	): Promise<DataGridClearResult> {
+		const emptyResult = {
+			clearedCellCount: 0,
+			failedCellCount: 0,
+			deletedMediaCount: 0,
+			retainedMediaCount: 0,
+			failedMediaCount: 0
+		};
+		if (readOnly) return emptyResult;
 
-		const updates: UpdateCell[] = [];
-		for (const cellKey of selectionState.selectedCells) {
-			const { rowIndex, columnId } = parseCellKey(cellKey);
-			if (getIsCellReadOnly(rowIndex, columnId)) continue;
-			updates.push({ rowIndex, columnId, value: null });
+		type ClearContext = {
+			rowIndex: number;
+			rowId: string;
+			columnId: string;
+			row: TData;
+			update: UpdateCell;
+			snapshot: { generation: number; value: unknown };
+		};
+		const cells: Array<{ key: string; value: unknown; context: ClearContext }> = [];
+		const rows = table.getRowModel().rows;
+		for (const cellKey of selectedCellKeys) {
+			const { rowId, columnId } = parseCellKey(cellKey);
+			if (!rowId) continue;
+			const rowIndex = rows.findIndex((item) => item.id === rowId);
+			if (rowIndex < 0 || getIsCellReadOnly(rowIndex, columnId)) continue;
+			const row = rows[rowIndex];
+			if (!row) continue;
+			const meta = table.getColumn(columnId)?.columnDef.meta;
+			const isFileCell = meta?.cell?.variant === 'file' || meta?.cell?.variant === 'file-or-url';
+			const emptyValue = isFileCell
+				? null
+				: typeof meta?.clipboard?.emptyValue === 'function'
+					? meta.clipboard.emptyValue(row.original)
+					: (meta?.clipboard?.emptyValue ?? getEmptyCellValue(meta?.cell?.variant));
+			const update = { rowIndex, rowId, columnId, value: emptyValue };
+			const snapshot = expectedSnapshots?.get(cellKey) ?? getCellMutationSnapshot(rowId, columnId);
+			if (!snapshot) continue;
+			const value = cloneEditValue(snapshot.value);
+			cells.push({
+				key: cellKey,
+				value: isFileCell ? value : null,
+				context: {
+					rowIndex,
+					rowId,
+					columnId,
+					row: row.original,
+					update,
+					snapshot
+				}
+			});
 		}
 
-		if (updates.length > 0) {
-			handleDataUpdate(updates);
-		}
+		const mediaResult = await clearCellMedia(
+			cells,
+			async ({ key, context }) => {
+				const result = await handleDataUpdate(
+					context.update,
+					false,
+					new SvelteMap([[key, context.snapshot]]),
+					true
+				);
+				const mutation = result[0];
+				return {
+					success: mutation?.success === true && !mutation.superseded,
+					generation: mutation?.generation ?? context.snapshot.generation
+				};
+			},
+			({ context }, generation) =>
+				isAcknowledgedNullClearCurrent(
+					generation,
+					getCellMutationSnapshot(context.rowId, context.columnId)
+				),
+			async (file, context) => {
+				if (onFilesDelete) {
+					await onFilesDelete({
+						fileIds: [file.id],
+						rowIndex: context.rowIndex,
+						rowId: context.rowId,
+						columnId: context.columnId,
+						row: context.row
+					});
+					return 'deleted';
+				}
+
+				const response = await fetch(
+					`/api/media/${encodeURIComponent(file.collection)}/${encodeURIComponent(file.filename)}`,
+					{ method: 'DELETE' }
+				);
+				if (response.status === 409) return 'retained';
+				if (!response.ok) throw new Error(`Failed to delete ${file.filename}`);
+				return 'deleted';
+			}
+		);
+
+		return {
+			clearedCellCount: mediaResult.successfulCellKeys.size,
+			failedCellCount: mediaResult.failedCellKeys.size,
+			deletedMediaCount: mediaResult.deletedMediaCount,
+			retainedMediaCount: mediaResult.retainedMediaCount,
+			failedMediaCount: mediaResult.failedMediaCount
+		};
 	}
 
-	function deleteSelectedRows() {
-		if (readOnly || !resolvedOnRowsDelete) return;
-
+	async function deleteRows(rowIndices: number[]): Promise<DataGridDeleteResult> {
+		if (!resolvedOnRowsDelete) return { deletedRowIds: [], failedRowIds: [] };
 		const rows = table.getRowModel().rows;
+		const selectedRows = rowIndices
+			.map((rowIndex) => rows[rowIndex])
+			.filter((row): row is NonNullable<typeof row> => Boolean(row));
+		const rowIds = selectedRows.map((row) => row.id);
+		const runDelete = () =>
+			Promise.resolve(
+				resolvedOnRowsDelete(
+					selectedRows.map((row) => row.original),
+					rowIndices
+				)
+			);
+		const result =
+			resolvedOnRowsDelete === defaultOnRowsDelete
+				? await runDelete()
+				: await sequenceRowMutation.sequenceKeys(
+					rowIds.map((rowId) => rowIdentities.getSequenceKey(rowId)),
+					runDelete
+				);
+
+		if (typeof result === 'object') return result;
+		return result
+			? { deletedRowIds: rowIds, failedRowIds: [] }
+			: { deletedRowIds: [], failedRowIds: rowIds };
+	}
+
+	function getSelectedRowIndices(): number[] {
+		const rows = table.getRowModel().rows;
+		const rowIndexById = new SvelteMap(rows.map((row, index) => [row.id, index]));
 		const selectedRowIndices = new SvelteSet<number>();
 
 		for (const cellKey of selectionState.selectedCells) {
-			const { rowIndex } = parseCellKey(cellKey);
-			selectedRowIndices.add(rowIndex);
+			const { rowId, rowIndex } = parseCellKey(cellKey);
+			const currentRowIndex = rowId ? rowIndexById.get(rowId) : rowIndex;
+			if (currentRowIndex !== undefined && rows[currentRowIndex]) {
+				selectedRowIndices.add(currentRowIndex);
+			}
 		}
 
-		const rowIndices = Array.from(selectedRowIndices).sort((a, b) => b - a);
-		const rowsToDelete = rowIndices.map((idx) => rows[idx]?.original).filter(Boolean) as TData[];
+		return Array.from(selectedRowIndices).sort((a, b) => a - b);
+	}
 
-		if (rowsToDelete.length > 0) {
-			resolvedOnRowsDelete(rowsToDelete, rowIndices);
-			clearSelection();
+	async function deleteSelectedRows() {
+		if (readOnly || !resolvedOnRowsDelete) return;
+
+		const rowIndices = getSelectedRowIndices();
+		if (rowIndices.length > 0) {
+			const result = await deleteRows(rowIndices);
+			if (result.deletedRowIds.length > 0) clearSelection();
 		}
 	}
 
@@ -1157,18 +2320,14 @@ export function useDataGrid<TData extends RowData>(
 	// ========================================
 
 	function highlightErrors(validated: CellPosition[], errors: CellPosition[]) {
-
-		for (const { rowIndex, columnId } of validated) {
-			hasErrorMatchSet.delete(getCellKey(rowIndex, columnId));
+		for (const { rowIndex, rowId, columnId } of validated) {
+			hasErrorMatchSet.delete(
+				rowId ? encodeCellKey(rowId, columnId) : getCellKey(rowIndex, columnId)
+			);
 		}
-		for (const { rowIndex, columnId } of errors) {
-			hasErrorMatchSet.add(getCellKey(rowIndex, columnId));
+		for (const { rowIndex, rowId, columnId } of errors) {
+			hasErrorMatchSet.add(rowId ? encodeCellKey(rowId, columnId) : getCellKey(rowIndex, columnId));
 		}
-
-		errorMatches = Array.from(hasErrorMatchSet, (key) => {
-			const [rowIndexStr, columnId] = key.split(":");
-			return { rowIndex: Number(rowIndexStr), columnId };
-		});
 	}
 
 	function applyRowChangeResult(result: RowChangeResult | undefined) {
@@ -1180,7 +2339,7 @@ export function useDataGrid<TData extends RowData>(
 	// Search
 	// ========================================
 
-	function performSearch(query: string) {
+	function performSearch(query: string, scrollToFirstMatch = true) {
 		if (!query.trim()) {
 			searchMatches = [];
 			searchMatchSet.clear();
@@ -1204,13 +2363,14 @@ export function useDataGrid<TData extends RowData>(
 				let value = row.getValue(col.id);
 				if (value && typeof value === 'object') {
 					if ('label' in value) value = value.label;
-					else if ('default' in value || Language.English in value) value = translateLocalizedField(value as Translatable, UI.language);
+					else if ('default' in value || Language.English in value)
+						value = translateLocalizedField(value as Translatable, UI.language);
 				}
 
 				const strValue = String(value ?? '').toLowerCase();
 				if (strValue.includes(lowerQuery)) {
 					const columnId = col.id;
-					matches.push({ rowIndex, columnId });
+					matches.push({ rowIndex, rowId: row.id, columnId });
 					// Build Set in same loop - single pass
 					searchMatchSet.add(getCellKey(rowIndex, columnId));
 				}
@@ -1221,7 +2381,7 @@ export function useDataGrid<TData extends RowData>(
 		matchIndex = matches.length > 0 ? 0 : 0;
 
 		// Scroll to first match (like React version - just scroll, don't focus)
-		if (matches.length > 0 && matches[0]) {
+		if (scrollToFirstMatch && matches.length > 0 && matches[0]) {
 			virtualizer?.scrollToIndex(matches[0].rowIndex, { align: 'center' });
 		}
 	}
@@ -1234,7 +2394,8 @@ export function useDataGrid<TData extends RowData>(
 
 		const match = searchMatches[newIndex];
 		if (match) {
-			virtualizer?.scrollToIndex(match.rowIndex, { align: 'center' });
+			const resolved = resolvePosition(match);
+			if (resolved) virtualizer?.scrollToIndex(resolved.rowIndex, { align: 'center' });
 		}
 	}
 
@@ -1246,7 +2407,8 @@ export function useDataGrid<TData extends RowData>(
 
 		const match = searchMatches[newIndex];
 		if (match) {
-			virtualizer?.scrollToIndex(match.rowIndex, { align: 'center' });
+			const resolved = resolvePosition(match);
+			if (resolved) virtualizer?.scrollToIndex(resolved.rowIndex, { align: 'center' });
 		}
 	}
 
@@ -1256,10 +2418,12 @@ export function useDataGrid<TData extends RowData>(
 
 	function onCellContextMenu(rowIndex: number, columnId: string, event: MouseEvent) {
 		event.preventDefault();
+		const row = table.getRowModel().rows[rowIndex];
+		const isSelectedRow = !!row && !!rowSelection[row.id];
 
-		// Select cell if not already selected
-		const cellKey = getCellKey(rowIndex, columnId);
-		if (!selectionState.selectedCells.has(cellKey)) {
+		// Preserve row selection on right-click so the selected row highlight stays visible.
+		const cellKey = getCellKey(row?.id ?? rowIndex, columnId);
+		if (!isSelectedRow && !selectionState.selectedCells.has(cellKey)) {
 			selectCell(rowIndex, columnId);
 		}
 
@@ -1267,7 +2431,7 @@ export function useDataGrid<TData extends RowData>(
 			open: true,
 			x: event.clientX,
 			y: event.clientY,
-			isSelectedRow: !!rowSelection[table.getRowModel().rows[rowIndex]?.id]
+			isSelectedRow
 		};
 	}
 
@@ -1296,7 +2460,7 @@ export function useDataGrid<TData extends RowData>(
 		if (!editingCell && (event.ctrlKey || event.metaKey) && event.key === 'x') {
 			event.preventDefault();
 			event.stopPropagation();
-			cutSelectedCells();
+			void cutSelectedCells();
 			return;
 		}
 
@@ -1305,19 +2469,6 @@ export function useDataGrid<TData extends RowData>(
 			event.preventDefault();
 			event.stopPropagation();
 			pasteFromClipboard();
-			return;
-		}
-
-		// Toggle language
-		if (!editingCell && (event.ctrlKey || event.metaKey) && event.key === 'k') {
-			const getNextLanguage = (
-				selected?: Language | 'default' | null
-			): Language | 'default' => {
-				const languages = ['default', ...Object.values(Language)] as const;
-				const currentIndex = selected ? languages.indexOf(selected) : -1;
-				return languages[(currentIndex + 1) % languages.length];
-			};
-			UI.language = getNextLanguage(UI.language);
 			return;
 		}
 
@@ -1334,7 +2485,7 @@ export function useDataGrid<TData extends RowData>(
 			if (!editingCell) {
 				event.preventDefault();
 				event.stopPropagation();
-				clearSelectedCells();
+				void clearSelectedCells();
 				return;
 			}
 		}
@@ -1344,7 +2495,7 @@ export function useDataGrid<TData extends RowData>(
 			event.preventDefault();
 			event.stopPropagation();
 			if (editingCell) {
-				stopEditing();
+				cancelEditing();
 			} else if (searchOpen) {
 				searchOpen = false;
 			} else {
@@ -1355,6 +2506,18 @@ export function useDataGrid<TData extends RowData>(
 
 		// Don't handle navigation while editing
 		if (editingCell) return;
+
+		// Row-selection checkboxes are removed from the tab order; Ctrl/Cmd+Space
+		// keeps row selection available from the active roving gridcell.
+		if (focusedCell && event.key === ' ' && (event.ctrlKey || event.metaKey)) {
+			const current = resolvePosition(focusedCell);
+			if (!current) return;
+			event.preventDefault();
+			event.stopPropagation();
+			const selected = Boolean(rowSelection[current.rowId!]);
+			meta.onRowSelect?.(current.rowIndex, !selected, event.shiftKey);
+			return;
+		}
 
 		// Navigation
 		const navigationMap: Record<string, NavigationDirection> = {
@@ -1406,25 +2569,38 @@ export function useDataGrid<TData extends RowData>(
 
 		// Tab navigation
 		if (event.key === 'Tab') {
+			if (!focusedCell) return;
+			const current = resolvePosition(focusedCell);
+			if (!current) return;
+			const target = getTabTarget(
+				current.rowIndex,
+				current.columnId,
+				event.shiftKey ? 'left' : 'right'
+			);
+			if (!target) return;
 			event.preventDefault();
 			event.stopPropagation();
-			navigateCell(event.shiftKey ? 'left' : 'right');
+			focusCell(target.rowIndex, target.columnId);
 			return;
 		}
 
 		// Enter to start editing or move down
 		if (event.key === 'Enter' && focusedCell) {
+			const current = resolvePosition(focusedCell);
+			if (!current) return;
 			event.preventDefault();
 			event.stopPropagation();
-			startEditing(focusedCell.rowIndex, focusedCell.columnId);
+			startEditing(current.rowIndex, current.columnId);
 			return;
 		}
 
 		// F2 to start editing
 		if (event.key === 'F2' && focusedCell) {
+			const current = resolvePosition(focusedCell);
+			if (!current) return;
 			event.preventDefault();
 			event.stopPropagation();
-			startEditing(focusedCell.rowIndex, focusedCell.columnId);
+			startEditing(current.rowIndex, current.columnId);
 			return;
 		}
 
@@ -1436,7 +2612,8 @@ export function useDataGrid<TData extends RowData>(
 			!event.ctrlKey &&
 			!event.metaKey
 		) {
-			startEditing(focusedCell.rowIndex, focusedCell.columnId);
+			const current = resolvePosition(focusedCell);
+			if (current) startEditing(current.rowIndex, current.columnId);
 		}
 	}
 
@@ -1444,7 +2621,9 @@ export function useDataGrid<TData extends RowData>(
 		if (!focusedCell) return null;
 
 		const rows = table.getRowModel().rows;
-		const { rowIndex, columnId } = focusedCell;
+		const current = resolvePosition(focusedCell);
+		if (!current) return null;
+		const { rowIndex, columnId } = current;
 
 		let newRowIndex = rowIndex;
 		let newColumnId: string | null = columnId;
@@ -1485,7 +2664,7 @@ export function useDataGrid<TData extends RowData>(
 		}
 
 		if (newColumnId) {
-			return { rowIndex: newRowIndex, columnId: newColumnId };
+			return getCellPosition(newRowIndex, newColumnId);
 		}
 		return null;
 	}
@@ -1499,77 +2678,214 @@ export function useDataGrid<TData extends RowData>(
 
 		const result = await resolvedOnRowAdd(event);
 		if (result) {
+			await tick();
 			const rows = table.getRowModel().rows;
-			const newRowIndex = result.rowIndex ?? rows.length;
+			const returnedRowId = 'rowIds' in result ? result.rowIds[0] : result.rowId;
+			const fallbackRowIndex = 'rowIndex' in result ? result.rowIndex : undefined;
+			const newRowIndex = returnedRowId
+				? rows.findIndex((row) => row.id === returnedRowId)
+				: (fallbackRowIndex ?? rows.length - 1);
 			const newColumnId = getFirstNavigableColumnId();
 
-			if (newColumnId) {
+			if (newColumnId && newRowIndex >= 0) {
 				// Wait for table to update
 				queueMicrotask(() => {
 					focusCell(newRowIndex, newColumnId);
 				});
 			}
 		}
+		return result;
 	}
 
 	// ========================================
 	// Data Update Handler
 	// ========================================
 
-	function handleDataUpdate(updates: UpdateCell | UpdateCell[]) {
+	function handleDataUpdate(
+		updates: UpdateCell | UpdateCell[],
+		allowCancelledCell = false,
+		expectedSnapshots?: ReadonlyMap<string, { generation: number; value: unknown }>,
+		rollbackFailed = false
+	): Promise<DataGridMutationResult[]> {
 		const updateArray = Array.isArray(updates) ? updates : [updates];
-		if (updateArray.length === 0) return;
+		if (updateArray.length === 0) return Promise.resolve([]);
+		const displayRows = table.getRowModel().rows;
+		const sourceRows = getData();
+		const nextRows = [...sourceRows];
+		const resolvedUpdates: CellUpdate[] = [];
+		const submitted: Array<VersionedCellUpdate<CellUpdate> & { key: string }> = [];
+		const skippedResults: DataGridMutationResult[] = [];
 
-		const filteredUpdates = updateArray.filter(
-			(update) => !getIsCellReadOnly(update.rowIndex, update.columnId)
-		);
-		if (filteredUpdates.length === 0) return;
-
-		const rows = table.getRowModel().rows;
-
-		// Update cellValueMap for immediate UI feedback (fine-grained reactivity)
-		// This is the fast path - only the specific cells that changed will re-render
-		for (const update of filteredUpdates) {
-			const row = rows[update.rowIndex];
-			if (!row) continue;
-
-			// Update cellValueMap using DISPLAY row index (update.rowIndex)
-			// This matches what the cell components use when rendering
-			setCellValue(update.rowIndex, update.columnId, update.value);
-
-			// Also update the underlying row data directly (mutate in place)
-			// This ensures sorting/filtering work correctly without triggering full re-render
-			const original = row.original as Record<string, unknown>;
-			original[update.columnId] = update.value;
-		}
-
-		// Notify parent that one or more rows changed.
-		if (resolvedOnRowChange) {
-			const rowIndicesSet = new SvelteSet(filteredUpdates.map((update) => update.rowIndex));
-			const rowIndices = Array.from(rowIndicesSet);
-			const originalRows = rowIndices
-				.map((rowIndex) => rows[rowIndex]?.original)
-				.filter(Boolean) as TData[];
-			const updates = filteredUpdates.map((update) => {
-				const original = rows[update.rowIndex]?.original as Record<string, unknown> | undefined;
-				if (original && 'id' in original && typeof original.id === 'string') {
-					return { rowId: original.id, ...update };
-				}
-				return { ...update };
-			});
-			// void onRowChange(originalRows, rowIndices, updates);
-			const result = resolvedOnRowChange(updates);
-			if (result && typeof (result as Promise<RowChangeResult>).then === 'function') {
-				void (result as Promise<RowChangeResult>).then(applyRowChangeResult);
-			} else {
-				applyRowChangeResult(result as RowChangeResult | undefined);
+		for (const update of updateArray) {
+			const displayRow = update.rowId
+				? displayRows.find((row) => row.id === update.rowId)
+				: displayRows[update.rowIndex];
+			if (!displayRow) continue;
+			const displayRowIndex = displayRows.indexOf(displayRow);
+			if (getIsCellReadOnly(displayRowIndex, update.columnId)) continue;
+			const rowId = displayRow.id;
+			const key = encodeCellKey(rowId, update.columnId);
+			if (!allowCancelledCell && cancelledCellKeys.has(key)) continue;
+			const expected = expectedSnapshots?.get(key);
+			const effectiveValue = cellValueMap.has(key)
+				? cellValueMap.get(key)
+				: displayRow.getValue(update.columnId);
+			if (
+				expected &&
+				!isCellMutationSnapshotCurrent(
+					expected,
+					cellMutationGeneration.get(key) ?? 0,
+					effectiveValue,
+					areEditValuesEqual
+				)
+			) {
+				skippedResults.push({
+					rowId,
+					columnId: update.columnId,
+					generation: cellMutationGeneration.get(key) ?? 0,
+					success: false,
+					superseded: true
+				});
+				continue;
 			}
+			const sourceIndex = sourceRows.findIndex((row, index) => getRowIdValue(row, index) === rowId);
+			const previous = nextRows[sourceIndex];
+			if (!previous) continue;
+			const columnMeta = table.getColumn(update.columnId)?.columnDef.meta;
+			const previousValue = displayRow.getValue(update.columnId);
+			const nextRow = setImmutableValue(previous, update.columnId, update.value, columnMeta);
+			carryRowId(previous, nextRow);
+			nextRows[sourceIndex] = nextRow;
+
+			const resolvedUpdate = { ...update, rowId, rowIndex: displayRowIndex };
+			resolvedUpdates.push(resolvedUpdate);
+			const generation = (cellMutationGeneration.get(key) ?? 0) + 1;
+			cellMutationGeneration.set(key, generation);
+			pendingCellMutations.set(key, {
+				generation,
+				previousValue: getEarliestPendingValue(pendingCellMutations.get(key), previousValue),
+				update: resolvedUpdate
+			});
+			submitted.push({
+				generation,
+				previousValue: cloneEditValue(expected?.value ?? previousValue),
+				update: resolvedUpdate,
+				key
+			});
+			cellSaveStateMap.set(key, { status: resolvedOnRowChange ? 'saving' : 'idle' });
+			cellValueMap.set(key, update.value);
 		}
 
-		// NOTE: We intentionally DON'T call onDataChange here!
-		// The SvelteMap provides fine-grained reactivity for cell values.
-		// Calling onDataChange would trigger a full data re-render which is slow.
-		// The parent's data array is updated via mutation above.
+		if (resolvedUpdates.length === 0) return Promise.resolve(skippedResults);
+		replaceData(nextRows);
+		if (!resolvedOnRowChange) {
+			return Promise.resolve([
+				...skippedResults,
+				...submitted.map(({ generation, update }) => ({
+					rowId: update.rowId,
+					columnId: update.columnId,
+					generation,
+					success: true,
+					superseded: false
+				}))
+			]);
+		}
+
+		const mutation =
+			resolvedOnRowChange === defaultOnRowChange
+				? Promise.resolve(defaultOnRowChange(resolvedUpdates, { suppressToast: rollbackFailed }))
+				: sequenceRowMutation.sequenceKeys(
+					resolvedUpdates.map((update) => rowIdentities.getSequenceKey(update.rowId)),
+					() => Promise.resolve(resolvedOnRowChange(resolvedUpdates))
+				);
+		return mutation
+			.then((result) => {
+				applyRowChangeResult(result);
+				const failedPositions = result?.failed ?? result?.errors ?? [];
+				const isFailed = (entry: (typeof submitted)[number]) =>
+					failedPositions.some(
+						(position) =>
+							position.columnId === entry.update.columnId &&
+							(position.rowId === entry.update.rowId ||
+								position.rowId === rowIdentities.resolve(entry.update.rowId))
+					);
+				if (resolvedOnRowChange !== defaultOnRowChange) {
+					for (const entry of submitted) {
+						const pending = pendingCellMutations.get(entry.key);
+						if (pending?.generation === cellMutationGeneration.get(entry.key)) {
+							markCellSaved(entry.key);
+							pendingCellMutations.delete(entry.key);
+							cellValueMap.delete(entry.key);
+						}
+					}
+				}
+				if (rollbackFailed) {
+					const failedEntries = submitted.filter(isFailed);
+					accumulatedValidationUpdates = clearAccumulatedValidationUpdates(
+						accumulatedValidationUpdates,
+						failedEntries
+					);
+					for (const entry of failedEntries) {
+						if (
+							!shouldRestoreCellMutation(
+								entry.generation,
+								cellMutationGeneration.get(entry.key) ?? 0
+							)
+						)
+							continue;
+						pendingCellMutations.delete(entry.key);
+						cellValueMap.delete(entry.key);
+						replaceRowById(getReconciliationRowId(entry.update.rowId), (row) =>
+							setImmutableValue(
+								row,
+								entry.update.columnId,
+								entry.previousValue,
+								table.getColumn(entry.update.columnId)?.columnDef.meta
+							)
+						);
+					}
+				}
+				return [
+					...skippedResults,
+					...submitted.map((entry) => ({
+						rowId: entry.update.rowId,
+						columnId: entry.update.columnId,
+						generation: entry.generation,
+						success: !isFailed(entry),
+						superseded: cellMutationGeneration.get(entry.key) !== entry.generation
+					}))
+				];
+			})
+			.catch((error: unknown) => {
+				for (const entry of submitted) {
+					const pending = pendingCellMutations.get(entry.key);
+					if (!pending || pending.generation !== cellMutationGeneration.get(entry.key)) continue;
+					cellSaveStateMap.set(entry.key, {
+						status: 'error',
+						error: error instanceof Error ? error.message : 'Failed to save cell'
+					});
+					pendingCellMutations.delete(entry.key);
+					cellValueMap.delete(entry.key);
+					replaceRowById(entry.update.rowId, (row) =>
+						setImmutableValue(
+							row,
+							entry.update.columnId,
+							rollbackFailed ? entry.previousValue : pending.previousValue,
+							table.getColumn(entry.update.columnId)?.columnDef.meta
+						)
+					);
+				}
+				return [
+					...skippedResults,
+					...submitted.map((entry) => ({
+						rowId: entry.update.rowId,
+						columnId: entry.update.columnId,
+						generation: entry.generation,
+						success: false,
+						superseded: cellMutationGeneration.get(entry.key) !== entry.generation
+					}))
+				];
+			});
 	}
 
 	// ========================================
@@ -1590,6 +2906,22 @@ export function useDataGrid<TData extends RowData>(
 			}
 		}
 	});
+
+	const preferencesController = {
+		get enabled() {
+			return persistenceEnabled;
+		},
+		get ready() {
+			return preferencesReady;
+		},
+		get hasPreferences() {
+			return hasPreferences;
+		},
+		reset: resetPreferences,
+		get rowHeightRemeasureVersion() {
+			return rowHeightRemeasureVersion;
+		}
+	};
 
 	// Create a reactive meta object using getters so that components always get fresh values
 	// This is critical - without getters, the meta values are captured at creation time and never update
@@ -1618,6 +2950,12 @@ export function useDataGrid<TData extends RowData>(
 		get rowHeight() {
 			return rowHeight;
 		},
+		get rowHeightRemeasureVersion() {
+			return rowHeightRemeasureVersion;
+		},
+		get preferences() {
+			return preferencesController;
+		},
 		get contextMenu() {
 			return contextMenu;
 		},
@@ -1630,13 +2968,11 @@ export function useDataGrid<TData extends RowData>(
 		get cellValueMap() {
 			return getCellValueMap();
 		},
+		cellSaveStateMap,
+		getCellMutationSnapshot,
 		// Expose SvelteSet directly for fine-grained cell selection reactivity
 		// Cells can call selectedCellsSet.has(key) in $derived for proper Svelte tracking
 		selectedCellsSet,
-		// Version counter to trigger cell re-renders when selection changes
-		get selectionVersion() {
-			return selectionVersion;
-		},
 		// Expose SvelteSet directly for fine-grained reactivity
 		// Cells can call searchMatchSet.has(key) directly in template
 		searchMatchSet,
@@ -1649,6 +2985,7 @@ export function useDataGrid<TData extends RowData>(
 		getIsSearchMatch,
 		getIsActiveSearchMatch,
 		onRowHeightChange: (value: RowHeightValue) => {
+			if (rowHeight !== value) rowHeightRemeasureVersion++;
 			rowHeight = value;
 		},
 		onCellClick: selectCell,
@@ -1659,14 +2996,44 @@ export function useDataGrid<TData extends RowData>(
 		onCellContextMenu,
 		onCellEditingStart: startEditing,
 		onCellEditingStop: stopEditing,
+		onCellEditingCancel: cancelEditing,
+		canNavigateToCell: (rowIndex: number, columnId: string, direction: 'left' | 'right') =>
+			getTabTarget(rowIndex, columnId, direction) !== null,
 		onDataUpdate: handleDataUpdate,
-		onRowsDelete: (rowIndices: number[]) => {
-			const rows = table.getRowModel().rows;
-			const rowsToDelete = rowIndices.map((idx) => rows[idx]?.original).filter(Boolean) as TData[];
-			resolvedOnRowsDelete?.(rowsToDelete, rowIndices);
-		},
+		onDataUpdateAwaited: (
+			updates: UpdateCell | UpdateCell[],
+			expectedSnapshots?: ReadonlyMap<string, { generation: number; value: unknown }>
+		) => handleDataUpdate(updates, false, expectedSnapshots, true),
+		onRowsDelete: deleteRows,
+		onDownload: resolvedOnDownload
+			? async () => {
+				if (isDownloading) return;
+				const selectedRows = getSelectedRows(table.getRowModel().rows, rowSelection);
+				if (selectedRows.length === 0) return;
+
+				isDownloading = true;
+				try {
+					const rowsToDownload = selectedRows.map(({ row }) => row.original);
+					const rowIndices = selectedRows.map(({ rowIndex }) => rowIndex);
+					if (resolvedOnDownload === defaultOnDownload) {
+						await defaultOnDownload?.(rowsToDownload, rowIndices);
+					} else {
+						await resolvedOnDownload(rowsToDownload);
+					}
+				} catch (error) {
+					toast.error(
+						error instanceof Error ? error.message : 'Failed to download selected rows'
+					);
+				} finally {
+					isDownloading = false;
+				}
+			}
+			: undefined,
+		getSelectedRowCount: () => getSelectedRows(table.getRowModel().rows, rowSelection).length,
+		getIsDownloading: () => isDownloading,
 		onCellsCopy: copySelectedCells,
 		onCellsCut: cutSelectedCells,
+		onCellsClear: clearSelectedCells,
 		onFilesUpload,
 		onFilesDelete,
 		onRowSelect: (rowIndex: number, selected: boolean, shiftKey: boolean) => {
@@ -1706,17 +3073,16 @@ export function useDataGrid<TData extends RowData>(
 			const allColumnIds = table.getAllColumns().map((col) => col.id);
 
 			for (const rowId of selectedRows) {
-				const rowIdx = rows.findIndex((r) => r.id === rowId);
-				if (rowIdx === -1) continue;
+				if (!rows.some((row) => row.id === rowId)) continue;
 
 				for (const columnId of allColumnIds) {
-					newSelectedCells.add(getCellKey(rowIdx, columnId));
+					newSelectedCells.add(encodeCellKey(rowId, columnId));
 				}
 			}
 
 			syncSelectedCellsSet(newSelectedCells);
 			selectionState = {
-				selectedCells: newSelectedCells,
+				selectedCells: selectedCellsSet,
 				selectionRange: null,
 				isSelecting: false
 			};
@@ -1735,17 +3101,34 @@ export function useDataGrid<TData extends RowData>(
 		},
 		onPasteWithExpansion: async () => {
 			if (resolvedOnRowsAdd) {
-				await resolvedOnRowsAdd(pasteDialog.rowsNeeded);
 				const cols = getNavigableColumns();
-				const startPos = focusedCell || { rowIndex: 0, columnId: cols[0]?.id || '' };
+				const startPos = resolvePosition(focusedCell || getCellPosition(0, cols[0]?.id || ''));
+				if (!startPos) return;
+				const lines = parseClipboardRows(pasteDialog.clipboardText);
+				const existingRowIds = table
+					.getRowModel()
+					.rows.slice(startPos.rowIndex, startPos.rowIndex + lines.length - pasteDialog.rowsNeeded)
+					.map((row) => row.id);
+				const created = await resolvedOnRowsAdd(pasteDialog.rowsNeeded);
+				await tick();
+				const targetRowIds = [...existingRowIds, ...created.rowIds];
+				const visibleIds = new SvelteSet(table.getRowModel().rows.map((row) => row.id));
+				if (
+					targetRowIds.length !== lines.length ||
+					targetRowIds.some((id) => !visibleIds.has(id))
+				) {
+					toast.error('Created rows are hidden by the active filter; paste was not applied');
+					pasteDialog = { ...pasteDialog, open: false };
+					return;
+				}
 				const startColIndex = cols.findIndex((c) => c.id === startPos.columnId);
-				performPaste(pasteDialog.clipboardText, startPos, startColIndex);
+				performPaste(pasteDialog.clipboardText, startPos, startColIndex, targetRowIds);
 			}
 			pasteDialog = { ...pasteDialog, open: false };
 		},
 		onPasteWithoutExpansion: () => {
 			const cols = getNavigableColumns();
-			const startPos = focusedCell || { rowIndex: 0, columnId: cols[0]?.id || '' };
+			const startPos = focusedCell || getCellPosition(0, cols[0]?.id || '');
 			const startColIndex = cols.findIndex((c) => c.id === startPos.columnId);
 			performPaste(pasteDialog.clipboardText, startPos, startColIndex);
 			pasteDialog = { ...pasteDialog, open: false };
@@ -1755,8 +3138,8 @@ export function useDataGrid<TData extends RowData>(
 	// Create the base table options
 	const baseTableOptions: TableOptionsResolved<TData> = {
 		data: getData(),
-		columns,
-		...(getRowId ? { getRowId } : {}),
+		columns: normalizedColumns,
+		getRowId: getRowIdValue,
 		state: {
 			sorting,
 			columnFilters,
@@ -1764,7 +3147,12 @@ export function useDataGrid<TData extends RowData>(
 			columnPinning,
 			columnVisibility,
 			columnSizing,
+			columnOrder,
 			columnSizingInfo
+		},
+		onColumnOrderChange: (updater) => {
+			columnOrder = typeof updater === 'function' ? updater(columnOrder) : updater;
+			searchRevision++;
 		},
 		onColumnSizingChange: (updater) => {
 			columnSizing = typeof updater === 'function' ? updater(columnSizing) : updater;
@@ -1774,17 +3162,21 @@ export function useDataGrid<TData extends RowData>(
 		},
 		onColumnPinningChange: (updater) => {
 			columnPinning = typeof updater === 'function' ? updater(columnPinning) : updater;
+			searchRevision++;
 		},
 		onColumnVisibilityChange: (updater) => {
 			columnVisibility = typeof updater === 'function' ? updater(columnVisibility) : updater;
+			searchRevision++;
 			// No version counter needed - visibilityKey is derived from columnVisibility
 			// and will automatically update when visibility changes
 		},
 		onSortingChange: (updater) => {
 			sorting = typeof updater === 'function' ? updater(sorting) : updater;
+			searchRevision++;
 		},
 		onColumnFiltersChange: (updater) => {
 			columnFilters = typeof updater === 'function' ? updater(columnFilters) : updater;
+			searchRevision++;
 		},
 		onRowSelectionChange: (updater) => {
 			const newRowSelection = typeof updater === 'function' ? updater(rowSelection) : updater;
@@ -1798,17 +3190,16 @@ export function useDataGrid<TData extends RowData>(
 			const allColumnIds = table.getAllColumns().map((col) => col.id);
 
 			for (const rowId of selectedRows) {
-				const rowIdx = rows.findIndex((r) => r.id === rowId);
-				if (rowIdx === -1) continue;
+				if (!rows.some((row) => row.id === rowId)) continue;
 
 				for (const columnId of allColumnIds) {
-					newSelectedCells.add(getCellKey(rowIdx, columnId));
+					newSelectedCells.add(encodeCellKey(rowId, columnId));
 				}
 			}
 
 			syncSelectedCellsSet(newSelectedCells);
 			selectionState = {
-				selectedCells: newSelectedCells,
+				selectedCells: selectedCellsSet,
 				selectionRange: null,
 				isSelecting: false
 			};
@@ -1823,9 +3214,10 @@ export function useDataGrid<TData extends RowData>(
 		columnResizeMode: 'onChange',
 		enableColumnResizing: true,
 		defaultColumn: {
-			minSize: 60,
-			maxSize: 1000,
-			size: 150
+			minSize: MIN_COLUMN_SIZE,
+			maxSize: MAX_COLUMN_SIZE,
+			size: DEFAULT_COLUMN_SIZE,
+			sortUndefined: 'last'
 		},
 		enableRowSelection: true,
 		enableColumnFilters: true,
@@ -1857,7 +3249,9 @@ export function useDataGrid<TData extends RowData>(
 	let prevSorting = $state<SortingState>([]);
 	let prevColumnFilters = $state<ColumnFiltersState>([]);
 	let prevDataLength = $state<number>(0);
+	let prevDataReference: TData[] | null = null;
 	let prevColumnVisibility = $state<VisibilityState>({});
+	let prevLanguage = $state(UI.language);
 
 	// This is the key to reactivity: update table options in $effect.pre
 	// whenever any of the state values change
@@ -1870,30 +3264,45 @@ export function useDataGrid<TData extends RowData>(
 			columnPinning,
 			columnVisibility,
 			columnSizing,
+			columnOrder,
 			columnSizingInfo
 		};
+		const sourceData = getSourceData();
+		if (dataOverride && overrideBase && sourceData !== overrideBase) {
+			dataOverride = null;
+			overrideBase = null;
+		}
 		const currentData = getData();
+		if (currentData !== prevDataReference) {
+			prevDataReference = currentData;
+			searchRevision++;
+		}
 
 		// Clear cell value cache when sorting, filtering, row count, or column visibility changes
 		// This ensures cells show correct values after re-ordering, add/delete, or column show/hide
-		const sortingChanged = JSON.stringify(sorting) !== JSON.stringify(prevSorting);
-		const filtersChanged = JSON.stringify(columnFilters) !== JSON.stringify(prevColumnFilters);
+		const sortingChanged = sorting !== prevSorting;
+		const filtersChanged = columnFilters !== prevColumnFilters;
 		const dataLengthChanged = currentData.length !== prevDataLength;
-		const visibilityChanged =
-			JSON.stringify(columnVisibility) !== JSON.stringify(prevColumnVisibility);
+		const visibilityChanged = columnVisibility !== prevColumnVisibility;
+		const languageChanged = UI.language !== prevLanguage;
 
 		if (sortingChanged || filtersChanged || dataLengthChanged || visibilityChanged) {
 			clearCellValueCache();
-			prevSorting = [...sorting];
-			prevColumnFilters = [...columnFilters];
+			prevSorting = sorting;
+			prevColumnFilters = columnFilters;
 			prevDataLength = currentData.length;
-			prevColumnVisibility = { ...columnVisibility };
+			prevColumnVisibility = columnVisibility;
+		}
+		if (languageChanged) {
+			prevLanguage = UI.language;
+			searchRevision++;
 		}
 
 		// Update table with current state
 		table.setOptions((prev) => ({
 			...prev,
-			data: currentData,
+			// A new array identity forces TanStack to rebuild translated filter values.
+			data: languageChanged ? [...currentData] : currentData,
 			state: {
 				...prev.state,
 				...currentState
@@ -1904,6 +3313,17 @@ export function useDataGrid<TData extends RowData>(
 		// Notify any subscribers that table data has changed
 		// This triggers re-runs of effects/derived that called subscribeToTable()
 		notifyTableUpdate?.();
+	});
+
+	$effect(() => {
+		const query = searchQuery;
+		const revision = searchRevision;
+		if (!query) return;
+
+		queueMicrotask(() => {
+			if (searchQuery !== query || searchRevision !== revision) return;
+			untrack(() => performSearch(query, false));
+		});
 	});
 
 	// ========================================
@@ -1959,10 +3379,10 @@ export function useDataGrid<TData extends RowData>(
 		const isFirefox =
 			typeof navigator !== 'undefined' && navigator.userAgent.indexOf('Firefox') !== -1;
 
-		virtualizer = new Virtualizer<HTMLDivElement, Element>({
+		const instance = new Virtualizer<HTMLDivElement, Element>({
 			count: rowCount,
 			getScrollElement: () => ref,
-			estimateSize: () => getRowHeightValue(rowHeight),
+			estimateSize: () => getRowHeightValue(untrack(() => rowHeight)),
 			overscan,
 			observeElementRect,
 			observeElementOffset,
@@ -1970,9 +3390,15 @@ export function useDataGrid<TData extends RowData>(
 			onChange: handleVirtualizerChange,
 			measureElement: isFirefox ? undefined : (element) => element?.getBoundingClientRect().height
 		});
+		virtualizer = instance;
+		const cleanup = instance._didMount();
+		instance._willUpdate();
+		handleVirtualizerChange(instance);
 
-		virtualizer._willUpdate();
-		handleVirtualizerChange(virtualizer);
+		return () => {
+			cleanup();
+			if (virtualizer === instance) virtualizer = null;
+		};
 	});
 
 	// Separate effect to update virtualizer count when filtered rows change
@@ -1981,11 +3407,14 @@ export function useDataGrid<TData extends RowData>(
 		// Read these to create dependencies - when filters/sorting change, row count changes
 		const _ = columnFilters;
 		const __ = sorting;
-		const currentData = getData();
+		getData();
+		const currentRowHeight = rowHeight;
+		const remeasureVersion = rowHeightRemeasureVersion;
 
 		// Get the filtered/sorted row count from the table
 		const rowCount = table.getRowModel().rows.length;
 
+		let cancelled = false;
 		untrack(() => {
 			const ref = dataGridRef;
 			if (virtualizer && ref) {
@@ -1998,7 +3427,7 @@ export function useDataGrid<TData extends RowData>(
 				virtualizer.setOptions({
 					count: rowCount,
 					getScrollElement: () => ref,
-					estimateSize: () => getRowHeightValue(rowHeight),
+					estimateSize: () => getRowHeightValue(currentRowHeight),
 					overscan,
 					observeElementRect,
 					observeElementOffset,
@@ -2009,9 +3438,8 @@ export function useDataGrid<TData extends RowData>(
 						: (element) => element?.getBoundingClientRect().height
 				});
 
-				// Force virtualizer to recalculate
+				// virtual-core exposes these lifecycle hooks for framework adapters.
 				virtualizer._willUpdate();
-				virtualizer.measure();
 
 				// If rows were deleted and we're scrolled past the new content,
 				// scroll to the last row to avoid gaps
@@ -2024,23 +3452,16 @@ export function useDataGrid<TData extends RowData>(
 					}
 				}
 
-				// Update virtual items immediately
-				handleVirtualizerChange(virtualizer);
+				void tick().then(() => {
+					if (cancelled || remeasureVersion !== rowHeightRemeasureVersion || !virtualizer) return;
+					virtualizer.measure();
+					handleVirtualizerChange(virtualizer);
+				});
 			}
 		});
-	});
-
-	// Force virtualItems update when columnVisibility changes
-	$effect(() => {
-		const visibilitySnapshot = JSON.stringify(columnVisibility);
-		if (virtualizer) {
-			// Force virtualizer to recalculate
-			virtualizer._willUpdate();
-			virtualizer.measure();
-			// Get fresh items
-			const items = virtualizer.getVirtualItems();
-			virtualItems = [...items];
-		}
+		return () => {
+			cancelled = true;
+		};
 	});
 
 	// Setup keyboard handler on data grid element
@@ -2239,7 +3660,7 @@ export function useDataGrid<TData extends RowData>(
 		},
 		toggleAllRowsSelected: table.toggleAllRowsSelected.bind(table),
 		toggleAllPageRowsSelected: table.toggleAllPageRowsSelected.bind(table),
-		// Keep table reference for any other property access
+		// Keep table slug for any other property access
 		_getDefaultColumnDef: table._getDefaultColumnDef.bind(table),
 		get options() {
 			subscribeToTable();
@@ -2248,7 +3669,7 @@ export function useDataGrid<TData extends RowData>(
 		initialState: table.initialState
 	} as unknown as Table<TData>;
 
-	// Search callbacks - these are stable references
+	// Search callbacks - these are stable slugs
 	function handleSearchOpenChange(open: boolean) {
 		searchOpen = open;
 		if (!open) {
@@ -2264,21 +3685,20 @@ export function useDataGrid<TData extends RowData>(
 	}
 
 	return {
-		dataGridRef,
-		headerRef,
+		get dataGridRef() {
+			return dataGridRef;
+		},
+		get headerRef() {
+			return headerRef;
+		},
 		rowMapRef,
-		footerRef,
+		get footerRef() {
+			return footerRef;
+		},
 		table: reactiveTable,
 		rowVirtualizer,
-		// Selection state - pass the SvelteSet and a reactive object for version
+		// Selection state is exposed through the reactive SvelteSet.
 		selectedCellsSet,
-		// Wrap selectionVersion in object with getter so components can track it reactively
-		selectionState: {
-			get version() {
-				return selectionVersion;
-			}
-		},
-		getSelectionVersion: () => selectionVersion,
 		getRowSelection: () => rowSelection,
 		// Search state with getters for reactive values
 		searchState: enableSearch
@@ -2305,7 +3725,9 @@ export function useDataGrid<TData extends RowData>(
 		get columnSizeVars() {
 			return getColumnSizeVars();
 		},
-		onRowAdd: typeof onRowAddProp === 'boolean' ? onRowAddProp === false ? undefined : handleRowAdd : handleRowAdd,
+		preferences: preferencesController,
+		status,
+		onRowAdd: resolvedOnRowAdd ? handleRowAdd : undefined,
 		setDataGridRef: (el: HTMLDivElement | null) => {
 			dataGridRef = el;
 		},
@@ -2318,18 +3740,7 @@ export function useDataGrid<TData extends RowData>(
 	};
 }
 
-export function groupCellUpdates(updates: CellUpdate[]) {
-	type PatchMap = Record<string, { index: number, data: Record<string, unknown> }>;
-	return updates.reduce<PatchMap>((acc, item) => {
-		let key = item.rowId;
-		if (!key) key = `new-${item.rowIndex}`;
-
-		if (!acc[key]) acc[key] = { index: item.rowIndex, data: {} };
-		acc[key].data[item.columnId] = item.value;
-
-		return acc;
-	}, {});
-}
+export { groupCellUpdates };
 
 export const fileCellMediaToFileCellData = (media: Media | null): FileCellData[] => {
 	if (!media) return [];

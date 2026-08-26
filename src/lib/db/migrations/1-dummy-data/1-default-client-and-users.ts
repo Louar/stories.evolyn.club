@@ -1,10 +1,10 @@
-import { env } from '$env/dynamic/private';
+import { DEFAULT_CLIENT_ACCESS_TOKEN_KEY, DEFAULT_CLIENT_ADMINISTRATION_EMAIL, DEFAULT_CLIENT_DEFAULT_DOMAIN, DEFAULT_CLIENT_NAME, DEFAULT_CLIENT_PLAUSIBLE_DOMAIN, DEFAULT_CLIENT_SLUG, DEFAULT_USER_EMAIL, DEFAULT_USER_FIRST_NAME, DEFAULT_USER_LAST_NAME, DEFAULT_USER_PASSWORD } from '$app/env/private';
 import type { Schema } from '$lib/db/schema';
-import { Language, mediaValidator, type Media, type Translatable } from '$lib/db/schemas/0-utils';
+import { Language, MediaCollection, type Media, type Translatable } from '$lib/db/schemas/0-utils';
 import { ClientAuthenticationMethod, UserRole } from '$lib/db/schemas/1-client-user-module';
 import bcrypt from 'bcryptjs';
-import type { Kysely, Migration } from 'kysely';
-import z from 'zod/v4';
+import type { Kysely } from 'kysely';
+import type { Migration } from 'kysely/migration';
 
 export const DummyDataDefaultClientAndUsers: Migration = {
   async up(db: Kysely<Schema>) {
@@ -12,9 +12,10 @@ export const DummyDataDefaultClientAndUsers: Migration = {
     // Create the default Client
     const client = await db.insertInto('client')
       .values({
-        reference: env.SECRET_DEFAULT_CLIENT_REFERENCE,
-        name: 'Evolyn Stories',
-        domains: ['localhost:5174', 'localhost:4173', 'stories.evolyn.club', 'stories.beta.evolyn.club'],
+        slug: DEFAULT_CLIENT_SLUG,
+        name: DEFAULT_CLIENT_NAME,
+        domains: [...(process.env.NODE_ENV !== 'production' ? ['localhost:5173', 'localhost:4173'] : []), DEFAULT_CLIENT_DEFAULT_DOMAIN],
+        administrationEmail: DEFAULT_CLIENT_ADMINISTRATION_EMAIL,
         css: JSON.stringify({
           ":root": {
             "--radius": "0.625rem",
@@ -86,9 +87,9 @@ export const DummyDataDefaultClientAndUsers: Migration = {
         }),
         manifest: JSON.stringify(
           {
-            name: 'Evolyn Stories',
-            short_name: 'Stories',
-            description: 'Create your own stories.',
+            name: DEFAULT_CLIENT_NAME,
+            short_name: 'Missions',
+            description: 'Achieve your missions.',
             scope: '/',
             start_url: '/',
             display: 'standalone',
@@ -110,35 +111,31 @@ export const DummyDataDefaultClientAndUsers: Migration = {
           }
         ),
         isFindableBySearchEngines: true,
-        plausibleDomain: process.env.NODE_ENV === 'production' ? 'stories.evolyn.club' : undefined,
+        plausibleDomain: process.env.NODE_ENV === 'production' ? DEFAULT_CLIENT_PLAUSIBLE_DOMAIN : undefined,
         authenticationMethods: [ClientAuthenticationMethod.code, ClientAuthenticationMethod.password],
-        accessTokenKey: 'fB/pQk5CWtWwO1xuSyK45Lb9Lf6G6qZfbDToxBTg5LE=',
-        onboardingSchema: JSON.stringify(
-          z.toJSONSchema(z.object({
-            email: z.email().min(1),
-            firstName: z.string().min(1),
-            lastName: z.string().nullish(),
-            picture: mediaValidator.nullish(),
-          }))
-        ),
+        accessTokenKey: DEFAULT_CLIENT_ACCESS_TOKEN_KEY,
+        redirectAuthorized: process.env.NODE_ENV !== 'production' ? '/edit/groups' : null,
         // createdBy: admin.id,
         // updatedBy: admin.id,
       })
       .returning('id')
       .executeTakeFirstOrThrow();
 
+    const clientId = client.id;
+
     // Create the default admin User
     const salt = await bcrypt.genSalt();
-    const hash = await bcrypt.hash(env.SECRET_DEFAULT_USER_PASSWORD, salt);
+    const hash = await bcrypt.hash(DEFAULT_USER_PASSWORD, salt);
     const admin = await db.insertInto('user')
       .values({
-        clientId: client.id,
-        email: env.SECRET_DEFAULT_USER_EMAIL,
+        clientId,
+        email: DEFAULT_USER_EMAIL,
         password: `{bcrypt}${hash}`,
-        firstName: env.SECRET_DEFAULT_USER_FIRST_NAME,
-        lastName: env.SECRET_DEFAULT_USER_LAST_NAME,
-        roles: [UserRole.admin, UserRole.editor],
+        firstName: DEFAULT_USER_FIRST_NAME,
+        lastName: DEFAULT_USER_LAST_NAME,
+        picture: JSON.stringify({ collection: MediaCollection.externals, filename: 'https://api.dicebear.com/10.x/open-peeps/svg?seed=50' } as Media),
         language: Language.Nederlands,
+        roles: [UserRole.admin, UserRole.participant],
         emailConfirmed: true,
         isActive: true,
       })
@@ -146,9 +143,9 @@ export const DummyDataDefaultClientAndUsers: Migration = {
       .executeTakeFirstOrThrow();
 
     // Create a dummy License
-    await db.insertInto('license')
+    const license = await db.insertInto('license')
       .values({
-        clientId: client.id,
+        clientId,
         name: JSON.stringify({ en: 'Dummy license' } as Translatable),
         version: 'v0.0.0',
         termsOfUse: JSON.stringify({ default: `# Terms of Use` } as Translatable),
@@ -164,110 +161,101 @@ export const DummyDataDefaultClientAndUsers: Migration = {
       await db.insertInto('user')
         .values([
           {
-            clientId: client.id,
-            email: 'r01@projectraoul.nl',
+            clientId,
             password: `{bcrypt}${hash}`,
             firstName: 'Marie',
             lastName: 'Romero',
-            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=5' } as Media),
+            picture: JSON.stringify({ collection: MediaCollection.externals, filename: 'https://api.dicebear.com/10.x/open-peeps/svg?seed=5' } as Media),
             language: Language.Nederlands,
-            roles: [UserRole.editor],
+            roles: [UserRole.participant],
             emailConfirmed: true,
             isActive: true,
           },
           {
-            clientId: client.id,
-            email: 'r02@projectraoul.nl',
+            clientId,
             password: `{bcrypt}${hash}`,
             firstName: 'Albert',
             lastName: 'Morgan',
-            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=8' } as Media),
+            picture: JSON.stringify({ collection: MediaCollection.externals, filename: 'https://api.dicebear.com/10.x/open-peeps/svg?seed=8' } as Media),
             language: Language.Nederlands,
-            roles: [UserRole.editor],
+            roles: [UserRole.participant],
             emailConfirmed: true,
             isActive: true,
           },
           {
-            clientId: client.id,
-            email: 'r03@projectraoul.nl',
+            clientId,
             password: `{bcrypt}${hash}`,
             firstName: 'Cynthia',
             lastName: 'Shaw',
-            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=9' } as Media),
+            picture: JSON.stringify({ collection: MediaCollection.externals, filename: 'https://api.dicebear.com/10.x/open-peeps/svg?seed=9' } as Media),
             language: Language.Nederlands,
-            roles: [UserRole.editor],
+            roles: [UserRole.participant],
             emailConfirmed: true,
             isActive: true,
           },
           {
-            clientId: client.id,
-            email: 'r04@projectraoul.nl',
+            clientId,
             password: `{bcrypt}${hash}`,
             firstName: 'Ryan',
             lastName: 'Carroll',
-            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=7' } as Media),
+            picture: JSON.stringify({ collection: MediaCollection.externals, filename: 'https://api.dicebear.com/10.x/open-peeps/svg?seed=7' } as Media),
             language: Language.Nederlands,
-            roles: [UserRole.editor],
+            roles: [UserRole.participant],
             emailConfirmed: true,
             isActive: true,
           },
           {
-            clientId: client.id,
-            email: 'r05@projectraoul.nl',
+            clientId,
             password: `{bcrypt}${hash}`,
             firstName: 'Barbara',
             lastName: 'Foster',
-            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=16' } as Media),
+            picture: JSON.stringify({ collection: MediaCollection.externals, filename: 'https://api.dicebear.com/10.x/open-peeps/svg?seed=16' } as Media),
             language: Language.Nederlands,
-            roles: [UserRole.editor],
+            roles: [UserRole.participant],
             emailConfirmed: true,
             isActive: true,
           },
           {
-            clientId: client.id,
-            email: 'r06@projectraoul.nl',
+            clientId,
             password: `{bcrypt}${hash}`,
             firstName: 'Rusell',
             lastName: 'Myers',
-            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=14' } as Media),
+            picture: JSON.stringify({ collection: MediaCollection.externals, filename: 'https://api.dicebear.com/10.x/open-peeps/svg?seed=14' } as Media),
             language: Language.Nederlands,
-            roles: [UserRole.editor],
+            roles: [UserRole.participant],
             emailConfirmed: true,
             isActive: true,
           },
           {
-            clientId: client.id,
-            email: 'r07@projectraoul.nl',
+            clientId,
             password: `{bcrypt}${hash}`,
             firstName: 'Evelyn',
             lastName: 'Jimenez',
-            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=27' } as Media),
+            picture: JSON.stringify({ collection: MediaCollection.externals, filename: 'https://api.dicebear.com/10.x/open-peeps/svg?seed=27' } as Media),
             language: Language.Nederlands,
-            roles: [UserRole.editor],
+            roles: [UserRole.participant],
             emailConfirmed: true,
             isActive: true,
           },
           {
-            clientId: client.id,
-            email: 'r08@projectraoul.nl',
+            clientId,
             password: `{bcrypt}${hash}`,
             firstName: 'Jack',
             lastName: 'Newman',
-            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=12' } as Media),
+            picture: JSON.stringify({ collection: MediaCollection.externals, filename: 'https://api.dicebear.com/10.x/open-peeps/svg?seed=12' } as Media),
             language: Language.Nederlands,
-            roles: [UserRole.editor],
+            roles: [UserRole.participant],
             emailConfirmed: true,
             isActive: true,
           },
           {
-            clientId: client.id,
-            email: 'r09@projectraoul.nl',
+            clientId,
             password: `{bcrypt}${hash}`,
             firstName: 'Kathleen',
             lastName: 'Thompson',
-            picture: JSON.stringify({ collection: 'externals', filename: 'https://i.pravatar.cc/150?img=24' } as Media),
+            picture: JSON.stringify({ collection: MediaCollection.externals, filename: 'https://api.dicebear.com/10.x/open-peeps/svg?seed=24' } as Media),
             language: Language.Nederlands,
-            roles: [UserRole.editor],
+            roles: [UserRole.participant],
             emailConfirmed: true,
             isActive: true,
           }
@@ -276,16 +264,21 @@ export const DummyDataDefaultClientAndUsers: Migration = {
 
       const users = await db.selectFrom('user').where('clientId', '=', client.id).select('id').orderBy('createdAt', 'asc').execute();
 
-      for (const [index, user] of users.entries())
+      for (const [index, user] of users.entries()) {
+        await db.insertInto('licenseAgreement')
+          .values({ userId: user.id, licenseId: license.id, isAccepted: true })
+          .execute();
+
         await db.insertInto('authCode')
           .values({
-            clientId: client.id,
+            clientId,
             userId: user.id,
             value: `access-${index}`,
             // value: crypto.randomUUID().toString().slice(0, 8),
           })
           .returning('id')
           .executeTakeFirstOrThrow();
+      }
     }
 
   },

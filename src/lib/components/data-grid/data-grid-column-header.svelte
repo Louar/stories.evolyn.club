@@ -10,9 +10,15 @@
 	} from '$lib/components/ui/dropdown-menu/index.js';
 	import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip/index.js';
 	import { cn } from '$lib/utils.js';
-	import type { ColumnSort, Header, SortDirection, SortingState, Table } from '@tanstack/table-core';
+	import type {
+		ColumnSort,
+		Header,
+		SortDirection,
+		SortingState,
+		Table
+	} from '@tanstack/table-core';
 	import type { Component } from 'svelte';
-// Icons
+	// Icons
 	import ArrowDown from '@lucide/svelte/icons/arrow-down';
 	import ArrowUp from '@lucide/svelte/icons/arrow-up';
 	import Baseline from '@lucide/svelte/icons/baseline';
@@ -23,17 +29,23 @@
 	import ChevronUp from '@lucide/svelte/icons/chevron-up';
 	import EyeOff from '@lucide/svelte/icons/eye-off';
 	import FileIcon from '@lucide/svelte/icons/file';
+	import FileSymlinkIcon from '@lucide/svelte/icons/file-symlink';
 	import Hash from '@lucide/svelte/icons/hash';
 	import Languages from '@lucide/svelte/icons/languages';
 	import Link from '@lucide/svelte/icons/link';
 	import Link2 from '@lucide/svelte/icons/link-2';
 	import List from '@lucide/svelte/icons/list';
 	import ListChecks from '@lucide/svelte/icons/list-checks';
+	import MoveLeft from '@lucide/svelte/icons/move-left';
+	import MoveRight from '@lucide/svelte/icons/move-right';
 	import Pin from '@lucide/svelte/icons/pin';
 	import PinOff from '@lucide/svelte/icons/pin-off';
-	import SquareArrowRight from '@lucide/svelte/icons/square-arrow-right';
+	import SquareDashedText from '@lucide/svelte/icons/square-dashed-text';
+	import StarIcon from '@lucide/svelte/icons/star';
 	import Tag from '@lucide/svelte/icons/tag';
+	import Terminal from '@lucide/svelte/icons/terminal';
 	import TextInitial from '@lucide/svelte/icons/text';
+	import Workflow from '@lucide/svelte/icons/workflow';
 	import X from '@lucide/svelte/icons/x';
 
 	interface Props {
@@ -55,7 +67,9 @@
 		return column.id;
 	});
 
-	const isAnyColumnResizing = $derived(table.getState().columnSizingInfo?.isResizingColumn ?? false);
+	const isAnyColumnResizing = $derived(
+		table.getState().columnSizingInfo?.isResizingColumn ?? false
+	);
 
 	const cellVariant = $derived(column.columnDef.meta?.cell);
 	const columnVariant = $derived.by(() => getColumnVariant(cellVariant?.variant));
@@ -64,6 +78,7 @@
 	const columnPinning = $derived(table.getState().columnPinning);
 	const pinnedPosition = $derived.by(() => {
 		// Read columnPinning to create dependency, then call column method
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const _ = columnPinning;
 		return column.getIsPinned();
 	});
@@ -116,6 +131,8 @@
 		label: string;
 	} | null {
 		switch (variant) {
+			case 'actions':
+				return { icon: Workflow, label: 'Actions' };
 			case 'text-short':
 				return { icon: Baseline, label: 'Short text' };
 			case 'text-translated-short':
@@ -130,6 +147,8 @@
 				return { icon: Link2, label: 'Follow relation' };
 			case 'relation-select-single':
 				return { icon: Link2, label: 'Select single relation' };
+			case 'input-with-suggestions':
+				return { icon: SquareDashedText, label: 'Input with suggestions' };
 			case 'number':
 				return { icon: Hash, label: 'Number' };
 			case 'url':
@@ -140,14 +159,18 @@
 				return { icon: List, label: 'Select single' };
 			case 'select-multiple':
 				return { icon: ListChecks, label: 'Select multiple' };
+			case 'select-icon':
+				return { icon: StarIcon, label: 'Select icon' };
 			case 'date':
 				return { icon: Calendar, label: 'Date' };
 			case 'date-time':
 				return { icon: CalendarClock, label: 'Date & time' };
 			case 'file':
 				return { icon: FileIcon, label: 'File' };
-			case 'checkbox':
-				return { icon: SquareArrowRight, label: 'Link' };
+			case 'file-or-url':
+				return { icon: FileSymlinkIcon, label: 'File or URL' };
+			case 'json-yaml':
+				return { icon: Terminal, label: 'YAML' };
 			default:
 				return null;
 		}
@@ -197,10 +220,45 @@
 	}
 
 	// Resizer
-	const defaultColumnDef = $derived(table._getDefaultColumnDef());
+	const defaultColumnDef = $derived(table.options.defaultColumn ?? {});
+	const minColumnSize = $derived(column.columnDef.minSize ?? defaultColumnDef.minSize ?? 40);
+	const maxColumnSize = $derived(column.columnDef.maxSize ?? defaultColumnDef.maxSize ?? 1000);
+	const orderedLeafColumnIds = $derived(table.getAllLeafColumns().map((item) => item.id));
+	const columnOrderIndex = $derived(orderedLeafColumnIds.indexOf(column.id));
+	const canMoveLeft = $derived(columnOrderIndex > 0);
+	const canMoveRight = $derived(
+		columnOrderIndex >= 0 && columnOrderIndex < orderedLeafColumnIds.length - 1
+	);
+	const resizerClass =
+		"absolute top-0 -right-px z-50 h-full w-1 cursor-col-resize touch-none bg-border transition-opacity select-none after:absolute after:inset-y-0 after:-left-1 after:h-full after:w-3 after:content-[''] hover:bg-primary focus:bg-primary focus:outline-none";
 
 	function onResizerDoubleClick() {
 		header.column.resetSize();
+	}
+
+	function setColumnSize(size: number) {
+		const nextSize = Math.min(maxColumnSize, Math.max(minColumnSize, size));
+		table.setColumnSizing((current) => ({ ...current, [column.id]: nextSize }));
+	}
+
+	function onResizerKeyDown(event: KeyboardEvent) {
+		const step = event.shiftKey ? 25 : 10;
+		if (event.key === 'ArrowLeft') setColumnSize(columnSize - step);
+		else if (event.key === 'ArrowRight') setColumnSize(columnSize + step);
+		else if (event.key === 'Home') setColumnSize(minColumnSize);
+		else if (event.key === 'End') setColumnSize(maxColumnSize);
+		else return;
+		event.preventDefault();
+		event.stopPropagation();
+	}
+
+	function moveColumn(offset: -1 | 1) {
+		const from = orderedLeafColumnIds.indexOf(column.id);
+		const to = from + offset;
+		if (from < 0 || to < 0 || to >= orderedLeafColumnIds.length) return;
+		const nextOrder = [...orderedLeafColumnIds];
+		[nextOrder[from], nextOrder[to]] = [nextOrder[to], nextOrder[from]];
+		table.setColumnOrder(nextOrder);
 	}
 </script>
 
@@ -236,9 +294,9 @@
 			{/if}
 			{#if isSorted}
 				{#if sortDirection === 'asc'}
-					<ArrowUp class="size-3.5 z-10 shrink-0 text-foreground bg-background" />
+					<ArrowUp class="z-10 size-3.5 shrink-0 bg-background text-foreground" />
 				{:else}
-					<ArrowDown class="size-3.5 z-10 shrink-0 text-foreground bg-background" />
+					<ArrowDown class="z-10 size-3.5 shrink-0 bg-background text-foreground" />
 				{/if}
 			{/if}
 		</div>
@@ -248,7 +306,7 @@
 	<DropdownMenuContent align="start" sideOffset={0} class="w-60">
 		{#if column.getCanSort()}
 			<DropdownMenuCheckboxItem
-				class="relative pr-8 pl-2 [&>span:first-child]:right-2 [&>span:first-child]:left-auto [&_svg]:text-muted-foreground"
+				class="relative pr-8 pl-2 [&_svg]:text-muted-foreground [&>span:first-child]:right-2 [&>span:first-child]:left-auto"
 				checked={column.getIsSorted() === 'asc'}
 				onCheckedChange={() => onSortingChange('asc')}
 			>
@@ -256,7 +314,7 @@
 				Sort asc
 			</DropdownMenuCheckboxItem>
 			<DropdownMenuCheckboxItem
-				class="relative pr-8 pl-2 [&>span:first-child]:right-2 [&>span:first-child]:left-auto [&_svg]:text-muted-foreground"
+				class="relative pr-8 pl-2 [&_svg]:text-muted-foreground [&>span:first-child]:right-2 [&>span:first-child]:left-auto"
 				checked={column.getIsSorted() === 'desc'}
 				onCheckedChange={() => onSortingChange('desc')}
 			>
@@ -298,10 +356,19 @@
 				</DropdownMenuItem>
 			{/if}
 		{/if}
+		<DropdownMenuSeparator />
+		<DropdownMenuItem disabled={!canMoveLeft} onclick={() => moveColumn(-1)}>
+			<MoveLeft class="mr-2 size-4" />
+			Move left
+		</DropdownMenuItem>
+		<DropdownMenuItem disabled={!canMoveRight} onclick={() => moveColumn(1)}>
+			<MoveRight class="mr-2 size-4" />
+			Move right
+		</DropdownMenuItem>
 		{#if column.getCanHide()}
 			<DropdownMenuSeparator />
 			<DropdownMenuCheckboxItem
-				class="relative pr-8 pl-2 [&>span:first-child]:right-2 [&>span:first-child]:left-auto [&_svg]:text-muted-foreground"
+				class="relative pr-8 pl-2 [&_svg]:text-muted-foreground [&>span:first-child]:right-2 [&>span:first-child]:left-auto"
 				checked={!column.getIsVisible()}
 				onCheckedChange={() => column.toggleVisibility(false)}
 			>
@@ -320,14 +387,16 @@
 		aria-orientation="vertical"
 		aria-label={`Resize ${label} column`}
 		aria-valuenow={columnSize}
-		aria-valuemin={defaultColumnDef.minSize}
-		aria-valuemax={defaultColumnDef.maxSize}
+		aria-valuemin={minColumnSize}
+		aria-valuemax={maxColumnSize}
+		aria-valuetext={`${columnSize} pixels`}
 		tabindex={0}
 		class={cn(
-			'-right-px absolute top-0 z-50 h-full w-1 cursor-col-resize touch-none select-none bg-border transition-opacity after:absolute after:inset-y-0 after:-left-1 after:h-full after:w-3 after:content-[\'\'] hover:bg-primary focus:bg-primary focus:outline-none',
+			resizerClass,
 			isColumnResizing ? 'bg-primary opacity-100' : 'opacity-0 hover:opacity-100'
 		)}
 		ondblclick={onResizerDoubleClick}
+		onkeydown={onResizerKeyDown}
 		onmousedown={header.getResizeHandler()}
 		ontouchstart={header.getResizeHandler()}
 	></div>

@@ -5,7 +5,6 @@
 	import TranslatableTextarea from '$lib/components/ui/translatable-textarea/translatable-textarea.svelte';
 	import {
 		areTranslatablesEqual,
-		Language,
 		translateLocalizedField,
 		type Translatable
 	} from '$lib/db/schemas/0-utils';
@@ -43,13 +42,12 @@
 	);
 
 	// svelte-ignore state_referenced_locally
-	let initalValue: Translatable | null = $state((cellValue as Translatable) ?? null);
-	// svelte-ignore state_referenced_locally
 	let previousValue: Translatable | null = $state((cellValue as Translatable) ?? null);
 	// svelte-ignore state_referenced_locally
 	let nextValue: Translatable | null = $state((cellValue as Translatable) ?? null);
 
 	let saveTimeoutId: ReturnType<typeof setTimeout> | null = null;
+	let editingSessionActive = false;
 
 	function clearDebounce() {
 		if (saveTimeoutId) {
@@ -62,7 +60,7 @@
 		if (readOnly) return;
 
 		if (!areTranslatablesEqual(previousValue, nextValue)) {
-			meta?.onDataUpdate?.({ rowIndex, columnId, value: nextValue });
+			meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value: nextValue });
 			previousValue = nextValue ? { ...nextValue } : null;
 		}
 	}
@@ -79,14 +77,7 @@
 	function saveAndClose() {
 		clearDebounce();
 		commit();
-		initalValue = nextValue ? { ...nextValue } : null;
 		meta?.onCellEditingStop?.();
-	}
-
-	function getNextLanguage(selected?: Language | 'default' | null): Language | 'default' {
-		const languages = ['default', ...Object.values(Language)] as const;
-		const currentIndex = selected ? languages.indexOf(selected) : -1;
-		return languages[(currentIndex + 1) % languages.length];
 	}
 
 	function handleOpenChange(isOpen: boolean) {
@@ -119,12 +110,7 @@
 		if (event.key === 'Escape') {
 			event.preventDefault();
 			if (!readOnly) clearDebounce();
-
-			if (!areTranslatablesEqual(initalValue, nextValue)) {
-				meta?.onDataUpdate?.({ rowIndex, columnId, value: initalValue });
-				nextValue = initalValue ? { ...initalValue } : null;
-			}
-			meta?.onCellEditingStop?.();
+			meta?.onCellEditingCancel?.();
 			return;
 		}
 
@@ -135,27 +121,41 @@
 		}
 
 		if (event.key === 'Tab') {
+			const direction = event.shiftKey ? 'left' : 'right';
+			const canNavigate = meta?.canNavigateToCell?.(rowIndex, columnId, direction) ?? false;
+			if (!canNavigate) {
+				saveAndClose();
+				return;
+			}
 			event.preventDefault();
 			clearDebounce();
 			commit();
-			meta?.onCellEditingStop?.({ direction: event.shiftKey ? 'left' : 'right' });
+			meta?.onCellEditingStop?.({ direction });
 			return;
 		}
 
 		if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-			event.preventDefault();
 			clearDebounce();
 			commit();
-			UI.language = getNextLanguage(UI.language);
 			return;
 		}
 
 		event.stopPropagation();
 	}
 
-	// When leaving edit mode externally, stop pending autosaves (and don’t keep stale timers around)
 	$effect(() => {
-		if (!isEditing) clearDebounce();
+		const current = (cellValue as Translatable) ?? null;
+		if (isEditing && !editingSessionActive) {
+			editingSessionActive = true;
+			previousValue = current ? { ...current } : null;
+			nextValue = current ? { ...current } : null;
+		} else if (!isEditing) {
+			editingSessionActive = false;
+			clearDebounce();
+			previousValue = current ? { ...current } : null;
+			nextValue = current ? { ...current } : null;
+		}
+		return clearDebounce;
 	});
 
 	let preview: HTMLDivElement | null = $state(null);
@@ -228,7 +228,7 @@
 			align="start"
 			side="bottom"
 			{sideOffset}
-			class="shiki-bg-transparent w-100 rounded-none bg-transparent p-0"
+			class="shiki-bg-transparent max-h-[60vh] w-100 overflow-y-auto rounded-none bg-transparent p-0 hidden-scrollbar"
 			onOpenAutoFocus={handleOpenAutoFocus}
 			customAnchor={wrapperRef}
 		>

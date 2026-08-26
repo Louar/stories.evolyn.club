@@ -59,18 +59,18 @@
 						value="expand"
 						checked
 						class={cn(
-							'relative size-4 shrink-0 appearance-none rounded-full border border-input bg-background shadow-xs outline-none transition-[color,box-shadow]',
+							'relative size-4 shrink-0 appearance-none rounded-full border border-input bg-background shadow-xs transition-[color,box-shadow] outline-none',
 							'text-primary focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
 							'disabled:cursor-not-allowed disabled:opacity-50',
-							"checked:before:-translate-x-1/2 checked:before:-translate-y-1/2 checked:before:absolute checked:before:top-1/2 checked:before:left-1/2 checked:before:size-2 checked:before:rounded-full checked:before:bg-primary checked:before:content-['']",
+							"checked:before:absolute checked:before:top-1/2 checked:before:left-1/2 checked:before:size-2 checked:before:-translate-x-1/2 checked:before:-translate-y-1/2 checked:before:rounded-full checked:before:bg-primary checked:before:content-['']",
 							'dark:bg-input/30'
 						)}
 					/>
 					<div class="flex flex-col gap-1">
-						<span class="font-medium text-sm leading-none"> Create new rows </span>
-						<span class="text-muted-foreground text-sm">
-							Add {pasteDialog.rowsNeeded} new row{pasteDialog.rowsNeeded !== 1 ? 's' : ''} to the
-							table and paste all data
+						<span class="text-sm leading-none font-medium"> Create new rows </span>
+						<span class="text-sm text-muted-foreground">
+							Add {pasteDialog.rowsNeeded} new row{pasteDialog.rowsNeeded !== 1 ? 's' : ''} to the table
+							and paste all data
 						</span>
 					</div>
 				</label>
@@ -80,16 +80,16 @@
 						name="expand-option"
 						value="no-expand"
 						class={cn(
-							'relative size-4 shrink-0 appearance-none rounded-full border border-input bg-background shadow-xs outline-none transition-[color,box-shadow]',
+							'relative size-4 shrink-0 appearance-none rounded-full border border-input bg-background shadow-xs transition-[color,box-shadow] outline-none',
 							'text-primary focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50',
 							'disabled:cursor-not-allowed disabled:opacity-50',
-							"checked:before:-translate-x-1/2 checked:before:-translate-y-1/2 checked:before:absolute checked:before:top-1/2 checked:before:left-1/2 checked:before:size-2 checked:before:rounded-full checked:before:bg-primary checked:before:content-['']",
+							"checked:before:absolute checked:before:top-1/2 checked:before:left-1/2 checked:before:size-2 checked:before:-translate-x-1/2 checked:before:-translate-y-1/2 checked:before:rounded-full checked:before:bg-primary checked:before:content-['']",
 							'dark:bg-input/30'
 						)}
 					/>
 					<div class="flex flex-col gap-1">
-						<span class="font-medium text-sm leading-none"> Keep current rows </span>
-						<span class="text-muted-foreground text-sm">
+						<span class="text-sm leading-none font-medium"> Keep current rows </span>
+						<span class="text-sm text-muted-foreground">
 							Paste only what fits in the existing rows
 						</span>
 					</div>

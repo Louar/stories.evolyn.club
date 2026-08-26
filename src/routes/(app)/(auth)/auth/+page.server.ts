@@ -1,119 +1,159 @@
 import { db } from '$lib/db/database';
+import { acceptLatestLicense, authenticateUser } from '$lib/db/repositories/1-client-user-module';
 import { UserRole } from '$lib/db/schemas/1-client-user-module';
-import { redirect, type Cookies } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { sql } from 'kysely';
-import { message, superValidate } from 'sveltekit-superforms';
-import { zod4 } from 'sveltekit-superforms/adapters';
-import type { PageServerLoad } from './$types';
+import { z } from 'zod/v4';
+import type { Actions } from './$types';
 import { schemaToAuthenticate, schemaToRegister } from './schemas';
 
-
-export const load: PageServerLoad = async () => {
-
-  const formToRegister = await superValidate({}, zod4(schemaToRegister), { errors: false });
-  const formToAuthenticate = await superValidate({}, zod4(schemaToAuthenticate), { errors: false });
-
-  return { formToRegister, formToAuthenticate };
-};
-
 export const actions = {
-  authenticate: async ({ request, cookies, locals, url }) => {
-    const form = await superValidate(request, zod4(schemaToAuthenticate));
-    if (!form.valid) return message(form, { error: true, reason: 'Oeps, inloggen mislukt. Probeer het nog eens.' });
+	authenticate: async ({ request, cookies, locals, url }) => {
+		const formData = await request.formData();
+		const values = {
+			email: String(formData.get('email') ?? ''),
+			password: String(formData.get('password') ?? '')
+		};
+		const result = schemaToAuthenticate.safeParse(values);
+		if (!result.success) {
+			return fail(400, {
+				form: 'authenticate' as const,
+				values,
+				errors: z.flattenError(result.error).fieldErrors,
+				message: 'Oeps, inloggen mislukt. Probeer het nog eens.'
+			});
+		}
 
-    const { email, password } = form.data;
+		const { email, password } = result.data;
 
-    try {
-      delete locals.authusr;
-      cookies.delete(process.env.NODE_ENV === 'production' ? '__session' : '__session_stories', { domain: url.hostname, path: '/' });
-      await authenticate(email, password, url.hostname, locals, cookies);
-    } catch (e) {
-      if (e instanceof Error) return message(form, { error: true, reason: e.message });
-      else return message(form, { error: true, reason: 'Oeps, inloggen mislukt. Probeer het nog eens.' });
-    }
+		try {
+			delete locals.authusr;
+			cookies.delete(process.env.NODE_ENV === 'production' ? '__session' : '__session_core', {
+				domain: url.hostname,
+				path: '/'
+			});
+			await authenticateUser(
+				email,
+				password,
+				url.hostname,
+				locals.client.id,
+				locals.client.accessTokenKey,
+				cookies
+			);
+		} catch (e) {
+			return fail(400, {
+				form: 'authenticate' as const,
+				values,
+				errors: {},
+				message: e instanceof Error ? e.message : 'Oeps, inloggen mislukt. Probeer het nog eens.'
+			});
+		}
 
-    throw redirect(302, '/edit/stories');
-  },
-  register: async ({ request, cookies, url, locals }) => {
-    const clientId = locals.client.id;
-    const form = await superValidate(request, zod4(schemaToRegister));
-    if (!form.valid) return message(form, { error: true, reason: 'Registration failed.' });
+		let r = '/';
+		if (url.searchParams.get('r')?.length) r = url.searchParams.get('r')!;
+		if (locals.client.redirectAuthorized?.length) r = locals.client.redirectAuthorized;
+		throw redirect(302, r);
+	},
+	register: async ({ request, cookies, url, locals }) => {
+		const clientId = locals.client.id;
+		const formData = await request.formData();
+		const values = {
+			email: String(formData.get('email') ?? ''),
+			password: String(formData.get('password') ?? ''),
+			passwordConfirm: String(formData.get('passwordConfirm') ?? ''),
+			firstName: String(formData.get('firstName') ?? ''),
+			lastName: String(formData.get('lastName') ?? '')
+		};
+		const result = schemaToRegister.safeParse(values);
+		if (!result.success) {
+			return fail(400, {
+				form: 'register' as const,
+				values,
+				errors: z.flattenError(result.error).fieldErrors,
+				message: 'Registration failed.'
+			});
+		}
 
-    const { email, password, firstName, lastName } = form.data;
+		const { email, password, firstName, lastName } = result.data;
 
-    const user = await db.selectFrom('user')
-      .select('id')
-      .where('clientId', '=', clientId)
-      .where('email', '=', email)
-      .executeTakeFirst();
-    if (user) return message(form, { error: true, reason: 'An account already exists for this email address.' });
+		const user = await db
+			.selectFrom('user')
+			.select('id')
+			.where('clientId', '=', clientId)
+			.where('email', '=', email)
+			.executeTakeFirst();
+		if (user) {
+			return fail(400, {
+				form: 'register' as const,
+				values,
+				errors: {},
+				message: 'An account already exists for this email address.'
+			});
+		}
 
-    const roles: UserRole[] = [UserRole.editor];
-    if (((await db.selectFrom('user').where('clientId', '=', clientId).select(sql`COUNT(*)`.as('count')).executeTakeFirst())?.count || 0) === 0) roles.push(UserRole.admin);
+		const roles: UserRole[] = [UserRole.participant];
+		if (
+			((
+				await db
+					.selectFrom('user')
+					.where('clientId', '=', clientId)
+					.select(({ fn }) => fn.countAll().as('count'))
+					.executeTakeFirst()
+			)?.count || 0) === 0
+		)
+			roles.push(UserRole.admin);
 
-    const salt = await bcrypt.genSalt();
-    const hash = await bcrypt.hash(password, salt);
+		const salt = await bcrypt.genSalt();
+		const hash = await bcrypt.hash(password, salt);
 
-    try {
-      await db.insertInto('user')
-        .values({
-          clientId,
-          email,
-          password: `{bcrypt}${hash}`,
-          firstName,
-          lastName,
-          roles,
-        })
-        .executeTakeFirstOrThrow();
-    } catch (e) {
-      if (e instanceof Error) return message(form, { error: true, reason: e.message });
-      else return message(form, { error: true, reason: 'Oeps, registreren mislukt. Probeer het nog eens.' });
-    }
+		try {
+			await db.transaction().execute(async (trx) => {
+				const createdUser = await trx
+					.insertInto('user')
+					.values({
+						clientId,
+						email,
+						password: `{bcrypt}${hash}`,
+						firstName,
+						lastName,
+						roles
+					})
+					.returning('id')
+					.executeTakeFirstOrThrow();
 
-    // Authenticate
-    try {
-      await authenticate(email, password, url.hostname, locals, cookies);
-    } catch (e) {
-      if (e instanceof Error) return message(form, { error: true, reason: e.message });
-      else return message(form, { error: true, reason: 'Oeps, registreren mislukt. Probeer het nog eens.' });
-    }
+				await acceptLatestLicense(clientId, createdUser.id, trx, false);
+			});
+		} catch (e) {
+			return fail(400, {
+				form: 'register' as const,
+				values,
+				errors: {},
+				message: e instanceof Error ? e.message : 'Oeps, registreren mislukt. Probeer het nog eens.'
+			});
+		}
 
-    throw redirect(302, '/edit/stories');
-  }
-};
+		// Authenticate
+		try {
+			await authenticateUser(
+				email,
+				password,
+				url.hostname,
+				locals.client.id,
+				locals.client.accessTokenKey,
+				cookies
+			);
+		} catch (e) {
+			return fail(400, {
+				form: 'register' as const,
+				values,
+				errors: {},
+				message: e instanceof Error ? e.message : 'Oeps, registreren mislukt. Probeer het nog eens.'
+			});
+		}
 
-const authenticate = async (email: string, password: string, hostname: string, locals: App.Locals, cookies: Cookies) => {
-
-  const clientId = locals.client.id;
-  const accessTokenKey = locals.client.accessTokenKey;
-
-  const user = await db.selectFrom('user')
-    .select([
-      'user.id',
-      'user.password',
-      'user.isActive',
-    ])
-    .where('user.clientId', '=', clientId)
-    .where('user.email', '=', email)
-    .executeTakeFirst();
-  if (!user?.password || !(await bcrypt.compare(password, user.password?.replace('{bcrypt}', '')))) throw Error('Deze inloggegevens zijn onjuist. Probeer het nog eens.');
-  if (!user?.isActive) throw Error('Jammer, je account is geblokkeerd.');
-
-  const payload = { id: user.id };
-  const token = jwt.sign(payload, accessTokenKey, { expiresIn: '365d' });
-
-  if (!token) throw Error('Invalid token.');
-  const options = {
-    expires: new Date(new Date().getTime() + (365 * 24 * 60 * 60 * 1000)),
-    // sameSite: 'none' as "none",
-    domain: hostname,
-    path: '/',
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-  };
-  if (cookies) cookies.set(process.env.NODE_ENV === 'production' ? '__session' : '__session_stories', token, options);
-
-  return { id: user.id };
-};
+		let r = '/';
+		if (url.searchParams.get('r')?.length) r = url.searchParams.get('r')!;
+		if (locals.client.redirectAuthorized?.length) r = locals.client.redirectAuthorized;
+		throw redirect(302, r);
+	}
+} satisfies Actions;

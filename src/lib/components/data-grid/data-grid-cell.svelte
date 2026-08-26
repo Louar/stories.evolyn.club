@@ -4,16 +4,21 @@
 	import type { SvelteSet } from 'svelte/reactivity';
 	// Cell variant imports
 	import FlexRender from '../ui/data-table/flex-render.svelte';
+	import ActionsCell from './cells/actions-cell.svelte';
 	import BadgeItemCell from './cells/badge-item-cell.svelte';
 	import CheckboxCell from './cells/checkbox-cell.svelte';
 	import DateCell from './cells/date-cell.svelte';
 	import DateTimeCell from './cells/date-time-cell.svelte';
+	import InputWithSuggestionsCell from './cells/input-with-suggestions-cell.svelte';
 	import FileCell from './cells/file-cell.svelte';
+	import FileOrUrlCell from './cells/file-or-url-cell.svelte';
+	import JdmExpressionCell from './cells/jdm-expression-cell.svelte';
 	import JsonYamlCell from './cells/json-yaml-cell.svelte';
 	import NumberCell from './cells/number-cell.svelte';
 	import RelationFollowCell from './cells/relation-follow-cell.svelte';
 	import RelationSelectSingleCell from './cells/relation-select-single-cell.svelte';
 	import RowSelectCell from './cells/row-select-cell.svelte';
+	import SelectIconCell from './cells/select-icon-cell.svelte';
 	import SelectMultipleCell from './cells/select-multiple-cell.svelte';
 	import SelectSingleCell from './cells/select-single-cell.svelte';
 	import TextLongCell from './cells/text-long-cell.svelte';
@@ -27,23 +32,22 @@
 		table: Table<TData>;
 		/** SvelteSet for fine-grained selection reactivity */
 		selectedCellsSet?: SvelteSet<string>;
-		/** Version counter that triggers re-computation when selection changes */
-		selectionVersion?: number;
 	}
 
-	let { cell, table, selectedCellsSet, selectionVersion = 0 }: Props = $props();
+	let { cell, table, selectedCellsSet }: Props = $props();
 
-	// Access meta directly each time - don't cache the reference
+	// Access meta directly each time - don't cache the slug
 	const originalRowIndex = $derived(cell.row.index);
 
 	// Get the display row index (for filtered/sorted tables)
 	const displayRowIndex = $derived.by(() => {
 		const rows = table.getRowModel().rows;
-		const idx = rows.findIndex((row) => row.original === cell.row.original);
+		const idx = rows.findIndex((row) => row.id === cell.row.id);
 		return idx >= 0 ? idx : originalRowIndex;
 	});
 
 	const rowIndex = $derived(displayRowIndex);
+	const rowId = $derived(cell.row.id);
 	const columnId = $derived(cell.column.id);
 
 	// CENTRALIZED: Fine-grained cell value using SvelteMap
@@ -53,7 +57,7 @@
 	const cellValue = $derived.by(() => {
 		const meta = table.options.meta;
 		const map = meta?.cellValueMap;
-		const key = getCellKey(rowIndex, columnId);
+		const key = getCellKey(rowId, columnId);
 
 		// Check the SvelteMap first for edited values
 		if (map && map.has(key)) {
@@ -64,11 +68,19 @@
 		// This avoids any potential caching issues with cell.getValue()
 		// and ensures we always get the current data for the row
 		const original = cell.row.original as Record<string, unknown>;
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const accessorKey = (cell.column.columnDef as any).accessorKey as string | undefined;
+		const accessorKey =
+			'accessorKey' in cell.column.columnDef &&
+			typeof cell.column.columnDef.accessorKey === 'string'
+				? cell.column.columnDef.accessorKey
+				: undefined;
 
 		if (accessorKey && original) {
-			return original[accessorKey];
+			return accessorKey
+				.split('.')
+				.reduce<unknown>(
+					(value, segment) => (value as Record<string, unknown>)?.[segment],
+					original
+				);
 		}
 
 		// Fallback to cell.getValue() for computed columns
@@ -79,18 +91,22 @@
 	const isFocused = $derived.by(() => {
 		const meta = table.options.meta;
 		const fc = meta?.focusedCell;
-		return fc?.rowIndex === rowIndex && fc?.columnId === columnId;
+		return (
+			(fc?.rowId ? fc.rowId === rowId : fc?.rowIndex === rowIndex) && fc?.columnId === columnId
+		);
 	});
 	const isEditing = $derived.by(() => {
 		const meta = table.options.meta;
 		const ec = meta?.editingCell;
-		return ec?.rowIndex === rowIndex && ec?.columnId === columnId;
+		return (
+			(ec?.rowId ? ec.rowId === rowId : ec?.rowIndex === rowIndex) && ec?.columnId === columnId
+		);
 	});
 	// Compute selection state using the SvelteSet directly
 	// SvelteSet.has() is reactive - Svelte tracks when items are added/removed
 	const isSelected = $derived.by(() => {
 		if (!selectedCellsSet) return false;
-		const key = getCellKey(rowIndex, columnId);
+		const key = getCellKey(rowId, columnId);
 		return selectedCellsSet.has(key);
 	});
 
@@ -105,6 +121,14 @@
 	// Get cell variant from column def
 	const cellOpts = $derived(cell.column.columnDef.meta?.cell);
 	const variant = $derived(cellOpts?.variant ?? null);
+	const columnIndex = $derived.by(() => {
+		const orderedColumns = [
+			...table.getLeftVisibleLeafColumns(),
+			...table.getCenterVisibleLeafColumns(),
+			...table.getRightVisibleLeafColumns()
+		];
+		return orderedColumns.findIndex((column) => column.id === columnId) + 1;
+	});
 </script>
 
 {#if variant === 'text-short'}
@@ -167,6 +191,18 @@
 		{readOnly}
 		{cellValue}
 	/>
+{:else if variant === 'jdm-expression'}
+	<JdmExpressionCell
+		{cell}
+		{table}
+		{rowIndex}
+		{columnId}
+		{isEditing}
+		{isFocused}
+		{isSelected}
+		{readOnly}
+		{cellValue}
+	/>
 {:else if variant === 'relation-follow'}
 	<RelationFollowCell
 		{cell}
@@ -181,6 +217,18 @@
 	/>
 {:else if variant === 'relation-select-single'}
 	<RelationSelectSingleCell
+		{cell}
+		{table}
+		{rowIndex}
+		{columnId}
+		{isEditing}
+		{isFocused}
+		{isSelected}
+		{readOnly}
+		{cellValue}
+	/>
+{:else if variant === 'input-with-suggestions'}
+	<InputWithSuggestionsCell
 		{cell}
 		{table}
 		{rowIndex}
@@ -217,6 +265,18 @@
 	/>
 {:else if variant === 'checkbox'}
 	<CheckboxCell
+		{cell}
+		{table}
+		{rowIndex}
+		{columnId}
+		{isEditing}
+		{isFocused}
+		{isSelected}
+		{readOnly}
+		{cellValue}
+	/>
+{:else if variant === 'select-icon'}
+	<SelectIconCell
 		{cell}
 		{table}
 		{rowIndex}
@@ -299,10 +359,39 @@
 		{readOnly}
 		{cellValue}
 	/>
+{:else if variant === 'file-or-url'}
+	<FileOrUrlCell
+		{cell}
+		{table}
+		{rowIndex}
+		{columnId}
+		{isEditing}
+		{isFocused}
+		{isSelected}
+		{readOnly}
+		{cellValue}
+	/>
 {:else if variant === 'row-select'}
-	<RowSelectCell row={cell.row} {table} {rowIndex} />
+	<RowSelectCell row={cell.row} {table} {rowIndex} {columnId} />
+{:else if variant === 'actions'}
+	<ActionsCell
+		{cell}
+		{table}
+		{rowIndex}
+		{columnId}
+		{isEditing}
+		{isFocused}
+		{isSelected}
+		{readOnly}
+		{cellValue}
+	/>
 {:else}
-	<div class={isSelected ? 'highlight' : ''}>
+	<div
+		role="gridcell"
+		aria-colindex={columnIndex}
+		aria-selected={isSelected}
+		class={isSelected ? 'highlight' : ''}
+	>
 		<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
 	</div>
 {/if}

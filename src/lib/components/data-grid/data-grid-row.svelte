@@ -1,9 +1,16 @@
 <script lang="ts" generics="TData">
-	import type { Row, Table, Column, ColumnPinningState, VisibilityState, ColumnSizingState } from '@tanstack/table-core';
-	import type { SvelteSet } from 'svelte/reactivity';
+	/* eslint-disable @typescript-eslint/no-unused-vars */
 	import type { CellPosition, RowHeightValue } from '$lib/components/data-grid/types/data-grid.js';
-	import { getRowHeightValue, getCellKey } from '$lib/components/data-grid/types/data-grid.js';
+	import { getRowHeightValue } from '$lib/components/data-grid/types/data-grid.js';
 	import { cn } from '$lib/utils.js';
+	import type {
+		ColumnPinningState,
+		ColumnSizingState,
+		Row,
+		Table,
+		VisibilityState
+	} from '@tanstack/table-core';
+	import { SvelteMap, type SvelteSet } from 'svelte/reactivity';
 	import DataGridCell from './data-grid-cell.svelte';
 
 	// Use 'any' for VirtualizerReturn to avoid type conflicts between different definitions
@@ -18,14 +25,13 @@
 		columnSizing: ColumnSizingState;
 		/** SvelteSet for fine-grained selection reactivity */
 		selectedCellsSet: SvelteSet<string> | undefined;
-		/** Version counter that increments when selection changes - triggers re-render */
-		selectionVersion: number;
 		rowVirtualizer: VirtualizerReturn;
 		virtualRowIndex: number;
 		virtualStart: number;
 		rowMapRef: Map<number, HTMLDivElement>;
 		rowHeight: RowHeightValue;
 		focusedCell: CellPosition | null;
+		headerRowCount: number;
 		class?: string;
 	}
 
@@ -36,13 +42,13 @@
 		columnVisibility,
 		columnSizing,
 		selectedCellsSet,
-		selectionVersion,
 		virtualRowIndex,
 		virtualStart,
 		rowVirtualizer,
 		rowMapRef,
 		rowHeight,
 		focusedCell,
+		headerRowCount,
 		class: className
 	}: Props = $props();
 
@@ -70,30 +76,30 @@
 		// Read columnPinning and columnVisibility to create dependencies
 		const _pinning = columnPinning;
 		const _visibility = columnVisibility;
-		
+
 		// Helper to check if column is visible
 		const isColumnVisible = (colId: string) => columnVisibility[colId] !== false;
-		
+
 		// Get columns in correct order: left pinned, center (unpinned), right pinned
 		// Filter by visibility
-		const leftCols = table.getLeftLeafColumns().filter(c => isColumnVisible(c.id));
-		const centerCols = table.getCenterLeafColumns().filter(c => isColumnVisible(c.id));
-		const rightCols = table.getRightLeafColumns().filter(c => isColumnVisible(c.id));
-		
+		const leftCols = table.getLeftLeafColumns().filter((c) => isColumnVisible(c.id));
+		const centerCols = table.getCenterLeafColumns().filter((c) => isColumnVisible(c.id));
+		const rightCols = table.getRightLeafColumns().filter((c) => isColumnVisible(c.id));
+
 		// Combine in order
 		const orderedColumnIds = [
-			...leftCols.map(c => c.id),
-			...centerCols.map(c => c.id),
-			...rightCols.map(c => c.id)
+			...leftCols.map((c) => c.id),
+			...centerCols.map((c) => c.id),
+			...rightCols.map((c) => c.id)
 		];
-		
+
 		// Get all cells and create a lookup map
 		const allCells = row.getAllCells();
-		const cellMap = new Map(allCells.map(cell => [cell.column.id, cell]));
-		
+		const cellMap = new Map(allCells.map((cell) => [cell.column.id, cell]));
+
 		// Return cells in the correct order, filtering out any missing ones
 		return orderedColumnIds
-			.map(id => cellMap.get(id))
+			.map((id) => cellMap.get(id))
 			.filter((cell): cell is NonNullable<typeof cell> => cell != null);
 	});
 
@@ -101,9 +107,9 @@
 	const pinningStylesMap = $derived.by(() => {
 		// Read columnPinning prop to ensure this re-runs when it changes
 		const _ = columnPinning;
-		
-		const stylesMap = new Map<string, Record<string, string | number | undefined>>();
-		
+
+		const stylesMap = new SvelteMap<string, Record<string, string | number | undefined>>();
+
 		for (const cell of row.getAllCells()) {
 			const column = cell.column;
 			try {
@@ -132,19 +138,21 @@
 				});
 			}
 		}
-		
+
 		return stylesMap;
 	});
 
 	// Helper to get pinning styles - just looks up from the reactive map
 	function getPinningStyles(columnId: string): Record<string, string | number | undefined> {
-		return pinningStylesMap.get(columnId) ?? {
-			position: 'relative',
-			background: 'var(--background)',
-			zIndex: undefined
-		};
+		return (
+			pinningStylesMap.get(columnId) ?? {
+				position: 'relative',
+				background: 'var(--background)',
+				zIndex: undefined
+			}
+		);
 	}
-	
+
 	// Compute total visible width for this row (sum of visible cell widths)
 	// Read columnSizing prop to create reactive dependency on column resize
 	const totalVisibleWidth = $derived.by(() => {
@@ -159,36 +167,37 @@
 
 <div
 	role="row"
-	aria-rowindex={virtualRowIndex + 2}
+	aria-rowindex={headerRowCount + virtualRowIndex + 1}
 	aria-selected={isRowSelected}
 	data-index={virtualRowIndex}
 	data-slot="grid-row"
 	bind:this={rowRef}
 	tabindex={-1}
-	class={cn('absolute left-0 top-0 flex border-b will-change-transform', className)}
-	style="transform: translateY({virtualStart}px); height: {getRowHeightValue(rowHeight)}px; width: {totalVisibleWidth}px; min-width: {totalVisibleWidth}px;"
+	class={cn(
+		'absolute top-0 left-0 flex border-b will-change-transform last-of-type:border-0',
+		className
+	)}
+	style="transform: translateY({virtualStart}px); height: {getRowHeightValue(
+		rowHeight
+	)}px; width: max(100%, {totalVisibleWidth}px); min-width: 100%;"
 >
-	{#each visibleCells as cell, colIndex (cell.id)}
+	{#each visibleCells as cell (cell.id)}
 		{@const isCellFocused =
-			focusedCell?.rowIndex === virtualRowIndex && focusedCell?.columnId === cell.column.id}
+			(focusedCell?.rowId
+				? focusedCell.rowId === row.id
+				: focusedCell?.rowIndex === virtualRowIndex) && focusedCell?.columnId === cell.column.id}
 		{@const pinningStyles = getPinningStyles(cell.column.id)}
 
 		<div
-			role="gridcell"
-			aria-colindex={colIndex + 1}
+			role="presentation"
 			data-highlighted={isCellFocused ? '' : undefined}
 			data-slot="grid-cell"
-			tabindex={-1}
-			class="border-r"
-			style="position: {pinningStyles.position}; left: {pinningStyles.left}; right: {pinningStyles.right}; background: {pinningStyles.background}; z-index: {pinningStyles.zIndex}; width: calc(var(--col-{cell.column.id}-size) * 1px);"
+			class="border-r last-of-type:border-0"
+			style="position: {pinningStyles.position}; left: {pinningStyles.left}; right: {pinningStyles.right}; background: {pinningStyles.background}; z-index: {pinningStyles.zIndex}; width: calc(var(--col-{cell
+				.column.id}-size) * 1px);"
 		>
 			<!-- Use DataGridCell for variant-based rendering (handles all cell types via meta.cell.variant) -->
-			<DataGridCell 
-				{cell} 
-				{table}
-				{selectedCellsSet}
-				{selectionVersion}
-			/>
+			<DataGridCell {cell} {table} {selectedCellsSet} />
 		</div>
 	{/each}
 </div>

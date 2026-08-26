@@ -2,7 +2,7 @@ import { createHighlighter } from 'shiki';
 
 const highlighter = await createHighlighter({
   themes: ['snazzy-light', 'aurora-x'],
-  langs: ['markdown', 'json', 'yaml']
+  langs: ['markdown', 'json', 'yaml', 'javascript']
 });
 
 export default highlighter;

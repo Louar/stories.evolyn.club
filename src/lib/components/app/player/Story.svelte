@@ -4,7 +4,8 @@
 		logInteractionEvent,
 		logTransitionEvent
 	} from '$lib/client/player-events.js';
-	import type { findOneStoryByReference } from '$lib/db/repositories/2-story-module.js';
+	import type { findOneStoryBySlug } from '$lib/db/repositories/2-story-module.js';
+	import { MediaCollection, type Media } from '$lib/db/schemas/0-utils.js';
 	import { PLAYERS } from '$lib/states/players.svelte.js';
 	import { STORIES } from '$lib/states/stories.svelte.js';
 	import { cn } from '$lib/utils.js';
@@ -16,10 +17,12 @@
 	import AnnouncementOverlay from './AnnouncementOverlay.svelte';
 	import InteractionOverlay from './InteractionOverlay.svelte';
 	import PlayerComponent from './Player.svelte';
+	import TaxonomyGame from './taxonomy/Game.svelte';
+	import type { GamePerformance } from './taxonomy/types';
 	import type { InputFromLogic, Logic, OutputFromLogic, Player, Rule } from './types.js';
 
 	type Props = {
-		story: NonNullable<Awaited<ReturnType<typeof findOneStoryByReference>>>;
+		story: NonNullable<Awaited<ReturnType<typeof findOneStoryBySlug>>>;
 		players: Player[];
 		isActiveStory?: boolean;
 		doRestart?: boolean;
@@ -61,13 +64,17 @@
 	const submit = async (logic: Logic | undefined, input: InputFromLogic<Logic>) => {
 		if (!logic || !input) return;
 		const output = executeLogic(logic, input);
+		transition(output?.next);
+	};
+
+	const transition = (nextPartId: unknown) => {
 		const current = players.find((p) => p.id === pid);
-		if (!output?.next || typeof output.next !== 'string') {
+		if (!nextPartId || typeof nextPartId !== 'string') {
 			if (current) current.doPause = true;
 			return end();
 		}
 
-		const next = players.find((p) => p.id === output.next);
+		const next = players.find((p) => p.id === nextPartId);
 		if (!current || !next) return end();
 		logTransitionEvent(story.id, current.id, next.id);
 
@@ -75,18 +82,43 @@
 			next.doRestart = true;
 		} else {
 			current.doEnd = true;
-			pid = output.next;
+			pid = nextPartId;
 			next.doBuffer = true;
 			next.doPlay = true;
 		}
 	};
 
+	type TaxonomyLogic = {
+		defaultNextPartId: string | null;
+		rules: Array<{
+			nextPartId: string | null;
+			nrOfRounds: [number | null, number | null] | null;
+			score: [number | null, number | null] | null;
+			mistakes: [number | null, number | null] | null;
+			duration: [number | null, number | null] | null;
+		}>;
+	};
+
+	const submitTaxonomy = (logic: TaxonomyLogic, performance: GamePerformance) => {
+		const matchesRange = (value: number, range: [number | null, number | null] | null) =>
+			range === null ||
+			((range[0] === null || value >= range[0]) && (range[1] === null || value <= range[1]));
+		const rule = logic.rules.find(
+			(candidate) =>
+				matchesRange(performance.nrOfRounds, candidate.nrOfRounds) &&
+				matchesRange(performance.score, candidate.score) &&
+				matchesRange(performance.mistakes, candidate.mistakes) &&
+				matchesRange(performance.duration, candidate.duration)
+		);
+		transition(rule?.nextPartId ?? logic.defaultNextPartId);
+	};
+
 	const end = () => {
 		const watchTime = Math.round(Object.values(PLAYERS.watchDurations)?.reduce((a, b) => a + b, 0));
 		const percentages = Object.values(PLAYERS.watchTimePercentages);
-		const watchTimePercentage = Math.round(
-			percentages?.reduce((a, b) => a + b, 0) / percentages.length
-		);
+		const watchTimePercentage = percentages.length
+			? Math.round(percentages.reduce((a, b) => a + b, 0) / percentages.length)
+			: 0;
 		const events = JSON.stringify(STORIES.events[story.id] ?? []);
 		STORIES.averageWatchTimePercentages[story.id] = Math.max(
 			STORIES.averageWatchTimePercentages[story.id] ?? 0,
@@ -162,6 +194,8 @@
 		part: (typeof story.parts)[number],
 		player: (typeof players)[number] | undefined
 	) => {
+		if (part.backgroundType === 'still') return Boolean(part.foreground);
+		if (!part.background || !('duration' in part.background)) return false;
 		return (
 			PLAYERS.didUserInteract &&
 			part.foreground &&
@@ -170,18 +204,26 @@
 		);
 	};
 
-	const isActiveOverlay = () => {
+	const mediaUrl = (media: Media | null | undefined) => {
+		if (!media) return undefined;
+		return media.collection === MediaCollection.externals
+			? media.filename
+			: `/api/media/${media.collection}/${media.filename}`;
+	};
+
+	let isActiveOverlay = $derived.by(() => {
 		if (!pid || isEnded) return false;
 		const activePart = story.parts.find((part) => part.id === pid);
 		if (!activePart) return false;
 		const activePlayer = players.find((player) => player.id === pid);
 		return hasOverlay(activePart, activePlayer);
-	};
+	});
 
 	$effect(() => {
 		if (!isActiveStory) return;
-		const next = isActiveOverlay();
-		if (PLAYERS.isAnyOverlayActive !== next) PLAYERS.isAnyOverlayActive = next;
+		if (PLAYERS.isAnyOverlayActive !== isActiveOverlay) {
+			PLAYERS.isAnyOverlayActive = isActiveOverlay;
+		}
 	});
 
 	$effect(() => {
@@ -202,14 +244,24 @@
 					: 'pointer-events-none opacity-0'}"
 				inert={part.id !== pid}
 			>
-				{#if part?.backgroundType === 'video' && player}
+				{#if part?.backgroundType === 'still'}
+					{@const background =
+						part.background && 'style' in part.background ? part.background : undefined}
+					<div
+						class={cn('absolute inset-0 bg-center', background?.style)}
+						style:background-color={background?.color ?? undefined}
+						style:background-image={background?.image
+							? `url("${mediaUrl(background.image)}")`
+							: undefined}
+					></div>
+				{:else if part?.backgroundType === 'video' && player?.source}
 					{@const nextPlayers = [
 						player.next?.length
 							? new Map(players.map((p) => [p.id, p])).get(player.next)
 							: undefined,
-						...('logic' in part.foreground
+						...(part.foregroundType === 'quiz' && 'logic' in part.foreground
 							? (part.foreground?.logic?.rules?.map((rule) =>
-									typeof rule.next === 'string'
+									'next' in rule && typeof rule.next === 'string'
 										? new Map(players.map((p) => [p.id, p])).get(rule.next)
 										: undefined
 								) ?? [])
@@ -282,6 +334,16 @@
 									raw_value
 								});
 							}}
+						/>
+					{/if}
+					{#if part.id === pid && part.foregroundType === 'taxonomy' && 'rounds' in part.foreground && 'logic' in part.foreground}
+						{@const taxonomyForeground = part.foreground}
+						<TaxonomyGame
+							rounds={taxonomyForeground.rounds}
+							goal={taxonomyForeground.goal}
+							maxMistakes={taxonomyForeground.maxMistakes}
+							showHints={taxonomyForeground.showHints}
+							oncomplete={(performance) => submitTaxonomy(taxonomyForeground.logic, performance)}
 						/>
 					{/if}
 				{/if}

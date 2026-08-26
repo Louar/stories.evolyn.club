@@ -71,7 +71,7 @@ export interface UseBadgeOverflowOptions<T> {
 	items: T[];
 	/** Function to get the label text from an item */
 	getLabel: (item: T) => string;
-	/** Reference to the container element */
+	/** Slug to the container element */
 	containerRef: HTMLElement | null;
 	/** Number of lines badges can wrap to */
 	lineCount: number;

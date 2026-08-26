@@ -1,4 +1,4 @@
-import type { Migration } from 'kysely';
+import type { Migration } from 'kysely/migration';
 import { InitClientUserModule } from './0-init/1-client-user-module';
 import { InitStoryModule } from './0-init/2-story-module';
 import { DummyDataDefaultClientAndUsers } from './1-dummy-data/1-default-client-and-users';

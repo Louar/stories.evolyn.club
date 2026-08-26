@@ -1,5 +1,10 @@
 <script lang="ts">
 	import favicon from '$lib/assets/evolyn-logo.svg';
+	import PolicyConsent from '$lib/components/app/policy-consent/policy-consent.svelte';
+	import { UserRole } from '$lib/db/schemas/1-client-user-module';
+	import { afterNavigate, goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { ModeWatcher } from 'mode-watcher';
 
 	import { Toaster } from 'svelte-sonner';
@@ -7,6 +12,21 @@
 
 	let { data, children } = $props();
 	const { client } = $derived(data);
+	const needsConsent = $derived(
+		(data.authusr?.roles ?? []).includes(UserRole.participant) &&
+			data.consentState?.allRequiredAccepted === false &&
+			(data.consentState?.requiredConsentItemIds.length ?? 0) > 0
+	);
+
+	const enforceConsentRedirect = () => {
+		if (!needsConsent || page.url.pathname === '/consent') return;
+		const requestedUrl = `${page.url.pathname}${page.url.search}`;
+		goto(resolve(`/consent?r=${encodeURIComponent(requestedUrl)}` as `/${string}`), {
+			replaceState: true
+		});
+	};
+
+	afterNavigate(enforceConsentRedirect);
 </script>
 
 <svelte:head>
@@ -32,7 +52,7 @@
 		<script defer data-domain={client.plausibleDomain} src="/js/script.outbound-links.js"></script>
 	{/if}
 
-	<link rel="stylesheet" type="text/css" href="/variables.css" />
+	<!-- <link rel="stylesheet" type="text/css" href="/variables.css" /> -->
 	<link rel="stylesheet" type="text/css" href="/api/styles.css" />
 
 	<link rel="manifest" href="/api/manifest.json" />
@@ -52,3 +72,4 @@
 <ModeWatcher />
 <Toaster />
 {@render children?.()}
+<PolicyConsent policyState={data.policyState} authusr={data.authusr} />

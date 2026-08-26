@@ -16,10 +16,8 @@
 		table,
 		rowIndex,
 		columnId,
-		isEditing,
 		isFocused,
 		isSelected,
-		readOnly = false,
 		cellValue
 	}: CellVariantProps<TData> = $props();
 

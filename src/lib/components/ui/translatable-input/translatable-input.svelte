@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { translateLocalizedField, type Translatable } from '$lib/db/schemas/0-utils';
-	import { EDITORS } from '$lib/states/editors.svelte';
+	import { UI } from '$lib/states/ui.svelte';
 	import { cn, type WithElementRef } from '$lib/utils.js';
 	import type { HTMLInputAttributes, HTMLInputTypeAttribute } from 'svelte/elements';
 	import LanguageSelector from '../language-selector/language-selector.svelte';
-	import { UI } from '$lib/states/ui.svelte';
 
 	type Props = {
 		value?: Translatable | null;

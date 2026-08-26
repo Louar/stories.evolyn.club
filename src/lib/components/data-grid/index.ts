@@ -6,6 +6,7 @@ export { default as DataGridContextMenu } from './data-grid-context-menu.svelte'
 export { default as DataGridPasteDialog } from './data-grid-paste-dialog.svelte';
 export { default as DataGridRow } from './data-grid-row.svelte';
 export { default as DataGridSearch } from './data-grid-search.svelte';
+export { default as DataGridToolbar } from './data-grid-toolbar.svelte';
 export { default as DataGrid } from './data-grid.svelte';
 
 // Menu components
@@ -22,11 +23,23 @@ export { default as DataGridRenderCount } from './data-grid-render-count.svelte'
 export * from './cells';
 
 // Re-export the hook
-export { useDataGrid } from '$lib/hooks/use-custom-data-grid.svelte.js';
-export type { UseDataGridOptions, UseDataGridReturn } from '$lib/hooks/use-custom-data-grid.svelte.js';
+export {
+	DataGridAdapterError,
+	fileCellMediaToFileCellData,
+	hasTranslatableFields,
+	uploadMedia,
+	useDataGrid
+} from '$lib/hooks/use-custom-data-grid.svelte.js';
+export type {
+	UseDataGridOptions,
+	UseDataGridReturn
+} from '$lib/hooks/use-custom-data-grid.svelte.js';
 
 // Re-export types
 export * from '$lib/components/data-grid/types/data-grid.js';
 
 // Re-export filter utilities
 export * from '$lib/components/data-grid/data-grid-filters.js';
+
+// Re-export persistence utilities used by route consumers.
+export * from '$lib/components/data-grid/data-grid-preferences.js';

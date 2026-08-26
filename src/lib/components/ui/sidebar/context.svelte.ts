@@ -1,6 +1,6 @@
-import { IsMobile } from '$lib/hooks/is-mobile.svelte.js';
-import { getContext, setContext } from 'svelte';
-import { SIDEBAR_KEYBOARD_SHORTCUT } from './constants.js';
+import { IsMobile } from "$lib/hooks/is-mobile.svelte.js";
+import { getContext, setContext } from "svelte";
+import { SIDEBAR_KEYBOARD_SHORTCUT } from "./constants.js";
 
 type Getter<T> = () => T;
 
@@ -15,7 +15,7 @@ export type SidebarStateProps = {
 	/**
 	 * A function that sets the open state of the sidebar. To support `bind:open`, we need
 	 * a source of truth for changing the open state to ensure it will be synced throughout
-	 * the sub-components and any `bind:` references.
+	 * the sub-components and any `bind:` slugs.
 	 */
 	setOpen: (open: boolean) => void;
 };
@@ -24,9 +24,9 @@ class SidebarState {
 	readonly props: SidebarStateProps;
 	open = $derived.by(() => this.props.open());
 	openMobile = $state(false);
-	setOpen: SidebarStateProps['setOpen'];
+	setOpen: SidebarStateProps["setOpen"];
 	#isMobile: IsMobile;
-	state = $derived.by(() => (this.open ? 'expanded' : 'collapsed'));
+	state = $derived.by(() => (this.open ? "expanded" : "collapsed"));
 
 	constructor(props: SidebarStateProps) {
 		this.setOpen = props.setOpen;
@@ -59,7 +59,7 @@ class SidebarState {
 	};
 }
 
-const SYMBOL_KEY = 'scn-sidebar';
+const SYMBOL_KEY = "scn-sidebar";
 
 /**
  * Instantiates a new `SidebarState` instance and sets it in the context.

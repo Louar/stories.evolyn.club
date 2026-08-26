@@ -19,10 +19,11 @@
 		ismarkdown = true,
 		class: className,
 		placeholder,
+		oninput,
 		...restProps
 	}: Props = $props();
 
-	let preview: HTMLDivElement = $state()!;
+	let preview: HTMLDivElement | null = $state(null);
 	const localize = (text?: string) => {
 		if (ismarkdown) {
 			return highlighter.codeToHtml(text ?? '', {
@@ -35,27 +36,43 @@
 			});
 		}
 	};
+
+	const previewHtml = $derived.by(() => (ismarkdown ? (localize(value?.[UI.language]) ?? '') : ''));
+
+	const previewAttachment = (node: HTMLDivElement) => {
+		preview = node;
+		$effect(() => {
+			node.innerHTML = previewHtml;
+		});
+		return () => {
+			if (preview === node) preview = null;
+		};
+	};
 </script>
 
 <div class="relative w-full">
 	{#if ismarkdown}
 		<div
-			bind:this={preview}
+			{@attach previewAttachment}
 			class="absolute inset-0 -z-10 overflow-hidden rounded-md [&>pre]:h-full [&>pre]:px-3 [&>pre]:py-2 [&>pre]:font-mono! [&>pre]:text-sm! [&>pre]:wrap-break-word [&>pre]:whitespace-pre-wrap"
-		>
-			{@html localize(value?.[UI.language])}
-		</div>
+		></div>
 		<Textarea
+			bind:ref
 			spellcheck="false"
 			value={value?.[UI.language] ?? ''}
 			oninput={(e) => {
-				value = { ...value, [UI.language]: e.currentTarget.value };
+				value = { ...(value ?? {}), [UI.language]: e.currentTarget.value };
+				oninput?.(e);
 			}}
 			class={cn(
 				'scrollbar-none max-h-196 bg-transparent font-mono text-sm! text-transparent caret-foreground',
-				className
+				className,
+				{
+					'opacity-40': !value?.[UI.language]
+				}
 			)}
 			onscroll={(e) => {
+				if (!preview) return;
 				preview.scrollTop = e.currentTarget.scrollTop;
 				preview.scrollLeft = e.currentTarget.scrollLeft;
 			}}
@@ -64,8 +81,12 @@
 		/>
 	{:else}
 		<Textarea
+			bind:ref
 			value={value?.[UI.language] ?? ''}
-			oninput={(e) => (value = { ...value, [UI.language]: e.currentTarget.value })}
+			oninput={(e) => {
+				value = { ...(value ?? {}), [UI.language]: e.currentTarget.value };
+				oninput?.(e);
+			}}
 			placeholder={translateLocalizedField(value)?.length
 				? translateLocalizedField(value)
 				: placeholder}

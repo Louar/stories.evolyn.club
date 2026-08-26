@@ -4,7 +4,7 @@
  * Returns reactive window dimensions that update on resize
  */
 
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 
 interface WindowSize {
 	width: number;

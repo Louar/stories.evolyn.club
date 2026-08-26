@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
+	import { browser } from '$app/env';
 	import {
 		Dialog,
 		DialogContent,
@@ -87,8 +87,7 @@
 				{ keys: [modKey, 'X'], description: 'Cut selected cells' },
 				{ keys: [modKey, 'V'], description: 'Paste cells' },
 				{ keys: ['Delete'], description: 'Clear selected cells' },
-				{ keys: ['Backspace'], description: 'Clear selected cells' },
-				{ keys: [modKey, 'K'], description: 'Toggle the selected language, while editing' }
+				{ keys: ['Backspace'], description: 'Clear selected cells' }
 			]
 		},
 		...(enableSearch
@@ -108,7 +107,7 @@
 			title: 'Translating',
 			shortcuts: [
 				{ keys: [modKey, 'Shift', 'L'], description: 'Toggle the language selector' },
-				{ keys: [modKey, 'K'], description: 'Toggle the selected language, while editing' }
+				{ keys: [modKey, 'K'], description: 'Cycle the selected language' }
 			]
 		},
 		{

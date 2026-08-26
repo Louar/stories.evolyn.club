@@ -24,7 +24,7 @@
 
 	// Track local edits separately
 	let localEditValue = $state<string | null>(null);
-	
+
 	// Value for display - use localEditValue if set, otherwise initialValue
 	const value = $derived(localEditValue ?? initialValue ?? '');
 
@@ -64,7 +64,7 @@
 		const formattedDate = `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
 		localEditValue = formattedDate;
 		const meta = table.options.meta;
-		meta?.onDataUpdate?.({ rowIndex, columnId, value: formattedDate });
+		meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value: formattedDate });
 		meta?.onCellEditingStop?.();
 	}
 
@@ -82,8 +82,9 @@
 		if (isEditing && event.key === 'Escape') {
 			event.preventDefault();
 			localEditValue = null;
-			meta?.onCellEditingStop?.();
+			meta?.onCellEditingCancel?.();
 		} else if (!isEditing && isFocused && event.key === 'Tab') {
+			if (!meta?.canNavigateToCell?.(rowIndex, columnId, event.shiftKey ? 'left' : 'right')) return;
 			event.preventDefault();
 			meta?.onCellEditingStop?.({
 				direction: event.shiftKey ? 'left' : 'right'
@@ -131,6 +132,7 @@
 			class="w-auto p-0"
 			customAnchor={containerRef}
 			onOpenAutoFocus={handleOpenAutoFocus}
+			onkeydown={handleWrapperKeyDown}
 		>
 			<Calendar
 				type="single"

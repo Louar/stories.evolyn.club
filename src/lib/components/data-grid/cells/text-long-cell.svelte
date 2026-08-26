@@ -28,15 +28,27 @@
 
 	// Track local edits separately - this only matters during editing
 	let localEditValue = $state<string | null>(null);
+	let editStartValue = $state('');
+	let editingSessionActive = false;
 
 	// Value for display and tracking - use localEditValue if set, otherwise initialValue
 	const value = $derived(localEditValue ?? initialValue ?? '');
 
 	// Reset local edit value when editing stops
 	$effect(() => {
-		if (!isEditing) {
+		if (isEditing && !editingSessionActive) {
+			editingSessionActive = true;
+			editStartValue = initialValue;
+			localEditValue = initialValue;
+		} else if (!isEditing) {
+			editingSessionActive = false;
+			if (saveTimeoutId) clearTimeout(saveTimeoutId);
+			saveTimeoutId = null;
 			localEditValue = null;
 		}
+		return () => {
+			if (saveTimeoutId) clearTimeout(saveTimeoutId);
+		};
 	});
 
 	// Debounced auto-save
@@ -46,7 +58,12 @@
 		}
 		saveTimeoutId = setTimeout(() => {
 			if (!readOnly) {
-				table.options.meta?.onDataUpdate?.({ rowIndex, columnId, value: newValue });
+				table.options.meta?.onDataUpdate?.({
+					rowIndex,
+					rowId: cell.row.id,
+					columnId,
+					value: newValue
+				});
 			}
 		}, 3000);
 	}
@@ -58,7 +75,7 @@
 		}
 		const meta = table.options.meta;
 		if (!readOnly && value !== initialValue) {
-			meta?.onDataUpdate?.({ rowIndex, columnId, value });
+			meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value });
 		}
 		meta?.onCellEditingStop?.();
 	}
@@ -68,12 +85,9 @@
 			clearTimeout(saveTimeoutId);
 			saveTimeoutId = null;
 		}
-		localEditValue = null;
+		localEditValue = editStartValue;
 		const meta = table.options.meta;
-		if (!readOnly) {
-			meta?.onDataUpdate?.({ rowIndex, columnId, value: initialValue });
-		}
-		meta?.onCellEditingStop?.();
+		meta?.onCellEditingCancel?.();
 	}
 
 	function handleOpenChange(isOpen: boolean) {
@@ -82,7 +96,7 @@
 			meta?.onCellEditingStart?.(rowIndex, columnId);
 		} else {
 			if (!readOnly && value !== initialValue) {
-				meta?.onDataUpdate?.({ rowIndex, columnId, value });
+				meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value });
 			}
 			meta?.onCellEditingStop?.();
 		}
@@ -113,6 +127,7 @@
 	}
 
 	function handleKeyDown(event: KeyboardEvent) {
+		const meta = table.options.meta;
 		if (event.key === 'Escape') {
 			event.preventDefault();
 			handleCancel();
@@ -120,13 +135,18 @@
 			event.preventDefault();
 			handleSave();
 		} else if (event.key === 'Tab') {
+			const direction = event.shiftKey ? 'left' : 'right';
+			const canNavigate = meta?.canNavigateToCell?.(rowIndex, columnId, direction) ?? false;
+			if (!canNavigate) {
+				handleSave();
+				return;
+			}
 			event.preventDefault();
-			const meta = table.options.meta;
 			if (value !== initialValue) {
-				meta?.onDataUpdate?.({ rowIndex, columnId, value });
+				meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value });
 			}
 			meta?.onCellEditingStop?.({
-				direction: event.shiftKey ? 'left' : 'right'
+				direction
 			});
 			return;
 		}

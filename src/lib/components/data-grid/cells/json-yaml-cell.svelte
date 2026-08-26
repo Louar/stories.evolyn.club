@@ -1,6 +1,7 @@
 <script lang="ts" generics="TData">
 	import highlighter from '$lib/client/shiki';
-	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
+	import { getCellKey, type CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { PopoverContent } from '$lib/components/ui/popover/index.js';
 	import { cn } from '$lib/utils.js';
 	import { Popover as PopoverPrimitive } from 'bits-ui';
@@ -27,14 +28,35 @@
 	const meta = $derived(table.options.meta);
 
 	// svelte-ignore state_referenced_locally
-	let initialValue = $state(cellValue ?? null);
-	// svelte-ignore state_referenced_locally
 	let previousValue = $state(cellValue ?? null);
 	// svelte-ignore state_referenced_locally
 	let nextValue = $state(cellValue ?? null);
 	let yamlText = $state('');
 	let parseError = $state<string | null>(null);
+	let showSchemaPreview = $state(false);
 	let saveTimeoutId: ReturnType<typeof setTimeout> | null = null;
+	let editingSessionActive = false;
+	const cellOptions = $derived(cell.column.columnDef.meta?.cell);
+	const currentRow = $derived.by(() => {
+		const row = { ...(cell.row.original as Record<string, unknown>) };
+		const map = meta?.cellValueMap;
+		if (!map) return row;
+
+		for (const column of table.getAllLeafColumns()) {
+			const key = getCellKey(cell.row.id, column.id);
+			if (map.has(key)) row[column.id] = map.get(key);
+		}
+
+		return row;
+	});
+	const schemaPreview = $derived.by(() => {
+		if (cellOptions?.variant !== 'json-yaml') return null;
+		const preview = cellOptions.schemaPreview;
+		if (!preview) return null;
+		const value = typeof preview === 'function' ? preview(currentRow) : preview;
+		if (value == null) return null;
+		return typeof value === 'string' ? value : toYaml(value);
+	});
 
 	const previewHtml = $derived.by(() =>
 		highlighter.codeToHtml(yamlText ?? '', {
@@ -72,7 +94,7 @@
 		if (readOnly) return;
 		if (parseError) return;
 		if (stringifyYaml(previousValue) !== stringifyYaml(nextValue)) {
-			meta?.onDataUpdate?.({ rowIndex, columnId, value: nextValue });
+			meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value: nextValue });
 			previousValue = nextValue;
 		}
 	}
@@ -88,7 +110,6 @@
 	function saveAndClose() {
 		clearDebounce();
 		commit();
-		initialValue = nextValue;
 		meta?.onCellEditingStop?.();
 	}
 
@@ -132,13 +153,7 @@
 		if (event.key === 'Escape') {
 			event.preventDefault();
 			clearDebounce();
-			if (previousValue !== nextValue) {
-				meta?.onDataUpdate?.({ rowIndex, columnId, value: previousValue });
-				nextValue = previousValue;
-				yamlText = toYaml(previousValue);
-				parseError = null;
-			}
-			meta?.onCellEditingStop?.();
+			meta?.onCellEditingCancel?.();
 			return;
 		}
 
@@ -149,33 +164,46 @@
 		}
 
 		if (event.key === 'Tab') {
+			const direction = event.shiftKey ? 'left' : 'right';
+			const canNavigate = meta?.canNavigateToCell?.(rowIndex, columnId, direction) ?? false;
+			if (!canNavigate) {
+				saveAndClose();
+				return;
+			}
 			event.preventDefault();
 			clearDebounce();
 			commit();
-			meta?.onCellEditingStop?.({ direction: event.shiftKey ? 'left' : 'right' });
+			meta?.onCellEditingStop?.({ direction });
 			return;
 		}
 
 		event.stopPropagation();
 	}
 
+	function toggleSchemaPreview(event: MouseEvent) {
+		event.preventDefault();
+		showSchemaPreview = !showSchemaPreview;
+	}
+
 	$effect(() => {
 		const current = cellValue ?? null;
-		if (isEditing) {
-			initialValue = current;
+		if (isEditing && !editingSessionActive) {
+			editingSessionActive = true;
 			previousValue = current;
 			nextValue = current;
 			yamlText = toYaml(current);
 			parseError = null;
 			return;
 		}
+		if (isEditing) return;
 
+		editingSessionActive = false;
 		clearDebounce();
-		initialValue = current;
 		previousValue = current;
 		nextValue = current;
 		yamlText = toYaml(current);
 		parseError = null;
+		return clearDebounce;
 	});
 </script>
 
@@ -198,6 +226,7 @@
 			}
 		)}
 	>
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html previewHtml}
 	</div>
 </DataGridCellWrapper>
@@ -219,18 +248,37 @@
 					<p class="text-sm text-destructive">{parseError}</p>
 				</div>
 			{/if}
-			<div class="relative h-52 w-full rounded-none font-mono text-sm">
+			{#if schemaPreview}
+				<div class="flex items-center justify-between gap-2 border-b bg-muted p-2">
+					<p class="text-sm font-medium">Configuration example</p>
+					<Button
+						variant="outline"
+						size="sm"
+						onpointerdown={(event) => event.preventDefault()}
+						onclick={toggleSchemaPreview}
+					>
+						{showSchemaPreview ? 'Hide example' : 'Show example'}
+					</Button>
+				</div>
+				{#if showSchemaPreview}
+					<pre
+						class="max-h-52 overflow-auto border-b bg-muted/60 p-2 font-mono text-xs whitespace-pre-wrap text-muted-foreground muted-scrollbar">{schemaPreview}</pre>
+				{/if}
+			{/if}
+			<div class="relative h-52 w-full rounded-none">
 				<div
 					bind:this={previewScrollRef}
-					class="absolute inset-0 -z-10 overflow-hidden rounded-none p-2 [&>pre]:h-full [&>pre]:font-mono! [&>pre]:text-sm! [&>pre]:wrap-break-word [&>pre]:whitespace-pre-wrap"
+					class="pointer-events-none absolute inset-0 z-0 overflow-hidden p-2 font-mono text-sm leading-5 tracking-normal wrap-break-word whitespace-pre-wrap [scrollbar-gutter:stable] [tab-size:2] [&>pre]:m-0 [&>pre]:min-h-full [&>pre]:bg-transparent! [&>pre]:font-mono! [&>pre]:text-sm! [&>pre]:leading-5! [&>pre]:tracking-normal [&>pre]:wrap-break-word [&>pre]:whitespace-pre-wrap"
 				>
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 					{@html previewHtml}
 				</div>
 				<textarea
 					bind:this={textareaRef}
 					placeholder="Enter YAML..."
 					spellcheck="false"
-					class="relative z-10 h-52 w-full resize-none overscroll-none rounded-none border-0 bg-transparent p-2 font-mono text-sm text-transparent caret-foreground shadow-none focus-visible:outline-none"
+					wrap="soft"
+					class="relative z-10 h-full w-full resize-none overflow-auto border-0 bg-transparent p-2 font-mono text-sm leading-5 tracking-normal wrap-break-word whitespace-pre-wrap text-transparent caret-foreground shadow-none muted-scrollbar [scrollbar-gutter:stable] [tab-size:2] focus-visible:outline-none"
 					value={yamlText}
 					onblur={handleBlur}
 					oninput={handleTextareaInput}

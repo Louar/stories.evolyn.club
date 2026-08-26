@@ -39,6 +39,7 @@
 	import GripVertical from '@lucide/svelte/icons/grip-vertical';
 	import ListFilter from '@lucide/svelte/icons/list-filter';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	const FILTER_SHORTCUT_KEY = 'f';
 	const REMOVE_FILTER_SHORTCUTS = ['backspace', 'delete'];
@@ -54,17 +55,24 @@
 	let open = $state(false);
 
 	const columnFilters = $derived(table.getState().columnFilters);
+	const filteredRowCount = $derived.by(() => {
+		// Ensure this recomputes when table filters change.
+		// table.getState().columnFilters;
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		table.getState().globalFilter;
+		return table.getFilteredRowModel().rows.length;
+	});
 
 	// Create a mutable copy for DnD
-	let filterItems = $state<ColumnFilter[]>([]);
+	let filterItems = $derived<ColumnFilter[]>([]);
 
 	$effect(() => {
 		filterItems = [...columnFilters];
 	});
 
 	const { columnLabels, columns, columnVariants } = $derived.by(() => {
-		const labels = new Map<string, string>();
-		const variants = new Map<string, string>();
+		const labels = new SvelteMap<string, string>();
+		const variants = new SvelteMap<string, string>();
 		const filteringIds = new Set(columnFilters.map((f) => f.id));
 		const availableColumns: Option[] = [];
 
@@ -224,7 +232,8 @@
 	>
 		<div class="flex flex-col gap-1">
 			<h4 class="leading-none font-medium">
-				{columnFilters.length > 0 ? 'Filter by' : 'No filters applied'}
+				{filteredRowCount} rows &middot;
+				{columnFilters.length > 0 ? 'Filtered by' : 'No filters applied'}
 			</h4>
 			<p class={cn('text-sm text-muted-foreground', columnFilters.length > 0 && 'sr-only')}>
 				{columnFilters.length > 0
@@ -347,7 +356,7 @@
 							</SelectContent>
 						</Select>
 						<!-- Value input -->
-						<div class="min-w-36 flex-1">
+						<div class="flex min-w-36 flex-1 gap-2">
 							{#if needsValue}
 								{#if variant === 'number'}
 									<Input
@@ -368,6 +377,25 @@
 										}}
 										class="h-8 w-full rounded"
 									/>
+									{#if operator === 'between'}
+										<Input
+											type="number"
+											inputmode="numeric"
+											placeholder="Upper value"
+											value={String(filterValue?.value2 ?? '')}
+											oninput={(event) => {
+												const val = (event.target as HTMLInputElement).value;
+												onFilterUpdate(filter.id, {
+													value: {
+														operator,
+														value: filterValue?.value,
+														value2: val === '' ? undefined : Number(val)
+													}
+												});
+											}}
+											class="h-8 w-full rounded"
+										/>
+									{/if}
 								{:else if variant === 'date'}
 									{@const calendarValue = parseISOToCalendarDate(
 										filterValue?.value as string | undefined
@@ -410,6 +438,48 @@
 											/>
 										</PopoverContent>
 									</Popover>
+									{#if operator === 'between'}
+										{@const calendarValue2 = parseISOToCalendarDate(
+											filterValue?.value2 as string | undefined
+										)}
+										<Popover>
+											<PopoverTrigger>
+												{#snippet child({ props })}
+													<Button
+														{...props}
+														variant="outline"
+														size="sm"
+														class={cn(
+															'h-8 w-full justify-start rounded font-normal',
+															!calendarValue2 && 'text-muted-foreground'
+														)}
+													>
+														<CalendarIcon />
+														<span class="truncate">
+															{calendarValue2
+																? `${calendarValue2.month}/${calendarValue2.day}/${calendarValue2.year}`
+																: 'Upper date'}
+														</span>
+													</Button>
+												{/snippet}
+											</PopoverTrigger>
+											<PopoverContent align="start" class="w-auto p-0">
+												<Calendar
+													type="single"
+													value={calendarValue2}
+													onValueChange={(date: DateValue | undefined) => {
+														onFilterUpdate(filter.id, {
+															value: {
+																operator,
+																value: filterValue?.value,
+																value2: calendarDateToISO(date)
+															}
+														});
+													}}
+												/>
+											</PopoverContent>
+										</Popover>
+									{/if}
 								{:else if (variant === 'select-single' || variant === 'select-multiple') && selectOptions.length > 0}
 									{#if operator === 'isAnyOf' || operator === 'isNoneOf'}
 										{@const selectedValues = Array.isArray(filterValue?.value)

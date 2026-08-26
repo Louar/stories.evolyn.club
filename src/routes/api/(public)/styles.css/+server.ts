@@ -1,18 +1,113 @@
 import type { RequestHandler } from './$types';
 
+interface CSSVariables {
+	[key: string]: string | CSSVariables;
+}
 
+const defaults: CSSVariables = {
+	':root': {
+		'--radius': '0.625rem',
+		'--background': 'oklch(1 0 0)',
+		'--foreground': 'oklch(0.129 0.042 264.695)',
+		'--card': 'oklch(1 0 0)',
+		'--card-foreground': 'oklch(0.129 0.042 264.695)',
+		'--popover': 'oklch(1 0 0)',
+		'--popover-foreground': 'oklch(0.129 0.042 264.695)',
+		'--primary': 'oklch(0.208 0.042 265.755)',
+		'--primary-foreground': 'oklch(0.984 0.003 247.858)',
+		'--secondary': 'oklch(0.968 0.007 247.896)',
+		'--secondary-foreground': 'oklch(0.208 0.042 265.755)',
+		'--muted': 'oklch(0.968 0.007 247.896)',
+		'--muted-foreground': 'oklch(0.554 0.046 257.417)',
+		'--accent': 'oklch(0.968 0.007 247.896)',
+		'--accent-foreground': 'oklch(0.208 0.042 265.755)',
+		'--destructive': 'oklch(0.577 0.245 27.325)',
+		'--border': 'oklch(0.929 0.013 255.508)',
+		'--input': 'oklch(0.929 0.013 255.508)',
+		'--ring': 'oklch(0.704 0.04 256.788)',
+		'--chart-1': 'oklch(0.646 0.222 41.116)',
+		'--chart-2': 'oklch(0.6 0.118 184.704)',
+		'--chart-3': 'oklch(0.398 0.07 227.392)',
+		'--chart-4': 'oklch(0.828 0.189 84.429)',
+		'--chart-5': 'oklch(0.769 0.188 70.08)',
+		'--sidebar': 'oklch(0.984 0.003 247.858)',
+		'--sidebar-foreground': 'oklch(0.129 0.042 264.695)',
+		'--sidebar-primary': 'oklch(0.208 0.042 265.755)',
+		'--sidebar-primary-foreground': 'oklch(0.984 0.003 247.858)',
+		'--sidebar-accent': 'oklch(0.968 0.007 247.896)',
+		'--sidebar-accent-foreground': 'oklch(0.208 0.042 265.755)',
+		'--sidebar-border': 'oklch(0.929 0.013 255.508)',
+		'--sidebar-ring': 'oklch(0.704 0.04 256.788)'
+	},
+	'.dark': {
+		'--background': 'oklch(0.129 0.042 264.695)',
+		'--foreground': 'oklch(0.984 0.003 247.858)',
+		'--card': 'oklch(0.208 0.042 265.755)',
+		'--card-foreground': 'oklch(0.984 0.003 247.858)',
+		'--popover': 'oklch(0.208 0.042 265.755)',
+		'--popover-foreground': 'oklch(0.984 0.003 247.858)',
+		'--primary': 'oklch(0.929 0.013 255.508)',
+		'--primary-foreground': 'oklch(0.208 0.042 265.755)',
+		'--secondary': 'oklch(0.279 0.041 260.031)',
+		'--secondary-foreground': 'oklch(0.984 0.003 247.858)',
+		'--muted': 'oklch(0.279 0.041 260.031)',
+		'--muted-foreground': 'oklch(0.704 0.04 256.788)',
+		'--accent': 'oklch(0.279 0.041 260.031)',
+		'--accent-foreground': 'oklch(0.984 0.003 247.858)',
+		'--destructive': 'oklch(0.704 0.191 22.216)',
+		'--border': 'oklch(1 0 0 / 10%)',
+		'--input': 'oklch(1 0 0 / 15%)',
+		'--ring': 'oklch(0.551 0.027 264.364)',
+		'--chart-1': 'oklch(0.488 0.243 264.376)',
+		'--chart-2': 'oklch(0.696 0.17 162.48)',
+		'--chart-3': 'oklch(0.769 0.188 70.08)',
+		'--chart-4': 'oklch(0.627 0.265 303.9)',
+		'--chart-5': 'oklch(0.645 0.246 16.439)',
+		'--sidebar': 'oklch(0.208 0.042 265.755)',
+		'--sidebar-foreground': 'oklch(0.984 0.003 247.858)',
+		'--sidebar-primary': 'oklch(0.488 0.243 264.376)',
+		'--sidebar-primary-foreground': 'oklch(0.984 0.003 247.858)',
+		'--sidebar-accent': 'oklch(0.279 0.041 260.031)',
+		'--sidebar-accent-foreground': 'oklch(0.984 0.003 247.858)',
+		'--sidebar-border': 'oklch(1 0 0 / 10%)',
+		'--sidebar-ring': 'oklch(0.551 0.027 264.364)'
+	}
+};
+
+function mergeCSSVariables(base: CSSVariables, override: unknown): CSSVariables {
+	if (!override || typeof override !== 'object' || Array.isArray(override)) return { ...base };
+
+	const merged: CSSVariables = { ...base };
+	for (const [key, value] of Object.entries(override)) {
+		const existing = merged[key];
+		merged[key] =
+			existing &&
+			typeof existing === 'object' &&
+			value &&
+			typeof value === 'object' &&
+			!Array.isArray(value)
+				? mergeCSSVariables(existing, value)
+				: (value as string | CSSVariables);
+	}
+
+	return merged;
+}
+
+function serializeCSSVariables(variables: CSSVariables): string {
+	return Object.entries(variables)
+		.map(([key, value]) => {
+			if (typeof value === 'string') return `${key}: ${value};`;
+			return `${key} { ${serializeCSSVariables(value)} }`;
+		})
+		.join('');
+}
+
+/**
+ * @openapi
+ * ignore: true
+ */
 export const GET = (async ({ locals }) => {
+	const variables = serializeCSSVariables(mergeCSSVariables(defaults, locals.client.css));
 
-  let variables = '';
-  if (locals.client.css) {
-    const process = (key: string, value: Record<string, string | unknown> | string | unknown) => {
-      if (typeof value === 'string') return `${key}: ${value};`;
-      else if (value && typeof value === 'object' && Object.keys(value).length) return ` ${key} { ${Object.entries(value).map(([k, v]): string => process(k, v as Record<string, unknown>)).join('')} } `;
-      else return '';
-    }
-
-    variables = Object.entries(locals.client.css).map(([key, value]) => process(key, value)).join('');
-  }
-
-  return new Response(variables, { status: 200, headers: { 'Content-Type': 'text/css' } });
+	return new Response(variables, { status: 200, headers: { 'Content-Type': 'text/css' } });
 }) satisfies RequestHandler;

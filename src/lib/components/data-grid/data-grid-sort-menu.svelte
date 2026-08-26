@@ -1,14 +1,6 @@
 <script lang="ts" generics="TData">
-	import type { Table, ColumnSort, SortDirection, SortingState } from '@tanstack/table-core';
-	import { dragHandleZone, dragHandle, SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
-	import { cn } from '$lib/utils.js';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import {
-		Popover,
-		PopoverContent,
-		PopoverTrigger
-	} from '$lib/components/ui/popover/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import {
 		Command,
 		CommandEmpty,
@@ -17,18 +9,22 @@
 		CommandItem,
 		CommandList
 	} from '$lib/components/ui/command/index.js';
+	import { Popover, PopoverContent, PopoverTrigger } from '$lib/components/ui/popover/index.js';
 	import {
 		Select,
 		SelectContent,
 		SelectItem,
 		SelectTrigger
 	} from '$lib/components/ui/select/index.js';
-
+	import { cn } from '$lib/utils.js';
+	import type { ColumnSort, SortingState, Table } from '@tanstack/table-core';
+	import { dragHandle, dragHandleZone, SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
 	// Icons
 	import ArrowDownUp from '@lucide/svelte/icons/arrow-down-up';
 	import ChevronsUpDown from '@lucide/svelte/icons/chevrons-up-down';
 	import GripVertical from '@lucide/svelte/icons/grip-vertical';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	const SORT_SHORTCUT_KEY = 's';
 	const REMOVE_SORT_SHORTCUTS = ['backspace', 'delete'];
@@ -51,14 +47,14 @@
 	const sorting = $derived(table.getState().sorting);
 
 	// Create a mutable copy for DnD
-	let sortingItems = $state<ColumnSort[]>([]);
+	let sortingItems = $derived<ColumnSort[]>([]);
 
 	$effect(() => {
 		sortingItems = [...sorting];
 	});
 
 	const { columnLabels, columns } = $derived.by(() => {
-		const labels = new Map<string, string>();
+		const labels = new SvelteMap<string, string>();
 		const sortingIds = new Set(sorting.map((s) => s.id));
 		const availableColumns: { id: string; label: string }[] = [];
 
@@ -93,9 +89,7 @@
 	function onSortUpdate(sortId: string, updates: Partial<ColumnSort>) {
 		table.setSorting((prevSorting: SortingState) => {
 			if (!prevSorting) return prevSorting;
-			return prevSorting.map((sort) =>
-				sort.id === sortId ? { ...sort, ...updates } : sort
-			);
+			return prevSorting.map((sort) => (sort.id === sortId ? { ...sort, ...updates } : sort));
 		});
 	}
 
@@ -142,10 +136,11 @@
 	function handleDndFinalize(e: CustomEvent<{ items: ColumnSort[] }>) {
 		sortingItems = e.detail.items;
 		// Filter out shadow items and update table sorting
-		const cleanItems = sortingItems.filter((item) => !(item as unknown as Record<string, unknown>)[SHADOW_ITEM_MARKER_PROPERTY_NAME]);
+		const cleanItems = sortingItems.filter(
+			(item) => !(item as unknown as Record<string, unknown>)[SHADOW_ITEM_MARKER_PROPERTY_NAME]
+		);
 		table.setSorting(cleanItems);
 	}
-
 </script>
 
 <svelte:window onkeydown={handleKeyDown} />
@@ -165,7 +160,7 @@
 				{#if sorting.length > 0}
 					<Badge
 						variant="secondary"
-						class="h-[18.24px] rounded-[3.2px] px-[5.12px] font-mono font-normal text-[10.4px]"
+						class="h-[18.24px] rounded-[3.2px] px-[5.12px] font-mono text-[10.4px] font-normal"
 					>
 						{sorting.length}
 					</Badge>
@@ -178,10 +173,10 @@
 		class="flex w-full max-w-[var(--radix-popover-content-available-width)] flex-col gap-3.5 p-4 sm:min-w-[380px]"
 	>
 		<div class="flex flex-col gap-1">
-			<h4 class="font-medium leading-none">
+			<h4 class="leading-none font-medium">
 				{sorting.length > 0 ? 'Sort by' : 'No sorting applied'}
 			</h4>
-			<p class={cn('text-muted-foreground text-sm', sorting.length > 0 && 'sr-only')}>
+			<p class={cn('text-sm text-muted-foreground', sorting.length > 0 && 'sr-only')}>
 				{sorting.length > 0
 					? 'Modify sorting to organize your rows.'
 					: 'Add sorting to organize your rows.'}
@@ -263,7 +258,7 @@
 						<button
 							use:dragHandle
 							aria-label="drag handle for sort"
-							class="border-input bg-background hover:bg-accent hover:text-accent-foreground inline-flex size-8 shrink-0 cursor-grab items-center justify-center rounded border text-sm font-medium whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+							class="inline-flex size-8 shrink-0 cursor-grab items-center justify-center rounded border border-input bg-background text-sm font-medium whitespace-nowrap transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
 						>
 							<GripVertical class="size-4" />
 						</button>

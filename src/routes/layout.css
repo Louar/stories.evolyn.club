@@ -41,21 +41,134 @@
 	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-ring: var(--sidebar-ring);
+
+	--color-game-background: var(--game-background);
+	--color-game-panel: var(--game-panel);
+	--color-game-panel-muted: var(--game-panel-muted);
+	--color-game-text: var(--game-text);
+	--color-game-text-muted: var(--game-text-muted);
+	--color-game-inverse: var(--game-inverse);
+	--color-game-inverse-text: var(--game-inverse-text);
+	--color-game-region-blue: var(--game-region-blue);
+	--color-game-region-blue-muted: var(--game-region-blue-muted);
+	--color-game-warning: var(--game-warning);
+	--color-game-success: var(--game-success);
+	--color-game-success-muted: var(--game-success-muted);
+	--color-game-danger: var(--game-danger);
+	--color-game-border: var(--game-border);
+	--shadow-panel: 0 0.35rem 1.25rem rgba(0, 0, 0, 0.35);
+	--shadow-arrow: 0 0.25rem 0.85rem rgba(0, 0, 0, 0.28);
+	--font-serif: 'Twemoji Country Flags', Merriweather, Georgia, serif;
+	--font-sans:
+		'Twemoji Country Flags', Roboto, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+		'Segoe UI', sans-serif;
+}
+
+:root {
+	color-scheme: light;
+	/* --game-background: #fff4df; */
+	--game-panel: #fffaf1;
+	--game-panel-muted: #d9c7ad;
+	--game-text: #30231d;
+	--game-text-muted: #5a4033;
+	--game-inverse: #30231d;
+	--game-inverse-text: #fff4df;
+	--game-region-blue: #0f7f7a;
+	--game-region-blue-muted: #315f58;
+	--game-warning: #d38300;
+	--game-success: #4c8f22;
+	--game-success-muted: #2f9b65;
+	--game-danger: #c64b38;
+	--game-border: rgba(48, 35, 29, 0.16);
+	--map-region-stroke: #ead4b4;
+	--map-region-hover: #3a2921;
+	--map-region-hover-shadow: rgba(58, 41, 33, 0.22);
+	--map-helper-fill: #30231d;
+	--map-found-fill: #d9c7ad;
+	--map-hint-fill: #00ff00;
+	/* background: var(--game-background); */
+	color: var(--game-text);
+	font-family: var(--font-sans);
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+}
+
+:root.dark {
+	color-scheme: dark;
+	--game-background: #282828;
+	--game-panel: #212121;
+	--game-panel-muted: #545454;
+	--game-text: #ebdbb2;
+	--game-text-muted: #d8caa5;
+	--game-inverse: #ebdbb2;
+	--game-inverse-text: #282828;
+	--game-region-blue: #83a598;
+	--game-region-blue-muted: #d2dded;
+	--game-warning: #fabd2f;
+	--game-success: #b8bb26;
+	--game-success-muted: #8ec07c;
+	--game-danger: #fb4934;
+	--game-border: rgba(255, 255, 255, 0.16);
+	--map-region-stroke: #212121;
+	--map-region-hover: #efe2c1;
+	--map-region-hover-shadow: rgba(235, 219, 178, 0.35);
+	--map-helper-fill: #ffffff;
+	--map-found-fill: #545454;
+	--map-hint-fill: #00ff00;
 }
 
 @layer base {
 	* {
 		@apply border-border outline-ring/50;
 	}
+	html {
+		@apply overscroll-x-none;
+	}
 	body {
 		@apply bg-background text-foreground;
-	}
-	.aspect-portrait {
-		@apply aspect-9/16;
 	}
 	[data-slot='grid-wrapper'] .highlight {
 		@apply bg-accent/80;
 	}
+	.maplibregl-popup-content {
+		@apply rounded-none! bg-transparent! p-0! shadow-none!;
+	}
+	.maplibregl-popup-tip {
+		@apply hidden!;
+	}
+}
+
+@utility scrollbar {
+	scrollbar-color: var(--muted-foreground) transparent;
+	scrollbar-width: thin;
+}
+
+@utility muted-scrollbar {
+	scrollbar-color: color-mix(in srgb, var(--muted-foreground) 50%, transparent) transparent;
+	scrollbar-width: thin;
+	&:hover {
+		scrollbar-color: var(--muted-foreground) transparent;
+	}
+}
+
+@utility hidden-scrollbar {
+	scrollbar-color: transparent transparent;
+	scrollbar-width: thin;
+	&:hover {
+		scrollbar-color: var(--muted-foreground) transparent;
+	}
+}
+
+@utility no-scrollbar {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+
+@utility pb-safe {
+	padding-bottom: env(safe-area-inset-bottom);
 }
 
 html::-webkit-scrollbar,
@@ -70,6 +183,49 @@ body,
 	scrollbar-width: none;
 }
 
+.prose {
+	mark {
+		background: linear-gradient(
+			120deg,
+			color-mix(in srgb, var(--primary) 60%, transparent) 0%,
+			color-mix(in srgb, var(--primary) 60%, transparent) 100%
+		);
+		background-repeat: no-repeat;
+		background-size: 100% 40%;
+		background-position: 0 90%;
+	}
+	a {
+		@apply text-accent-foreground transition-all hover:no-underline hover:opacity-60;
+	}
+	:not(pre) code {
+		@apply bg-muted font-medium text-muted-foreground;
+	}
+	hr {
+		@apply my-6 border-2;
+	}
+}
+
+.dark .prose {
+	--tw-prose-body: var(--tw-prose-invert-body);
+	--tw-prose-headings: var(--tw-prose-invert-headings);
+	--tw-prose-lead: var(--tw-prose-invert-lead);
+	--tw-prose-links: var(--tw-prose-invert-links);
+	--tw-prose-bold: var(--tw-prose-invert-bold);
+	--tw-prose-counters: var(--tw-prose-invert-counters);
+	--tw-prose-bullets: var(--tw-prose-invert-bullets);
+	--tw-prose-hr: var(--tw-prose-invert-hr);
+	--tw-prose-quotes: var(--tw-prose-invert-quotes);
+	--tw-prose-quote-borders: var(--tw-prose-invert-quote-borders);
+	--tw-prose-captions: var(--tw-prose-invert-captions);
+	--tw-prose-kbd: var(--tw-prose-invert-kbd);
+	--tw-prose-kbd-shadows: var(--tw-prose-invert-kbd-shadows);
+	--tw-prose-code: var(--tw-prose-invert-code);
+	--tw-prose-pre-code: var(--tw-prose-invert-pre-code);
+	--tw-prose-pre-bg: var(--tw-prose-invert-pre-bg);
+	--tw-prose-th-borders: var(--tw-prose-invert-th-borders);
+	--tw-prose-td-borders: var(--tw-prose-invert-td-borders);
+}
+
 html.dark .shiki,
 html.dark .shiki span {
 	color: var(--shiki-dark) !important;
@@ -80,4 +236,14 @@ html .shiki-bg-transparent .shiki span,
 html.dark .shiki-bg-transparent .shiki,
 html.dark .shiki-bg-transparent .shiki span {
 	background-color: transparent !important;
+}
+
+a.btn {
+	@apply inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium whitespace-nowrap text-primary-foreground shadow-xs transition-all outline-none hover:bg-primary/90 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 has-[>svg]:px-3 aria-disabled:pointer-events-none aria-disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4;
+	&.btn-accent {
+		@apply bg-accent-foreground text-background shadow-xs hover:bg-accent-foreground/90;
+	}
+	&.btn-lg {
+		@apply h-10 rounded-md px-6 has-[>svg]:px-4;
+	}
 }

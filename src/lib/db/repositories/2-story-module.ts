@@ -1,23 +1,24 @@
 import type { Rule } from '$lib/components/app/player/types';
 import { db } from '$lib/db/database';
 import { formObjectPreprocessor, translatableValidator } from '$lib/db/schemas/0-utils';
+import { LogicHitpolicy } from '$lib/db/schemas/2-story-module';
+import { loadTaxonomyGame } from '$lib/server/taxonomy-game';
 import { error } from '@sveltejs/kit';
 import type { NotNull } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import z from 'zod/v4';
 import { Language, selectLocalizedField, selectLocalizedMediaField } from '../schemas/0-utils';
-import { LogicHitpolicy } from '../schemas/2-story-module';
 
 export const storySchema = z.object({
-  reference: z.string().min(1),
+  slug: z.string().min(1),
   name: z.preprocess(formObjectPreprocessor, translatableValidator),
   isPublished: z.boolean().default(false),
   isPublic: z.boolean().default(true)
 });
 
-export const findOneAnthologyByReference = async (
+export const findOneAnthologyBySlug = async (
   clientId: string,
-  anthologyReference: string,
+  anthologySlug: string,
   language?: Language
 ) => {
   if (!clientId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i))
@@ -25,13 +26,13 @@ export const findOneAnthologyByReference = async (
 
   const anthology = await db
     .selectFrom('anthology')
-    .where('anthology.reference', '=', anthologyReference)
+    .where('anthology.slug', '=', anthologySlug)
     .where('anthology.clientId', '=', clientId)
     .where('anthology.isPublished', '=', true)
     .where('anthology.isPublic', '=', true)
     .select((eb) => [
       'anthology.id',
-      'anthology.reference',
+      'anthology.slug',
       selectLocalizedField(eb, 'anthology.name', language).as('name'),
       jsonArrayFrom(
         eb
@@ -41,10 +42,10 @@ export const findOneAnthologyByReference = async (
           .select((eb) => [
             'anthologyPosition.order',
             'story.id',
-            'story.reference',
+            'story.slug',
             selectLocalizedField(eb, 'story.name', language).as('name')
           ])
-          .$narrowType<{ order: NotNull; id: NotNull; reference: NotNull }>()
+          .$narrowType<{ order: NotNull; id: NotNull; slug: NotNull }>()
           .orderBy('anthologyPosition.order', 'asc')
       ).as('stories')
     ])
@@ -63,10 +64,18 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
     .where('story.clientId', '=', clientId)
     .select((eb) => [
       'story.id',
-      'story.reference',
+      'story.slug',
       'story.name',
       'story.isPublished',
       'story.isPublic',
+
+      jsonArrayFrom(
+        eb
+          .selectFrom('still')
+          .leftJoin('stillAvailableToStory', 'stillAvailableToStory.stillId', 'still.id')
+          .whereRef('stillAvailableToStory.storyId', '=', 'story.id')
+          .select(['still.id', 'still.color', 'still.image', 'still.style'])
+      ).as('stills'),
 
       jsonArrayFrom(
         eb
@@ -121,7 +130,7 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
                 .select((eb) => [
                   'quizQuestionTemplate.id',
                   'quizQuestionTemplate.order',
-                  'quizQuestionTemplate.answerTemplateReference',
+                  'quizQuestionTemplate.answerTemplateSlug',
                   'quizQuestionTemplate.title',
                   'quizQuestionTemplate.instruction',
                   'quizQuestionTemplate.configuration',
@@ -166,7 +175,7 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
                       )
                       .select([
                         'quizQuestionTemplateAnswerGroup.id',
-                        'quizQuestionTemplateAnswerGroup.reference',
+                        'quizQuestionTemplateAnswerGroup.slug',
                         'quizQuestionTemplateAnswerGroup.doRandomize'
                       ])
                       .$narrowType<{ id: NotNull; doRandomize: NotNull }>()
@@ -179,10 +188,19 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
 
       jsonArrayFrom(
         eb
+          .selectFrom('taxonomy')
+          .whereRef('taxonomy.clientId', '=', 'story.clientId')
+          .select(['taxonomy.id', 'taxonomy.name'])
+          .orderBy('taxonomy.name', 'asc')
+      ).as('taxonomies'),
+
+      jsonArrayFrom(
+        eb
           .selectFrom('part')
           .whereRef('part.storyId', '=', 'story.id')
           .leftJoin('quizLogicForPart as qlfp', 'qlfp.id', 'part.quizLogicForPartId')
           .leftJoin('quizTemplate', 'quizTemplate.id', 'qlfp.quizTemplateId')
+          .leftJoin('taxonomyDraftForPart as tdfp', 'tdfp.id', 'part.taxonomyDraftForPartId')
           .select((eb) => [
             'part.id',
             'part.isInitial',
@@ -191,6 +209,7 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
             // Background
             'part.backgroundType',
             'part.backgroundConfiguration',
+            'part.stillId',
             'part.videoId',
             'part.defaultNextPartId',
 
@@ -200,6 +219,8 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
             'part.announcementTemplateId',
             'quizTemplate.id as quizTemplateId',
             'part.quizLogicForPartId',
+            'part.taxonomyDraftForPartId',
+            'tdfp.taxonomyId as taxonomyId',
 
             jsonObjectFrom(
               eb
@@ -237,7 +258,45 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
                       .$narrowType<{ id: NotNull; inputs: NotNull; isRemoved: NotNull }>()
                   ).as('rules')
                 ])
-            ).as('quizLogicForPart')
+            ).as('quizLogicForPart'),
+
+            jsonObjectFrom(
+              eb
+                .selectFrom('taxonomyDraftForPart')
+                .whereRef('taxonomyDraftForPart.id', '=', 'part.taxonomyDraftForPartId')
+                .innerJoin('taxonomy', 'taxonomy.id', 'taxonomyDraftForPart.taxonomyId')
+                .select((eb) => [
+                  'taxonomyDraftForPart.id',
+                  'taxonomyDraftForPart.taxonomyId',
+                  'taxonomy.name as taxonomyName',
+                  'taxonomyDraftForPart.nrOfRounds',
+                  'taxonomyDraftForPart.nrOfItemsPerRound',
+                  'taxonomyDraftForPart.goal',
+                  'taxonomyDraftForPart.maxMistakes',
+                  'taxonomyDraftForPart.difficulty',
+                  'taxonomyDraftForPart.defaultNextPartId',
+                  jsonArrayFrom(
+                    eb
+                      .selectFrom('taxonomyDraftLogicRule')
+                      .whereRef(
+                        'taxonomyDraftLogicRule.taxonomyDraftForPartId',
+                        '=',
+                        'taxonomyDraftForPart.id'
+                      )
+                      .orderBy('taxonomyDraftLogicRule.order', 'asc')
+                      .select([
+                        'taxonomyDraftLogicRule.id',
+                        'taxonomyDraftLogicRule.order',
+                        'taxonomyDraftLogicRule.nextPartId',
+                        'taxonomyDraftLogicRule.nrOfRounds',
+                        'taxonomyDraftLogicRule.score',
+                        'taxonomyDraftLogicRule.mistakes',
+                        'taxonomyDraftLogicRule.duration',
+                        eb.lit<boolean>(false).as('isRemoved')
+                      ])
+                  ).as('rules')
+                ])
+            ).as('taxonomyDraftForPart')
           ])
           .orderBy('part.isInitial', 'desc')
       ).as('parts')
@@ -247,9 +306,9 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
   return rawstory;
 };
 
-export const findOneStoryByReference = async (
+export const findOneStoryBySlug = async (
   clientId: string,
-  storyReference: string,
+  storySlug: string,
   language?: Language
 ) => {
   if (!clientId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i))
@@ -257,13 +316,13 @@ export const findOneStoryByReference = async (
 
   const rawstory = await db
     .selectFrom('story')
-    .where('story.reference', '=', storyReference)
+    .where('story.slug', '=', storySlug)
     .where('story.clientId', '=', clientId)
     .where('story.isPublished', '=', true)
     .where('story.isPublic', '=', true)
     .select((eb) => [
       'story.id',
-      'story.reference',
+      'story.slug',
       selectLocalizedField(eb, 'story.name', language).as('name'),
       jsonArrayFrom(
         eb
@@ -275,25 +334,41 @@ export const findOneStoryByReference = async (
             // Background
             'part.backgroundType',
             'part.backgroundConfiguration',
-            jsonObjectFrom(
-              eb
-                .selectFrom('video')
-                .whereRef('video.id', '=', 'part.videoId')
-                .select((eb) => [
-                  selectLocalizedMediaField(eb, 'video.source', language).as('source'),
-                  selectLocalizedMediaField(eb, 'video.thumbnail', language).as('thumbnail'),
-                  selectLocalizedField(eb, 'video.captions', language).as('captions'),
-                  'video.duration'
-                ])
-                .$narrowType<{ source: NotNull; duration: NotNull }>()
-            )
-              .$notNull()
+            eb
+              .case()
+              .when('part.backgroundType', '=', 'video')
+              .then(
+                jsonObjectFrom(
+                  eb
+                    .selectFrom('video')
+                    .whereRef('video.id', '=', 'part.videoId')
+                    .select((eb) => [
+                      selectLocalizedMediaField(eb, 'video.source', language).as('source'),
+                      selectLocalizedMediaField(eb, 'video.thumbnail', language).as('thumbnail'),
+                      selectLocalizedField(eb, 'video.captions', language).as('captions'),
+                      'video.duration'
+                    ])
+                    .$narrowType<{ source: NotNull; duration: NotNull }>()
+                )
+              )
+              .when('part.backgroundType', '=', 'still')
+              .then(
+                jsonObjectFrom(
+                  eb
+                    .selectFrom('still')
+                    .whereRef('still.id', '=', 'part.stillId')
+                    .select(['still.color', 'still.image', 'still.style'])
+                )
+              )
+              .else(null)
+              .end()
               .as('background'),
             'part.defaultNextPartId',
 
             // Foreground
             'part.foregroundType',
             'part.foregroundConfiguration',
+            'part.taxonomyDraftForPartId',
             eb
               .case()
               .when(eb('part.announcementTemplateId', 'is not', null))
@@ -327,7 +402,7 @@ export const findOneStoryByReference = async (
                           .select((eb) => [
                             'quizQuestionTemplate.id',
                             'quizQuestionTemplate.order',
-                            'quizQuestionTemplate.answerTemplateReference',
+                            'quizQuestionTemplate.answerTemplateSlug',
                             selectLocalizedField(eb, 'quizQuestionTemplate.title', language).as(
                               'title'
                             ),
@@ -453,9 +528,25 @@ export const findOneStoryByReference = async (
     .executeTakeFirst();
   if (!rawstory) return;
 
+  const taxonomyGames = new Map(
+    await Promise.all(
+      rawstory.parts
+        .filter(
+          (part) => part.foregroundType === 'taxonomy' && part.taxonomyDraftForPartId !== null
+        )
+        .map(
+          async (part) =>
+            [
+              part.id,
+              await loadTaxonomyGame(clientId, part.taxonomyDraftForPartId!, language)
+            ] as const
+        )
+    )
+  );
+
   const story = {
     id: rawstory.id,
-    reference: rawstory.reference,
+    slug: rawstory.slug,
     name: rawstory.name,
     parts: rawstory.parts.map((part) => {
       const {
@@ -465,7 +556,14 @@ export const findOneStoryByReference = async (
         foregroundConfiguration,
         ...restPart
       } = part;
-      if (
+      const taxonomyGame = taxonomyGames.get(part.id);
+      if (part.foregroundType === 'taxonomy' && taxonomyGame) {
+        return {
+          ...restPart,
+          background: { ...background, ...backgroundConfiguration },
+          foreground: { ...taxonomyGame, ...foregroundConfiguration }
+        };
+      } else if (
         part.foregroundType === 'quiz' &&
         foreground &&
         typeof foreground === 'object' &&
@@ -555,6 +653,7 @@ export const findOnePartById = async (partId: string) => {
     .where('part.id', '=', partId)
     .leftJoin('quizLogicForPart as qlfp', 'qlfp.id', 'part.quizLogicForPartId')
     .leftJoin('quizTemplate', 'quizTemplate.id', 'qlfp.quizTemplateId')
+    .leftJoin('taxonomyDraftForPart as tdfp', 'tdfp.id', 'part.taxonomyDraftForPartId')
     .select((eb) => [
       'part.id',
       'part.isInitial',
@@ -563,6 +662,7 @@ export const findOnePartById = async (partId: string) => {
       // Background
       'part.backgroundType',
       'part.backgroundConfiguration',
+      'part.stillId',
       'part.videoId',
       'part.defaultNextPartId',
 
@@ -572,6 +672,8 @@ export const findOnePartById = async (partId: string) => {
       'part.announcementTemplateId',
       'quizTemplate.id as quizTemplateId',
       'part.quizLogicForPartId',
+      'part.taxonomyDraftForPartId',
+      'tdfp.taxonomyId as taxonomyId',
 
       jsonObjectFrom(
         eb
@@ -608,7 +710,45 @@ export const findOnePartById = async (partId: string) => {
                 .$narrowType<{ id: NotNull; inputs: NotNull; isRemoved: NotNull }>()
             ).as('rules')
           ])
-      ).as('quizLogicForPart')
+      ).as('quizLogicForPart'),
+
+      jsonObjectFrom(
+        eb
+          .selectFrom('taxonomyDraftForPart')
+          .whereRef('taxonomyDraftForPart.id', '=', 'part.taxonomyDraftForPartId')
+          .innerJoin('taxonomy', 'taxonomy.id', 'taxonomyDraftForPart.taxonomyId')
+          .select((eb) => [
+            'taxonomyDraftForPart.id',
+            'taxonomyDraftForPart.taxonomyId',
+            'taxonomy.name as taxonomyName',
+            'taxonomyDraftForPart.nrOfRounds',
+            'taxonomyDraftForPart.nrOfItemsPerRound',
+            'taxonomyDraftForPart.goal',
+            'taxonomyDraftForPart.maxMistakes',
+            'taxonomyDraftForPart.difficulty',
+            'taxonomyDraftForPart.defaultNextPartId',
+            jsonArrayFrom(
+              eb
+                .selectFrom('taxonomyDraftLogicRule')
+                .whereRef(
+                  'taxonomyDraftLogicRule.taxonomyDraftForPartId',
+                  '=',
+                  'taxonomyDraftForPart.id'
+                )
+                .orderBy('taxonomyDraftLogicRule.order', 'asc')
+                .select([
+                  'taxonomyDraftLogicRule.id',
+                  'taxonomyDraftLogicRule.order',
+                  'taxonomyDraftLogicRule.nextPartId',
+                  'taxonomyDraftLogicRule.nrOfRounds',
+                  'taxonomyDraftLogicRule.score',
+                  'taxonomyDraftLogicRule.mistakes',
+                  'taxonomyDraftLogicRule.duration',
+                  eb.lit<boolean>(false).as('isRemoved')
+                ])
+            ).as('rules')
+          ])
+      ).as('taxonomyDraftForPart')
     ])
     .executeTakeFirstOrThrow();
 
@@ -630,6 +770,14 @@ export const findOneVideoById = async (videoId: string) => {
     .executeTakeFirstOrThrow();
 
   return announcement;
+};
+
+export const findOneStillById = async (stillId: string) => {
+  return db
+    .selectFrom('still')
+    .where('still.id', '=', stillId)
+    .select(['still.id', 'still.color', 'still.image', 'still.style'])
+    .executeTakeFirstOrThrow();
 };
 
 export const findOneAnnouncementById = async (announcementId: string) => {
@@ -663,7 +811,7 @@ export const findOneQuizById = async (quizId: string) => {
           .select((eb) => [
             'quizQuestionTemplate.id',
             'quizQuestionTemplate.order',
-            'quizQuestionTemplate.answerTemplateReference',
+            'quizQuestionTemplate.answerTemplateSlug',
             'quizQuestionTemplate.title',
             'quizQuestionTemplate.instruction',
             'quizQuestionTemplate.configuration',
@@ -708,7 +856,7 @@ export const findOneQuizById = async (quizId: string) => {
                 )
                 .select([
                   'quizQuestionTemplateAnswerGroup.id',
-                  'quizQuestionTemplateAnswerGroup.reference',
+                  'quizQuestionTemplateAnswerGroup.slug',
                   'quizQuestionTemplateAnswerGroup.doRandomize'
                 ])
                 .$narrowType<{ id: NotNull; doRandomize: NotNull }>()

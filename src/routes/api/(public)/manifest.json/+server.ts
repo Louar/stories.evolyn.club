@@ -1,6 +1,10 @@
 import type { RequestHandler } from './$types';
 
 
+/**
+ * @openapi
+ * ignore: true
+ */
 export const GET = (async ({ locals }) => {
 
   const camelToSnake = (str: string) => str.replace(/([A-Z])/g, '_$1').toLowerCase();

@@ -1,6 +1,16 @@
 <script lang="ts" generics="TData">
+	import {
+		hasFileUploadHandler,
+		isAcknowledgedCellValueCurrent
+	} from '$lib/components/data-grid/data-grid-actions.js';
+	import {
+		getFileCellItems,
+		isDeletableUploadedMedia,
+		normalizeFiles
+	} from '$lib/components/data-grid/data-grid-media.js';
 	import type {
 		CellVariantProps,
+		DataGridMutationResult,
 		FileCellData
 	} from '$lib/components/data-grid/types/data-grid.js';
 	import { getLineCount } from '$lib/components/data-grid/types/data-grid.js';
@@ -22,7 +32,7 @@
 	import Upload from '@lucide/svelte/icons/upload';
 	import X from '@lucide/svelte/icons/x';
 	import { Popover as PopoverPrimitive } from 'bits-ui';
-	import type { Component } from 'svelte';
+	import { onDestroy, type Component } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import { SvelteMap } from 'svelte/reactivity';
 	import DataGridCellWrapper from '../data-grid-cell-wrapper.svelte';
@@ -40,10 +50,7 @@
 	}: CellVariantProps<TData> = $props();
 
 	// Use centralized cellValue prop - fine-grained reactivity is handled by DataGridCell
-	const initialCellValue = $derived.by(() => {
-		if (!cellValue) return [];
-		return Array.isArray(cellValue) ? cellValue : [cellValue];
-	});
+	const initialCellValue = $derived(getFileCellItems(cellValue));
 
 	type FileCellItem = FileCellData & {
 		localFile?: File;
@@ -58,6 +65,9 @@
 	let containerRef = $state<HTMLDivElement | null>(null);
 	let fileInputRef = $state<HTMLInputElement | null>(null);
 	let dropzoneRef = $state<HTMLButtonElement | null>(null);
+	let editingSessionActive = false;
+	let editingSessionGeneration = 0;
+	let errorResetTimer: ReturnType<typeof setTimeout> | undefined;
 	const cellOpts = $derived(cell.column.columnDef.meta?.cell);
 	const sideOffset = $derived(-(containerRef?.clientHeight ?? 0));
 
@@ -66,10 +76,30 @@
 	const maxFiles = $derived(fileCellOpts?.maxFiles ?? 10);
 	const accept = $derived(fileCellOpts?.accept);
 	const multiple = $derived(fileCellOpts?.multiple ?? true);
+	const canUploadFiles = $derived(hasFileUploadHandler(table.options.meta?.onFilesUpload));
 
 	const acceptedTypes = $derived(accept ? accept.split(',').map((t) => t.trim()) : null);
 
 	const viewFiles = $derived(isEditing ? filesState : (initialCellValue as FileCellItem[]));
+	const cloneInitialFiles = () => (initialCellValue as FileCellItem[]).map((file) => ({ ...file }));
+
+	$effect(() => {
+		if (isEditing && !editingSessionActive) {
+			editingSessionActive = true;
+			editingSessionGeneration++;
+			filesState = cloneInitialFiles();
+			error = null;
+		} else if (!isEditing && editingSessionActive) {
+			editingSessionActive = false;
+			editingSessionGeneration++;
+			filesState = cloneInitialFiles();
+		}
+	});
+
+	onDestroy(() => {
+		editingSessionGeneration++;
+		if (errorResetTimer) clearTimeout(errorResetTimer);
+	});
 
 	const setFileInputRef = (el: HTMLInputElement | null) => {
 		fileInputRef = el;
@@ -109,34 +139,39 @@
 		return FileIcon;
 	}
 
-	function normalizeFiles(items: FileCellItem[]): FileCellData[] {
-		return items.map(({ id, collection, filename }) => ({ id, collection, filename }));
+	function cancelEditingSession() {
+		editingSessionGeneration++;
+		filesState = cloneInitialFiles();
+		error = null;
+		table.options.meta?.onCellEditingCancel?.();
 	}
 
-	function getMissionTemplateId(rowData: unknown): string | null {
-		if (!rowData || typeof rowData !== 'object') return null;
-		const record = rowData as Record<string, unknown>;
-		if (typeof record.missionTemplateId === 'string') return record.missionTemplateId;
-		const missionTemplate = record.missionTemplate;
-		if (missionTemplate && typeof missionTemplate === 'object') {
-			const id = (missionTemplate as Record<string, unknown>).id;
-			return typeof id === 'string' ? id : null;
+	async function cleanupStaleUploads(uploadedFiles: FileCellItem[], rowData: TData | undefined) {
+		if (!uploadedFiles.length || !table.options.meta?.onFilesDelete || !rowData) return;
+		try {
+			await table.options.meta.onFilesDelete({
+				fileIds: uploadedFiles.map((file) => file.id),
+				rowIndex,
+				rowId: cell.row.id,
+				columnId,
+				row: rowData
+			});
+		} catch {
+			// The cancelled edit must stay cancelled even if best-effort cleanup fails.
 		}
-		return null;
 	}
 
-	async function deleteFileFromApi(file: FileCellItem, rowData: unknown) {
-		if (file.isUploading) return;
+	async function deleteFileFromApi(file: FileCellItem): Promise<'deleted' | 'retained'> {
+		if (!isDeletableUploadedMedia(file)) return 'retained';
 		const encodedFilename = encodeURIComponent(file.filename);
-		const missionTemplateId =
-			file.collection === MediaCollection.missions ? getMissionTemplateId(rowData) : null;
-		const query = missionTemplateId ? `?id=${encodeURIComponent(missionTemplateId)}` : '';
-		const res = await fetch(`/api/media/${file.collection}/${encodedFilename}${query}`, {
+		const res = await fetch(`/api/media/${file.collection}/${encodedFilename}`, {
 			method: 'DELETE'
 		});
+		if (res.status === 409) return 'retained';
 		if (!res.ok) {
 			throw new Error(`Failed to delete ${file.filename}`);
 		}
+		return 'deleted';
 	}
 
 	function validateFile(file: File): string | null {
@@ -162,15 +197,17 @@
 		return null;
 	}
 
-	async function addFiles(newFiles: File[], skipUpload = false) {
-		if (readOnly) return;
+	async function addFiles(newFiles: File[]) {
+		if (readOnly || !canUploadFiles) return;
+		const sessionGeneration = editingSessionGeneration;
 		error = null;
 
 		if (maxFiles && viewFiles.length + newFiles.length > maxFiles) {
 			const errorMessage = `Maximum ${maxFiles} files allowed`;
 			error = errorMessage;
 			toast.error(errorMessage);
-			setTimeout(() => {
+			if (errorResetTimer) clearTimeout(errorResetTimer);
+			errorResetTimer = setTimeout(() => {
 				error = null;
 			}, 2000);
 			return;
@@ -206,97 +243,79 @@
 					});
 				}
 
-				setTimeout(() => {
+				if (errorResetTimer) clearTimeout(errorResetTimer);
+				errorResetTimer = setTimeout(() => {
 					error = null;
 				}, 2000);
 			}
 		}
 
 		if (filesToValidate.length > 0) {
-			if (!skipUpload) {
-				filesState = isEditing ? filesState : [...initialCellValue];
-				const tempFiles: FileCellItem[] = filesToValidate.map((f) => ({
-					id: crypto.randomUUID(),
-					collection: MediaCollection.externals,
-					filename: f.name,
-					localFile: f,
-					isUploading: false
-				}));
-				const filesWithTemp = [...filesState, ...tempFiles];
-				filesState = filesWithTemp;
+			filesState = isEditing ? filesState : [...initialCellValue];
+			const tempFiles: FileCellItem[] = filesToValidate.map((f) => ({
+				id: crypto.randomUUID(),
+				collection: MediaCollection.externals,
+				filename: f.name,
+				localFile: f,
+				isUploading: false
+			}));
+			const filesWithTemp = [...filesState, ...tempFiles];
+			filesState = filesWithTemp;
 
-				const uploadingIds = new Set<string>(tempFiles.map((f) => f.id));
+			const uploadingIds = new Set<string>(tempFiles.map((f) => f.id));
 
-				let uploadedFiles: FileCellItem[] = [];
-				const rowData = table.options.data[rowIndex];
+			let uploadedFiles: FileCellItem[] = [];
+			const rowData = cell.row.original;
 
-				if (table.options.meta?.onFilesUpload && rowData) {
-					try {
-						isUploading = true;
-						uploadedFiles = await table.options.meta.onFilesUpload({
-							files: filesToValidate,
-							rowIndex,
-							columnId,
-							row: rowData
-						});
-					} catch (err) {
-						toast.error(
-							err instanceof Error
-								? err.message
-								: `Failed to upload ${filesToValidate.length} file${filesToValidate.length !== 1 ? 's' : ''}`
-						);
-						filesState = filesState.filter((f) => !uploadingIds.has(f.id));
-						return;
-					} finally {
-						isUploading = false;
-					}
-				} else {
-					await new Promise((resolve) => setTimeout(resolve, 800));
-					uploadedFiles = filesToValidate.map((f, i) => ({
-						id: tempFiles[i]?.id ?? crypto.randomUUID(),
-						collection: MediaCollection.externals,
-						filename: f.name,
-						localFile: f,
-						isUploading: false
-					}));
+			if (table.options.meta?.onFilesUpload && rowData) {
+				try {
+					isUploading = true;
+					uploadedFiles = await table.options.meta.onFilesUpload({
+						files: filesToValidate,
+						rowIndex,
+						rowId: cell.row.id,
+						columnId,
+						row: rowData
+					});
+				} catch (err) {
+					if (sessionGeneration !== editingSessionGeneration) return;
+					toast.error(
+						err instanceof Error
+							? err.message
+							: `Failed to upload ${filesToValidate.length} file${filesToValidate.length !== 1 ? 's' : ''}`
+					);
+					filesState = filesState.filter((f) => !uploadingIds.has(f.id));
+					return;
+				} finally {
+					if (sessionGeneration === editingSessionGeneration) isUploading = false;
 				}
-
-				const uploadedByTempId = new SvelteMap<string, FileCellItem>();
-				tempFiles.forEach((temp, index) => {
-					const uploaded = uploadedFiles[index];
-					if (uploaded) uploadedByTempId.set(temp.id, uploaded);
-				});
-
-				const finalFiles = filesWithTemp.flatMap((f) => {
-					if (uploadingIds.has(f.id)) {
-						const uploaded = uploadedByTempId.get(f.id);
-						return uploaded ? [uploaded] : [];
-					}
-					return [f];
-				});
-
-				filesState = finalFiles;
-				table.options.meta?.onDataUpdate?.({
-					rowIndex,
-					columnId,
-					value: normalizeFiles(finalFiles)
-				});
-			} else {
-				const newFilesData: FileCellItem[] = filesToValidate.map((f) => ({
-					id: crypto.randomUUID(),
-					collection: MediaCollection.externals,
-					filename: f.name,
-					localFile: f,
-					isUploading: false
-				}));
-				const updatedFiles = [...filesState, ...newFilesData];
-				filesState = updatedFiles;
-				table.options.meta?.onDataUpdate?.({
-					rowIndex,
-					columnId,
-					value: normalizeFiles(updatedFiles)
-				});
+			} else return;
+			if (sessionGeneration !== editingSessionGeneration) {
+				await cleanupStaleUploads(uploadedFiles, rowData);
+				return;
 			}
+
+			const uploadedByTempId = new SvelteMap<string, FileCellItem>();
+			tempFiles.forEach((temp, index) => {
+				const uploaded = uploadedFiles[index];
+				if (uploaded) uploadedByTempId.set(temp.id, uploaded);
+			});
+
+			const finalFiles = filesWithTemp.flatMap((f) => {
+				if (uploadingIds.has(f.id)) {
+					const uploaded = uploadedByTempId.get(f.id);
+					return uploaded ? [uploaded] : [];
+				}
+				return [f];
+			});
+
+			filesState = finalFiles;
+			table.options.meta?.onDataUpdate?.({
+				rowIndex,
+				rowId: cell.row.id,
+				columnId,
+				value: normalizeFiles(finalFiles)
+			});
 		}
 	}
 
@@ -306,77 +325,91 @@
 
 		const fileToRemove = filesState.find((f) => f.id === fileId);
 		if (!fileToRemove) return;
+		const updatedFiles = filesState.filter((f) => f.id !== fileId);
+		await persistFileRemoval(updatedFiles, [fileToRemove]);
+	}
 
-		const rowData = table.options.data[rowIndex];
+	async function persistFileRemoval(updatedFiles: FileCellItem[], removedFiles: FileCellItem[]) {
+		const sessionGeneration = editingSessionGeneration;
+		const previousFiles = [...filesState];
+		const value = normalizeFiles(updatedFiles);
+		const mutation = table.options.meta?.onDataUpdateAwaited;
+		if (!mutation) return;
+
+		const persistence = mutation({
+			rowIndex,
+			rowId: cell.row.id,
+			columnId,
+			value
+		});
+		const attemptGeneration = table.options.meta?.getCellMutationSnapshot?.(
+			cell.row.id,
+			columnId
+		)?.generation;
+		filesState = updatedFiles;
+
+		const restorePreviousFiles = (generation: number | undefined) => {
+			if (
+				generation !== undefined &&
+				sessionGeneration === editingSessionGeneration &&
+				isAcknowledgedCellValueCurrent(
+					generation,
+					table.options.meta?.getCellMutationSnapshot?.(cell.row.id, columnId),
+					normalizeFiles(previousFiles)
+				)
+			) {
+				filesState = previousFiles;
+			}
+		};
+		let mutationResult: DataGridMutationResult | undefined;
+		try {
+			[mutationResult] = await persistence;
+		} catch {
+			restorePreviousFiles(attemptGeneration);
+			return;
+		}
+		if (!mutationResult?.success || mutationResult.superseded) {
+			restorePreviousFiles(mutationResult?.generation ?? attemptGeneration);
+			return;
+		}
+
+		const rowData = cell.row.original;
+		const filesToDelete = removedFiles.filter(isDeletableUploadedMedia);
+		if (!filesToDelete.length) return;
+
 		if (table.options.meta?.onFilesDelete && rowData) {
 			try {
 				await table.options.meta.onFilesDelete({
-					fileIds: [fileId],
+					fileIds: filesToDelete.map((file) => file.id),
 					rowIndex,
+					rowId: cell.row.id,
 					columnId,
 					row: rowData
 				});
 			} catch (err) {
-				toast.error(
-					err instanceof Error ? err.message : `Failed to delete ${fileToRemove.filename}`
-				);
-				return;
+				toast.error(err instanceof Error ? err.message : 'Failed to delete files');
 			}
 		} else {
-			try {
-				await deleteFileFromApi(fileToRemove, rowData);
-			} catch (err) {
+			const deletions = await Promise.allSettled(filesToDelete.map(deleteFileFromApi));
+			const failed = deletions.find((result) => result.status === 'rejected');
+			if (failed) {
 				toast.error(
-					err instanceof Error ? err.message : `Failed to delete ${fileToRemove.filename}`
+					failed.reason instanceof Error ? failed.reason.message : 'Failed to delete files'
 				);
-				return;
 			}
 		}
-
-		const updatedFiles = filesState.filter((f) => f.id !== fileId);
-		filesState = updatedFiles;
-		table.options.meta?.onDataUpdate?.({
-			rowIndex,
-			columnId,
-			value: normalizeFiles(updatedFiles)
-		});
 	}
 
 	async function clearAll() {
 		if (readOnly) return;
 		error = null;
-
-		const rowData = table.options.data[rowIndex];
-		if (filesState.length > 0) {
-			if (table.options.meta?.onFilesDelete && rowData) {
-				try {
-					await table.options.meta.onFilesDelete({
-						fileIds: filesState.map((f) => f.id),
-						rowIndex,
-						columnId,
-						row: rowData
-					});
-				} catch (err) {
-					toast.error(err instanceof Error ? err.message : 'Failed to delete files');
-					return;
-				}
-			} else {
-				try {
-					await Promise.all(filesState.map((file) => deleteFileFromApi(file, rowData)));
-				} catch (err) {
-					toast.error(err instanceof Error ? err.message : 'Failed to delete files');
-					return;
-				}
-			}
-		}
-		filesState = [];
-		table.options.meta?.onDataUpdate?.({ rowIndex, columnId, value: [] });
+		await persistFileRemoval([], [...filesState]);
 	}
 
 	function handleCellDragEnter(event: DragEvent) {
 		event.preventDefault();
 		event.stopPropagation();
-		if (event.dataTransfer?.types.includes('Files')) {
+		if (canUploadFiles && event.dataTransfer?.types.includes('Files')) {
 			isDraggingOver = true;
 		}
 	}
@@ -405,7 +438,7 @@
 
 		const droppedFiles = Array.from(event.dataTransfer?.files ?? []);
 		if (droppedFiles.length > 0) {
-			addFiles(droppedFiles, false);
+			addFiles(droppedFiles);
 		}
 	}
 
@@ -438,7 +471,7 @@
 		isDragging = false;
 
 		const droppedFiles = Array.from(event.dataTransfer?.files ?? []);
-		addFiles(droppedFiles, false);
+		addFiles(droppedFiles);
 	}
 
 	function handleDropzoneClick() {
@@ -455,7 +488,7 @@
 	function handleFileInputChange(event: Event) {
 		const target = event.target as HTMLInputElement;
 		const selectedFiles = Array.from(target.files ?? []);
-		addFiles(selectedFiles, false);
+		addFiles(selectedFiles);
 		target.value = '';
 	}
 
@@ -464,13 +497,17 @@
 			error = null;
 			table.options.meta?.onCellEditingStart?.(rowIndex, columnId);
 		} else {
+			editingSessionGeneration++;
 			error = null;
 			table.options.meta?.onCellEditingStop?.();
 		}
 	}
 
 	function handleEscapeKeyDown(event: KeyboardEvent) {
+		if (event.key !== 'Escape') return;
+		event.preventDefault();
 		event.stopPropagation();
+		cancelEditingSession();
 	}
 
 	function handleOpenAutoFocus(event: Event) {
@@ -484,9 +521,7 @@
 		if (isEditing) {
 			if (event.key === 'Escape') {
 				event.preventDefault();
-				filesState = [...initialCellValue];
-				error = null;
-				table.options.meta?.onCellEditingStop?.();
+				cancelEditingSession();
 			} else if (event.key === ' ') {
 				event.preventDefault();
 				handleDropzoneClick();
@@ -495,6 +530,14 @@
 			event.preventDefault();
 			table.options.meta?.onCellEditingStart?.(rowIndex, columnId);
 		} else if (!isEditing && isFocused && event.key === 'Tab') {
+			if (
+				!table.options.meta?.canNavigateToCell?.(
+					rowIndex,
+					columnId,
+					event.shiftKey ? 'left' : 'right'
+				)
+			)
+				return;
 			event.preventDefault();
 			table.options.meta?.onCellEditingStop?.({
 				direction: event.shiftKey ? 'left' : 'right'
@@ -533,10 +576,10 @@
 	class={cn({
 		'ring-1 ring-primary/80 ring-inset': isDraggingOver
 	})}
-	ondragenter={handleCellDragEnter}
-	ondragleave={handleCellDragLeave}
-	ondragover={handleCellDragOver}
-	ondrop={handleCellDrop}
+	ondragenter={canUploadFiles ? handleCellDragEnter : undefined}
+	ondragleave={canUploadFiles ? handleCellDragLeave : undefined}
+	ondragover={canUploadFiles ? handleCellDragOver : undefined}
+	ondrop={canUploadFiles ? handleCellDrop : undefined}
 	onkeydown={handleWrapperKeyDown}
 >
 	{#if isEditing}
@@ -552,43 +595,45 @@
 			>
 				<div class="flex flex-col gap-2 p-3">
 					<span class="sr-only">File upload</span>
-					<button
-						type="button"
-						aria-label="Drop files here or click to browse"
-						data-dragging={isDragging ? '' : undefined}
-						data-invalid={error ? '' : undefined}
-						class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed p-6 transition-colors outline-none hover:bg-accent/30 focus-visible:border-ring/50 data-dragging:border-primary/30 data-dragging:bg-accent/30 data-invalid:border-destructive data-invalid:ring-destructive/20"
-						{@attach attachRef(setDropzoneRef)}
-						onclick={handleDropzoneClick}
-						ondragenter={handleDropzoneDragEnter}
-						ondragleave={handleDropzoneDragLeave}
-						ondragover={handleDropzoneDragOver}
-						ondrop={handleDropzoneDrop}
-						onkeydown={handleDropzoneKeyDown}
-					>
-						<Upload class="size-8 text-muted-foreground" />
-						<div class="text-center text-sm">
-							<p class="font-medium">
-								{isDragging ? 'Drop files here' : 'Drag files here'}
+					{#if canUploadFiles}
+						<button
+							type="button"
+							aria-label="Drop files here or click to browse"
+							data-dragging={isDragging ? '' : undefined}
+							data-invalid={error ? '' : undefined}
+							class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed p-6 transition-colors outline-none hover:bg-accent/30 focus-visible:border-ring/50 data-dragging:border-primary/30 data-dragging:bg-accent/30 data-invalid:border-destructive data-invalid:ring-destructive/20"
+							{@attach attachRef(setDropzoneRef)}
+							onclick={handleDropzoneClick}
+							ondragenter={handleDropzoneDragEnter}
+							ondragleave={handleDropzoneDragLeave}
+							ondragover={handleDropzoneDragOver}
+							ondrop={handleDropzoneDrop}
+							onkeydown={handleDropzoneKeyDown}
+						>
+							<Upload class="size-8 text-muted-foreground" />
+							<div class="text-center text-sm">
+								<p class="font-medium">
+									{isDragging ? 'Drop files here' : 'Drag files here'}
+								</p>
+								<p class="text-xs text-muted-foreground">or click to browse</p>
+							</div>
+							<p class="text-xs text-muted-foreground">
+								{maxFileSize
+									? `Max size: ${formatFileSize(maxFileSize)}${maxFiles ? ` • Max ${maxFiles} file(s)` : ''}`
+									: maxFiles
+										? `Max ${maxFiles} file(s)`
+										: 'Select files to upload'}
 							</p>
-							<p class="text-xs text-muted-foreground">or click to browse</p>
-						</div>
-						<p class="text-xs text-muted-foreground">
-							{maxFileSize
-								? `Max size: ${formatFileSize(maxFileSize)}${maxFiles ? ` • Max ${maxFiles} file(s)` : ''}`
-								: maxFiles
-									? `Max ${maxFiles} file(s)`
-									: 'Select files to upload'}
-						</p>
-					</button>
-					<input
-						type="file"
-						{multiple}
-						{accept}
-						class="sr-only"
-						{@attach attachRef(setFileInputRef)}
-						onchange={handleFileInputChange}
-					/>
+						</button>
+						<input
+							type="file"
+							{multiple}
+							{accept}
+							class="sr-only"
+							{@attach attachRef(setFileInputRef)}
+							onchange={handleFileInputChange}
+						/>
+					{/if}
 					{#if viewFiles.length > 0}
 						<div class="flex flex-col gap-2">
 							<div class="flex items-center justify-between">

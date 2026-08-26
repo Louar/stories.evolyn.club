@@ -1,4 +1,4 @@
-import type { findOneStoryByReference } from '$lib/db/repositories/2-story-module';
+import type { findOneStoryBySlug } from '$lib/db/repositories/2-story-module';
 import { STORIES } from '$lib/states/stories.svelte';
 
 type StoryEvent =
@@ -91,7 +91,7 @@ export const logInteractionEvent = (
     partId: string;
     quizQuestionTemplate: Extract<
       NonNullable<
-        Awaited<ReturnType<typeof findOneStoryByReference>>
+        Awaited<ReturnType<typeof findOneStoryBySlug>>
       >['parts'][number]['foreground'],
       { questions: unknown }
     >['questions'][number];

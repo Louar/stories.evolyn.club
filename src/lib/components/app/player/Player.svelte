@@ -6,7 +6,7 @@
 		getVideoSourceType,
 		type YouTubePlayer,
 		type YouTubePlayerState
-	} from '$lib/media/video.js';
+	} from '$lib/media/video';
 	import { PLAYERS } from '$lib/states/players.svelte';
 	import { cn } from '$lib/utils';
 	import LoaderIcon from '@lucide/svelte/icons/loader-circle';

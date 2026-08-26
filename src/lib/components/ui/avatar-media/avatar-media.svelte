@@ -39,8 +39,14 @@
 	};
 </script>
 
-<Avatar.Root class={cn('[container-type:size] relative aspect-square', className)} {...restProps}>
-	<Avatar.Image src={source} class="object-cover" />
+<Avatar.Root
+	class={cn(
+		'@container-size relative aspect-square border border-muted-foreground shadow-xs',
+		className
+	)}
+	{...restProps}
+>
+	<Avatar.Image src={source} class="rounded-full object-cover" />
 	<Avatar.Fallback class={cn('border text-[60cqi] text-muted-foreground', className)}
 		>{fallback || '?'}</Avatar.Fallback
 	>

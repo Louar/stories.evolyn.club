@@ -1,5 +1,5 @@
 import type { ColumnType, Generated, JSONColumnType } from 'kysely';
-import type { TranslatableColumn, TranslatableMediaColumn } from './0-utils';
+import type { MediaColumn, TranslatableColumn, TranslatableMediaColumn } from './0-utils';
 
 export const LogicHitpolicy = {
   first: 'first'
@@ -22,14 +22,26 @@ export const StoryPermissionRole = {
 export type StoryPermissionRole = (typeof StoryPermissionRole)[keyof typeof StoryPermissionRole];
 
 export const PartBackgroundType = {
+  still: 'still',
   video: 'video'
 } as const;
 export type PartBackgroundType = (typeof PartBackgroundType)[keyof typeof PartBackgroundType];
 export const PartForegroundType = {
   announcement: 'announcement',
-  quiz: 'quiz'
+  quiz: 'quiz',
+  taxonomy: 'taxonomy'
 } as const;
 export type PartForegroundType = (typeof PartForegroundType)[keyof typeof PartForegroundType];
+
+export const AttributeType = {
+  integer: 'integer',
+  number: 'number',
+  translatable: 'translatable',
+  translatableCategory: 'translatable_category',
+  itemReference: 'item_reference',
+  custom: 'custom'
+} as const;
+export type AttributeType = (typeof AttributeType)[keyof typeof AttributeType];
 
 export type StoryModuleSchema = {
   anthology: Anthology;
@@ -39,6 +51,8 @@ export type StoryModuleSchema = {
   storyPermission: StoryPermission;
   storyAuthCode: StoryAuthCode;
   part: Part;
+  still: Still;
+  stillAvailableToStory: StillAvailableToStory;
   video: Video;
   videoAvailableToStory: VideoAvailableToStory;
   announcementTemplate: AnnouncementTemplate;
@@ -53,6 +67,18 @@ export type StoryModuleSchema = {
   quizLogicRuleInput: QuizLogicRuleInput;
   eventTransition: EventTransition;
   eventInteraction: EventInteraction;
+  taxonomy: Taxonomy;
+  category: Category;
+  attribute: Attribute;
+  attributeOfCategory: AttributeOfCategory;
+  item: Item;
+  itemOfCategory: ItemOfCategory;
+  attributeOfItem: AttributeOfItem;
+  taxonomyDraftForPart: TaxonomyDraftForPart;
+  taxonomyDraftLogicRule: TaxonomyDraftLogicRule;
+  draftedAttribute: DraftedAttribute;
+  draftedCategory: DraftedCategory;
+  draftedItem: DraftedItem;
 };
 
 export type AnthologyConfiguration = {
@@ -62,7 +88,7 @@ export type AnthologyConfiguration = {
 type Anthology = {
   id: Generated<string>;
   clientId: string;
-  reference: string;
+  slug: string;
   name: TranslatableColumn;
   configuration: JSONColumnType<AnthologyConfiguration> | null;
   isPublished: ColumnType<boolean, boolean | null, boolean>;
@@ -99,7 +125,7 @@ type AnthologyPosition = {
 type Story = {
   id: Generated<string>;
   clientId: string;
-  reference: string;
+  slug: string;
   name: TranslatableColumn;
   configuration: JSONColumnType<object> | null;
   isPublished: ColumnType<boolean, boolean | null, boolean>;
@@ -145,10 +171,24 @@ type Part = {
   }> | null;
   isInitial: ColumnType<boolean, boolean | null, boolean>;
   defaultNextPartId: string | null;
+  stillId: string | null;
   videoId: string | null;
   announcementTemplateId: string | null;
   quizLogicForPartId: string | null;
+  taxonomyDraftForPartId: string | null;
   position: JSONColumnType<{ x: number; y: number }> | null;
+};
+
+type Still = {
+  id: Generated<string>;
+  color: string | null;
+  image: MediaColumn | null;
+  style: string | null;
+};
+type StillAvailableToStory = {
+  id: Generated<string>;
+  storyId: string;
+  stillId: string;
 };
 
 type Video = {
@@ -190,7 +230,7 @@ type QuizTemplateAvailableToStory = {
 
 type QuizQuestionTemplateAnswerGroup = {
   id: Generated<string>;
-  reference: string | null;
+  slug: string | null;
   name: string | null;
   doRandomize: ColumnType<boolean, boolean | null, boolean>;
   isGlobal: ColumnType<boolean, boolean | null, boolean>;
@@ -208,7 +248,7 @@ type QuizQuestionTemplate = {
   id: Generated<string>;
   quizTemplateId: string;
   order: number;
-  answerTemplateReference: string;
+  answerTemplateSlug: string;
   title: TranslatableColumn;
   instruction: TranslatableColumn | null;
   placeholder: TranslatableColumn | null;
@@ -258,4 +298,104 @@ type EventInteraction = {
   quizQuestionTemplateId: string;
   quizQuestionTemplateAnswerItemId: string | null;
   value: JSONColumnType<object> | null;
+};
+
+type Taxonomy = {
+  id: Generated<string>;
+  clientId: string;
+  name: string;
+  description: string | null;
+};
+
+type Category = {
+  id: Generated<string>;
+  taxonomyId: string;
+  name: TranslatableColumn;
+  image: MediaColumn | null;
+  description: TranslatableColumn | null;
+  map: JSONColumnType<object> | null;
+};
+
+type Attribute = {
+  id: Generated<string>;
+  taxonomyId: string;
+  slug: string;
+  name: TranslatableColumn;
+  image: MediaColumn | null;
+  description: TranslatableColumn | null;
+  type: AttributeType;
+  referencedCategoryId: string | null;
+  schema: JSONColumnType<Record<string, unknown>> | null;
+};
+
+type AttributeOfCategory = {
+  categoryId: string;
+  attributeId: string;
+  order: number | null;
+  isRequired: ColumnType<boolean, boolean | undefined, boolean>;
+  isDefault: ColumnType<boolean, boolean | undefined, boolean>;
+};
+
+type Item = {
+  id: Generated<string>;
+  taxonomyId: string;
+  // name: TranslatableColumn;
+  // image: MediaColumn | null;
+  // description: TranslatableColumn | null;
+  // emoji: string | null;
+  // outline: JSONColumnType<object | null>;
+};
+
+type ItemOfCategory = {
+  itemId: string;
+  categoryId: string;
+};
+
+type AttributeOfItem = {
+  itemId: string;
+  attributeId: string;
+  value: JSONColumnType<Record<string, unknown>> | null;
+  referencedItemId: string | null;
+  difficulty: number | null;
+};
+
+type TaxonomyDraftForPart = {
+  id: Generated<string>;
+  taxonomyId: string;
+  nrOfRounds: number | null;
+  nrOfItemsPerRound: number | null;
+  goal: number | null;
+  maxMistakes: number | null;
+  difficulty: number | null;
+  defaultNextPartId: string | null;
+  createdAt: ColumnType<Date, never, never>;
+  createdBy: string | null;
+  updatedAt: ColumnType<Date, never, Date>;
+  updatedBy: string | null;
+};
+
+type TaxonomyDraftLogicRule = {
+  id: Generated<string>;
+  taxonomyDraftForPartId: string;
+  nextPartId: string | null;
+  order: number;
+  nrOfRounds: JSONColumnType<[number | null, number | null]> | null;
+  score: JSONColumnType<[number | null, number | null]> | null;
+  mistakes: JSONColumnType<[number | null, number | null]> | null;
+  duration: JSONColumnType<[number | null, number | null]> | null;
+};
+
+type DraftedAttribute = {
+  taxonomyDraftForPartId: string;
+  attributeId: string;
+};
+
+type DraftedCategory = {
+  taxonomyDraftForPartId: string;
+  categoryId: string;
+};
+
+type DraftedItem = {
+  taxonomyDraftForPartId: string;
+  itemId: string;
 };

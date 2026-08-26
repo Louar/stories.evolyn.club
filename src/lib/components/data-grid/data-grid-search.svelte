@@ -108,7 +108,7 @@
 	<div
 		role="search"
 		data-slot="grid-search"
-		class="fade-in-0 slide-in-from-top-2 absolute top-4 right-4 z-50 flex animate-in flex-col gap-2 rounded-lg border bg-background p-2 shadow-lg"
+		class="absolute top-4 right-4 z-50 flex animate-in flex-col gap-2 rounded-lg border bg-background p-2 shadow-lg fade-in-0 slide-in-from-top-2"
 	>
 		<div class="flex items-center gap-2">
 			<input
@@ -119,7 +119,7 @@
 				autocapitalize="off"
 				spellcheck="false"
 				placeholder="Find in table..."
-				class="flex h-8 w-64 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
+				class="flex h-8 w-64 rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none md:text-sm"
 				value={searchQuery}
 				oninput={handleInput}
 				onkeydown={onKeyDown}
@@ -145,12 +145,23 @@
 				>
 					<ChevronDown />
 				</Button>
-				<Button aria-label="Close search" variant="ghost" size="icon" class="size-7" onclick={onClose}>
+				<Button
+					aria-label="Close search"
+					variant="ghost"
+					size="icon"
+					class="size-7"
+					onclick={onClose}
+				>
 					<X />
 				</Button>
 			</div>
 		</div>
-		<div class="flex items-center gap-1 whitespace-nowrap text-muted-foreground text-xs">
+		<div
+			role="status"
+			aria-live="polite"
+			aria-atomic="true"
+			class="flex items-center gap-1 text-xs whitespace-nowrap text-muted-foreground"
+		>
 			{#if searchMatches.length > 0}
 				<span>
 					{matchIndex + 1} of {searchMatches.length}

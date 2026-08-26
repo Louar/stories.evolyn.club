@@ -18,15 +18,17 @@
 	let open = $state(false);
 
 	function handleKeyDown(event: KeyboardEvent) {
-		if (
-			event.target instanceof HTMLInputElement ||
-			event.target instanceof HTMLTextAreaElement ||
-			(event.target instanceof HTMLElement && event.target.contentEditable === 'true')
-		) {
+		if (!(event.ctrlKey || event.metaKey)) return;
+
+		if (event.key.toLowerCase() === 'k') {
+			event.preventDefault();
+			const languages = ['default', ...Object.values(Language)] as const;
+			const currentIndex = languages.indexOf(UI.language);
+			UI.language = languages[(currentIndex + 1) % languages.length];
 			return;
 		}
 
-		if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'l') {
+		if (event.shiftKey && event.key.toLowerCase() === 'l') {
 			event.preventDefault();
 			open = !open;
 		}
@@ -40,7 +42,7 @@
 		{#snippet child({ props })}
 			<Button
 				{...props}
-				aria-label="Toggle columns"
+				aria-label="Select language"
 				role="combobox"
 				variant="outline"
 				size="sm"
@@ -67,7 +69,7 @@
 						/>
 					</Command.Item>
 					<Command.Separator class="my-1" />
-					{#each Object.values(Language) as l}
+					{#each Object.values(Language) as l (l)}
 						<Command.Item value={LanguageReverse[l]} onSelect={() => (UI.language = l)}>
 							<span class="truncate">{LanguageReverse[l]}</span>
 							<CheckIcon

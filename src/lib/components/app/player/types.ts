@@ -30,12 +30,16 @@ export type Logic<
   rules: Rule[];
 };
 
-export type InputFromLogic<L extends Logic> = Partial<Record<L['inputs'][number]['field'], unknown>>;
-export type OutputFromLogic<L extends Logic> = Partial<Record<L['outputs'][number]['field'], unknown>>;
+export type InputFromLogic<L extends Logic> = Partial<
+  Record<L['inputs'][number]['field'], unknown>
+>;
+export type OutputFromLogic<L extends Logic> = Partial<
+  Record<L['outputs'][number]['field'], unknown>
+>;
 
 export type Player = {
   id: string;
-  source: Media;
+  source: Media | undefined;
   thumbnail: Media | undefined;
   captions: string | undefined;
   start: number | undefined;

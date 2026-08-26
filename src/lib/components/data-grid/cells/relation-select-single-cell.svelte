@@ -1,7 +1,7 @@
 <script lang="ts" generics="TData">
+	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import * as Command from '$lib/components/ui/command/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
-	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import { cn } from '$lib/utils.js';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import { Popover as PopoverPrimitive } from 'bits-ui';
@@ -52,7 +52,7 @@
 		// toggle back to null if selecting the original value again
 		nextValue = value === previousValue ? null : value;
 
-		meta?.onDataUpdate?.({ rowIndex, columnId, value: nextValue });
+		meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value: nextValue });
 		meta?.onCellEditingStop?.();
 	}
 
@@ -70,11 +70,12 @@
 		if (isEditing && event.key === 'Escape') {
 			event.preventDefault();
 			nextValue = previousValue;
-			meta?.onCellEditingStop?.();
+			meta?.onCellEditingCancel?.();
 			return;
 		}
 
 		if (!isEditing && isFocused && event.key === 'Tab') {
+			if (!meta?.canNavigateToCell?.(rowIndex, columnId, event.shiftKey ? 'left' : 'right')) return;
 			event.preventDefault();
 			meta?.onCellEditingStop?.({
 				direction: event.shiftKey ? 'left' : 'right'
@@ -83,10 +84,11 @@
 	}
 
 	function handleInputKeyDown(event: KeyboardEvent) {
-		// Prevent escape from propagating to close the popover immediately
-		if (event.key === 'Escape' && searchValue?.length) {
+		if (event.key === 'Escape') {
+			event.preventDefault();
 			searchValue = '';
 			event.stopPropagation();
+			meta?.onCellEditingCancel?.();
 		}
 	}
 
@@ -128,6 +130,7 @@
 				class="-mt-px -ml-px w-64 rounded-none p-0"
 				onOpenAutoFocus={handleOpenAutoFocus}
 				customAnchor={wrapperRef}
+				onkeydown={handleWrapperKeyDown}
 			>
 				<Command.Root
 					class="**:data-[slot=command-input-wrapper]:h-auto **:data-[slot=command-input-wrapper]:border-none **:data-[slot=command-input-wrapper]:p-0"

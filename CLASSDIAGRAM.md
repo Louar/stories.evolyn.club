@@ -30,6 +30,18 @@ classDiagram
       filename: string
   }
 
+  class TranslatableMedia {
+      <<interface>>
+      default: Media?
+      en: Media?
+      de: Media?
+      es: Media?
+      fr: Media?
+      it: Media?
+      nl: Media?
+      pt: Media?
+  }
+
   %% CLIENT-USER MODULE
 
   class ClientAuthenticationMethod {
@@ -173,6 +185,7 @@ classDiagram
 
   class PartBackgroundType {
       <<enumeration>>
+      STILL
       VIDEO
   }
 
@@ -183,194 +196,127 @@ classDiagram
   }
 
   class Anthology {
-      id: string
-      clientId: string
-      reference: string
+      slug: string
       name: Translatable
       configuration: jsonb?
       isPublished: boolean
       isPublic: boolean
       createdAt: datetime
-      createdBy: string?
       updatedAt: datetime
-      updatedBy: string?
   }
 
   class AnthologyPermission {
-      id: string
-      userId: string
-      anthologyId: string
       role: PermissionRole
       createdAt: datetime
-      createdBy: string?
       updatedAt: datetime
-      updatedBy: string?
   }
 
   class AnthologyPosition {
-      id: string
-      anthologyId: string
-      storyId: string
       order: number
       configuration: jsonb?
   }
 
   class Story {
-      id: string
-      clientId: string
-      reference: string
+      slug: string
       name: Translatable
       configuration: jsonb?
       isPublished: boolean
       isPublic: boolean
       createdAt: datetime
-      createdBy: string?
       updatedAt: datetime
-      updatedBy: string?
   }
 
   class StoryPermission {
-      id: string
-      userId: string
-      storyId: string
       role: PermissionRole
       createdAt: datetime
-      createdBy: string?
       updatedAt: datetime
-      updatedBy: string?
   }
 
   class StoryAuthCode {
-      id: string
-      storyId: string
       value: string
       usedAt: datetime?
   }
 
   class Part {
-      id: string
-      storyId: string
       backgroundType: string?
       backgroundConfiguration: jsonb?
       foregroundType: string?
       foregroundConfiguration: jsonb?
       isInitial: boolean
-      defaultNextPartId: string?
-      videoId: string?
-      announcementTemplateId: string?
-      quizLogicForPartId: string?
       position: jsonb?
   }
 
+  class Still {
+      color: string?
+      image: Media?
+      style: string?
+  }
+
   class Video {
-      id: string
       name: string
-      source: Media
-      thumbnail: Media?
-      captions: Translatable?
+      source: TranslatableMedia
+      thumbnail: TranslatableMedia?
+      captions: TranslatableMedia?
       duration: number
   }
 
-  class VideoAvailableToStory {
-      id: string
-      storyId: string
-      videoId: string
-  }
-
   class AnnouncementTemplate {
-      id: string
       name: string
       title: Translatable?
       message: Translatable?
   }
 
-  class AnnouncementTemplateAvailableToStory {
-      id: string
-      storyId: string
-      announcementTemplateId: string
-  }
-
   class QuizTemplate {
-      id: string
       name: string
       doRandomize: boolean
   }
 
-  class QuizTemplateAvailableToStory {
-      id: string
-      storyId: string
-      quizTemplateId: string
-  }
-
   class QuizQuestionTemplateAnswerGroup {
-      id: string
-      reference: string?
+      slug: string?
       name: string?
       doRandomize: boolean
       isGlobal: boolean
   }
 
   class QuizQuestionTemplateAnswerItem {
-      id: string
-      quizQuestionTemplateAnswerGroupId: string
       order: number
       value: string
       label: Translatable
   }
 
   class QuizQuestionTemplate {
-      id: string
-      quizTemplateId: string
       order: number
-      answerTemplateReference: string
+      answerTemplateSlug: string
       title: Translatable
       instruction: Translatable?
       placeholder: Translatable?
       configuration: jsonb?
       isRequired: boolean
-      quizQuestionTemplateAnswerGroupId: string?
   }
 
   class QuizLogicForPart {
-      id: string
-      quizTemplateId: string
-      defaultNextPartId: string?
       hitpolicy: LogicHitpolicy
   }
 
   class QuizLogicRule {
-      id: string
       order: number
       name: string
-      quizLogicForPartId: string
-      nextPartId: string?
   }
 
   class QuizLogicRuleInput {
-      id: string
-      quizLogicRuleId: string
-      quizQuestionTemplateId: string
-      quizQuestionTemplateAnswerItemId: string?
       value: jsonb?
   }
 
   class EventTransition {
-      id: string
       url: string
       session: string
       createdAt: datetime
-      fromPartId: string
-      toPartId: string
   }
 
   class EventInteraction {
-      id: string
       url: string
       session: string
       createdAt: datetime
-      partId: string
-      quizQuestionTemplateId: string
-      quizQuestionTemplateAnswerItemId: string?
       value: jsonb?
   }
 
@@ -403,18 +349,15 @@ classDiagram
   StoryPermission "*" -- "0..1" User: updatedBy
 
   Part "*" -- "0..1" Part: defaultNextPart
-  Part "*" -- "0..1" Video: video
-  Part "*" -- "0..1" AnnouncementTemplate: announcementTemplate
-  Part "*" -- "0..1" QuizLogicForPart: quizLogic
+  Part "*" -- "0..1" Still
+  Part "*" -- "0..1" Video
+  Part "*" -- "0..1" AnnouncementTemplate
+  Part "*" -- "0..1" QuizLogicForPart
 
-  Story "1" -- "*" VideoAvailableToStory
-  Video "1" -- "*" VideoAvailableToStory
-
-  Story "1" -- "*" AnnouncementTemplateAvailableToStory
-  AnnouncementTemplate "1" -- "*" AnnouncementTemplateAvailableToStory
-
-  Story "1" -- "*" QuizTemplateAvailableToStory
-  QuizTemplate "1" -- "*" QuizTemplateAvailableToStory
+  Story "*" -- "*" Still: StillAvailableToStory
+  Story "*" -- "*" Video: VideoAvailableToStory
+  Story "*" -- "*" AnnouncementTemplate: AnnouncementTemplateAvailableToStory
+  Story "*" -- "*" QuizTemplate: QuizTemplateAvailableToStory
 
   QuizTemplate "1" -- "*" QuizQuestionTemplate
 
@@ -438,5 +381,86 @@ classDiagram
   EventInteraction "*" -- "1" Part: part
   EventInteraction "*" -- "1" QuizQuestionTemplate: question
   EventInteraction "*" -- "0..1" QuizQuestionTemplateAnswerItem: answer
+
+  class Taxonomy {
+      name: string
+      description: string?
+  }
+
+  class TaxonomyDraftForPart {
+      nrOfRounds: integer?
+      nrOfItemsPerRound: integer?
+      goal: integer?
+      maxMistakes: integer?
+  }
+
+  class TaxonomyDraftLogicRule {
+      order: number
+      nrOfRounds: [integer, integer]?
+      score: [integer, integer]?
+      mistakes: [integer, integer]?
+      duration: [integer, integer]?
+  }
+
+  class Category {
+      name: Translatable
+      image: Media?
+      description: Translatable?
+      map: jsonb?
+  }
+
+  class AttributeType {
+      <<enumeration>>
+      INTEGER
+      NUMBER
+      TRANSLATABLE
+      ITEM_REFERENCE
+      CUSTOM
+  }
+
+  class Attribute {
+      slug: string*
+      name: Translatable
+      image: Media?
+      description: Translatable?
+      type: AttributeType
+      schema: json?
+  }
+
+  class AttributeOfCategory {
+      order: number?
+      isRequired: boolean
+      isDefault: boolean
+  }
+
+  class Item {
+  }
+
+  class AttributeOfItem {
+      value: json?
+      difficulty: integer?
+  }
+
+  Story "*" -- "*" Taxonomy: TaxonomyAvailableToStory
+
+  Taxonomy "1" -- "*" Category
+  Taxonomy "1" -- "*" Attribute
+  Taxonomy "1" -- "*" Item
+  Taxonomy "1" -- "*" TaxonomyDraftForPart
+
+  Item "*" -- "*" Category: ItemOfCategory
+  Item "1" -- "*" AttributeOfItem
+  Attribute "1" -- "*" AttributeOfItem
+  Attribute "*" -- "0..1" Category: referencedCategory
+  AttributeOfItem "*" -- "0..1" Item: referencedItem
+
+  TaxonomyDraftForPart "*" -- "*" Attribute: DraftedAttribute
+  TaxonomyDraftForPart "*" -- "*" Category: DraftedCategory
+  TaxonomyDraftForPart "*" -- "*" Item: DraftedItem
+
+  TaxonomyDraftForPart "1" -- "*" TaxonomyDraftLogicRule
+  TaxonomyDraftForPart "*" -- "0..1" Part: defaultNextPart
+
+  TaxonomyDraftLogicRule "*" -- "0..1" Part: nextPart
 
 ```

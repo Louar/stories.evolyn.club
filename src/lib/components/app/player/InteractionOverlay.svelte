@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
-	import type { findOneStoryByReference } from '$lib/db/repositories/2-story-module';
+	import type { findOneStoryBySlug } from '$lib/db/repositories/2-story-module';
 	import { cn } from '$lib/utils';
 	import type { ClassValue } from 'clsx';
 	import { fade, fly } from 'svelte/transition';
@@ -12,7 +12,7 @@
 
 		questions: Extract<
 			NonNullable<
-				Awaited<ReturnType<typeof findOneStoryByReference>>
+				Awaited<ReturnType<typeof findOneStoryBySlug>>
 			>['parts'][number]['foreground'],
 			{ questions: unknown }
 		>['questions'];
@@ -108,7 +108,7 @@
 					{/if}
 				</div>
 
-				{#if question.answerTemplateReference === 'select-single'}
+				{#if question.answerTemplateSlug === 'select-single'}
 					{@const answerOptions = question.answerGroup?.doRandomize
 						? question.answerOptions?.sort(() => Math.random() - 0.5)
 						: question.answerOptions}

@@ -1,6 +1,4 @@
 <script lang="ts" generics="TData">
-	import type { Table } from '@tanstack/table-core';
-	import type { UpdateCell } from '$lib/components/data-grid/types/data-grid.js';
 	import { parseCellKey } from '$lib/components/data-grid/types/data-grid.js';
 	import {
 		DropdownMenu,
@@ -10,9 +8,11 @@
 		DropdownMenuTrigger
 	} from '$lib/components/ui/dropdown-menu/index.js';
 	import Copy from '@lucide/svelte/icons/copy';
-	import Scissors from '@lucide/svelte/icons/scissors';
 	import Eraser from '@lucide/svelte/icons/eraser';
+	import FileDownIcon from '@lucide/svelte/icons/file-down';
+	import Scissors from '@lucide/svelte/icons/scissors';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
+	import type { Table } from '@tanstack/table-core';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {
@@ -26,10 +26,11 @@
 	const onContextMenuOpenChange = $derived(meta?.onContextMenuOpenChange);
 	const selectionState = $derived(meta?.selectionState);
 	const dataGridRef = $derived(meta?.dataGridRef);
-	const onDataUpdate = $derived(meta?.onDataUpdate);
 	const onRowsDelete = $derived(meta?.onRowsDelete);
+	const onDownload = $derived(meta?.onDownload);
 	const onCellsCopy = $derived(meta?.onCellsCopy);
 	const onCellsCut = $derived(meta?.onCellsCut);
+	const onCellsClear = $derived(meta?.onCellsClear);
 	const readOnly = $derived(meta?.readOnly ?? false);
 
 	// Trigger style to position the menu at the context menu coordinates
@@ -49,64 +50,65 @@
 		onCellsCopy?.();
 	}
 
-	function onCut() {
-		onCellsCut?.();
+	async function onCut() {
+		await onCellsCut?.();
 	}
 
-	function onClear() {
-		if (!selectionState?.selectedCells || selectionState.selectedCells.size === 0) return;
+	function resolveCellPosition(cellKey: string) {
+		const position = parseCellKey(cellKey);
+		const rowIndex = position.rowId
+			? table.getRowModel().rows.findIndex((row) => row.id === position.rowId)
+			: position.rowIndex;
+		return { ...position, rowIndex };
+	}
 
-		const updates: UpdateCell[] = [];
-		const tableColumns = table.getAllColumns();
-
-		for (const cellKey of selectionState.selectedCells) {
-			const { rowIndex, columnId } = parseCellKey(cellKey);
-
-			const column = tableColumns.find((col) => col.id === columnId);
-			const cellVariant = column?.columnDef?.meta?.cell?.variant;
-
-			let emptyValue: unknown = '';
-			if (cellVariant === 'select-multiple' || cellVariant === 'file') {
-				emptyValue = [];
-			} else if (cellVariant === 'number' || cellVariant === 'date') {
-				emptyValue = null;
-			} else if (cellVariant === 'checkbox') {
-				emptyValue = false;
-			}
-
-			updates.push({ rowIndex, columnId, value: emptyValue });
-		}
-
-		onDataUpdate?.(updates);
-		const cellCount = updates.length;
-		toast.success(`${cellCount} cell${cellCount !== 1 ? 's' : ''} cleared`);
+	async function onClear() {
+		const result = await onCellsClear?.();
+		if (!result) return;
+		const parts = [
+			`${result.clearedCellCount} cell${result.clearedCellCount === 1 ? '' : 's'} cleared`
+		];
+		if (result.failedCellCount) parts.push(`${result.failedCellCount} failed`);
+		if (result.deletedMediaCount) parts.push(`${result.deletedMediaCount} media deleted`);
+		if (result.retainedMediaCount) parts.push(`${result.retainedMediaCount} shared media retained`);
+		if (result.failedMediaCount) parts.push(`${result.failedMediaCount} media deletions failed`);
+		const message = parts.join(', ');
+		if (result.failedCellCount || result.failedMediaCount) toast.error(message);
+		else if (result.clearedCellCount) toast.success(message);
 	}
 
 	async function onDelete() {
-		if (!selectionState?.selectedCells || selectionState.selectedCells.size === 0) return;
+		const rows = table.getRowModel().rows;
+		const rowIndices = rows.flatMap((row, rowIndex) => (row.getIsSelected() ? [rowIndex] : []));
 
-		const rowIndices = new Set<number>();
-		for (const cellKey of selectionState.selectedCells) {
-			const { rowIndex } = parseCellKey(cellKey);
-			rowIndices.add(rowIndex);
+		if (rowIndices.length === 0) {
+			if (!selectionState?.selectedCells || selectionState.selectedCells.size === 0) return;
+			for (const cellKey of selectionState.selectedCells) {
+				const { rowIndex } = resolveCellPosition(cellKey);
+				if (rowIndex >= 0 && !rowIndices.includes(rowIndex)) rowIndices.push(rowIndex);
+			}
 		}
 
-		const rowIndicesArray = Array.from(rowIndices).sort((a, b) => a - b);
-		await onRowsDelete?.(rowIndicesArray);
-		const rowCount = rowIndicesArray.length;
-		toast.success(`${rowCount} row${rowCount !== 1 ? 's' : ''} deleted`);
+		const rowIndicesArray = rowIndices.sort((a, b) => a - b);
+		const result = await onRowsDelete?.(rowIndicesArray);
+		const rowCount = result?.deletedRowIds.length ?? 0;
+		if (rowCount > 0) toast.success(`${rowCount} row${rowCount !== 1 ? 's' : ''} deleted`);
+		if (result?.failedRowIds.length) {
+			toast.error(
+				`${result.failedRowIds.length} row${result.failedRowIds.length !== 1 ? 's' : ''} could not be deleted`
+			);
+		}
+	}
+
+	async function onDownloadRows() {
+		await onDownload?.();
 	}
 </script>
 
 {#if contextMenu}
 	<DropdownMenu open={contextMenu.open} onOpenChange={onContextMenuOpenChange}>
 		<DropdownMenuTrigger style={triggerStyle}></DropdownMenuTrigger>
-		<DropdownMenuContent
-			data-grid-popover=""
-			align="start"
-			class="w-48"
-			onCloseAutoFocus={onCloseAutoFocus}
-		>
+		<DropdownMenuContent data-grid-popover="" align="start" class="w-48" {onCloseAutoFocus}>
 			<DropdownMenuItem onSelect={onCopy}>
 				<Copy class="mr-2 size-4" />
 				Copy
@@ -119,9 +121,16 @@
 				<Eraser class="mr-2 size-4" />
 				Clear
 			</DropdownMenuItem>
+			{#if onDownload && contextMenu.isSelectedRow}
+				<DropdownMenuSeparator />
+				<DropdownMenuItem onSelect={onDownloadRows} disabled={meta?.getIsDownloading?.()}>
+					<FileDownIcon class="mr-2 size-4" />
+					Download
+				</DropdownMenuItem>
+			{/if}
 			{#if onRowsDelete && contextMenu.isSelectedRow}
 				<DropdownMenuSeparator />
-				<DropdownMenuItem class="text-destructive focus:text-destructive" onSelect={onDelete}>
+				<DropdownMenuItem variant="destructive" onSelect={onDelete}>
 					<Trash2 class="mr-2 size-4" />
 					Delete rows
 				</DropdownMenuItem>
