@@ -3,7 +3,6 @@
 
 	let { data } = $props();
 	let story = $derived(data.story);
-	let orientation = $derived(data.orientation);
 	// svelte-ignore state_referenced_locally
 	let players = $state(data.players);
 </script>
@@ -12,7 +11,7 @@
 	<title>{story.name}</title>
 </svelte:head>
 
-<Story {story} {orientation} {players} class="rounded-3xl" />
+<Story {story} {players} class="rounded-3xl" />
 
 <style lang="postcss">
 	@reference 'tailwindcss';

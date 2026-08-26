@@ -1,32 +1,33 @@
 import type { ColumnType, Generated, JSONColumnType } from 'kysely';
-import type { OrientationableColumn, TranslatableColumn } from './0-utils';
+import type { TranslatableColumn, TranslatableMediaColumn } from './0-utils';
 
 export const LogicHitpolicy = {
-  first: 'first',
+  first: 'first'
 } as const;
 export type LogicHitpolicy = (typeof LogicHitpolicy)[keyof typeof LogicHitpolicy];
 
 export const AnthologyPermissionRole = {
   viewer: 'viewer',
   editor: 'editor',
-  owner: 'owner',
+  owner: 'owner'
 } as const;
-export type AnthologyPermissionRole = (typeof AnthologyPermissionRole)[keyof typeof AnthologyPermissionRole];
+export type AnthologyPermissionRole =
+  (typeof AnthologyPermissionRole)[keyof typeof AnthologyPermissionRole];
 
 export const StoryPermissionRole = {
   viewer: 'viewer',
   editor: 'editor',
-  owner: 'owner',
+  owner: 'owner'
 } as const;
 export type StoryPermissionRole = (typeof StoryPermissionRole)[keyof typeof StoryPermissionRole];
 
 export const PartBackgroundType = {
-  video: 'video',
+  video: 'video'
 } as const;
 export type PartBackgroundType = (typeof PartBackgroundType)[keyof typeof PartBackgroundType];
 export const PartForegroundType = {
   announcement: 'announcement',
-  quiz: 'quiz',
+  quiz: 'quiz'
 } as const;
 export type PartForegroundType = (typeof PartForegroundType)[keyof typeof PartForegroundType];
 
@@ -76,7 +77,11 @@ type AnthologyPermission = {
   id: Generated<string>;
   userId: string;
   anthologyId: string;
-  role: ColumnType<AnthologyPermissionRole, AnthologyPermissionRole | null, AnthologyPermissionRole | null>;
+  role: ColumnType<
+    AnthologyPermissionRole,
+    AnthologyPermissionRole | null,
+    AnthologyPermissionRole | null
+  >;
   createdAt: ColumnType<Date, never, never>;
   createdBy: string | null;
   updatedAt: ColumnType<Date, never, Date | never>;
@@ -121,15 +126,23 @@ type StoryAuthCode = {
   storyId: string;
   value: string;
   usedAt: ColumnType<Date, Date | null, Date | null>;
-}
+};
 
 type Part = {
   id: Generated<string>;
   storyId: string;
   backgroundType: string | null;
-  backgroundConfiguration: JSONColumnType<{ start?: number; end?: number;[x: string]: unknown }> | null;
+  backgroundConfiguration: JSONColumnType<{
+    start?: number;
+    end?: number;
+    [x: string]: unknown;
+  }> | null;
   foregroundType: string | null;
-  foregroundConfiguration: JSONColumnType<{ start?: number; end?: number;[x: string]: unknown }> | null;
+  foregroundConfiguration: JSONColumnType<{
+    start?: number;
+    end?: number;
+    [x: string]: unknown;
+  }> | null;
   isInitial: ColumnType<boolean, boolean | null, boolean>;
   defaultNextPartId: string | null;
   videoId: string | null;
@@ -141,8 +154,8 @@ type Part = {
 type Video = {
   id: Generated<string>;
   name: string;
-  source: OrientationableColumn;
-  thumbnail: OrientationableColumn | null;
+  source: TranslatableMediaColumn;
+  thumbnail: TranslatableMediaColumn | null;
   captions: TranslatableColumn | null;
   duration: number;
 };

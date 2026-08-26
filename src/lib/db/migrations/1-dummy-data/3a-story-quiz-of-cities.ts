@@ -1,13 +1,36 @@
 import { env } from '$env/dynamic/private';
 import { db } from '$lib/db/database';
-import { type Orientationable, type Translatable } from '$lib/db/schemas/0-utils';
+import {
+  MediaCollection,
+  type Translatable,
+  type TranslatableMedia
+} from '$lib/db/schemas/0-utils';
 
-export const DummyDataStoryQuizOfCities = async (storyReference: string, clientId?: string, userId?: string) => {
-
+export const DummyDataStoryQuizOfCities = async (
+  storyReference: string,
+  clientId?: string,
+  userId?: string
+) => {
   await db.transaction().execute(async (trx) => {
     // Get the default Client and User
-    if (!clientId?.length) clientId = (await trx.selectFrom('client').where('reference', '=', env.SECRET_DEFAULT_CLIENT_REFERENCE).select('id').executeTakeFirstOrThrow()).id;
-    if (!userId?.length) userId = (await trx.selectFrom('user').leftJoin('client', 'client.id', 'user.clientId').where('client.reference', '=', env.SECRET_DEFAULT_CLIENT_REFERENCE).where('user.email', '=', env.SECRET_DEFAULT_USER_EMAIL).select('user.id').executeTakeFirstOrThrow()).id;
+    if (!clientId?.length)
+      clientId = (
+        await trx
+          .selectFrom('client')
+          .where('reference', '=', env.SECRET_DEFAULT_CLIENT_REFERENCE)
+          .select('id')
+          .executeTakeFirstOrThrow()
+      ).id;
+    if (!userId?.length)
+      userId = (
+        await trx
+          .selectFrom('user')
+          .leftJoin('client', 'client.id', 'user.clientId')
+          .where('client.reference', '=', env.SECRET_DEFAULT_CLIENT_REFERENCE)
+          .where('user.email', '=', env.SECRET_DEFAULT_USER_EMAIL)
+          .select('user.id')
+          .executeTakeFirstOrThrow()
+      ).id;
 
     // -------------------------
     // 1) Story
@@ -22,7 +45,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         isPublished: true,
         isPublic: true,
         createdBy: userId,
-        updatedBy: userId,
+        updatedBy: userId
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -32,7 +55,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         storyId: story.id,
         userId: userId,
         createdBy: userId,
-        updatedBy: userId,
+        updatedBy: userId
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -44,92 +67,158 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .insertInto('video')
       .values({
         name: 'Play/Pause',
-        source: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/play-pause/stream.m3u8' } as Orientationable),
-        thumbnail: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/play-pause.jpg' } as Orientationable),
+        source: JSON.stringify({
+          default: {
+            collection: MediaCollection.externals,
+            filename: 'https://assets.evolyn.club/videos/play-pause/stream.m3u8'
+          }
+        } as TranslatableMedia),
+        thumbnail: JSON.stringify({
+          default: {
+            collection: MediaCollection.externals,
+            filename: 'https://assets.evolyn.club/videos/play-pause.jpg'
+          }
+        } as TranslatableMedia),
         captions: null,
-        duration: 15,
+        duration: 15
       })
       .returning('id')
       .executeTakeFirstOrThrow();
-    await trx.insertInto('videoAvailableToStory').values({ storyId: story.id, videoId: videoPlayPause.id }).executeTakeFirstOrThrow();
+    await trx
+      .insertInto('videoAvailableToStory')
+      .values({ storyId: story.id, videoId: videoPlayPause.id })
+      .executeTakeFirstOrThrow();
 
     const videoCountdown = await trx
       .insertInto('video')
       .values({
         name: 'Countdown',
-        source: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/countdown/stream.m3u8' } as Orientationable),
-        thumbnail: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/countdown.jpg' } as Orientationable),
+        source: JSON.stringify({
+          default: {
+            collection: MediaCollection.externals,
+            filename: 'https://assets.evolyn.club/videos/countdown/stream.m3u8'
+          }
+        } as TranslatableMedia),
+        thumbnail: JSON.stringify({
+          default: {
+            collection: MediaCollection.externals,
+            filename: 'https://assets.evolyn.club/videos/countdown.jpg'
+          }
+        } as TranslatableMedia),
         captions: null,
-        duration: 10,
+        duration: 10
       })
       .returning('id')
       .executeTakeFirstOrThrow();
-    await trx.insertInto('videoAvailableToStory').values({ storyId: story.id, videoId: videoCountdown.id }).executeTakeFirstOrThrow();
+    await trx
+      .insertInto('videoAvailableToStory')
+      .values({ storyId: story.id, videoId: videoCountdown.id })
+      .executeTakeFirstOrThrow();
 
     const videoCityBarcelona = await trx
       .insertInto('video')
       .values({
         name: 'City of Barcelona',
-        source: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/city-Barcelona/stream.m3u8' } as Orientationable),
+        source: JSON.stringify({
+          default: {
+            collection: MediaCollection.externals,
+            filename: 'https://assets.evolyn.club/videos/city-Barcelona/stream.m3u8'
+          }
+        } as TranslatableMedia),
         thumbnail: null,
         captions: null,
-        duration: 5,
+        duration: 5
       })
       .returning('id')
       .executeTakeFirstOrThrow();
-    await trx.insertInto('videoAvailableToStory').values({ storyId: story.id, videoId: videoCityBarcelona.id }).executeTakeFirstOrThrow();
+    await trx
+      .insertInto('videoAvailableToStory')
+      .values({ storyId: story.id, videoId: videoCityBarcelona.id })
+      .executeTakeFirstOrThrow();
 
     const videoThumbsDown = await trx
       .insertInto('video')
       .values({
         name: 'Thumbs-down',
-        source: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/thumbs-down/stream.m3u8' } as Orientationable),
+        source: JSON.stringify({
+          default: {
+            collection: MediaCollection.externals,
+            filename: 'https://assets.evolyn.club/videos/thumbs-down/stream.m3u8'
+          }
+        } as TranslatableMedia),
         thumbnail: null,
         captions: null,
-        duration: 9,
+        duration: 9
       })
       .returning('id')
       .executeTakeFirstOrThrow();
-    await trx.insertInto('videoAvailableToStory').values({ storyId: story.id, videoId: videoThumbsDown.id }).executeTakeFirstOrThrow();
+    await trx
+      .insertInto('videoAvailableToStory')
+      .values({ storyId: story.id, videoId: videoThumbsDown.id })
+      .executeTakeFirstOrThrow();
 
     const videoThumbsUp = await trx
       .insertInto('video')
       .values({
         name: 'Thumbs-up',
-        source: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/thumbs-up/stream.m3u8' } as Orientationable),
+        source: JSON.stringify({
+          default: {
+            collection: MediaCollection.externals,
+            filename: 'https://assets.evolyn.club/videos/thumbs-up/stream.m3u8'
+          }
+        } as TranslatableMedia),
         thumbnail: null,
         captions: null,
-        duration: 5,
+        duration: 5
       })
       .returning('id')
       .executeTakeFirstOrThrow();
-    await trx.insertInto('videoAvailableToStory').values({ storyId: story.id, videoId: videoThumbsUp.id }).executeTakeFirstOrThrow();
+    await trx
+      .insertInto('videoAvailableToStory')
+      .values({ storyId: story.id, videoId: videoThumbsUp.id })
+      .executeTakeFirstOrThrow();
 
     const videoCityLuzern = await trx
       .insertInto('video')
       .values({
         name: 'City of Luzern',
-        source: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/city-Luzern/stream.m3u8' } as Orientationable),
+        source: JSON.stringify({
+          default: {
+            collection: MediaCollection.externals,
+            filename: 'https://assets.evolyn.club/videos/city-Luzern/stream.m3u8'
+          }
+        } as TranslatableMedia),
         thumbnail: null,
         captions: null,
-        duration: 5,
+        duration: 5
       })
       .returning('id')
       .executeTakeFirstOrThrow();
-    await trx.insertInto('videoAvailableToStory').values({ storyId: story.id, videoId: videoCityLuzern.id }).executeTakeFirstOrThrow();
+    await trx
+      .insertInto('videoAvailableToStory')
+      .values({ storyId: story.id, videoId: videoCityLuzern.id })
+      .executeTakeFirstOrThrow();
 
     const videoGameOver = await trx
       .insertInto('video')
       .values({
         name: 'Game over',
-        source: JSON.stringify({ portrait: 'https://assets.evolyn.club/videos/game-over/stream.m3u8' } as Orientationable),
+        source: JSON.stringify({
+          default: {
+            collection: MediaCollection.externals,
+            filename: 'https://assets.evolyn.club/videos/game-over/stream.m3u8'
+          }
+        } as TranslatableMedia),
         thumbnail: null,
         captions: null,
-        duration: 10,
+        duration: 10
       })
       .returning('id')
       .executeTakeFirstOrThrow();
-    await trx.insertInto('videoAvailableToStory').values({ storyId: story.id, videoId: videoGameOver.id }).executeTakeFirstOrThrow();
+    await trx
+      .insertInto('videoAvailableToStory')
+      .values({ storyId: story.id, videoId: videoGameOver.id })
+      .executeTakeFirstOrThrow();
 
     // -------------------------
     // 3) Announcement templates
@@ -139,11 +228,14 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .values({
         name: 'Welcome to quiz',
         title: JSON.stringify({ en: 'Welcome to the quiz!' } as Translatable),
-        message: JSON.stringify({ en: 'And good luck!' } as Translatable),
+        message: JSON.stringify({ en: 'And good luck!' } as Translatable)
       })
       .returning('id')
       .executeTakeFirstOrThrow();
-    await trx.insertInto('announcementTemplateAvailableToStory').values({ storyId: story.id, announcementTemplateId: annWelcome.id }).executeTakeFirstOrThrow();
+    await trx
+      .insertInto('announcementTemplateAvailableToStory')
+      .values({ storyId: story.id, announcementTemplateId: annWelcome.id })
+      .executeTakeFirstOrThrow();
 
     // -------------------------
     // 4) Quiz templates
@@ -153,28 +245,40 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .values({ name: 'Are you ready?-quiz', doRandomize: false })
       .returning('id')
       .executeTakeFirstOrThrow();
-    await trx.insertInto('quizTemplateAvailableToStory').values({ storyId: story.id, quizTemplateId: quizPlayPause.id }).executeTakeFirstOrThrow();
+    await trx
+      .insertInto('quizTemplateAvailableToStory')
+      .values({ storyId: story.id, quizTemplateId: quizPlayPause.id })
+      .executeTakeFirstOrThrow();
 
     const quizCityBarcelona = await trx
       .insertInto('quizTemplate')
       .values({ name: 'City of Barcelona quiz', doRandomize: false })
       .returning('id')
       .executeTakeFirstOrThrow();
-    await trx.insertInto('quizTemplateAvailableToStory').values({ storyId: story.id, quizTemplateId: quizCityBarcelona.id }).executeTakeFirstOrThrow();
+    await trx
+      .insertInto('quizTemplateAvailableToStory')
+      .values({ storyId: story.id, quizTemplateId: quizCityBarcelona.id })
+      .executeTakeFirstOrThrow();
 
     const quizCityLuzern = await trx
       .insertInto('quizTemplate')
       .values({ name: 'City of Luzern quiz', doRandomize: false })
       .returning('id')
       .executeTakeFirstOrThrow();
-    await trx.insertInto('quizTemplateAvailableToStory').values({ storyId: story.id, quizTemplateId: quizCityLuzern.id }).executeTakeFirstOrThrow();
+    await trx
+      .insertInto('quizTemplateAvailableToStory')
+      .values({ storyId: story.id, quizTemplateId: quizCityLuzern.id })
+      .executeTakeFirstOrThrow();
 
     const quizGameOver = await trx
       .insertInto('quizTemplate')
       .values({ name: 'Game over quiz', doRandomize: false })
       .returning('id')
       .executeTakeFirstOrThrow();
-    await trx.insertInto('quizTemplateAvailableToStory').values({ storyId: story.id, quizTemplateId: quizGameOver.id }).executeTakeFirstOrThrow();
+    await trx
+      .insertInto('quizTemplateAvailableToStory')
+      .values({ storyId: story.id, quizTemplateId: quizGameOver.id })
+      .executeTakeFirstOrThrow();
 
     // -------------------------
     // 5) Answer groups
@@ -193,7 +297,11 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
 
     const agCityBarcelonaQ1 = await trx
       .insertInto('quizQuestionTemplateAnswerGroup')
-      .values({ reference: 'city-barcelona-q1', name: 'City options: Barcelona', doRandomize: false })
+      .values({
+        reference: 'city-barcelona-q1',
+        name: 'City options: Barcelona',
+        doRandomize: false
+      })
       .returning('id')
       .executeTakeFirstOrThrow();
 
@@ -212,7 +320,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         quizQuestionTemplateAnswerGroupId: agPlayPauseQ1.id,
         order: 1,
         value: JSON.stringify(1),
-        label: JSON.stringify({ en: 'Yes' } as Translatable),
+        label: JSON.stringify({ en: 'Yes' } as Translatable)
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -223,7 +331,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         quizQuestionTemplateAnswerGroupId: agPlayPauseQ1.id,
         order: 2,
         value: JSON.stringify(0),
-        label: JSON.stringify({ en: 'No' } as Translatable),
+        label: JSON.stringify({ en: 'No' } as Translatable)
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -234,7 +342,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         quizQuestionTemplateAnswerGroupId: agPlayPauseQ2.id,
         order: 1,
         value: JSON.stringify('YES'),
-        label: JSON.stringify({ en: 'Yes' } as Translatable),
+        label: JSON.stringify({ en: 'Yes' } as Translatable)
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -245,7 +353,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         quizQuestionTemplateAnswerGroupId: agPlayPauseQ2.id,
         order: 2,
         value: JSON.stringify('NO'),
-        label: JSON.stringify({ en: 'No' } as Translatable),
+        label: JSON.stringify({ en: 'No' } as Translatable)
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -256,7 +364,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         quizQuestionTemplateAnswerGroupId: agCityBarcelonaQ1.id,
         order: 1,
         value: JSON.stringify('Barcelona'),
-        label: JSON.stringify({ en: 'Barcelona' } as Translatable),
+        label: JSON.stringify({ en: 'Barcelona' } as Translatable)
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -267,7 +375,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         quizQuestionTemplateAnswerGroupId: agCityBarcelonaQ1.id,
         order: 2,
         value: JSON.stringify('Amsterdam'),
-        label: JSON.stringify({ en: 'Amsterdam' } as Translatable),
+        label: JSON.stringify({ en: 'Amsterdam' } as Translatable)
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -278,7 +386,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         quizQuestionTemplateAnswerGroupId: agCityBarcelonaQ1.id,
         order: 3,
         value: JSON.stringify('Malaga'),
-        label: JSON.stringify({ en: 'Malaga' } as Translatable),
+        label: JSON.stringify({ en: 'Malaga' } as Translatable)
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -289,7 +397,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         quizQuestionTemplateAnswerGroupId: agCityBarcelonaQ1.id,
         order: 4,
         value: JSON.stringify('Bari'),
-        label: JSON.stringify({ en: 'Bari' } as Translatable),
+        label: JSON.stringify({ en: 'Bari' } as Translatable)
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -300,7 +408,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         quizQuestionTemplateAnswerGroupId: agCityLuzernQ1.id,
         order: 1,
         value: JSON.stringify('Luzern'),
-        label: JSON.stringify({ en: 'Luzern' } as Translatable),
+        label: JSON.stringify({ en: 'Luzern' } as Translatable)
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -311,7 +419,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         quizQuestionTemplateAnswerGroupId: agCityLuzernQ1.id,
         order: 2,
         value: JSON.stringify('Munich'),
-        label: JSON.stringify({ en: 'Munich' } as Translatable),
+        label: JSON.stringify({ en: 'Munich' } as Translatable)
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -322,7 +430,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         quizQuestionTemplateAnswerGroupId: agCityLuzernQ1.id,
         order: 3,
         value: JSON.stringify('Berlin'),
-        label: JSON.stringify({ en: 'Berlin' } as Translatable),
+        label: JSON.stringify({ en: 'Berlin' } as Translatable)
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -333,7 +441,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         quizQuestionTemplateAnswerGroupId: agCityLuzernQ1.id,
         order: 4,
         value: JSON.stringify('Zurich'),
-        label: JSON.stringify({ en: 'Zurich' } as Translatable),
+        label: JSON.stringify({ en: 'Zurich' } as Translatable)
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -352,7 +460,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         placeholder: null,
         configuration: null,
         isRequired: true,
-        quizQuestionTemplateAnswerGroupId: agPlayPauseQ1.id,
+        quizQuestionTemplateAnswerGroupId: agPlayPauseQ1.id
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -368,7 +476,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         placeholder: null,
         configuration: null,
         isRequired: true,
-        quizQuestionTemplateAnswerGroupId: agPlayPauseQ2.id,
+        quizQuestionTemplateAnswerGroupId: agPlayPauseQ2.id
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -384,7 +492,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         placeholder: null,
         configuration: null,
         isRequired: true,
-        quizQuestionTemplateAnswerGroupId: agCityBarcelonaQ1.id,
+        quizQuestionTemplateAnswerGroupId: agCityBarcelonaQ1.id
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -400,7 +508,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         placeholder: null,
         configuration: null,
         isRequired: true,
-        quizQuestionTemplateAnswerGroupId: agCityLuzernQ1.id,
+        quizQuestionTemplateAnswerGroupId: agCityLuzernQ1.id
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -421,7 +529,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         videoId: videoPlayPause.id,
         announcementTemplateId: null,
         quizLogicForPartId: null, // set later after quiz logic insert
-        position: JSON.stringify({ x: 0, y: 0 }),
+        position: JSON.stringify({ x: 0, y: 0 })
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -438,7 +546,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         videoId: videoCountdown.id,
         announcementTemplateId: annWelcome.id,
         quizLogicForPartId: null,
-        position: JSON.stringify({ x: 400, y: -200 }),
+        position: JSON.stringify({ x: 400, y: -200 })
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -455,7 +563,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         videoId: videoCityBarcelona.id,
         announcementTemplateId: null,
         quizLogicForPartId: null, // set later
-        position: JSON.stringify({ x: 800, y: 0 }),
+        position: JSON.stringify({ x: 800, y: 0 })
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -472,7 +580,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         videoId: videoThumbsDown.id,
         announcementTemplateId: null,
         quizLogicForPartId: null,
-        position: JSON.stringify({ x: 1200, y: 200 }),
+        position: JSON.stringify({ x: 1200, y: 200 })
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -489,7 +597,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         videoId: videoThumbsUp.id,
         announcementTemplateId: null,
         quizLogicForPartId: null,
-        position: JSON.stringify({ x: 1200, y: -200 }),
+        position: JSON.stringify({ x: 1200, y: -200 })
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -506,7 +614,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         videoId: videoCityLuzern.id,
         announcementTemplateId: null,
         quizLogicForPartId: null, // set later
-        position: JSON.stringify({ x: 1600, y: 0 }),
+        position: JSON.stringify({ x: 1600, y: 0 })
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -523,7 +631,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         videoId: videoThumbsDown.id,
         announcementTemplateId: null,
         quizLogicForPartId: null,
-        position: JSON.stringify({ x: 2000, y: 200 }),
+        position: JSON.stringify({ x: 2000, y: 200 })
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -540,7 +648,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         videoId: videoThumbsUp.id,
         announcementTemplateId: null,
         quizLogicForPartId: null,
-        position: JSON.stringify({ x: 2000, y: -200 }),
+        position: JSON.stringify({ x: 2000, y: -200 })
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -557,7 +665,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         videoId: videoGameOver.id,
         announcementTemplateId: null,
         quizLogicForPartId: null, // set later
-        position: JSON.stringify({ x: 2400, y: 0 }),
+        position: JSON.stringify({ x: 2400, y: 0 })
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -570,7 +678,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .values({
         quizTemplateId: quizPlayPause.id,
         defaultNextPartId: partPlayPause.id,
-        hitpolicy: 'first',
+        hitpolicy: 'first'
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -580,7 +688,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .values({
         quizTemplateId: quizCityBarcelona.id,
         defaultNextPartId: partCityBarcelonaThumbsDown.id,
-        hitpolicy: 'first',
+        hitpolicy: 'first'
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -590,7 +698,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .values({
         quizTemplateId: quizCityLuzern.id,
         defaultNextPartId: partCityLuzernThumbsDown.id,
-        hitpolicy: 'first',
+        hitpolicy: 'first'
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -604,7 +712,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         order: 1,
         name: 'Is ready',
         quizLogicForPartId: qlPlayPause.id,
-        nextPartId: partCountdown.id,
+        nextPartId: partCountdown.id
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -615,7 +723,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         order: 1,
         name: 'Correct: Barcelona',
         quizLogicForPartId: qlCityBarcelona.id,
-        nextPartId: partCityBarcelonaThumbsUp.id,
+        nextPartId: partCityBarcelonaThumbsUp.id
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -626,7 +734,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
         order: 1,
         name: 'Correct: Luzern',
         quizLogicForPartId: qlCityLuzern.id,
-        nextPartId: partCityLuzernThumbsUp.id,
+        nextPartId: partCityLuzernThumbsUp.id
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -640,7 +748,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .values({
         quizLogicRuleId: qlrPlayPause1.id,
         quizQuestionTemplateId: qqtPlayPause1.id,
-        quizQuestionTemplateAnswerItemId: aiPlayPauseQ1Yes.id,
+        quizQuestionTemplateAnswerItemId: aiPlayPauseQ1Yes.id
       })
       .executeTakeFirstOrThrow();
 
@@ -649,7 +757,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .values({
         quizLogicRuleId: qlrPlayPause1.id,
         quizQuestionTemplateId: qqtPlayPause2.id,
-        quizQuestionTemplateAnswerItemId: aiPlayPauseQ2Yes.id,
+        quizQuestionTemplateAnswerItemId: aiPlayPauseQ2Yes.id
       })
       .executeTakeFirstOrThrow();
 
@@ -659,7 +767,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .values({
         quizLogicRuleId: qlrCityBarcelona1.id,
         quizQuestionTemplateId: qqtCityBarcelona1.id,
-        quizQuestionTemplateAnswerItemId: aiCityBarcelonaBarcelona.id,
+        quizQuestionTemplateAnswerItemId: aiCityBarcelonaBarcelona.id
       })
       .executeTakeFirstOrThrow();
 
@@ -669,7 +777,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
       .values({
         quizLogicRuleId: qlrCityLuzern1.id,
         quizQuestionTemplateId: qqtCityLuzern1.id,
-        quizQuestionTemplateAnswerItemId: aiCityLuzernLuzern.id,
+        quizQuestionTemplateAnswerItemId: aiCityLuzernLuzern.id
       })
       .executeTakeFirstOrThrow();
 
@@ -679,7 +787,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
     await trx
       .updateTable('part')
       .set({
-        quizLogicForPartId: qlPlayPause.id,
+        quizLogicForPartId: qlPlayPause.id
       })
       .where('id', '=', partPlayPause.id)
       .executeTakeFirstOrThrow();
@@ -687,7 +795,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
     await trx
       .updateTable('part')
       .set({
-        defaultNextPartId: partCityBarcelona.id,
+        defaultNextPartId: partCityBarcelona.id
       })
       .where('id', '=', partCountdown.id)
       .executeTakeFirstOrThrow();
@@ -695,7 +803,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
     await trx
       .updateTable('part')
       .set({
-        defaultNextPartId: partCityBarcelona.id,
+        defaultNextPartId: partCityBarcelona.id
       })
       .where('id', '=', partCityBarcelonaThumbsDown.id)
       .executeTakeFirstOrThrow();
@@ -703,7 +811,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
     await trx
       .updateTable('part')
       .set({
-        defaultNextPartId: partCityLuzern.id,
+        defaultNextPartId: partCityLuzern.id
       })
       .where('id', '=', partCityBarcelonaThumbsUp.id)
       .executeTakeFirstOrThrow();
@@ -711,7 +819,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
     await trx
       .updateTable('part')
       .set({
-        quizLogicForPartId: qlCityBarcelona.id,
+        quizLogicForPartId: qlCityBarcelona.id
       })
       .where('id', '=', partCityBarcelona.id)
       .executeTakeFirstOrThrow();
@@ -719,7 +827,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
     await trx
       .updateTable('part')
       .set({
-        defaultNextPartId: partCityLuzern.id,
+        defaultNextPartId: partCityLuzern.id
       })
       .where('id', '=', partCityLuzernThumbsDown.id)
       .executeTakeFirstOrThrow();
@@ -727,7 +835,7 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
     await trx
       .updateTable('part')
       .set({
-        defaultNextPartId: partGameOver.id,
+        defaultNextPartId: partGameOver.id
       })
       .where('id', '=', partCityLuzernThumbsUp.id)
       .executeTakeFirstOrThrow();
@@ -735,10 +843,9 @@ export const DummyDataStoryQuizOfCities = async (storyReference: string, clientI
     await trx
       .updateTable('part')
       .set({
-        quizLogicForPartId: qlCityLuzern.id,
+        quizLogicForPartId: qlCityLuzern.id
       })
       .where('id', '=', partCityLuzern.id)
       .executeTakeFirstOrThrow();
-
   });
 };

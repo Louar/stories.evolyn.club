@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import Story from '$lib/components/app/player/Story.svelte';
-	import { Orientation } from '$lib/db/schemas/0-utils.js';
 	import { PLAYERS } from '$lib/states/players.svelte';
 	import { STORIES } from '$lib/states/stories.svelte.js';
 	import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
@@ -18,7 +17,6 @@
 		anthology?.reference?.length ? `anthology-progress:${anthology.reference}` : undefined
 	);
 	let stories = $derived(data.stories);
-	let orientation = $derived(data.orientation);
 	// svelte-ignore state_referenced_locally
 	let playersOfStories = $state(data.playersOfStories);
 	let storiesRestart: Record<number, boolean> = $state({});
@@ -276,7 +274,6 @@
 			<section data-index={i} class="relative h-full w-full snap-start snap-always">
 				<Story
 					{story}
-					{orientation}
 					players={playersOfStories[i]}
 					isActiveStory={active === i}
 					onnext={async () => {
@@ -291,12 +288,7 @@
 			</section>
 		{/each}
 		<section data-index={stories.length} class="relative h-full w-full snap-start snap-always">
-			<div
-				class="relative mx-auto grid max-h-dvh max-w-dvw items-center overflow-hidden"
-				class:aspect-portrait={!orientation || orientation === Orientation.portrait}
-				class:aspect-video={orientation === Orientation.landscape}
-				class:aspect-square={orientation === Orientation.square}
-			>
+			<div class="relative mx-auto grid size-full max-h-dvh max-w-dvw items-center overflow-hidden">
 				<ul class="grid gap-2 p-4">
 					{#each stories as story, i (i)}
 						<li class="inline-flex items-center gap-2">

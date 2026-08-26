@@ -260,19 +260,6 @@
 <style lang="postcss">
 	@reference 'tailwindcss';
 
-	media-player {
-		&.portrait,
-		&.default {
-			@apply aspect-9/16;
-		}
-		&.landscape {
-			@apply aspect-video;
-		}
-		&.square {
-			@apply aspect-square;
-		}
-	}
-
 	:global(media-player[data-started]:not([data-user-initiated]) .controls) {
 		@apply pointer-events-none opacity-0;
 	}

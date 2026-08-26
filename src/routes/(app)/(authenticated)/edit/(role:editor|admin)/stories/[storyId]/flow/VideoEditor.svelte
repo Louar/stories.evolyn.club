@@ -3,13 +3,18 @@
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import OrientationInput from '$lib/components/ui/orientation-input/orientation-input.svelte';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
 	import type { findOneVideoById } from '$lib/db/repositories/2-stories-module';
-	import { formatFormError } from '$lib/db/schemas/0-utils';
+	import {
+		formatFormError,
+		MediaCollection,
+		translateLocalizedMediaField,
+		type TranslatableMedia
+	} from '$lib/db/schemas/0-utils';
 	import { EDITORS } from '$lib/states/editors.svelte';
+	import { UI } from '$lib/states/ui.svelte';
 	import CircleCheckIcon from '@lucide/svelte/icons/circle-check';
 	import CircleXIcon from '@lucide/svelte/icons/circle-x';
 	import LoaderIcon from '@lucide/svelte/icons/loader-circle';
@@ -37,7 +42,7 @@
 		id: 'new',
 		name: '',
 		source: {},
-		thumbnail: {},
+		thumbnail: null,
 		captions: {},
 		duration: 0
 	};
@@ -92,6 +97,29 @@
 	const setDuration = async (duration: number | undefined) => {
 		if (duration) video.duration = duration;
 		else video.duration = 0;
+	};
+
+	const getMediaFilename = (value?: TranslatableMedia | null) => {
+		return translateLocalizedMediaField(value, UI.language)?.filename ?? '';
+	};
+
+	const setExternalMedia = (value: string, current?: TranslatableMedia | null) => {
+		if (!value.length) {
+			const next = { ...current };
+			delete next[UI.language];
+			return Object.keys(next).length ? next : null;
+		}
+
+		const media = {
+			collection: MediaCollection.externals,
+			filename: value
+		};
+
+		return {
+			...current,
+			...(current?.default || current?.en ? {} : { default: media }),
+			[UI.language]: media
+		};
 	};
 </script>
 
@@ -185,17 +213,19 @@
 						/>
 					{/if}
 				</Field.Label>
-				<OrientationInput
-					bind:value={video.source}
+				<Input
+					value={getMediaFilename(video.source)}
 					placeholder=".m3u8 stream URL, or YouTube URL"
 					oninput={(e) => {
-						const url = z.url().min(1).safeParse(e.currentTarget.value)?.data;
+						const value = e.currentTarget.value;
+						video.source = setExternalMedia(value, video.source) ?? {};
+						const url = z.url().min(1).safeParse(value)?.data;
 						src = url;
 						if (url?.length) isLoading = true;
 					}}
 				/>
 				<Field.Error>
-					{formatFormError(error, `source.*`)}
+					{formatFormError(error, `source.*.filename`)}
 				</Field.Error>
 
 				{#if src?.length}
@@ -204,9 +234,14 @@
 			</Field.Field>
 			<Field.Field>
 				<Field.Label>Thumbnail (optional)</Field.Label>
-				<OrientationInput bind:value={video.thumbnail} placeholder="Thumbnail URL" />
+				<Input
+					value={getMediaFilename(video.thumbnail)}
+					placeholder="Thumbnail URL"
+					oninput={(e) =>
+						(video.thumbnail = setExternalMedia(e.currentTarget.value, video.thumbnail))}
+				/>
 				<Field.Error>
-					{formatFormError(error, `thumbnail.*`)}
+					{formatFormError(error, `thumbnail.*.filename`)}
 				</Field.Error>
 			</Field.Field>
 			<Field.Field>

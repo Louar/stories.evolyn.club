@@ -5,7 +5,6 @@
 		logTransitionEvent
 	} from '$lib/client/player-events.js';
 	import type { findOneStoryByReference } from '$lib/db/repositories/2-stories-module.js';
-	import { Orientation } from '$lib/db/schemas/0-utils.js';
 	import { PLAYERS } from '$lib/states/players.svelte.js';
 	import { STORIES } from '$lib/states/stories.svelte.js';
 	import { cn } from '$lib/utils.js';
@@ -21,7 +20,6 @@
 
 	type Props = {
 		story: NonNullable<Awaited<ReturnType<typeof findOneStoryByReference>>>;
-		orientation: Orientation | undefined;
 		players: Player[];
 		isActiveStory?: boolean;
 		doRestart?: boolean;
@@ -31,7 +29,6 @@
 	};
 	let {
 		story = $bindable(),
-		orientation = $bindable(),
 		players = $bindable(),
 		isActiveStory = false,
 		doRestart = $bindable(false),
@@ -194,12 +191,7 @@
 	});
 </script>
 
-<div
-	class={cn('relative mx-auto max-h-dvh max-w-dvw overflow-hidden', className)}
-	class:aspect-portrait={!orientation || orientation === Orientation.portrait}
-	class:aspect-video={orientation === Orientation.landscape}
-	class:aspect-square={orientation === Orientation.square}
->
+<div class={cn('relative mx-auto h-dvh max-h-dvh w-dvw max-w-dvw overflow-hidden', className)}>
 	{#if story?.parts?.length}
 		{#each story?.parts as part (part.id)}
 			{@const player = players.find((player) => player.id === part.id)}
@@ -221,7 +213,6 @@
 					<PlayerComponent
 						id={player.id}
 						title={story.name ?? undefined}
-						class={orientation ?? Orientation.portrait}
 						src={player.source}
 						poster={player?.thumbnail}
 						start={player?.start ?? undefined}
