@@ -6,7 +6,7 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
-	import type { findOneVideoById } from '$lib/db/repositories/2-stories-module';
+	import type { findOneVideoById } from '$lib/db/repositories/2-story-module';
 	import {
 		formatFormError,
 		MediaCollection,

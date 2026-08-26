@@ -4,7 +4,7 @@
 		logInteractionEvent,
 		logTransitionEvent
 	} from '$lib/client/player-events.js';
-	import type { findOneStoryByReference } from '$lib/db/repositories/2-stories-module.js';
+	import type { findOneStoryByReference } from '$lib/db/repositories/2-story-module.js';
 	import { PLAYERS } from '$lib/states/players.svelte.js';
 	import { STORIES } from '$lib/states/stories.svelte.js';
 	import { cn } from '$lib/utils.js';

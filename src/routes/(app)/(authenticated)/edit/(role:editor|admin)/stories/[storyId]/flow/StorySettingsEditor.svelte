@@ -8,7 +8,7 @@
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { Switch } from '$lib/components/ui/switch';
 	import { TranslatableInput } from '$lib/components/ui/translatable-input';
-	import type { findOneStoryById, storySchema } from '$lib/db/repositories/2-stories-module';
+	import type { findOneStoryById, storySchema } from '$lib/db/repositories/2-story-module';
 	import { formatFormError } from '$lib/db/schemas/0-utils';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import { toast } from 'svelte-sonner';

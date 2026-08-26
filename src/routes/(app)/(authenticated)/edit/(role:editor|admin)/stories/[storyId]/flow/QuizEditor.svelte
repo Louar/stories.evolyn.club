@@ -9,7 +9,7 @@
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
 	import { TranslatableInput } from '$lib/components/ui/translatable-input';
-	import type { findOneQuizById } from '$lib/db/repositories/2-stories-module';
+	import type { findOneQuizById } from '$lib/db/repositories/2-story-module';
 	import { formatFormError, translateLocalizedField } from '$lib/db/schemas/0-utils';
 	import { EDITORS } from '$lib/states/editors.svelte';
 	import { moveArrayItem } from '$lib/utils';

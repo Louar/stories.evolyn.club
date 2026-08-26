@@ -6,10 +6,7 @@
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
-	import type {
-		findOneQuizLogicById,
-		findOneStoryById
-	} from '$lib/db/repositories/2-stories-module';
+	import type { findOneQuizLogicById, findOneStoryById } from '$lib/db/repositories/2-story-module';
 	import { formatFormError, translateLocalizedField } from '$lib/db/schemas/0-utils';
 	import { UI } from '$lib/states/ui.svelte';
 	import { moveArrayItem } from '$lib/utils';

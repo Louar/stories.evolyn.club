@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
-	import type { findOneStoryByReference } from '$lib/db/repositories/2-stories-module';
+	import type { findOneStoryByReference } from '$lib/db/repositories/2-story-module';
 	import { cn } from '$lib/utils';
 	import type { ClassValue } from 'clsx';
 	import { fade, fly } from 'svelte/transition';

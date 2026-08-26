@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { findOnePartById, findOneStoryById } from '$lib/db/repositories/2-stories-module';
+	import type { findOnePartById, findOneStoryById } from '$lib/db/repositories/2-story-module';
 	import {
 		Background,
 		Controls,

@@ -4,10 +4,7 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
-	import type {
-		findOneQuizLogicById,
-		findOneStoryById
-	} from '$lib/db/repositories/2-stories-module';
+	import type { findOneQuizLogicById, findOneStoryById } from '$lib/db/repositories/2-story-module';
 	import { formatDuration } from '$lib/db/schemas/0-utils';
 	import { EDITORS } from '$lib/states/editors.svelte';
 	import CheckIcon from '@lucide/svelte/icons/check';

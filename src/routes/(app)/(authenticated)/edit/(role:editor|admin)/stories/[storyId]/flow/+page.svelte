@@ -10,7 +10,7 @@
 		findOneQuizById,
 		findOneVideoById,
 		storySchema
-	} from '$lib/db/repositories/2-stories-module.js';
+	} from '$lib/db/repositories/2-story-module.js';
 	import { translateLocalizedField } from '$lib/db/schemas/0-utils.js';
 	import { EDITORS } from '$lib/states/editors.svelte.js';
 	import HouseIcon from '@lucide/svelte/icons/house';

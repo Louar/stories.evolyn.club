@@ -1,4 +1,4 @@
-import type { findOneStoryById } from '$lib/db/repositories/2-stories-module';
+import type { findOneStoryById } from '$lib/db/repositories/2-story-module';
 import { Orientation } from '$lib/db/schemas/0-utils';
 
 export const EDITORS: {

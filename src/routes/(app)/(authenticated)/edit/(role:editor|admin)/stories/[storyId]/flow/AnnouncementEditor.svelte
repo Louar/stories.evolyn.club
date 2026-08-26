@@ -8,7 +8,7 @@
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import { Toggle } from '$lib/components/ui/toggle/index.js';
 	import { TranslatableInput } from '$lib/components/ui/translatable-input';
-	import type { findOneAnnouncementById } from '$lib/db/repositories/2-stories-module';
+	import type { findOneAnnouncementById } from '$lib/db/repositories/2-story-module';
 	import { formatFormError } from '$lib/db/schemas/0-utils';
 	import { EDITORS } from '$lib/states/editors.svelte';
 	import SquarePlus from '@lucide/svelte/icons/square-plus';

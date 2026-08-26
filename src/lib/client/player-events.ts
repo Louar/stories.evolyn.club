@@ -1,4 +1,4 @@
-import type { findOneStoryByReference } from '$lib/db/repositories/2-stories-module';
+import type { findOneStoryByReference } from '$lib/db/repositories/2-story-module';
 import { STORIES } from '$lib/states/stories.svelte';
 
 type StoryEvent =
