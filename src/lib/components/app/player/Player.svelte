@@ -74,11 +74,14 @@
 	const clipStart = $derived(start ?? 0);
 
 	let video: HTMLVideoElement = $state()!;
+	let ambientCanvas: HTMLCanvasElement = $state()!;
+	let playerContainer: HTMLDivElement = $state()!;
 	let youtubeContainer: HTMLDivElement = $state()!;
 	let youtube: YouTubePlayer | undefined;
 	let hls: Hls | undefined;
 	let watchTimer: ReturnType<typeof setInterval> | undefined;
 	let progressTimer: ReturnType<typeof setInterval> | undefined;
+	let ambientTimer: ReturnType<typeof setTimeout> | undefined;
 	let youtubeReadyTimer: ReturnType<typeof setInterval> | undefined;
 
 	let isLoaded = $state(false);
@@ -101,6 +104,52 @@
 		sourceType === 'youtube'
 			? (youtube?.getCurrentTime() ?? clipStart)
 			: (video?.currentTime ?? clipStart);
+
+	const setAmbientCanvasSize = () => {
+		if (!ambientCanvas || !playerContainer) return;
+
+		const ratio = window.devicePixelRatio || 1;
+		const width = Math.max(1, Math.round(playerContainer.offsetWidth * ratio));
+		const height = Math.max(1, Math.round(playerContainer.offsetHeight * ratio));
+		if (ambientCanvas.width === width && ambientCanvas.height === height) return;
+
+		ambientCanvas.width = width;
+		ambientCanvas.height = height;
+	};
+
+	const paintAmbientVideo = () => {
+		if (!ambientCanvas || !video || sourceType === 'youtube') return;
+
+		setAmbientCanvasSize();
+		const context = ambientCanvas.getContext('2d');
+		if (!context || video.readyState < 2) return;
+
+		try {
+			context.drawImage(video, 0, 0, ambientCanvas.width, ambientCanvas.height);
+		} catch {
+			// Some external videos can block drawing to canvas; playback should continue normally.
+		}
+	};
+
+	const startAmbientVideo = () => {
+		if (sourceType === 'youtube' || ambientTimer) return;
+
+		const loop = () => {
+			paintAmbientVideo();
+			if (isPlaying && !video?.paused && !video?.ended) {
+				ambientTimer = setTimeout(loop, 1000 / 30);
+			} else {
+				ambientTimer = undefined;
+			}
+		};
+
+		loop();
+	};
+
+	const stopAmbientVideo = () => {
+		if (ambientTimer) clearTimeout(ambientTimer);
+		ambientTimer = undefined;
+	};
 
 	const seekTo = (clipTime: number) => {
 		const absoluteTime = clipStart + Math.min(Math.max(clipTime, 0), clipDuration);
@@ -138,6 +187,7 @@
 		hasStarted = true;
 		PLAYERS.isAnyPartPlaying = true;
 		startProgressTimer();
+		startAmbientVideo();
 		if (watchTimer) return;
 		watchTimer = setInterval(
 			() => (PLAYERS.watchDurations[id] = (PLAYERS.watchDurations[id] ?? 0) + 0.1),
@@ -148,6 +198,8 @@
 	const pauseWatching = () => {
 		isPlaying = false;
 		PLAYERS.isAnyPartPlaying = false;
+		stopAmbientVideo();
+		paintAmbientVideo();
 		stopProgressTimer();
 		if (watchTimer) clearInterval(watchTimer);
 		watchTimer = undefined;
@@ -313,30 +365,57 @@
 		if (!isActive) pauseMedia();
 	});
 
+	const resizeAmbient = () => {
+		setAmbientCanvasSize();
+		paintAmbientVideo();
+	};
+
 	onDestroy(() => {
 		if (watchTimer) clearInterval(watchTimer);
 		if (progressTimer) clearInterval(progressTimer);
+		if (ambientTimer) clearTimeout(ambientTimer);
 		if (youtubeReadyTimer) clearInterval(youtubeReadyTimer);
 		hls?.destroy();
 		youtube?.destroy();
 	});
 </script>
 
-<div class={cn('group relative size-full overflow-hidden bg-black', className)}>
+<svelte:window onresize={resizeAmbient} />
+
+<div
+	bind:this={playerContainer}
+	class={cn('group relative size-full overflow-hidden bg-black', className)}
+>
+	{#if poster && isInitialPart && !hasStarted}
+		<MediaFile
+			src={poster}
+			class="pointer-events-none absolute inset-0 z-0 size-full scale-125 object-cover opacity-60 blur-3xl"
+		/>
+	{:else if sourceType !== 'youtube'}
+		<canvas
+			bind:this={ambientCanvas}
+			class="pointer-events-none absolute inset-0 z-0 size-full scale-125 opacity-60 blur-3xl"
+			aria-hidden="true"
+		></canvas>
+	{/if}
+
 	{#if !canPlay}
 		<div
-			class="pointer-events-none absolute inset-0 z-0 grid place-items-center text-white opacity-50"
+			class="pointer-events-none absolute inset-0 z-10 grid place-items-center text-white opacity-50"
 		>
 			<LoaderIcon class="size-14 animate-spin" />
 		</div>
 	{/if}
 
 	{#if sourceType === 'youtube'}
-		<div bind:this={youtubeContainer} class="pointer-events-none absolute inset-0 size-full"></div>
+		<div
+			bind:this={youtubeContainer}
+			class="pointer-events-none absolute inset-0 z-10 size-full"
+		></div>
 	{:else}
 		<video
 			bind:this={video}
-			class="absolute inset-0 size-full object-contain"
+			class="absolute inset-0 z-10 size-full object-contain"
 			aria-label={title}
 			preload="none"
 			playsinline
@@ -344,6 +423,7 @@
 				mediaDuration = video.duration;
 				video.playbackRate = playbackRate ?? 1;
 				seekTo(0);
+				paintAmbientVideo();
 			}}
 			oncanplay={() => (canPlay = true)}
 			onplay={startWatching}
@@ -360,7 +440,10 @@
 	{/if}
 
 	{#if poster && isInitialPart && !hasStarted}
-		<MediaFile src={poster} class="pointer-events-none absolute inset-0 size-full object-contain" />
+		<MediaFile
+			src={poster}
+			class="pointer-events-none absolute inset-0 z-10 size-full object-contain"
+		/>
 	{/if}
 
 	<div
