@@ -30,7 +30,7 @@
 	let {
 		story = $bindable(),
 		players = $bindable(),
-		isActiveStory = false,
+		isActiveStory = true,
 		doRestart = $bindable(false),
 		onnext,
 		class: className
@@ -196,7 +196,12 @@
 		{#each story?.parts as part (part.id)}
 			{@const player = players.find((player) => player.id === part.id)}
 
-			<div class="absolute inset-0 {part.id === pid ? 'opacity-100' : 'opacity-0'}">
+			<div
+				class="absolute inset-0 {part.id === pid
+					? 'z-10 opacity-100'
+					: 'pointer-events-none opacity-0'}"
+				inert={part.id !== pid}
+			>
 				{#if part?.backgroundType === 'video' && player}
 					{@const nextPlayers = [
 						player.next?.length
@@ -219,6 +224,7 @@
 						end={player?.end ?? undefined}
 						playbackRate={player?.playbackRate ?? undefined}
 						isInitialPart={player?.isInitialPart}
+						isActive={isActiveStory && part.id === pid && !isEnded}
 						bind:doBuffer={player.doBuffer}
 						bind:doPlay={player.doPlay}
 						bind:doPause={player.doPause}

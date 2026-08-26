@@ -119,6 +119,7 @@ export const createYouTubePlayer = async (
 	element: HTMLElement,
 	src: string,
 	options: {
+		start?: number;
 		onReady: (player: YouTubePlayer) => void;
 		onStateChange: (state: YouTubePlayerState) => void;
 		onError: () => void;
@@ -132,11 +133,13 @@ export const createYouTubePlayer = async (
 		videoId,
 		host: 'https://www.youtube-nocookie.com',
 		playerVars: {
+			autoplay: 0,
 			controls: 0,
 			disablekb: 1,
 			enablejsapi: 1,
 			playsinline: 1,
-			rel: 0
+			rel: 0,
+			...(options.start && options.start > 0 ? { start: options.start } : {})
 		},
 		events: {
 			onReady: ({ target }) => options.onReady(target),

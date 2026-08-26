@@ -22,6 +22,7 @@
 		end?: number | undefined;
 		playbackRate?: number | undefined;
 		isInitialPart: boolean;
+		isActive: boolean;
 
 		doBuffer: boolean;
 		doPlay: boolean;
@@ -45,6 +46,7 @@
 		end,
 		playbackRate,
 		isInitialPart,
+		isActive,
 
 		doBuffer = $bindable(false),
 		doPlay = $bindable(false),
@@ -119,6 +121,11 @@
 	};
 
 	const startWatching = () => {
+		if (!isActive) {
+			pauseMedia();
+			return;
+		}
+
 		isPlaying = true;
 		hasStarted = true;
 		PLAYERS.isAnyPartPlaying = true;
@@ -155,7 +162,8 @@
 	};
 
 	const handleYouTubeState = (state: YouTubePlayerState) => {
-		if (state === 1) startWatching();
+		if (state === 1 && !isActive) pauseMedia();
+		else if (state === 1) startWatching();
 		else if (state === 0) handleEnded();
 		else if (state === 2 || state === 3) pauseWatching();
 	};
@@ -175,16 +183,17 @@
 	const initializeYouTube = async () => {
 		try {
 			youtube = await createYouTubePlayer(youtubeContainer, src, {
+				start: clipStart,
 				onReady: (player) => {
 					youtube = player;
 					player.getIframe().title = title ?? 'YouTube video player';
+					if (!isActive) player.pauseVideo();
 					const markReady = () => {
 						const duration = player.getDuration();
 						if (duration <= 0) return;
 
 						mediaDuration = duration;
 						player.setPlaybackRate(playbackRate ?? 1);
-						player.seekTo(clipStart, true);
 						canPlay = true;
 						if (youtubeReadyTimer) clearInterval(youtubeReadyTimer);
 						youtubeReadyTimer = undefined;
@@ -217,6 +226,8 @@
 	};
 
 	const playMedia = async () => {
+		if (!isActive) return;
+
 		if (sourceType === 'youtube') {
 			youtube?.playVideo();
 			return;
@@ -230,7 +241,7 @@
 	};
 
 	const restart = () => {
-		if (!canPlay) return;
+		if (!canPlay || !isActive) return;
 		time = 0;
 		seekTo(0);
 		PLAYERS.watchDurations[id] = 0;
@@ -272,13 +283,13 @@
 	});
 
 	$effect(() => {
-		if (!doPlay || !PLAYERS.didUserInteract) return;
+		if (!doPlay || !PLAYERS.didUserInteract || !isActive) return;
 		load();
 		if (canPlay && !isPlaying) restart();
 	});
 
 	$effect(() => {
-		if (!doRestart) return;
+		if (!doRestart || !isActive) return;
 		load();
 		if (canPlay) restart();
 	});
@@ -288,6 +299,10 @@
 			pauseMedia();
 			doPause = false;
 		}
+	});
+
+	$effect(() => {
+		if (!isActive) pauseMedia();
 	});
 
 	onDestroy(() => {
@@ -353,6 +368,7 @@
 				aria-label={isPlaying ? 'Pause' : 'Play'}
 				class="group/control grid size-full place-items-center px-2 pt-10 outline-none"
 				onclick={() => {
+					if (!isActive) return;
 					PLAYERS.didUserInteract = true;
 					load();
 					if (isPlaying) pauseMedia();
