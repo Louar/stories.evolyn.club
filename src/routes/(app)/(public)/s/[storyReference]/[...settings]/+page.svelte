@@ -11,7 +11,7 @@
 	<title>{story.name}</title>
 </svelte:head>
 
-<Story {story} {players} class="rounded-3xl" />
+<Story {story} {players} />
 
 <style lang="postcss">
 	@reference 'tailwindcss';

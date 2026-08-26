@@ -1,4 +1,5 @@
-import type { LogicHitpolicy } from "$lib/db/schemas/2-story-module";
+import type { Media } from '$lib/db/schemas/0-utils';
+import type { LogicHitpolicy } from '$lib/db/schemas/2-story-module';
 
 type LogicInput = {
   id: string;
@@ -34,8 +35,8 @@ export type OutputFromLogic<L extends Logic> = Partial<Record<L['outputs'][numbe
 
 export type Player = {
   id: string;
-  source: string;
-  thumbnail: string | undefined;
+  source: Media;
+  thumbnail: Media | undefined;
   captions: string | undefined;
   start: number | undefined;
   end: number | undefined;

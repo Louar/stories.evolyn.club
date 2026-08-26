@@ -42,7 +42,7 @@ let youtubeApiPromise: Promise<YouTubeNamespace> | undefined;
 
 const parseUrl = (src: string) => {
 	try {
-		return new URL(src);
+		return src.startsWith('/') ? new URL(src, 'http://localhost') : new URL(src);
 	} catch {
 		return null;
 	}

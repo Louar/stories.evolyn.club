@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { MediaFile } from '$lib/components/ui/media-file';
+	import { MediaCollection, type Media } from '$lib/db/schemas/0-utils';
 	import {
 		createYouTubePlayer,
 		getVideoSourceType,
@@ -16,8 +18,8 @@
 	type Props = {
 		id: string;
 		title?: string | undefined;
-		src: string;
-		poster?: string | null | undefined;
+		src: Media;
+		poster?: Media | null | undefined;
 		start?: number | undefined;
 		end?: number | undefined;
 		playbackRate?: number | undefined;
@@ -62,7 +64,13 @@
 		class: className
 	}: Props = $props();
 
-	const sourceType = $derived(getVideoSourceType(src));
+	const mediaUrl = (media: Media) =>
+		media.collection === MediaCollection.externals
+			? media.filename
+			: `/api/media/${media.collection}/${media.filename}`;
+
+	const source = $derived(mediaUrl(src));
+	const sourceType = $derived(getVideoSourceType(source));
 	const clipStart = $derived(start ?? 0);
 
 	let video: HTMLVideoElement = $state()!;
@@ -171,18 +179,18 @@
 	const initializeNativeVideo = () => {
 		if (sourceType === 'hls' && Hls.isSupported()) {
 			hls = new Hls();
-			hls.loadSource(src);
+			hls.loadSource(source);
 			hls.attachMedia(video);
 			return;
 		}
 
-		video.src = src;
+		video.src = source;
 		video.load();
 	};
 
 	const initializeYouTube = async () => {
 		try {
-			youtube = await createYouTubePlayer(youtubeContainer, src, {
+			youtube = await createYouTubePlayer(youtubeContainer, source, {
 				start: clipStart,
 				onReady: (player) => {
 					youtube = player;
@@ -352,11 +360,7 @@
 	{/if}
 
 	{#if poster && isInitialPart && !hasStarted}
-		<img
-			class="pointer-events-none absolute inset-0 size-full object-contain"
-			src={poster}
-			alt=""
-		/>
+		<MediaFile src={poster} class="pointer-events-none absolute inset-0 size-full object-contain" />
 	{/if}
 
 	<div

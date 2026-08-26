@@ -128,17 +128,11 @@ export const selectLocalizedMediaField = <DB, TB extends keyof DB & string>(
   column: StringReference<DB, TB>,
   language?: Language | null
 ) => {
-  const media = sql<Media | null>`coalesce(
+  return sql<Media | null>`coalesce(
     ${eb.ref(column)}->${language ?? Language.English},
     ${eb.ref(column)}->'default',
     ${eb.ref(column)}->${Language.English}
   )`;
-
-  return sql<string | null>`case
-    when (${media}->>'collection') = ${MediaCollection.externals} then ${media}->>'filename'
-    when ${media} is not null then '/api/media/' || (${media}->>'collection') || '/' || (${media}->>'filename')
-    else null
-  end`;
 };
 export const translateLocalizedMediaField = (
   obj?: TranslatableMedia | null,
