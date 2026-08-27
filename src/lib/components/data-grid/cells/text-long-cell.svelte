@@ -105,7 +105,7 @@
 	function handleOpenAutoFocus(event: Event) {
 		event.preventDefault();
 		if (textareaRef) {
-			textareaRef.focus();
+			textareaRef.focus({ preventScroll: true });
 			const length = textareaRef.value.length;
 			textareaRef.setSelectionRange(length, length);
 		}

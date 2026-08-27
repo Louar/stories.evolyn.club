@@ -94,7 +94,7 @@
 		event.preventDefault();
 		if (!textareaRef) return;
 
-		textareaRef.focus();
+		textareaRef.focus({ preventScroll: true });
 		const length = textareaRef.value.length;
 		textareaRef.setSelectionRange(length, length);
 	}
