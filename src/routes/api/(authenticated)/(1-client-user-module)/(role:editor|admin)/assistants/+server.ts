@@ -116,7 +116,7 @@ const parseResponseBody = async (response: Response) => {
 const apiTools = (fetch: typeof globalThis.fetch) => ({
 	listApiOperations: tool({
 		description:
-			'List all AI-approved GameBus Core API operations available to this assistant, including their operationIds and input schemas.',
+			'List all AI-approved API operations available to this assistant, including their operationIds and input schemas.',
 		inputSchema: z.object({}),
 		execute: async () => {
 			return await getAllowedOperations();
@@ -124,7 +124,7 @@ const apiTools = (fetch: typeof globalThis.fetch) => ({
 	}),
 	searchApiOperations: tool({
 		description:
-			'Search AI-approved GameBus Core API operations that may satisfy the user prompt. Call this before executeApiOperation when you need API data or need to change API state, unless listApiOperations has already identified the exact operation.',
+			'Search AI-approved API operations that may satisfy the user prompt. Call this before executeApiOperation when you need API data or need to change API state, unless listApiOperations has already identified the exact operation.',
 		inputSchema: z.object({
 			query: z.string().describe('Search terms derived from the user prompt.'),
 			limit: z
@@ -148,7 +148,7 @@ const apiTools = (fetch: typeof globalThis.fetch) => ({
 	}),
 	executeApiOperation: tool({
 		description:
-			'Execute one AI-approved GameBus Core API operation by operationId. Use only operationIds returned by searchApiOperations, and provide path/query/body parameters that match the OpenAPI operation.',
+			'Execute one AI-approved API operation by operationId. Use only operationIds returned by searchApiOperations, and provide path/query/body parameters that match the OpenAPI operation.',
 		inputSchema: z.object({
 			operationId: z.string().describe('The OpenAPI operationId to execute.'),
 			pathParameters: z.record(z.string(), z.string()).optional(),
@@ -241,7 +241,7 @@ export const POST = (async ({ request, fetch }) => {
 	const result = streamText({
 		model: openai('gpt-5.5'),
 		instructions:
-			'You are an assistant for GameBus Core editors and admins. When a user asks what API actions are available, list the AI-approved OpenAPI operations. When a user asks about data or asks to create, update, or delete data, first search or list the AI-approved OpenAPI operations, then execute only the matching approved API operation. After relevant API calls, return a short explanation or results overview before any details. Prefer a compact Markdown table for lists, comparisons, or tabular data, and keep summaries concise. Explain any API result clearly and do not invent data that was not returned by an API call.',
+			'You are an assistant for editors and admins. When a user asks what API actions are available, list the AI-approved OpenAPI operations. When a user asks about data or asks to create, update, or delete data, first search or list the AI-approved OpenAPI operations, then execute only the matching approved API operation. After relevant API calls, return a short explanation or results overview before any details. Prefer a compact Markdown table for lists, comparisons, or tabular data, and keep summaries concise. Explain any API result clearly and do not invent data that was not returned by an API call.',
 		messages: await convertToModelMessages(messages),
 		tools: apiTools(fetch),
 		stopWhen: isLoopFinished()

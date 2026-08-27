@@ -133,7 +133,7 @@
 			</Field.Field>
 
 			<Field.Field>
-				<Field.Label>Default background color (optional)</Field.Label>
+				<Field.Label>Default background color</Field.Label>
 				<div class="flex items-center gap-3">
 					<div
 						class="size-8 shrink-0 rounded-full border shadow-sm"

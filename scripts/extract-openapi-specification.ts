@@ -384,17 +384,17 @@ const TAG_ORDER_INDEX = new Map(TAG_ORDER.map((tag, index) => [tag, index] as co
 
 const DEFAULT_INFO = {
 	info: {
-		title: 'GameBus Core API',
-		version: '4.0.0'
+		title: 'GameBus Stories API',
+		version: '2.0.0'
 	},
 	servers: [
 		{
 			name: 'Production',
-			url: 'https://next.gamebus.eu/api'
+			url: 'https://stories.next.gamebus.eu/api'
 		},
 		{
 			name: 'Development',
-			url: 'http://localhost:5173/api'
+			url: 'http://localhost:5174/api'
 		}
 	],
 	components: {

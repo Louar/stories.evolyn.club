@@ -47,7 +47,7 @@ export const GET = (async ({ url, params, cookies, locals }) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
   };
-  cookies.set(process.env.NODE_ENV === 'production' ? '__session' : '__session_core', token, options);
+  cookies.set(process.env.NODE_ENV === 'production' ? '__session' : '__session_stories', token, options);
 
   let r = '/';
   if (url.searchParams.get('r')?.length) r = url.searchParams.get('r')!;

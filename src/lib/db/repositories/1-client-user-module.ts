@@ -198,7 +198,7 @@ export const authenticateUser = async (email: string, password: string, hostname
 		httpOnly: true,
 		secure: process.env.NODE_ENV === 'production',
 	};
-	if (cookies) cookies.set(process.env.NODE_ENV === 'production' ? '__session' : '__session_core', token, options);
+	if (cookies) cookies.set(process.env.NODE_ENV === 'production' ? '__session' : '__session_stories', token, options);
 
 	return { id: user.id, token };
 };
@@ -207,7 +207,7 @@ export const authenticateUser = async (email: string, password: string, hostname
 export const findOneAuthenticatedUser = async (event: RequestEvent) => {
 	const { url, request, locals, cookies } = event;
 
-	let token = cookies.get(process.env.NODE_ENV === 'production' ? '__session' : '__session_core');
+	let token = cookies.get(process.env.NODE_ENV === 'production' ? '__session' : '__session_stories');
 	if (!token) {
 		const authHeader = request.headers.get('Authorization');
 		if (authHeader?.startsWith('Bearer ')) token = authHeader.substring(7);
@@ -241,7 +241,7 @@ export const findOneAuthenticatedUser = async (event: RequestEvent) => {
 
 		return user;
 	} catch {
-		cookies.delete(process.env.NODE_ENV === 'production' ? '__session' : '__session_core', { domain: url.hostname, path: '/' });
+		cookies.delete(process.env.NODE_ENV === 'production' ? '__session' : '__session_stories', { domain: url.hostname, path: '/' });
 		return undefined;
 	}
 }

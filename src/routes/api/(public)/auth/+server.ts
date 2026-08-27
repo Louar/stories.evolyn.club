@@ -18,7 +18,7 @@ export const POST = (async ({ url, request, locals, cookies }) => {
 	const { email, password } = parsed.data;
 
 	delete locals.authusr;
-	cookies.delete(process.env.NODE_ENV === 'production' ? '__session' : '__session_core', {
+	cookies.delete(process.env.NODE_ENV === 'production' ? '__session' : '__session_stories', {
 		domain: url.hostname,
 		path: '/'
 	});
