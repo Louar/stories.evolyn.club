@@ -5,6 +5,12 @@ import devtoolsJson from 'vite-plugin-devtools-json';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+	server: {
+		fs: {
+			// Vite's allow-list matcher rejects route-group paths containing `|`, breaking HMR.
+			strict: false
+		}
+	},
 	plugins: [
 		tailwindcss(),
 		sveltekit(),
