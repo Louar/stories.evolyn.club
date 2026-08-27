@@ -2,8 +2,9 @@
 	import HeaderBlank from '$lib/components/app/header/app-header-blank.svelte';
 	import * as ButtonGroup from '$lib/components/ui/button-group/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+	import * as Command from '$lib/components/ui/command/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
+	import * as Popover from '$lib/components/ui/popover/index.js';
 	import * as Scrubbable from '$lib/components/ui/scrubbable/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import type {
@@ -19,8 +20,8 @@
 	import { UI } from '$lib/states/ui.svelte.js';
 	import BanIcon from '@lucide/svelte/icons/ban';
 	import ImageIcon from '@lucide/svelte/icons/image';
-	import MagnetIcon from '@lucide/svelte/icons/magnet';
 	import LayersIcon from '@lucide/svelte/icons/layers';
+	import MagnetIcon from '@lucide/svelte/icons/magnet';
 	import MessageSquareIcon from '@lucide/svelte/icons/message-square';
 	import ShapesIcon from '@lucide/svelte/icons/shapes';
 	import VideoIcon from '@lucide/svelte/icons/video';
@@ -36,6 +37,7 @@
 	type Part = Story['parts'][number];
 	type PartWithMergedMedia = Part & { background?: unknown; foreground?: unknown };
 	type SaveState = 'idle' | 'dirty' | 'saving' | 'saved' | 'error';
+	const SNAP_THRESHOLD = 0.006;
 
 	let {
 		story,
@@ -154,6 +156,12 @@
 	function clampConfigurationValue(value: number, min: number, max: number) {
 		return Math.max(min, Math.min(max, value));
 	}
+	function isSnapValue(value: number) {
+		return videoSnapValues.some((snapValue) => Math.abs(snapValue - value) <= SNAP_THRESHOLD);
+	}
+	function isBackgroundSnapSelectable(key: 'start' | 'end', value: number) {
+		return key === 'start' ? value <= backgroundEnd : value >= backgroundStart;
+	}
 	function setConfigurationValue(
 		section: 'backgroundConfiguration' | 'foregroundConfiguration',
 		key: 'start' | 'end',
@@ -166,14 +174,18 @@
 		scheduleAutosave();
 	}
 	function setBackgroundConfigurationValue(key: 'start' | 'end', value: number) {
+		const boundedValue =
+			key === 'start'
+				? clampConfigurationValue(value, 0, backgroundEnd)
+				: clampConfigurationValue(value, backgroundStart, 1);
 		const previousStart = backgroundStart;
 		const previousForegroundOffset = Math.max(0, foregroundStart - previousStart);
-		const nextStart = key === 'start' ? value : backgroundStart;
-		const nextEnd = key === 'end' ? value : backgroundEnd;
+		const nextStart = key === 'start' ? boundedValue : backgroundStart;
+		const nextEnd = key === 'end' ? boundedValue : backgroundEnd;
 
 		draft.backgroundConfiguration = {
 			...draft.backgroundConfiguration,
-			[key]: value
+			[key]: boundedValue
 		} as typeof draft.backgroundConfiguration;
 
 		if (draft.foregroundType) {
@@ -265,40 +277,50 @@
 </script>
 
 {#snippet backgroundSnapMenu(key: 'start' | 'end')}
-	<DropdownMenu.Root>
-		<DropdownMenu.Trigger>
+	<Popover.Root>
+		<Popover.Trigger>
 			{#snippet child({ props })}
 				<Button
 					{...props}
 					variant="ghost"
 					size="sm"
-					class="h-6 px-2 text-[0.65rem] uppercase text-muted-foreground"
+					class="h-6 px-2 text-[0.65rem] text-muted-foreground uppercase {isSnapValue(
+						key === 'start' ? backgroundStart : backgroundEnd
+					)
+						? 'text-yellow-500!'
+						: ''}"
 					aria-label={`Show ${key} snap points`}
 				>
-				<MagnetIcon class="size-3" />
+					<MagnetIcon class="size-3" />
 					Snaps
 				</Button>
 			{/snippet}
-		</DropdownMenu.Trigger>
-		<DropdownMenu.Content align="start" class="w-64">
-			<DropdownMenu.Label>Snap points</DropdownMenu.Label>
-			{#if videoSnapValues.length}
-				{#each videoSnapValues as snapValue (`${key}-${snapValue}`)}
-					<DropdownMenu.Item onSelect={() => setBackgroundConfigurationValue(key, snapValue)}>
-						<VideoFramePreview
-							src={selectedVideoUrl}
-							time={selectedVideoDuration * snapValue}
-							label={`Snap point at ${formatVideoTime(snapValue)}`}
-							class="pointer-events-none w-14 shrink-0"
-						/>
-						<span class="tabular-nums">{formatVideoTime(snapValue)}</span>
-					</DropdownMenu.Item>
-				{/each}
-			{:else}
-				<DropdownMenu.Item disabled>No snap points for this video</DropdownMenu.Item>
-			{/if}
-		</DropdownMenu.Content>
-	</DropdownMenu.Root>
+		</Popover.Trigger>
+		<Popover.Content align="end" class="w-64 p-0">
+			<Command.Root>
+				<Command.List>
+					<Command.Empty>No snap points for this video</Command.Empty>
+					<Command.Group heading="Snap points">
+						{#each videoSnapValues as snapValue (`${key}-${snapValue}`)}
+							<Command.Item
+								value={`${key}-${snapValue}`}
+								disabled={!isBackgroundSnapSelectable(key, snapValue)}
+								onSelect={() => setBackgroundConfigurationValue(key, snapValue)}
+							>
+								<VideoFramePreview
+									src={selectedVideoUrl}
+									time={selectedVideoDuration * snapValue}
+									label={`Snap point at ${formatVideoTime(snapValue)}`}
+									class="pointer-events-none w-14 shrink-0"
+								/>
+								<span class="tabular-nums">{formatVideoTime(snapValue)}</span>
+							</Command.Item>
+						{/each}
+					</Command.Group>
+				</Command.List>
+			</Command.Root>
+		</Popover.Content>
+	</Popover.Root>
 {/snippet}
 
 <HeaderBlank class="w-full">
@@ -409,10 +431,10 @@
 						keyboardStep={0.001}
 						sensitivity={24}
 						snapValues={videoSnapValues}
-						snapThreshold={0.006}
+						snapThreshold={SNAP_THRESHOLD}
 						onValueChange={(value) => setBackgroundConfigurationValue('start', value)}
 					>
-						<Scrubbable.Label>Start</Scrubbable.Label>
+						<Scrubbable.Label>Timestamp</Scrubbable.Label>
 						<Scrubbable.Value format={(value) => formatVideoTime(value)} />
 					</Scrubbable.Root>
 					<VideoFramePreview
@@ -435,10 +457,10 @@
 						keyboardStep={0.001}
 						sensitivity={24}
 						snapValues={videoSnapValues}
-						snapThreshold={0.006}
+						snapThreshold={SNAP_THRESHOLD}
 						onValueChange={(value) => setBackgroundConfigurationValue('end', value)}
 					>
-						<Scrubbable.Label>End</Scrubbable.Label>
+						<Scrubbable.Label>Timestamp</Scrubbable.Label>
 						<Scrubbable.Value format={(value) => formatVideoTime(value)} />
 					</Scrubbable.Root>
 					<VideoFramePreview
@@ -559,7 +581,7 @@
 					onValueChange={(value) =>
 						setConfigurationValue('foregroundConfiguration', 'start', value)}
 				>
-					<Scrubbable.Label>After start</Scrubbable.Label>
+					<Scrubbable.Label>Timestamp</Scrubbable.Label>
 					<Scrubbable.Value format={formatForegroundStart} />
 				</Scrubbable.Root>
 				<VideoFramePreview
