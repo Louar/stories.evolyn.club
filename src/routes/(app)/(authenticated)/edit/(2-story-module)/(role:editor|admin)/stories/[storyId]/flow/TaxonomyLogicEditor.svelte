@@ -12,7 +12,6 @@
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import { onDestroy } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import EditorSurface from './EditorSurface.svelte';
 
 	type DragEndEvent = {
 		operation: { source: { sortable: { index: number; initialIndex: number } | null } | null };
@@ -27,15 +26,11 @@
 		storyId,
 		partId,
 		draft: rawDraft,
-		embedded = false,
-		onBack,
 		close
 	}: {
 		storyId: string;
 		partId: string;
 		draft: Draft;
-		embedded?: boolean;
-		onBack?: () => void;
 		close: (draft?: Draft, keepOpen?: boolean) => void;
 	} = $props();
 	// svelte-ignore state_referenced_locally
@@ -157,7 +152,7 @@
 	}
 </script>
 
-<EditorSurface {embedded} class={embedded ? '' : 'max-h-[90vh] pt-0 md:max-w-190'}>
+<div>
 	<HeaderBlank class="h-12 w-full bg-muted/50">
 		<div class="size-full">
 			<h1 class="flex items-center gap-2 truncate overflow-hidden text-sm whitespace-nowrap">
@@ -169,7 +164,7 @@
 	</HeaderBlank>
 
 	<form
-		class={embedded ? 'grid gap-4 p-4' : 'contents'}
+		class="grid gap-4 p-4"
 		onsubmit={persist}
 		oninput={scheduleAutosave}
 		onchange={scheduleAutosave}
@@ -281,4 +276,4 @@
 			</div>
 		</DragDropProvider>
 	</form>
-</EditorSurface>
+</div>

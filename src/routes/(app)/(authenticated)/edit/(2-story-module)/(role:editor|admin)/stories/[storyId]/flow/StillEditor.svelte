@@ -14,12 +14,10 @@
 	import { onDestroy } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import type { $ZodIssue } from 'zod/v4/core';
-	import EditorSurface from './EditorSurface.svelte';
 
 	type Props = {
 		storyId: string;
 		selectedId?: string;
-		embedded?: boolean;
 		close: (output: {
 			action: 'persist' | 'delete' | 'close';
 			id?: string;
@@ -27,16 +25,16 @@
 			keepOpen?: boolean;
 		}) => void;
 	};
-	let { storyId, selectedId, embedded = false, close }: Props = $props();
-	let stills = $derived(EDITORS.stills);
+	let { storyId, selectedId, close }: Props = $props();
 
-	const createDefaultStill = (): (typeof stills)[number] => ({
+	const createDefaultStill = (): (typeof EDITORS.stills)[number] => ({
 		id: 'new',
 		color: null,
 		image: null,
 		style: null
 	});
-	const cloneStill = (value: (typeof stills)[number]) => structuredClone($state.snapshot(value));
+	const cloneStill = (value: (typeof EDITORS.stills)[number]) =>
+		structuredClone($state.snapshot(value));
 	// svelte-ignore state_referenced_locally
 	let still = $state(
 		selectedId
@@ -120,10 +118,7 @@
 		value.length ? { collection: MediaCollection.externals, filename: value } : null;
 </script>
 
-<EditorSurface
-	{embedded}
-	class="muted-scrollbar {embedded ? '' : 'max-h-[90vh] pt-0 sm:max-w-200'}"
->
+<div class="muted-scrollbar">
 	<HeaderBlank class="w-full">
 		<div class="px-2">
 			<h1 class="truncate overflow-hidden text-sm whitespace-nowrap">
@@ -148,18 +143,13 @@
 			<Button variant="ghost" size="icon" onclick={dismiss}><XIcon /></Button>
 		</div>
 	</HeaderBlank>
-	<form
-		class={embedded ? 'block p-4' : 'contents'}
-		onsubmit={persist}
-		oninput={scheduleAutosave}
-		onchange={scheduleAutosave}
-	>
+	<form class="block p-4" onsubmit={persist} oninput={scheduleAutosave} onchange={scheduleAutosave}>
 		<Field.Group class="gap-2">
 			<Field.Field>
 				<Field.Label>Background color (optional)</Field.Label>
-				<div class="flex items-center gap-4">
+				<div class="flex w-full items-center gap-3">
 					<div
-						class="h-8 w-8 rounded-full border shadow-sm"
+						class="size-8 shrink-0 rounded-full border shadow-sm"
 						style:background-color={still.color}
 					></div>
 					<Popover.Root>
@@ -168,9 +158,9 @@
 								<Button
 									{...props}
 									variant="outline"
-									class="w-55 justify-start text-left font-normal"
+									class="grow justify-start text-left font-normal"
 								>
-									<Paintbrush class="mr-2 h-4 w-4" />
+									<Paintbrush class="mr-1 size-4" />
 									{still.color ?? 'Pick a color'}
 								</Button>
 							{/snippet}
@@ -214,4 +204,4 @@
 			></div>
 		</Field.Group>
 	</form>
-</EditorSurface>
+</div>

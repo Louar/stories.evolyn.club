@@ -12,12 +12,10 @@
 	import { onDestroy } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import type { $ZodIssue } from 'zod/v4/core';
-	import EditorSurface from './EditorSurface.svelte';
 
 	type Props = {
 		storyId: string;
 		selectedId?: string;
-		embedded?: boolean;
 		close: (output: {
 			action: 'persist' | 'delete' | 'close';
 			id?: string;
@@ -25,17 +23,15 @@
 			keepOpen?: boolean;
 		}) => void;
 	};
-	let { storyId, selectedId, embedded = false, close }: Props = $props();
+	let { storyId, selectedId, close }: Props = $props();
 
-	let announcements = $derived(EDITORS.announcements);
-
-	const createDefaultAnnouncement = (): (typeof announcements)[number] => ({
+	const createDefaultAnnouncement = (): (typeof EDITORS.announcements)[number] => ({
 		id: 'new',
 		name: '',
 		title: {},
 		message: {}
 	});
-	const cloneAnnouncement = (value: (typeof announcements)[number]) =>
+	const cloneAnnouncement = (value: (typeof EDITORS.announcements)[number]) =>
 		structuredClone($state.snapshot(value));
 	// svelte-ignore state_referenced_locally
 	let announcement = $state(
@@ -122,10 +118,7 @@
 	const dismiss = () => close({ action: 'close' });
 </script>
 
-<EditorSurface
-	{embedded}
-	class="muted-scrollbar {embedded ? '' : 'max-h-[90vh] pt-0 sm:max-w-200'}"
->
+<div class="muted-scrollbar">
 	<HeaderBlank class="w-full">
 		<div class="px-2">
 			<h1 class="truncate overflow-hidden text-sm whitespace-nowrap">
@@ -150,12 +143,7 @@
 			<Button variant="ghost" size="icon" onclick={dismiss}><XIcon /></Button>
 		</div>
 	</HeaderBlank>
-	<form
-		class={embedded ? 'block p-4' : 'contents'}
-		onsubmit={persist}
-		oninput={scheduleAutosave}
-		onchange={scheduleAutosave}
-	>
+	<form class="block p-4" onsubmit={persist} oninput={scheduleAutosave} onchange={scheduleAutosave}>
 		<Field.Group class="gap-2">
 			<Field.Field>
 				<Field.Label>Announcement reference name</Field.Label>
@@ -180,4 +168,4 @@
 			</Field.Field>
 		</Field.Group>
 	</form>
-</EditorSurface>
+</div>

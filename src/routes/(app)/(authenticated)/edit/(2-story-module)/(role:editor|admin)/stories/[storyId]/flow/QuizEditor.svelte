@@ -21,7 +21,6 @@
 	import { onDestroy } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import type { $ZodIssue } from 'zod/v4/core';
-	import EditorSurface from './EditorSurface.svelte';
 
 	type DragEndEvent = {
 		operation: { source: { sortable: { index: number; initialIndex: number } | null } | null };
@@ -30,7 +29,6 @@
 	type Props = {
 		storyId: string;
 		selectedId?: string;
-		embedded?: boolean;
 		close: (output: {
 			action: 'persist' | 'delete' | 'close';
 			id?: string;
@@ -38,17 +36,16 @@
 			keepOpen?: boolean;
 		}) => void;
 	};
-	let { storyId, selectedId, embedded = false, close }: Props = $props();
+	let { storyId, selectedId, close }: Props = $props();
 
-	let quizzes = $derived(EDITORS.quizzes);
-
-	const createDefaultQuiz = (): (typeof quizzes)[number] => ({
+	const createDefaultQuiz = (): (typeof EDITORS.quizzes)[number] => ({
 		id: 'new',
 		name: '',
 		doRandomize: false,
 		questions: []
 	});
-	const cloneQuiz = (value: (typeof quizzes)[number]) => structuredClone($state.snapshot(value));
+	const cloneQuiz = (value: (typeof EDITORS.quizzes)[number]) =>
+		structuredClone($state.snapshot(value));
 	// svelte-ignore state_referenced_locally
 	let quiz = $state(
 		selectedId
@@ -214,10 +211,7 @@
 	const dismiss = () => close({ action: 'close' });
 </script>
 
-<EditorSurface
-	{embedded}
-	class="muted-scrollbar {embedded ? '' : 'max-h-[90vh] pt-0 sm:max-w-200'}"
->
+<div class="muted-scrollbar">
 	<HeaderBlank class="w-full">
 		<div class="px-2">
 			<h1 class="truncate overflow-hidden text-sm whitespace-nowrap">
@@ -242,12 +236,7 @@
 			<Button variant="ghost" size="icon" onclick={dismiss}><XIcon /></Button>
 		</div>
 	</HeaderBlank>
-	<form
-		class={embedded ? 'block p-4' : 'contents'}
-		onsubmit={persist}
-		oninput={scheduleAutosave}
-		onchange={scheduleAutosave}
-	>
+	<form class="block p-4" onsubmit={persist} oninput={scheduleAutosave} onchange={scheduleAutosave}>
 		<div class="mb-4 grid gap-4 rounded-lg border bg-accent p-4">
 			<div class="flex items-center justify-between">
 				<div class="w-full">
@@ -449,4 +438,4 @@
 			<Button type="submit" onclick={submit}>Save Quiz</Button>
 		</Dialog.Footer> -->
 	</form>
-</EditorSurface>
+</div>

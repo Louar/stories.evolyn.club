@@ -9,7 +9,6 @@
 </script>
 
 <script lang="ts">
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
 	import { useSidebar } from '$lib/components/ui/sidebar/index.js';
 	import type {
@@ -95,30 +94,26 @@
 		</Button> -->
 		{#if selection}
 			{#key selection.kind === 'taxonomy' ? `${selection.kind}-${selection.partId}` : `${selection.kind}-${selection.id ?? 'new'}`}
-				<Dialog.Root>
-					{#if selection.kind === 'still'}
-						<StillEditor embedded storyId={story.id} selectedId={selection.id} close={closeStill} />
-					{:else if selection.kind === 'video'}
-						<VideoEditor embedded storyId={story.id} selectedId={selection.id} close={closeVideo} />
-					{:else if selection.kind === 'announcement'}
-						<AnnouncementEditor
-							embedded
-							storyId={story.id}
-							selectedId={selection.id}
-							close={closeAnnouncement}
-						/>
-					{:else if selection.kind === 'quiz'}
-						<QuizEditor embedded storyId={story.id} selectedId={selection.id} close={closeQuiz} />
-					{:else if taxonomyPart?.taxonomyDraftForPart}
-						<TaxonomyLogicEditor
-							embedded
-							storyId={story.id}
-							partId={taxonomyPart.id}
-							draft={taxonomyPart.taxonomyDraftForPart}
-							close={closeTaxonomy}
-						/>
-					{/if}
-				</Dialog.Root>
+				{#if selection.kind === 'still'}
+					<StillEditor storyId={story.id} selectedId={selection.id} close={closeStill} />
+				{:else if selection.kind === 'video'}
+					<VideoEditor storyId={story.id} selectedId={selection.id} close={closeVideo} />
+				{:else if selection.kind === 'announcement'}
+					<AnnouncementEditor
+						storyId={story.id}
+						selectedId={selection.id}
+						close={closeAnnouncement}
+					/>
+				{:else if selection.kind === 'quiz'}
+					<QuizEditor storyId={story.id} selectedId={selection.id} close={closeQuiz} />
+				{:else if taxonomyPart?.taxonomyDraftForPart}
+					<TaxonomyLogicEditor
+						storyId={story.id}
+						partId={taxonomyPart.id}
+						draft={taxonomyPart.taxonomyDraftForPart}
+						close={closeTaxonomy}
+					/>
+				{/if}
 			{/key}
 		{/if}
 	</div>

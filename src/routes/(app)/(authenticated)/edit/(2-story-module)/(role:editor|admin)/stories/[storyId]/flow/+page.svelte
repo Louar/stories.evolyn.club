@@ -4,7 +4,6 @@
 	import HeaderBlank from '$lib/components/app/header/app-header-blank.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Command from '$lib/components/ui/command/index.js';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { LanguageSelector } from '$lib/components/ui/language-selector/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
@@ -318,20 +317,17 @@
 
 			<Sidebar.Content class="px-3 py-0">
 				<Tabs.Content value="settings" class="min-h-0 flex-1 overflow-hidden">
-					<Dialog.Root>
-						<StorySettingsEditor
-							embedded
-							storyId={story.id}
-							story={{
-								slug: story.slug,
-								name: story.name,
-								defaultBackgroundColor: story.defaultBackgroundColor,
-								isPublished: story.isPublished,
-								isPublic: story.isPublic
-							}}
-							close={closeSettings}
-						/>
-					</Dialog.Root>
+					<StorySettingsEditor
+						storyId={story.id}
+						story={{
+							slug: story.slug,
+							name: story.name,
+							defaultBackgroundColor: story.defaultBackgroundColor,
+							isPublished: story.isPublished,
+							isPublic: story.isPublic
+						}}
+						close={closeSettings}
+					/>
 				</Tabs.Content>
 
 				<Tabs.Content value="backgrounds">

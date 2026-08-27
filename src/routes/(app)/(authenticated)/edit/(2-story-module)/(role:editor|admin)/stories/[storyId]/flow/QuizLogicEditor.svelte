@@ -18,7 +18,6 @@
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import { toast } from 'svelte-sonner';
 	import type { $ZodIssue } from 'zod/v4/core';
-	import EditorSurface from './EditorSurface.svelte';
 
 	type DragEndEvent = {
 		operation: { source: { sortable: { index: number; initialIndex: number } | null } | null };
@@ -31,15 +30,13 @@
 			Awaited<ReturnType<typeof findOneStoryById>>['parts'][number]['quizLogicForPart']
 		>['rules'];
 		quiz: Awaited<ReturnType<typeof findOneStoryById>>['quizzes'][number];
-		embedded?: boolean;
-		onBack?: () => void;
 		close: (output: {
 			action: 'persist' | 'delete';
 			id?: string;
 			logic?: Awaited<ReturnType<typeof findOneQuizLogicById>>;
 		}) => void;
 	};
-	let { storyId, partId, rules, quiz, embedded = false, onBack, close }: Props = $props();
+	let { storyId, partId, rules, quiz, close }: Props = $props();
 
 	let error = $state<$ZodIssue[] | null>(null);
 
@@ -89,7 +86,7 @@
 	};
 </script>
 
-<EditorSurface {embedded} class={embedded ? '' : 'max-h-[90vh] scrollbar-none pt-0 md:max-w-190'}>
+<div>
 	<HeaderBlank class="h-12 w-full bg-muted/50">
 		<div class="size-full">
 			<h1 class="flex items-center gap-2 truncate overflow-hidden text-sm whitespace-nowrap">
@@ -100,7 +97,7 @@
 		</div>
 	</HeaderBlank>
 
-	<form class={embedded ? 'p-4' : 'contents'} onsubmit={persist}>
+	<form class="p-4" onsubmit={persist}>
 		<DragDropProvider onDragEnd={(event) => handleRuleDrag(event as DragEndEvent)}>
 			<div class="grid gap-4">
 				{#each rules as rule, r (rule.id)}
@@ -308,4 +305,4 @@
 			<Button type="submit" onclick={submit}>Save logic</Button>
 		</Dialog.Footer> -->
 	</form>
-</EditorSurface>
+</div>

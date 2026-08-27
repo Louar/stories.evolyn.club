@@ -21,13 +21,11 @@
 	import { toast } from 'svelte-sonner';
 	import { z } from 'zod/v4';
 	import type { $ZodIssue } from 'zod/v4/core';
-	import EditorSurface from './EditorSurface.svelte';
 	import VideoValidator from './VideoValidator.svelte';
 
 	type Props = {
 		storyId: string;
 		selectedId?: string;
-		embedded?: boolean;
 		close: (output: {
 			action: 'persist' | 'delete' | 'close';
 			id?: string;
@@ -35,12 +33,10 @@
 			keepOpen?: boolean;
 		}) => void;
 	};
-	let { storyId, selectedId, embedded = false, close }: Props = $props();
-
-	let videos = $derived(EDITORS.videos);
+	let { storyId, selectedId, close }: Props = $props();
 
 	// Initialize quiz from quizzes prop or use default
-	const createDefaultVideo = (): (typeof videos)[number] => ({
+	const createDefaultVideo = (): (typeof EDITORS.videos)[number] => ({
 		id: 'new',
 		name: '',
 		source: {},
@@ -48,7 +44,8 @@
 		captions: {},
 		duration: 0
 	});
-	const cloneVideo = (value: (typeof videos)[number]) => structuredClone($state.snapshot(value));
+	const cloneVideo = (value: (typeof EDITORS.videos)[number]) =>
+		structuredClone($state.snapshot(value));
 	// svelte-ignore state_referenced_locally
 	let video = $state(
 		selectedId
@@ -167,10 +164,7 @@
 	};
 </script>
 
-<EditorSurface
-	{embedded}
-	class="muted-scrollbar {embedded ? '' : 'max-h-[90vh] pt-0 sm:max-w-200'}"
->
+<div class="muted-scrollbar">
 	<HeaderBlank class="w-full">
 		<div class="px-2">
 			<h1 class="truncate overflow-hidden text-sm whitespace-nowrap">
@@ -195,12 +189,7 @@
 			<Button variant="ghost" size="icon" onclick={dismiss}><XIcon /></Button>
 		</div>
 	</HeaderBlank>
-	<form
-		class={embedded ? 'block p-4' : 'contents'}
-		onsubmit={persist}
-		oninput={scheduleAutosave}
-		onchange={scheduleAutosave}
-	>
+	<form class="block p-4" onsubmit={persist} oninput={scheduleAutosave} onchange={scheduleAutosave}>
 		<Field.Group class="gap-2">
 			<Field.Field>
 				<Field.Label>Video reference name</Field.Label>
@@ -270,4 +259,4 @@
 			</Field.Field>
 		</Field.Group>
 	</form>
-</EditorSurface>
+</div>

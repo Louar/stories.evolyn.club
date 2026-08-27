@@ -396,7 +396,6 @@
 		<Separator />
 		<div oninput={(event) => event.stopPropagation()} onchange={(event) => event.stopPropagation()}>
 			<QuizLogicEditor
-				embedded
 				{storyId}
 				partId={draft.id}
 				rules={draft.quizLogicForPart?.rules ?? []}
@@ -408,7 +407,6 @@
 		<Separator />
 		<div oninput={(event) => event.stopPropagation()} onchange={(event) => event.stopPropagation()}>
 			<TaxonomyLogicEditor
-				embedded
 				{storyId}
 				partId={draft.id}
 				draft={draft.taxonomyDraftForPart}

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { CopyButton } from '$lib/components/ui/copy-button';
 	import * as ColorPicker from '$lib/components/ui/color-picker/index.js';
+	import { CopyButton } from '$lib/components/ui/copy-button';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
@@ -16,18 +16,16 @@
 	import { toast } from 'svelte-sonner';
 	import z from 'zod/v4';
 	import type { $ZodIssue } from 'zod/v4/core';
-	import EditorSurface from './EditorSurface.svelte';
 
 	type Props = {
 		storyId: string;
-		embedded?: boolean;
 		story: Pick<
 			Awaited<ReturnType<typeof findOneStoryById>>,
 			'slug' | 'name' | 'defaultBackgroundColor' | 'isPublished' | 'isPublic'
 		>;
 		close: (output: { action: 'persist' | 'delete'; data?: z.infer<typeof storySchema> }) => void;
 	};
-	let { storyId, story: rawstory, embedded = false, close }: Props = $props();
+	let { storyId, story: rawstory, close }: Props = $props();
 
 	// svelte-ignore state_referenced_locally
 	let story = $state(rawstory);
@@ -103,9 +101,9 @@
 	};
 </script>
 
-<EditorSurface {embedded} class={embedded ? 'flex flex-col' : 'max-h-[90vh] pt-0 sm:max-w-200'}>
+<div class="flex flex-col">
 	<form
-		class={embedded ? 'block w-full' : 'contents'}
+		class="block w-full"
 		onsubmit={persist}
 		oninput={scheduleAutosave}
 		onchange={scheduleAutosave}
@@ -129,9 +127,9 @@
 
 			<Field.Field>
 				<Field.Label>Default background color (optional)</Field.Label>
-				<div class="flex items-center gap-4">
+				<div class="flex items-center gap-3">
 					<div
-						class="h-8 w-8 rounded-full border shadow-sm"
+						class="size-8 shrink-0 rounded-full border shadow-sm"
 						style:background-color={story.defaultBackgroundColor}
 					></div>
 					<Popover.Root>
@@ -141,9 +139,9 @@
 									{...props}
 									type="button"
 									variant="outline"
-									class="w-55 justify-start text-left font-normal"
+									class="grow justify-start text-left font-normal"
 								>
-									<Paintbrush class="mr-2 h-4 w-4" />
+									<Paintbrush class="mr-1 size-4" />
 									{story.defaultBackgroundColor ?? 'Pick a color'}
 								</Button>
 							{/snippet}
@@ -223,4 +221,4 @@
 			<TrashIcon />
 		</Button>
 	</div>
-</EditorSurface>
+</div>
