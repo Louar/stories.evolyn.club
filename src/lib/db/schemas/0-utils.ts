@@ -1,4 +1,4 @@
-import { sql, type ExpressionBuilder, type JSONColumnType, type StringSlug } from 'kysely';
+import { sql, type ExpressionBuilder, type JSONColumnType, type StringReference } from 'kysely';
 import { z } from 'zod/v4';
 import type { $ZodIssue } from 'zod/v4/core';
 
@@ -88,7 +88,7 @@ export const translatableValidator = z
   );
 export type Translatable = z.infer<typeof translatableValidator>; // Record<'default' | Language, string>;
 export type TranslatableColumn = JSONColumnType<Translatable>;
-export const selectLocalizedField = <DB, TB extends keyof DB & string>(eb: ExpressionBuilder<DB, TB>, column: StringSlug<DB, TB>, language?: Language | null) => {
+export const selectLocalizedField = <DB, TB extends keyof DB & string>(eb: ExpressionBuilder<DB, TB>, column: StringReference<DB, TB>, language?: Language | null) => {
   return eb.fn.coalesce(
     sql<string | null>`${eb.ref(column)}->>${language ?? Language.English}`,
     sql<string | null>`${eb.ref(column)}->>'default'`,
@@ -108,7 +108,7 @@ export type TranslatableMedia = z.infer<typeof translatableMediaValidator>;
 export type TranslatableMediaColumn = JSONColumnType<TranslatableMedia>;
 export const selectLocalizedMediaField = <DB, TB extends keyof DB & string>(
   eb: ExpressionBuilder<DB, TB>,
-  column: StringSlug<DB, TB>,
+  column: StringReference<DB, TB>,
   language?: Language | null
 ) => {
   return sql<Media | null>`coalesce(

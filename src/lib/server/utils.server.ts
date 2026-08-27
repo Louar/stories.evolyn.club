@@ -4,7 +4,7 @@ import { Language, type Media } from '$lib/db/schemas/0-utils.js';
 import { UserRole } from '$lib/db/schemas/1-client-user-module';
 import { StoryPermissionRole } from '$lib/db/schemas/2-story-module';
 import { error, json } from '@sveltejs/kit';
-import { sql, type Kysely, type RawBuilder, type Transaction } from 'kysely';
+import type { ExpressionBuilder, Kysely, Transaction } from 'kysely';
 import { z } from 'zod/v4';
 import * as zodLocales from 'zod/v4/locales';
 
@@ -95,10 +95,12 @@ export const canModifyStory = async (locals: App.Locals, storyId: string) => {
 				.selectFrom('storyPermission')
 				.where('storyPermission.storyId', '=', storyId)
 				.where('storyPermission.userId', '=', userId)
-				.where((eb) => eb.or([
-					eb('storyPermission.role', '=', StoryPermissionRole.owner),
-					eb('storyPermission.role', '=', StoryPermissionRole.editor)
-				]))
+				.where((eb) =>
+					eb.or([
+						eb('storyPermission.role', '=', StoryPermissionRole.owner),
+						eb('storyPermission.role', '=', StoryPermissionRole.editor)
+					])
+				)
 				.select('storyPermission.id');
 		}
 	});
@@ -111,63 +113,49 @@ export const MEDIA_REFERENCE_LOCATIONS = [
 	'client.splash',
 	'client.hero',
 	'user.picture',
-	'provider.image',
-	'activityTemplate.image',
-	'group.image',
-	'mission.image',
-	'milestone.image',
-	'task.thumbnail',
-	'task.hero',
-	'skill.image'
 ] as const;
 
 type DatabaseExecutor = Kysely<Schema> | Transaction<Schema>;
-type ReferenceResult = { referenced: boolean };
-type QueryExecutor = (
-	query: RawBuilder<ReferenceResult>,
-	executor: DatabaseExecutor
-) => Promise<{ rows: ReferenceResult[] }>;
+type MediaReferenceSchema = Record<string, { [column: string]: unknown }>;
+type MediaReferenceExpressionBuilder = ExpressionBuilder<MediaReferenceSchema, string>;
 
 export async function isMediaReferenced(
 	executor: DatabaseExecutor,
 	clientId: string,
-	media: Media,
-	executeQuery: QueryExecutor = (query, database) => query.execute(database)
+	media: Media
 ): Promise<boolean> {
 	const object = JSON.stringify(media);
 	const array = JSON.stringify([media]);
-	const matches = (column: string) =>
-		sql<boolean>`(${sql.ref(column)} @> ${object}::jsonb or ${sql.ref(column)} @> ${array}::jsonb)`;
-	const query = sql<ReferenceResult>`
-		select exists (
-			select 1 from client c
-			where c.id = ${clientId}
-				and (${matches('c.logo')} or ${matches('c.favicon')}
-					or ${matches('c.splash')} or ${matches('c.hero')})
-			union all
-			select 1 from "user" u where u.client_id = ${clientId} and ${matches('u.picture')}
-			union all
-			select 1 from provider p where p.client_id = ${clientId} and ${matches('p.image')}
-			union all
-			select 1 from activity_template a where a.client_id = ${clientId} and ${matches('a.image')}
-			union all
-			select 1 from "group" g where g.client_id = ${clientId} and ${matches('g.image')}
-			union all
-			select 1 from mission m where m.client_id = ${clientId} and ${matches('m.image')}
-			union all
-			select 1 from milestone ms
-			join mission m on m.id = ms.mission_id
-			where m.client_id = ${clientId} and ${matches('ms.image')}
-			union all
-			select 1 from task t
-			join milestone ms on ms.id = t.milestone_id
-			join mission m on m.id = ms.mission_id
-			where m.client_id = ${clientId}
-				and (${matches('t.thumbnail')} or ${matches('t.hero')})
-			union all
-			select 1 from skill s where s.client_id = ${clientId} and ${matches('s.image')}
-		) as referenced
-	`;
-	const result = await executeQuery(query, executor);
-	return result.rows[0]?.referenced === true;
+	const db = executor as unknown as Kysely<MediaReferenceSchema>;
+	const matches = (column: `${string}.${string}`) => (eb: MediaReferenceExpressionBuilder) =>
+		eb.or([
+			eb(column, '@>', eb.cast(eb.val(object), 'jsonb')),
+			eb(column, '@>', eb.cast(eb.val(array), 'jsonb'))
+		]);
+
+	const queries = [
+		db
+			.selectFrom('client as c')
+			.where('c.id', '=', clientId)
+			.where((eb) =>
+				eb.or([
+					matches('c.logo')(eb),
+					matches('c.favicon')(eb),
+					matches('c.splash')(eb),
+					matches('c.hero')(eb)
+				])
+			)
+			.select('c.id'),
+		db
+			.selectFrom('user as u')
+			.where('u.clientId', '=', clientId)
+			.where(matches('u.picture'))
+			.select('u.id'),
+	];
+
+	for (const query of queries) {
+		if (await query.executeTakeFirst()) return true;
+	}
+
+	return false;
 }
