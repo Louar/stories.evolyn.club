@@ -2,16 +2,24 @@
 	import HeaderBlank from '$lib/components/app/header/app-header-blank.svelte';
 	import * as ButtonGroup from '$lib/components/ui/button-group/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
+	import * as Scrubbable from '$lib/components/ui/scrubbable/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import type {
 		findOneQuizLogicById,
 		findOneStoryById
 	} from '$lib/db/repositories/2-story-module.js';
+	import {
+		MediaCollection,
+		translateLocalizedMediaField,
+		type Media
+	} from '$lib/db/schemas/0-utils.js';
 	import { EDITORS } from '$lib/states/editors.svelte.js';
+	import { UI } from '$lib/states/ui.svelte.js';
 	import BanIcon from '@lucide/svelte/icons/ban';
 	import ImageIcon from '@lucide/svelte/icons/image';
+	import MagnetIcon from '@lucide/svelte/icons/magnet';
 	import LayersIcon from '@lucide/svelte/icons/layers';
 	import MessageSquareIcon from '@lucide/svelte/icons/message-square';
 	import ShapesIcon from '@lucide/svelte/icons/shapes';
@@ -22,17 +30,21 @@
 	import QuizLogicEditor from './QuizLogicEditor.svelte';
 	import ResourceCombobox from './ResourceCombobox.svelte';
 	import TaxonomyLogicEditor from './TaxonomyLogicEditor.svelte';
+	import VideoFramePreview from './VideoFramePreview.svelte';
 
 	type Story = Awaited<ReturnType<typeof findOneStoryById>>;
 	type Part = Story['parts'][number];
+	type PartWithMergedMedia = Part & { background?: unknown; foreground?: unknown };
 	type SaveState = 'idle' | 'dirty' | 'saving' | 'saved' | 'error';
 
 	let {
+		story,
 		storyId,
 		part,
 		onSave,
 		onDismiss
 	}: {
+		story: Story;
 		storyId: string;
 		part: Part;
 		onSave: (part: Part) => void;
@@ -72,8 +84,107 @@
 		EDITORS.taxonomies.map((item) => ({ value: item.id, label: item.name }))
 	);
 	let quiz = $derived(EDITORS.quizzes.find((item) => item.id === draft.quizTemplateId));
+	let selectedVideo = $derived(EDITORS.videos.find((item) => item.id === draft.videoId));
+	let selectedVideoSource = $derived(
+		translateLocalizedMediaField(selectedVideo?.source, UI.language)
+	);
+	let selectedVideoUrl = $derived(mediaUrl(selectedVideoSource));
+	let selectedVideoDuration = $derived(selectedVideo?.duration ?? videoDurationFromPart(draft));
+	let backgroundStart = $derived(configurationValue(draft, 'backgroundConfiguration', 'start', 0));
+	let backgroundEnd = $derived(configurationValue(draft, 'backgroundConfiguration', 'end', 1));
+	let foregroundStart = $derived(
+		configurationValue(draft, 'foregroundConfiguration', 'start', 0.5)
+	);
+	let foregroundStartMin = $derived(Math.min(backgroundStart, backgroundEnd));
+	let foregroundStartMax = $derived(Math.max(backgroundStart, backgroundEnd));
+	let videoSnapValues = $derived.by(() => {
+		const values = story.parts
+			.filter((item) => item.id !== draft.id && item.videoId === draft.videoId)
+			.flatMap((item) => [
+				configurationValue(item, 'backgroundConfiguration', 'start', NaN),
+				configurationValue(item, 'backgroundConfiguration', 'end', NaN)
+			])
+			.filter((value) => Number.isFinite(value) && value >= 0 && value <= 1);
+
+		return [...new Set(values)].sort((a, b) => a - b);
+	});
 
 	const clonePart = (value: Part) => structuredClone($state.snapshot(value));
+	function mediaUrl(media?: Media | null) {
+		if (!media) return undefined;
+		return media.collection === MediaCollection.externals
+			? media.filename
+			: `/api/media/${media.collection}/${media.filename}`;
+	}
+	function isRecord(value: unknown): value is Record<string, unknown> {
+		return !!value && typeof value === 'object';
+	}
+	function videoDurationFromPart(value: PartWithMergedMedia) {
+		return isRecord(value.background) && typeof value.background.duration === 'number'
+			? value.background.duration
+			: 0;
+	}
+	function configurationValue(
+		value: PartWithMergedMedia,
+		section: 'backgroundConfiguration' | 'foregroundConfiguration',
+		key: 'start' | 'end',
+		fallback: number
+	) {
+		const configured = value[section]?.[key];
+		if (typeof configured === 'number') return configured;
+
+		const merged = section === 'backgroundConfiguration' ? value.background : value.foreground;
+		if (isRecord(merged) && typeof merged[key] === 'number') return merged[key];
+
+		return fallback;
+	}
+	function formatVideoTime(percentage: number) {
+		if (!selectedVideoDuration) return `${percentage.toFixed(3)}x`;
+		const seconds = selectedVideoDuration * percentage;
+		const wholeSeconds = Math.floor(seconds);
+		const centiseconds = Math.floor((seconds - wholeSeconds) * 100);
+		return `${[Math.floor((wholeSeconds / 60) % 60), wholeSeconds % 60]
+			.join(':')
+			.replace(/\b(\d)\b/g, '0$1')}.${centiseconds.toString().padStart(2, '0')}`;
+	}
+	function formatForegroundStart(value: number) {
+		const offset = Math.max(0, value - backgroundStart);
+		return formatVideoTime(offset);
+	}
+	function clampConfigurationValue(value: number, min: number, max: number) {
+		return Math.max(min, Math.min(max, value));
+	}
+	function setConfigurationValue(
+		section: 'backgroundConfiguration' | 'foregroundConfiguration',
+		key: 'start' | 'end',
+		value: number
+	) {
+		draft[section] = {
+			...draft[section],
+			[key]: value
+		} as (typeof draft)[typeof section];
+		scheduleAutosave();
+	}
+	function setBackgroundConfigurationValue(key: 'start' | 'end', value: number) {
+		const previousStart = backgroundStart;
+		const previousForegroundOffset = Math.max(0, foregroundStart - previousStart);
+		const nextStart = key === 'start' ? value : backgroundStart;
+		const nextEnd = key === 'end' ? value : backgroundEnd;
+
+		draft.backgroundConfiguration = {
+			...draft.backgroundConfiguration,
+			[key]: value
+		} as typeof draft.backgroundConfiguration;
+
+		if (draft.foregroundType) {
+			draft.foregroundConfiguration = {
+				...draft.foregroundConfiguration,
+				start: clampConfigurationValue(nextStart + previousForegroundOffset, nextStart, nextEnd)
+			} as typeof draft.foregroundConfiguration;
+		}
+
+		scheduleAutosave();
+	}
 
 	const persist = async (event?: Event, autosave = false) => {
 		event?.preventDefault();
@@ -136,18 +247,6 @@
 		scheduleAutosave();
 	};
 
-	const setConfiguration = (
-		section: 'backgroundConfiguration' | 'foregroundConfiguration',
-		key: 'start' | 'end',
-		value: string
-	) => {
-		const parsed = Number(value);
-		draft[section] = {
-			...draft[section],
-			[key]: Number.isFinite(parsed) ? parsed : undefined
-		} as (typeof draft)[typeof section];
-	};
-
 	const saveQuizLogic = (output: {
 		action: 'persist' | 'delete';
 		id?: string;
@@ -164,6 +263,43 @@
 		onSave(clonePart(draft));
 	};
 </script>
+
+{#snippet backgroundSnapMenu(key: 'start' | 'end')}
+	<DropdownMenu.Root>
+		<DropdownMenu.Trigger>
+			{#snippet child({ props })}
+				<Button
+					{...props}
+					variant="ghost"
+					size="sm"
+					class="h-6 px-2 text-[0.65rem] uppercase text-muted-foreground"
+					aria-label={`Show ${key} snap points`}
+				>
+				<MagnetIcon class="size-3" />
+					Snaps
+				</Button>
+			{/snippet}
+		</DropdownMenu.Trigger>
+		<DropdownMenu.Content align="start" class="w-64">
+			<DropdownMenu.Label>Snap points</DropdownMenu.Label>
+			{#if videoSnapValues.length}
+				{#each videoSnapValues as snapValue (`${key}-${snapValue}`)}
+					<DropdownMenu.Item onSelect={() => setBackgroundConfigurationValue(key, snapValue)}>
+						<VideoFramePreview
+							src={selectedVideoUrl}
+							time={selectedVideoDuration * snapValue}
+							label={`Snap point at ${formatVideoTime(snapValue)}`}
+							class="pointer-events-none w-14 shrink-0"
+						/>
+						<span class="tabular-nums">{formatVideoTime(snapValue)}</span>
+					</DropdownMenu.Item>
+				{/each}
+			{:else}
+				<DropdownMenu.Item disabled>No snap points for this video</DropdownMenu.Item>
+			{/if}
+		</DropdownMenu.Content>
+	</DropdownMenu.Root>
+{/snippet}
 
 <HeaderBlank class="w-full">
 	<div>
@@ -258,27 +394,59 @@
 					}}
 				/>
 			</Field.Field>
-			<div class="grid grid-cols-2 gap-3">
-				<Field.Field
-					><Field.Label>Start</Field.Label><Input
-						type="number"
-						min="0"
-						step="0.01"
-						value={draft.backgroundConfiguration?.start ?? 0}
-						oninput={(event) =>
-							setConfiguration('backgroundConfiguration', 'start', event.currentTarget.value)}
-					/></Field.Field
-				>
-				<Field.Field
-					><Field.Label>End</Field.Label><Input
-						type="number"
-						min="0"
-						step="0.01"
-						value={draft.backgroundConfiguration?.end ?? 1}
-						oninput={(event) =>
-							setConfiguration('backgroundConfiguration', 'end', event.currentTarget.value)}
-					/></Field.Field
-				>
+			<div class="grid gap-3 sm:grid-cols-2">
+				<Field.Field>
+					<div class="flex items-center justify-between gap-2">
+						<Field.Label>Start</Field.Label>
+						{@render backgroundSnapMenu('start')}
+					</div>
+					<Scrubbable.Root
+						class="w-full"
+						value={backgroundStart}
+						min={0}
+						max={backgroundEnd}
+						step={0.01}
+						keyboardStep={0.001}
+						sensitivity={24}
+						snapValues={videoSnapValues}
+						snapThreshold={0.006}
+						onValueChange={(value) => setBackgroundConfigurationValue('start', value)}
+					>
+						<Scrubbable.Label>Start</Scrubbable.Label>
+						<Scrubbable.Value format={(value) => formatVideoTime(value)} />
+					</Scrubbable.Root>
+					<VideoFramePreview
+						src={selectedVideoUrl}
+						time={selectedVideoDuration * backgroundStart}
+						label={`Background start at ${formatVideoTime(backgroundStart)}`}
+					/>
+				</Field.Field>
+				<Field.Field>
+					<div class="flex items-center justify-between gap-2">
+						<Field.Label>End</Field.Label>
+						{@render backgroundSnapMenu('end')}
+					</div>
+					<Scrubbable.Root
+						class="w-full"
+						value={backgroundEnd}
+						min={backgroundStart}
+						max={1}
+						step={0.01}
+						keyboardStep={0.001}
+						sensitivity={24}
+						snapValues={videoSnapValues}
+						snapThreshold={0.006}
+						onValueChange={(value) => setBackgroundConfigurationValue('end', value)}
+					>
+						<Scrubbable.Label>End</Scrubbable.Label>
+						<Scrubbable.Value format={(value) => formatVideoTime(value)} />
+					</Scrubbable.Root>
+					<VideoFramePreview
+						src={selectedVideoUrl}
+						time={selectedVideoDuration * backgroundEnd}
+						label={`Background end at ${formatVideoTime(backgroundEnd)}`}
+					/>
+				</Field.Field>
 			</div>
 		{/if}
 	</Field.Set>
@@ -380,13 +548,24 @@
 		{#if draft.foregroundType && draft.backgroundType === 'video'}
 			<Field.Field>
 				<Field.Label>Start</Field.Label>
-				<Input
-					type="number"
-					min="0"
-					step="0.01"
-					value={draft.foregroundConfiguration?.start ?? 0.5}
-					oninput={(event) =>
-						setConfiguration('foregroundConfiguration', 'start', event.currentTarget.value)}
+				<Scrubbable.Root
+					class="w-full"
+					value={foregroundStart}
+					min={foregroundStartMin}
+					max={foregroundStartMax}
+					step={0.01}
+					keyboardStep={0.001}
+					sensitivity={24}
+					onValueChange={(value) =>
+						setConfigurationValue('foregroundConfiguration', 'start', value)}
+				>
+					<Scrubbable.Label>After start</Scrubbable.Label>
+					<Scrubbable.Value format={formatForegroundStart} />
+				</Scrubbable.Root>
+				<VideoFramePreview
+					src={selectedVideoUrl}
+					time={selectedVideoDuration * foregroundStart}
+					label={`Foreground start at ${formatVideoTime(foregroundStart)}`}
 				/>
 			</Field.Field>
 		{/if}

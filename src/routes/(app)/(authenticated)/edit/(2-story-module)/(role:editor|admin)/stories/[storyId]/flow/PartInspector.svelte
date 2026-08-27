@@ -28,7 +28,7 @@
 		{#if part}
 			{#key part.id}
 				<Dialog.Root>
-					<PartEditor storyId={story.id} {part} {onSave} onDismiss={dismiss} />
+					<PartEditor {story} storyId={story.id} {part} {onSave} onDismiss={dismiss} />
 				</Dialog.Root>
 			{/key}
 		{/if}
