@@ -3,7 +3,9 @@
 	import { MediaCollection, type Media } from '$lib/db/schemas/0-utils';
 	import {
 		createYouTubePlayer,
+		getYouTubeThumbnailUrl,
 		getVideoSourceType,
+		warmYouTubeConnections,
 		type YouTubePlayer,
 		type YouTubePlayerState
 	} from '$lib/media/video';
@@ -23,6 +25,7 @@
 		start?: number | undefined;
 		end?: number | undefined;
 		playbackRate?: number | undefined;
+		defaultBackgroundColor?: string | null | undefined;
 		isInitialPart: boolean;
 		isActive: boolean;
 
@@ -47,6 +50,7 @@
 		start,
 		end,
 		playbackRate,
+		defaultBackgroundColor,
 		isInitialPart,
 		isActive,
 
@@ -71,6 +75,9 @@
 
 	const source = $derived(mediaUrl(src));
 	const sourceType = $derived(getVideoSourceType(source));
+	const youtubeThumbnailUrl = $derived(
+		sourceType === 'youtube' ? getYouTubeThumbnailUrl(source) : undefined
+	);
 	const clipStart = $derived(start ?? 0);
 
 	let video: HTMLVideoElement = $state()!;
@@ -276,6 +283,7 @@
 
 	const load = () => {
 		if (isLoaded) return;
+		if (sourceType === 'youtube') warmYouTubeConnections();
 		isLoaded = true;
 		if (sourceType === 'youtube') void initializeYouTube();
 		else if (sourceType !== 'unsupported') initializeNativeVideo();
@@ -324,7 +332,9 @@
 	};
 
 	$effect(() => {
-		if (doBuffer) load();
+		if (!doBuffer) return;
+		if (sourceType === 'youtube') warmYouTubeConnections();
+		else load();
 	});
 
 	$effect(() => {
@@ -383,10 +393,7 @@
 
 <svelte:window onresize={resizeAmbient} />
 
-<div
-	bind:this={playerContainer}
-	class={cn('group relative size-full overflow-hidden bg-black', className)}
->
+<div bind:this={playerContainer} class={cn('group relative size-full overflow-hidden', className)}>
 	{#if poster && isInitialPart && !hasStarted}
 		<MediaFile
 			src={poster}
@@ -400,7 +407,7 @@
 		></canvas>
 	{/if}
 
-	{#if !canPlay}
+	{#if isLoaded && !canPlay}
 		<div
 			class="pointer-events-none absolute inset-0 z-10 grid place-items-center text-white opacity-50"
 		>
@@ -409,9 +416,20 @@
 	{/if}
 
 	{#if sourceType === 'youtube'}
+		{#if youtubeThumbnailUrl && !isLoaded}
+			<img
+				src={youtubeThumbnailUrl}
+				alt=""
+				class="pointer-events-none absolute inset-0 z-10 size-full object-cover"
+				loading={isInitialPart ? 'eager' : 'lazy'}
+				fetchpriority={isInitialPart ? 'high' : 'low'}
+				referrerpolicy="origin"
+			/>
+		{/if}
 		<div
 			bind:this={youtubeContainer}
-			class="pointer-events-none absolute inset-0 z-10 size-full"
+			class="youtube-frame pointer-events-none absolute inset-0 z-10 size-full overflow-hidden bg-background"
+			style:background-color={defaultBackgroundColor ?? undefined}
 		></div>
 	{:else}
 		<video
@@ -504,7 +522,9 @@
 <style lang="postcss">
 	@reference 'tailwindcss';
 
-	:global(iframe[src*='youtube-nocookie.com']) {
+	.youtube-frame :global(iframe[src*='youtube-nocookie.com']) {
 		@apply size-full;
+		border: 0;
+		transform: scale(1.04);
 	}
 </style>

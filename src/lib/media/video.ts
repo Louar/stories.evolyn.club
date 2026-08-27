@@ -39,6 +39,27 @@ type YouTubeWindow = Window & {
 };
 
 let youtubeApiPromise: Promise<YouTubeNamespace> | undefined;
+let didWarmYouTubeConnections = false;
+
+const hiddenYouTubePlayerVars = {
+	controls: 0,
+	disablekb: 1,
+	fs: 0,
+	iv_load_policy: 3,
+	modestbranding: 1,
+	playsinline: 1,
+	rel: 0,
+	cc_load_policy: 3
+};
+
+const addPreconnect = (href: string) => {
+	if (document.querySelector(`link[rel="preconnect"][href="${href}"]`)) return;
+
+	const link = document.createElement('link');
+	link.rel = 'preconnect';
+	link.href = href;
+	document.head.appendChild(link);
+};
 
 const parseUrl = (src: string) => {
 	try {
@@ -96,6 +117,21 @@ export const getYouTubeAlignedValue = (value: number, duration: number | undefin
 	return Math.round(value * duration) / duration;
 };
 
+export const getYouTubeThumbnailUrl = (src: string) => {
+	const videoId = getYouTubeVideoId(src);
+	return videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : undefined;
+};
+
+export const warmYouTubeConnections = () => {
+	if (didWarmYouTubeConnections) return;
+
+	addPreconnect('https://www.youtube-nocookie.com');
+	addPreconnect('https://www.google.com');
+	addPreconnect('https://googleads.g.doubleclick.net');
+	addPreconnect('https://static.doubleclick.net');
+	didWarmYouTubeConnections = true;
+};
+
 export const getYouTubeEmbedUrl = (
 	src: string,
 	timing: { start?: number; end?: number; duration?: number } = {}
@@ -108,6 +144,10 @@ export const getYouTubeEmbedUrl = (
 	originalUrl?.searchParams.forEach((value, key) => {
 		if (key !== 'v') url.searchParams.set(key, value);
 	});
+	for (const [key, value] of Object.entries(hiddenYouTubePlayerVars)) {
+		url.searchParams.set(key, String(value));
+	}
+
 	const start = getRoundedVideoTime(timing.start, timing.duration) ?? timing.start;
 	const end = getRoundedVideoTime(timing.end, timing.duration) ?? timing.end;
 
@@ -123,6 +163,7 @@ export const getYouTubeEmbedUrl = (
 
 export const loadYouTubeIframeApi = () => {
 	if (youtubeApiPromise) return youtubeApiPromise;
+	warmYouTubeConnections();
 
 	youtubeApiPromise = new Promise<YouTubeNamespace>((resolve, reject) => {
 		const youtubeWindow = window as YouTubeWindow;
@@ -173,11 +214,9 @@ export const createYouTubePlayer = async (
 		host: 'https://www.youtube-nocookie.com',
 		playerVars: {
 			autoplay: 0,
-			controls: 0,
-			disablekb: 1,
 			enablejsapi: 1,
-			playsinline: 1,
-			rel: 0,
+			origin: window.location.origin,
+			...hiddenYouTubePlayerVars,
 			...(options.start && options.start > 0 ? { start: Math.round(options.start) } : {}),
 			...(options.end && options.end > 0 ? { end: Math.round(options.end) } : {})
 		},

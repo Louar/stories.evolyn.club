@@ -308,6 +308,7 @@
 						start={player?.start ?? undefined}
 						end={player?.end ?? undefined}
 						playbackRate={player?.playbackRate ?? undefined}
+						defaultBackgroundColor={story.defaultBackgroundColor}
 						isInitialPart={player?.isInitialPart}
 						isActive={isActiveStory && part.id === pid && !isEnded}
 						bind:doBuffer={player.doBuffer}
