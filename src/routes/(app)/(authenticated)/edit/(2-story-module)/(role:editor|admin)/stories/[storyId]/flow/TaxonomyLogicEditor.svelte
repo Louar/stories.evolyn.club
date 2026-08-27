@@ -4,11 +4,19 @@
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import type { findOneStoryById } from '$lib/db/repositories/2-story-module';
+	import { moveArrayItem } from '$lib/utils';
+	import { DragDropProvider } from '@dnd-kit-svelte/svelte';
+	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
 	import ChevronsRightIcon from '@lucide/svelte/icons/chevrons-right';
+	import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import { onDestroy } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import EditorSurface from './EditorSurface.svelte';
+
+	type DragEndEvent = {
+		operation: { source: { sortable: { index: number; initialIndex: number } | null } | null };
+	};
 
 	type Part = Awaited<ReturnType<typeof findOneStoryById>>['parts'][number];
 	type Draft = NonNullable<Part['taxonomyDraftForPart']>;
@@ -78,6 +86,16 @@
 		scheduleAutosave();
 	}
 
+	function handleRuleDrag(event: DragEndEvent) {
+		const sortable = event.operation.source?.sortable;
+		if (!sortable || sortable.initialIndex === sortable.index) return;
+		draft.rules = moveArrayItem(draft.rules, sortable.initialIndex, sortable.index);
+		draft.rules
+			.filter((rule) => !rule.isRemoved)
+			.forEach((rule, index) => (rule.order = index + 1));
+		scheduleAutosave();
+	}
+
 	function setBound(rule: Rule, key: RangeKey, index: 0 | 1, value: string) {
 		const parsed = value === '' ? null : Number(value);
 		const range = [...(rule[key] ?? [null, null])] as [number | null, number | null];
@@ -140,7 +158,7 @@
 	</HeaderBlank>
 
 	<form
-		class={embedded ? 'p-4' : 'contents'}
+		class={embedded ? 'grid gap-4 p-4' : 'contents'}
 		onsubmit={persist}
 		oninput={scheduleAutosave}
 		onchange={scheduleAutosave}
@@ -186,24 +204,41 @@
 			</div>
 		</Field.Set>
 
-		<div class="grid gap-4">
-			{#each draft.rules as rule (rule.id)}
-				{#if !rule.isRemoved}
-					<Field.Set class="grid gap-4 rounded-lg border p-4">
-						<div class="flex items-center justify-between">
-							<Field.Legend>Rule {rule.order}</Field.Legend>
+		<DragDropProvider onDragEnd={(event) => handleRuleDrag(event as DragEndEvent)}>
+			<div class="grid gap-4">
+				{#each draft.rules as rule, r (rule.id)}
+					{@const { ref, handleRef } = useSortable({
+						id: rule.id,
+						index: r
+					})}
+					<Field.Set
+						class="grid gap-4 rounded-lg border bg-card/50 p-4 backdrop-blur-md {rule.isRemoved
+							? 'hidden'
+							: ''}"
+						{@attach ref}
+					>
+						<div class="flex items-center justify-between gap-2">
+							<div class="flex items-center gap-2">
+								<Button
+									type="button"
+									variant="ghost"
+									size="icon"
+									class="cursor-move"
+									{@attach handleRef}
+								>
+									<GripVerticalIcon />
+								</Button>
+								<Field.Label>Rule {rule.order}</Field.Label>
+							</div>
 							<Button
 								type="button"
 								variant="ghost"
 								size="icon"
-								class="text-destructive"
+								class="text-destructive hover:bg-destructive/10 hover:text-destructive"
 								onclick={() => removeRule(rule)}
 								aria-label={`Remove rule ${rule.order}`}><TrashIcon /></Button
 							>
 						</div>
-						<p class="text-sm text-muted-foreground">
-							Every configured range must match. Empty bounds are unbounded.
-						</p>
 						<Field.Field>
 							<Field.Label>Name</Field.Label>
 							<Input bind:value={rule.name} />
@@ -230,9 +265,9 @@
 							{/each}
 						</div>
 					</Field.Set>
-				{/if}
-			{/each}
-			<Button type="button" variant="outline" onclick={addRule}>Add rule</Button>
-		</div>
+				{/each}
+				<Button type="button" variant="outline" onclick={addRule}>Add rule</Button>
+			</div>
+		</DragDropProvider>
 	</form>
 </EditorSurface>
