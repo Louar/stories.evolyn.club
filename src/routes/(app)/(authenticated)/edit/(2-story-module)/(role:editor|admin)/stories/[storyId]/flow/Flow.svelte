@@ -36,17 +36,21 @@
 		onConnectionChange
 	}: Props = $props();
 
-	let nodes = $derived<Node[]>(
-		story?.parts?.map((part) => ({
-			id: part.id,
-			type: 'media',
-			position: part.position ?? { x: 0, y: 0 },
-			selected: part.id === selectedPartId,
-			data: { part }
-		})) ?? []
-	);
+	let nodes = $state.raw<Node[]>([]);
+	let edges = $state.raw<Edge[]>([]);
 
-	let edges = $derived.by(() => {
+	$effect(() => {
+		nodes =
+			story?.parts?.map((part) => ({
+				id: part.id,
+				type: 'media',
+				position: part.position ?? { x: 0, y: 0 },
+				selected: part.id === selectedPartId,
+				data: { part: $state.snapshot(part) as Part }
+			})) ?? [];
+	});
+
+	$effect(() => {
 		const e: Edge[] = [];
 		for (const part of story?.parts ?? []) {
 			// Default edge from defaultNextPartId
@@ -107,7 +111,7 @@
 				}
 			}
 		}
-		return e;
+		edges = e;
 	});
 
 	const { screenToFlowPosition } = useSvelteFlow();
