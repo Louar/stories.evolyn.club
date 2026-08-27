@@ -83,6 +83,44 @@ export const getVideoSourceType = (src: string): VideoSourceType => {
 	return 'native';
 };
 
+export const getRoundedVideoTime = (value: number | undefined, duration: number | undefined) => {
+	if (typeof value !== 'number' || typeof duration !== 'number' || !Number.isFinite(duration)) {
+		return undefined;
+	}
+
+	return Math.round(value * duration);
+};
+
+export const getYouTubeAlignedValue = (value: number, duration: number | undefined) => {
+	if (typeof duration !== 'number' || !Number.isFinite(duration) || duration <= 0) return value;
+	return Math.round(value * duration) / duration;
+};
+
+export const getYouTubeEmbedUrl = (
+	src: string,
+	timing: { start?: number; end?: number; duration?: number } = {}
+) => {
+	const videoId = getYouTubeVideoId(src);
+	if (!videoId) return src;
+
+	const originalUrl = parseUrl(src);
+	const url = new URL(`https://www.youtube-nocookie.com/embed/${videoId}`);
+	originalUrl?.searchParams.forEach((value, key) => {
+		if (key !== 'v') url.searchParams.set(key, value);
+	});
+	const start = getRoundedVideoTime(timing.start, timing.duration) ?? timing.start;
+	const end = getRoundedVideoTime(timing.end, timing.duration) ?? timing.end;
+
+	if (typeof start === 'number' && Number.isFinite(start) && start > 0) {
+		url.searchParams.set('start', String(Math.round(start)));
+	}
+	if (typeof end === 'number' && Number.isFinite(end) && end > 0) {
+		url.searchParams.set('end', String(Math.round(end)));
+	}
+
+	return url.toString();
+};
+
 export const loadYouTubeIframeApi = () => {
 	if (youtubeApiPromise) return youtubeApiPromise;
 
@@ -120,6 +158,7 @@ export const createYouTubePlayer = async (
 	src: string,
 	options: {
 		start?: number;
+		end?: number;
 		onReady: (player: YouTubePlayer) => void;
 		onStateChange: (state: YouTubePlayerState) => void;
 		onError: () => void;
@@ -139,7 +178,8 @@ export const createYouTubePlayer = async (
 			enablejsapi: 1,
 			playsinline: 1,
 			rel: 0,
-			...(options.start && options.start > 0 ? { start: options.start } : {})
+			...(options.start && options.start > 0 ? { start: Math.round(options.start) } : {}),
+			...(options.end && options.end > 0 ? { end: Math.round(options.end) } : {})
 		},
 		events: {
 			onReady: ({ target }) => options.onReady(target),

@@ -16,6 +16,7 @@
 		translateLocalizedMediaField,
 		type Media
 	} from '$lib/db/schemas/0-utils.js';
+	import { getVideoSourceType, getYouTubeAlignedValue } from '$lib/media/video.js';
 	import { EDITORS } from '$lib/states/editors.svelte.js';
 	import { UI } from '$lib/states/ui.svelte.js';
 	import BanIcon from '@lucide/svelte/icons/ban';
@@ -91,7 +92,18 @@
 		translateLocalizedMediaField(selectedVideo?.source, UI.language)
 	);
 	let selectedVideoUrl = $derived(mediaUrl(selectedVideoSource));
+	let selectedVideoSourceType = $derived(
+		selectedVideoUrl ? getVideoSourceType(selectedVideoUrl) : undefined
+	);
 	let selectedVideoDuration = $derived(selectedVideo?.duration ?? videoDurationFromPart(draft));
+	let videoScrubberStep = $derived(
+		selectedVideoSourceType === 'youtube' && selectedVideoDuration > 0
+			? 1 / selectedVideoDuration
+			: 0.01
+	);
+	let videoScrubberKeyboardStep = $derived(
+		selectedVideoSourceType === 'youtube' && selectedVideoDuration > 0 ? videoScrubberStep : 0.001
+	);
 	let backgroundStart = $derived(configurationValue(draft, 'backgroundConfiguration', 'start', 0));
 	let backgroundEnd = $derived(configurationValue(draft, 'backgroundConfiguration', 'end', 1));
 	let foregroundStart = $derived(
@@ -108,7 +120,15 @@
 			])
 			.filter((value) => Number.isFinite(value) && value >= 0 && value <= 1);
 
-		return [...new Set(values)].sort((a, b) => a - b);
+		return [
+			...new Set(
+				values.map((value) =>
+					selectedVideoSourceType === 'youtube'
+						? getYouTubeAlignedValue(value, selectedVideoDuration)
+						: value
+				)
+			)
+		].sort((a, b) => a - b);
 	});
 
 	const clonePart = (value: Part) => structuredClone($state.snapshot(value));
@@ -142,7 +162,10 @@
 	}
 	function formatVideoTime(percentage: number) {
 		if (!selectedVideoDuration) return `${percentage.toFixed(3)}x`;
-		const seconds = selectedVideoDuration * percentage;
+		const seconds =
+			selectedVideoSourceType === 'youtube'
+				? Math.round(selectedVideoDuration * percentage)
+				: selectedVideoDuration * percentage;
 		const wholeSeconds = Math.floor(seconds);
 		const centiseconds = Math.floor((seconds - wholeSeconds) * 100);
 		return `${[Math.floor((wholeSeconds / 60) % 60), wholeSeconds % 60]
@@ -156,6 +179,11 @@
 	function clampConfigurationValue(value: number, min: number, max: number) {
 		return Math.max(min, Math.min(max, value));
 	}
+	function normalizeVideoConfigurationValue(value: number) {
+		return selectedVideoSourceType === 'youtube'
+			? getYouTubeAlignedValue(value, selectedVideoDuration)
+			: value;
+	}
 	function isSnapValue(value: number) {
 		return videoSnapValues.some((snapValue) => Math.abs(snapValue - value) <= SNAP_THRESHOLD);
 	}
@@ -167,17 +195,30 @@
 		key: 'start' | 'end',
 		value: number
 	) {
+		const nextValue = normalizeVideoConfigurationValue(value);
 		draft[section] = {
 			...draft[section],
-			[key]: value
+			[key]: nextValue
 		} as (typeof draft)[typeof section];
 		scheduleAutosave();
 	}
+	function setForegroundConfigurationValue(value: number) {
+		setConfigurationValue(
+			'foregroundConfiguration',
+			'start',
+			clampConfigurationValue(
+				normalizeVideoConfigurationValue(value),
+				foregroundStartMin,
+				foregroundStartMax
+			)
+		);
+	}
 	function setBackgroundConfigurationValue(key: 'start' | 'end', value: number) {
+		const normalizedValue = normalizeVideoConfigurationValue(value);
 		const boundedValue =
 			key === 'start'
-				? clampConfigurationValue(value, 0, backgroundEnd)
-				: clampConfigurationValue(value, backgroundStart, 1);
+				? clampConfigurationValue(normalizedValue, 0, backgroundEnd)
+				: clampConfigurationValue(normalizedValue, backgroundStart, 1);
 		const previousStart = backgroundStart;
 		const previousForegroundOffset = Math.max(0, foregroundStart - previousStart);
 		const nextStart = key === 'start' ? boundedValue : backgroundStart;
@@ -191,7 +232,11 @@
 		if (draft.foregroundType) {
 			draft.foregroundConfiguration = {
 				...draft.foregroundConfiguration,
-				start: clampConfigurationValue(nextStart + previousForegroundOffset, nextStart, nextEnd)
+				start: clampConfigurationValue(
+					normalizeVideoConfigurationValue(nextStart + previousForegroundOffset),
+					nextStart,
+					nextEnd
+				)
 			} as typeof draft.foregroundConfiguration;
 		}
 
@@ -427,8 +472,8 @@
 						value={backgroundStart}
 						min={0}
 						max={backgroundEnd}
-						step={0.01}
-						keyboardStep={0.001}
+						step={videoScrubberStep}
+						keyboardStep={videoScrubberKeyboardStep}
 						sensitivity={24}
 						snapValues={videoSnapValues}
 						snapThreshold={SNAP_THRESHOLD}
@@ -453,8 +498,8 @@
 						value={backgroundEnd}
 						min={backgroundStart}
 						max={1}
-						step={0.01}
-						keyboardStep={0.001}
+						step={videoScrubberStep}
+						keyboardStep={videoScrubberKeyboardStep}
 						sensitivity={24}
 						snapValues={videoSnapValues}
 						snapThreshold={SNAP_THRESHOLD}
@@ -569,17 +614,21 @@
 
 		{#if draft.foregroundType && draft.backgroundType === 'video'}
 			<Field.Field>
-				<Field.Label>Start</Field.Label>
+				<div>
+					<Field.Label>Start</Field.Label>
+					<Field.Description class="text-sm">
+						Timestamp <em>after</em> background video started.
+					</Field.Description>
+				</div>
 				<Scrubbable.Root
 					class="w-full"
 					value={foregroundStart}
 					min={foregroundStartMin}
 					max={foregroundStartMax}
-					step={0.01}
-					keyboardStep={0.001}
+					step={videoScrubberStep}
+					keyboardStep={videoScrubberKeyboardStep}
 					sensitivity={24}
-					onValueChange={(value) =>
-						setConfigurationValue('foregroundConfiguration', 'start', value)}
+					onValueChange={(value) => setForegroundConfigurationValue(value)}
 				>
 					<Scrubbable.Label>Timestamp</Scrubbable.Label>
 					<Scrubbable.Value format={formatForegroundStart} />

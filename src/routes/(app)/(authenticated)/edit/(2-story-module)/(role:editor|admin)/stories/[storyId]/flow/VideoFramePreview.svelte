@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getVideoSourceType } from '$lib/media/video';
+	import { getVideoSourceType, getYouTubeEmbedUrl } from '$lib/media/video';
 	import { cn } from '$lib/utils';
 	import Hls from 'hls.js';
 	import { onDestroy } from 'svelte';
@@ -19,6 +19,9 @@
 	let canPreview = false;
 	let sourceType = $derived(src ? getVideoSourceType(src) : undefined);
 	let isPreviewable = $derived(sourceType === 'native' || sourceType === 'hls');
+	let youtubePreviewUrl = $derived(
+		sourceType === 'youtube' && src ? getYouTubeEmbedUrl(src, { start: time }) : undefined
+	);
 
 	$effect(() => {
 		if (!video || !src || src === loadedSrc) return;
@@ -66,6 +69,17 @@
 					video.currentTime = Math.max(0, Math.min(time, duration));
 				}}
 			></video>
+		</div>
+	{:else if youtubePreviewUrl}
+		<div class="aspect-video w-full bg-black">
+			<iframe
+				class="size-full"
+				src={youtubePreviewUrl}
+				title={label}
+				loading="lazy"
+				referrerpolicy="strict-origin-when-cross-origin"
+				allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+			></iframe>
 		</div>
 	{:else if src}
 		<div class="grid aspect-video w-full place-items-center text-xs text-muted-foreground">

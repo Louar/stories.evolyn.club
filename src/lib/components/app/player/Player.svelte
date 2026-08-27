@@ -244,6 +244,7 @@
 		try {
 			youtube = await createYouTubePlayer(youtubeContainer, source, {
 				start: clipStart,
+				end,
 				onReady: (player) => {
 					youtube = player;
 					player.getIframe().title = title ?? 'YouTube video player';
