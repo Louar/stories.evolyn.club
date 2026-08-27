@@ -11,7 +11,7 @@
 </script>
 
 {#if embedded}
-	<div class={cn('h-full min-h-0 overflow-y-auto', className)}>
+	<div class={cn('', className)}>
 		{@render children()}
 	</div>
 {:else}

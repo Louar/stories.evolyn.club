@@ -187,235 +187,233 @@
 </HeaderBlank>
 
 <div
-	class="h-[calc(100svh-(--spacing(16)))] muted-scrollbar overflow-y-auto p-4"
+	class="h-[calc(100svh-(--spacing(16)))] muted-scrollbar overflow-y-auto"
 	oninput={scheduleAutosave}
 	onchange={scheduleAutosave}
 >
-	<div class="grid gap-5">
-		<!-- <Field.Field orientation="horizontal">
-			<div class="grow">
-				<Field.Label for="part-initial">Initial part</Field.Label>
-				<Field.Description>Start the story at this part.</Field.Description>
-			</div>
-			<Switch
-				id="part-initial"
-				checked={draft.isInitial}
-				onCheckedChange={(checked) => {
-					draft.isInitial = checked;
-					scheduleAutosave();
-				}}
-			/>
+	<HeaderBlank class="h-12 w-full bg-muted/50">
+		<div class="size-full">
+			<h1
+				class="flex items-center gap-2 truncate overflow-hidden text-sm font-medium whitespace-nowrap"
+			>
+				Background
+			</h1>
+		</div>
+	</HeaderBlank>
+	<Field.Set class="grid gap-4 p-4">
+		<Field.Field>
+			<Field.Label>Type</Field.Label>
+			<ButtonGroup.Root class="w-full">
+				<Button
+					type="button"
+					variant={!draft.backgroundType ? 'default' : 'outline'}
+					class="flex-1"
+					aria-pressed={!draft.backgroundType}
+					onclick={() => setBackgroundType('none')}><BanIcon />None</Button
+				>
+				<Button
+					type="button"
+					variant={draft.backgroundType === 'still' ? 'default' : 'outline'}
+					class="flex-1"
+					aria-pressed={draft.backgroundType === 'still'}
+					onclick={() => setBackgroundType('still')}><ImageIcon />Still</Button
+				>
+				<Button
+					type="button"
+					variant={draft.backgroundType === 'video' ? 'default' : 'outline'}
+					class="flex-1"
+					aria-pressed={draft.backgroundType === 'video'}
+					onclick={() => setBackgroundType('video')}><VideoIcon />Video</Button
+				>
+			</ButtonGroup.Root>
 		</Field.Field>
 
-		<Separator /> -->
-
-		<Field.Set class="grid gap-4">
-			<Field.Legend>Background</Field.Legend>
+		{#if draft.backgroundType === 'still'}
 			<Field.Field>
-				<Field.Label>Type</Field.Label>
-				<ButtonGroup.Root class="w-full">
-					<Button
-						type="button"
-						variant={!draft.backgroundType ? 'default' : 'outline'}
-						class="flex-1"
-						aria-pressed={!draft.backgroundType}
-						onclick={() => setBackgroundType('none')}><BanIcon />None</Button
-					>
-					<Button
-						type="button"
-						variant={draft.backgroundType === 'still' ? 'default' : 'outline'}
-						class="flex-1"
-						aria-pressed={draft.backgroundType === 'still'}
-						onclick={() => setBackgroundType('still')}><ImageIcon />Still</Button
-					>
-					<Button
-						type="button"
-						variant={draft.backgroundType === 'video' ? 'default' : 'outline'}
-						class="flex-1"
-						aria-pressed={draft.backgroundType === 'video'}
-						onclick={() => setBackgroundType('video')}><VideoIcon />Video</Button
-					>
-				</ButtonGroup.Root>
+				<Field.Label>Still</Field.Label>
+				<ResourceCombobox
+					items={stillItems}
+					value={draft.stillId}
+					placeholder="Select a still"
+					searchPlaceholder="Search stills..."
+					emptyText="No stills found."
+					onValueChange={(value) => {
+						draft.stillId = value;
+						scheduleAutosave();
+					}}
+				/>
 			</Field.Field>
-
-			{#if draft.backgroundType === 'still'}
-				<Field.Field>
-					<Field.Label>Still</Field.Label>
-					<ResourceCombobox
-						items={stillItems}
-						value={draft.stillId}
-						placeholder="Select a still"
-						searchPlaceholder="Search stills..."
-						emptyText="No stills found."
-						onValueChange={(value) => {
-							draft.stillId = value;
-							scheduleAutosave();
-						}}
-					/>
-				</Field.Field>
-			{:else if draft.backgroundType === 'video'}
-				<Field.Field>
-					<Field.Label>Video</Field.Label>
-					<ResourceCombobox
-						items={videoItems}
-						value={draft.videoId}
-						placeholder="Select a video"
-						searchPlaceholder="Search videos..."
-						emptyText="No videos found."
-						onValueChange={(value) => {
-							draft.videoId = value;
-							scheduleAutosave();
-						}}
-					/>
-				</Field.Field>
-				<div class="grid grid-cols-2 gap-3">
-					<Field.Field
-						><Field.Label>Start</Field.Label><Input
-							type="number"
-							min="0"
-							step="0.01"
-							value={draft.backgroundConfiguration?.start ?? 0}
-							oninput={(event) =>
-								setConfiguration('backgroundConfiguration', 'start', event.currentTarget.value)}
-						/></Field.Field
-					>
-					<Field.Field
-						><Field.Label>End</Field.Label><Input
-							type="number"
-							min="0"
-							step="0.01"
-							value={draft.backgroundConfiguration?.end ?? 1}
-							oninput={(event) =>
-								setConfiguration('backgroundConfiguration', 'end', event.currentTarget.value)}
-						/></Field.Field
-					>
-				</div>
-			{/if}
-		</Field.Set>
-
-		<Separator />
-
-		<Field.Set class="grid gap-4">
-			<Field.Legend>Foreground</Field.Legend>
+		{:else if draft.backgroundType === 'video'}
 			<Field.Field>
-				<Field.Label>Type</Field.Label>
-				<ButtonGroup.Root class="w-full">
-					<Button
-						type="button"
-						variant={!draft.foregroundType ? 'default' : 'outline'}
-						class="flex-1 text-xs"
-						aria-pressed={!draft.foregroundType}
-						onclick={() => setForegroundType('none')}><BanIcon />None</Button
-					>
-					<Button
-						type="button"
-						variant={draft.foregroundType === 'announcement' ? 'default' : 'outline'}
-						class="flex-1 text-xs"
-						aria-pressed={draft.foregroundType === 'announcement'}
-						onclick={() => setForegroundType('announcement')}><MessageSquareIcon />Note</Button
-					>
-					<Button
-						type="button"
-						variant={draft.foregroundType === 'quiz' ? 'default' : 'outline'}
-						class="flex-1 text-xs"
-						aria-pressed={draft.foregroundType === 'quiz'}
-						onclick={() => setForegroundType('quiz')}><ShapesIcon />Quiz</Button
-					>
-					<Button
-						type="button"
-						variant={draft.foregroundType === 'taxonomy' ? 'default' : 'outline'}
-						class="flex-1 text-xs"
-						aria-pressed={draft.foregroundType === 'taxonomy'}
-						onclick={() => setForegroundType('taxonomy')}><LayersIcon />Taxonomy</Button
-					>
-				</ButtonGroup.Root>
+				<Field.Label>Video</Field.Label>
+				<ResourceCombobox
+					items={videoItems}
+					value={draft.videoId}
+					placeholder="Select a video"
+					searchPlaceholder="Search videos..."
+					emptyText="No videos found."
+					onValueChange={(value) => {
+						draft.videoId = value;
+						scheduleAutosave();
+					}}
+				/>
 			</Field.Field>
-
-			{#if draft.foregroundType === 'announcement'}
-				<Field.Field
-					><Field.Label>Announcement</Field.Label><ResourceCombobox
-						items={announcementItems}
-						value={draft.announcementTemplateId}
-						placeholder="Select an announcement"
-						searchPlaceholder="Search announcements..."
-						emptyText="No announcements found."
-						onValueChange={(value) => {
-							draft.announcementTemplateId = value;
-							scheduleAutosave();
-						}}
-					/></Field.Field
-				>
-			{:else if draft.foregroundType === 'quiz'}
-				<Field.Field
-					><Field.Label>Quiz</Field.Label><ResourceCombobox
-						items={quizItems}
-						value={draft.quizTemplateId}
-						placeholder="Select a quiz"
-						searchPlaceholder="Search quizzes..."
-						emptyText="No quizzes found."
-						onValueChange={(value) => {
-							draft.quizTemplateId = value;
-							scheduleAutosave();
-						}}
-					/></Field.Field
-				>
-			{:else if draft.foregroundType === 'taxonomy'}
-				<Field.Field
-					><Field.Label>Taxonomy</Field.Label><ResourceCombobox
-						items={taxonomyItems}
-						value={draft.taxonomyId}
-						placeholder="Select a taxonomy"
-						searchPlaceholder="Search taxonomies..."
-						emptyText="No taxonomies found."
-						onValueChange={(value) => {
-							draft.taxonomyId = value;
-							scheduleAutosave();
-						}}
-					/></Field.Field
-				>
-			{/if}
-
-			{#if draft.foregroundType}
+			<div class="grid grid-cols-2 gap-3">
 				<Field.Field
 					><Field.Label>Start</Field.Label><Input
 						type="number"
 						min="0"
 						step="0.01"
-						value={draft.foregroundConfiguration?.start ?? 0.5}
+						value={draft.backgroundConfiguration?.start ?? 0}
 						oninput={(event) =>
-							setConfiguration('foregroundConfiguration', 'start', event.currentTarget.value)}
+							setConfiguration('backgroundConfiguration', 'start', event.currentTarget.value)}
 					/></Field.Field
 				>
-			{/if}
+				<Field.Field
+					><Field.Label>End</Field.Label><Input
+						type="number"
+						min="0"
+						step="0.01"
+						value={draft.backgroundConfiguration?.end ?? 1}
+						oninput={(event) =>
+							setConfiguration('backgroundConfiguration', 'end', event.currentTarget.value)}
+					/></Field.Field
+				>
+			</div>
+		{/if}
+	</Field.Set>
 
-			{#if draft.foregroundType === 'quiz' && quiz}
-				<div
-					oninput={(event) => event.stopPropagation()}
-					onchange={(event) => event.stopPropagation()}
+	<Separator />
+
+	<HeaderBlank class="h-12 w-full bg-muted/50">
+		<div class="size-full">
+			<h1
+				class="flex items-center gap-2 truncate overflow-hidden text-sm font-medium whitespace-nowrap"
+			>
+				Foreground
+			</h1>
+		</div>
+	</HeaderBlank>
+
+	<Field.Set class="grid gap-4 p-4">
+		<Field.Field>
+			<Field.Label>Type</Field.Label>
+			<ButtonGroup.Root class="w-full">
+				<Button
+					type="button"
+					variant={!draft.foregroundType ? 'default' : 'outline'}
+					class="flex-1 text-xs"
+					aria-pressed={!draft.foregroundType}
+					onclick={() => setForegroundType('none')}><BanIcon />None</Button
 				>
-					<QuizLogicEditor
-						embedded
-						{storyId}
-						partId={draft.id}
-						rules={draft.quizLogicForPart?.rules ?? []}
-						{quiz}
-						close={saveQuizLogic}
-					/>
-				</div>
-			{:else if draft.foregroundType === 'taxonomy' && draft.taxonomyDraftForPart}
-				<div
-					oninput={(event) => event.stopPropagation()}
-					onchange={(event) => event.stopPropagation()}
+				<Button
+					type="button"
+					variant={draft.foregroundType === 'announcement' ? 'default' : 'outline'}
+					class="flex-1 text-xs"
+					aria-pressed={draft.foregroundType === 'announcement'}
+					onclick={() => setForegroundType('announcement')}><MessageSquareIcon />Note</Button
 				>
-					<TaxonomyLogicEditor
-						embedded
-						{storyId}
-						partId={draft.id}
-						draft={draft.taxonomyDraftForPart}
-						close={saveTaxonomyLogic}
-					/>
-				</div>
-			{/if}
-		</Field.Set>
-	</div>
+				<Button
+					type="button"
+					variant={draft.foregroundType === 'quiz' ? 'default' : 'outline'}
+					class="flex-1 text-xs"
+					aria-pressed={draft.foregroundType === 'quiz'}
+					onclick={() => setForegroundType('quiz')}><ShapesIcon />Quiz</Button
+				>
+				<Button
+					type="button"
+					variant={draft.foregroundType === 'taxonomy' ? 'default' : 'outline'}
+					class="flex-1 text-xs"
+					aria-pressed={draft.foregroundType === 'taxonomy'}
+					onclick={() => setForegroundType('taxonomy')}><LayersIcon />Taxonomy</Button
+				>
+			</ButtonGroup.Root>
+		</Field.Field>
+
+		{#if draft.foregroundType === 'announcement'}
+			<Field.Field>
+				<Field.Label>Announcement</Field.Label>
+				<ResourceCombobox
+					items={announcementItems}
+					value={draft.announcementTemplateId}
+					placeholder="Select an announcement"
+					searchPlaceholder="Search announcements..."
+					emptyText="No announcements found."
+					onValueChange={(value) => {
+						draft.announcementTemplateId = value;
+						scheduleAutosave();
+					}}
+				/>
+			</Field.Field>
+		{:else if draft.foregroundType === 'quiz'}
+			<Field.Field>
+				<Field.Label>Quiz</Field.Label>
+				<ResourceCombobox
+					items={quizItems}
+					value={draft.quizTemplateId}
+					placeholder="Select a quiz"
+					searchPlaceholder="Search quizzes..."
+					emptyText="No quizzes found."
+					onValueChange={(value) => {
+						draft.quizTemplateId = value;
+						scheduleAutosave();
+					}}
+				/>
+			</Field.Field>
+		{:else if draft.foregroundType === 'taxonomy'}
+			<Field.Field>
+				<Field.Label>Taxonomy</Field.Label>
+				<ResourceCombobox
+					items={taxonomyItems}
+					value={draft.taxonomyId}
+					placeholder="Select a taxonomy"
+					searchPlaceholder="Search taxonomies..."
+					emptyText="No taxonomies found."
+					onValueChange={(value) => {
+						draft.taxonomyId = value;
+						scheduleAutosave();
+					}}
+				/>
+			</Field.Field>
+		{/if}
+
+		{#if draft.foregroundType}
+			<Field.Field>
+				<Field.Label>Start</Field.Label>
+				<Input
+					type="number"
+					min="0"
+					step="0.01"
+					value={draft.foregroundConfiguration?.start ?? 0.5}
+					oninput={(event) =>
+						setConfiguration('foregroundConfiguration', 'start', event.currentTarget.value)}
+				/>
+			</Field.Field>
+		{/if}
+	</Field.Set>
+
+	{#if draft.foregroundType === 'quiz' && quiz}
+		<Separator />
+		<div oninput={(event) => event.stopPropagation()} onchange={(event) => event.stopPropagation()}>
+			<QuizLogicEditor
+				embedded
+				{storyId}
+				partId={draft.id}
+				rules={draft.quizLogicForPart?.rules ?? []}
+				{quiz}
+				close={saveQuizLogic}
+			/>
+		</div>
+	{:else if draft.foregroundType === 'taxonomy' && draft.taxonomyDraftForPart}
+		<Separator />
+		<div oninput={(event) => event.stopPropagation()} onchange={(event) => event.stopPropagation()}>
+			<TaxonomyLogicEditor
+				embedded
+				{storyId}
+				partId={draft.id}
+				draft={draft.taxonomyDraftForPart}
+				close={saveTaxonomyLogic}
+			/>
+		</div>
+	{/if}
 </div>

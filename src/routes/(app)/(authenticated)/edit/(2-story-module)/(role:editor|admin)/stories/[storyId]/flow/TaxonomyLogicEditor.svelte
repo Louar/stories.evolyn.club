@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import HeaderBlank from '$lib/components/app/header/app-header-blank.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import type { findOneStoryById } from '$lib/db/repositories/2-story-module';
+	import ChevronsRightIcon from '@lucide/svelte/icons/chevrons-right';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
-	import { toast } from 'svelte-sonner';
 	import { onDestroy } from 'svelte';
+	import { toast } from 'svelte-sonner';
 	import EditorSurface from './EditorSurface.svelte';
 
 	type Part = Awaited<ReturnType<typeof findOneStoryById>>['parts'][number];
@@ -129,40 +129,22 @@
 </script>
 
 <EditorSurface {embedded} class={embedded ? '' : 'max-h-[90vh] pt-0 md:max-w-190'}>
+	<HeaderBlank class="h-12 w-full bg-muted/50">
+		<div class="size-full">
+			<h1 class="flex items-center gap-2 truncate overflow-hidden text-sm whitespace-nowrap">
+				Foreground
+				<ChevronsRightIcon class="size-4 text-muted-foreground" />
+				<span class="font-medium">Taxonomy draft rules</span>
+			</h1>
+		</div>
+	</HeaderBlank>
+
 	<form
-		class={embedded ? 'block min-h-full p-4 pt-0' : 'contents'}
+		class={embedded ? 'p-4' : 'contents'}
 		onsubmit={persist}
 		oninput={scheduleAutosave}
 		onchange={scheduleAutosave}
 	>
-		<Dialog.Header class="sticky top-0 z-50 -mx-6 bg-background/90 pt-6 backdrop-blur-md">
-			<div class="flex flex-col justify-between gap-2 px-6 md:flex-row">
-				<div class="space-y-1 text-left">
-					<Dialog.Title>Edit taxonomy game</Dialog.Title>
-					<Dialog.Description>{draft.taxonomyName}</Dialog.Description>
-				</div>
-				<div class="flex gap-2">
-					<span class="self-center text-xs text-muted-foreground" aria-live="polite">
-						{saveState === 'saving'
-							? 'Saving...'
-							: saveState === 'saved'
-								? 'Saved'
-								: saveState === 'error'
-									? 'Save failed'
-									: saveState === 'dirty'
-										? 'Unsaved changes'
-										: ''}
-					</span>
-					{#if embedded && onBack}
-						<Button type="button" variant="outline" onclick={onBack}>Back</Button>
-					{:else if !embedded}
-						<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
-					{/if}
-				</div>
-			</div>
-			<Separator class="mt-4" />
-		</Dialog.Header>
-
 		<Field.Set class="grid gap-4 rounded-lg border p-4">
 			<Field.Legend>Game parameters</Field.Legend>
 			<div class="grid grid-cols-2 gap-3 md:grid-cols-3">

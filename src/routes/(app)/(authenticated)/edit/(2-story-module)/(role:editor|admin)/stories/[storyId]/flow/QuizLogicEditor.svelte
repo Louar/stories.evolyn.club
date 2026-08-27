@@ -1,7 +1,7 @@
 <script lang="ts">
+	import HeaderBlank from '$lib/components/app/header/app-header-blank.svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
 	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
@@ -12,6 +12,7 @@
 	import { moveArrayItem } from '$lib/utils';
 	import { DragDropProvider } from '@dnd-kit-svelte/svelte';
 	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
+	import ChevronsRightIcon from '@lucide/svelte/icons/chevrons-right';
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
 	import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
@@ -89,30 +90,17 @@
 </script>
 
 <EditorSurface {embedded} class={embedded ? '' : 'max-h-[90vh] scrollbar-none pt-0 md:max-w-190'}>
-	<form class={embedded ? 'min-h-full p-4 pt-0' : 'contents'} onsubmit={persist}>
-		<Dialog.Header class="sticky top-0 z-50 -mx-6 bg-background/50 pt-6 backdrop-blur-md">
-			<div class="flex flex-col justify-between gap-2 px-6 md:flex-row">
-				<div class="grow space-y-2 text-left">
-					<Dialog.Title>Edit rules</Dialog.Title>
-					<Dialog.Description>Quiz: {quiz.name}</Dialog.Description>
-				</div>
-				<!-- <Dialog.Close class={buttonVariants({ variant: 'ghost', size: 'icon' })}>
-					<XIcon />
-				</Dialog.Close> -->
+	<HeaderBlank class="h-12 w-full bg-muted/50">
+		<div class="size-full">
+			<h1 class="flex items-center gap-2 truncate overflow-hidden text-sm whitespace-nowrap">
+				Foreground
+				<ChevronsRightIcon class="size-4 text-muted-foreground" />
+				<span class="font-medium">Quiz rules</span>
+			</h1>
+		</div>
+	</HeaderBlank>
 
-				<div class="flex flex-wrap gap-2">
-					{#if embedded && onBack}
-						<Button type="button" variant="outline" onclick={onBack}>Back</Button>
-					{:else}
-						<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
-					{/if}
-					<Button type="submit">Save logic</Button>
-				</div>
-			</div>
-
-			<Separator class="mt-4" />
-		</Dialog.Header>
-
+	<form class={embedded ? 'p-4' : 'contents'} onsubmit={persist}>
 		<DragDropProvider onDragEnd={(event) => handleRuleDrag(event as DragEndEvent)}>
 			<div class="grid gap-4">
 				{#each rules as rule, r (rule.id)}
