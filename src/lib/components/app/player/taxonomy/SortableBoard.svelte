@@ -35,7 +35,7 @@
 	hasBoundaries
 	isDisabled={disabled}
 	ondragend={handleDragEnd}
-	class="focus-visible:outline-game-warning py-3 focus-visible:outline-2 focus-visible:-outline-offset-2 sm:py-4"
+	class="py-3 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-game-warning sm:py-4"
 >
 	{#each items as item, index (item.id)}
 		<SortableList.Item

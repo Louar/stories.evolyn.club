@@ -353,7 +353,7 @@
 			</div>
 		{:else}
 			<section
-				class="absolute top-[56%] left-1/2 z-1 w-[min(44rem,calc(100%-2rem))] -translate-x-1/2 -translate-y-1/2 p-4 sm:p-5"
+				class="absolute top-[58%] left-1/2 z-1 max-h-[calc(88%-2rem)] w-[min(44rem,calc(100%-2rem))] -translate-x-1/2 -translate-y-1/2 scrollbar-none overflow-y-auto overscroll-contain p-4 sm:p-5"
 			>
 				<SortableBoard
 					bind:items

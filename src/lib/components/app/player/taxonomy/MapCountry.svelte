@@ -34,7 +34,7 @@
 	const style = $derived(
 		[
 			color ? `--map-item-fill: ${color}` : null,
-			strokeWidth === undefined ? null : `stroke-width: ${strokeWidth}px`
+			strokeWidth === undefined ? null : `--map-helper-stroke-width: ${strokeWidth}px`
 		]
 			.filter(Boolean)
 			.join('; ') || undefined
@@ -82,6 +82,7 @@
 	path {
 		cursor: pointer;
 		fill: var(--map-item-fill, var(--game-region-blue));
+		outline: none;
 		stroke: var(--map-region-stroke);
 		stroke-width: 0.45;
 		transition:
@@ -92,6 +93,11 @@
 	path:not(.disabled):hover,
 	path:not(.disabled):focus-visible {
 		fill: var(--map-region-hover);
+	}
+	path:not(.disabled):focus-visible {
+		stroke: var(--game-warning);
+		stroke-width: 2;
+		vector-effect: non-scaling-stroke;
 	}
 	.found {
 		fill: var(--map-found-fill);
@@ -106,6 +112,6 @@
 	.helper {
 		fill: var(--map-helper-fill);
 		stroke: var(--map-region-stroke);
-		stroke-width: 1.5;
+		stroke-width: var(--map-helper-stroke-width, 1.5);
 	}
 </style>
