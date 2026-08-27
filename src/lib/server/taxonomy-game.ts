@@ -123,21 +123,32 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 					])
 				])
 			)
-			.where(
-				sql<boolean>`exists (
-					select 1
-					from attribute_of_category as default_attribute
-					inner join attribute_of_item as name_attribute
-						on name_attribute.item_id = item_of_category.item_id
-						and name_attribute.attribute_id = default_attribute.attribute_id
-					where default_attribute.category_id = category.id
-						and default_attribute.is_default = true
-						and coalesce(
-							name_attribute.value->>${language ?? 'default'},
-							name_attribute.value->>'default',
-							name_attribute.value->>'en'
-						) is not null
-				)`
+			.where((eb) =>
+				eb.exists(
+					eb
+						.selectFrom('attributeOfCategory as defaultAttribute')
+						.innerJoin('attributeOfItem as nameAttribute', (join) =>
+							join
+								.onRef('nameAttribute.itemId', '=', 'itemOfCategory.itemId')
+								.onRef('nameAttribute.attributeId', '=', 'defaultAttribute.attributeId')
+						)
+						.whereRef('defaultAttribute.categoryId', '=', 'category.id')
+						.where('defaultAttribute.isDefault', '=', true)
+						.where((innerEb) =>
+							innerEb(
+								innerEb.fn.coalesce(
+									sql<
+										string | null
+									>`${innerEb.ref('nameAttribute.value')}->>${language ?? 'default'}`,
+									sql<string | null>`${innerEb.ref('nameAttribute.value')}->>'default'`,
+									sql<string | null>`${innerEb.ref('nameAttribute.value')}->>'en'`
+								),
+								'is not',
+								null
+							)
+						)
+						.select('defaultAttribute.attributeId')
+				)
 			)
 			.select((eb) => [
 				'category.id as categoryId',
@@ -258,7 +269,7 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 						.where('mapItem.taxonomyId', '=', category.taxonomyId)
 						.where('shapeItemAttribute.value', 'is not', null)
 						.select((eb) => [
-							sql<string>`${eb.ref('mapItem.id')}`.as('id'),
+							'mapItem.id as id',
 							sql<string | null>`(
 								select nullif(
 									string_agg(
@@ -279,9 +290,9 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 								where default_attribute.category_id = ${eb.ref('mapItemOfCategory.categoryId')}
 									and default_attribute.is_default = true
 							)`.as('name'),
-							sql<unknown>`${eb.ref('shapeItemAttribute.value')}`.as('shape'),
-							sql<unknown>`${eb.ref('centerItemAttribute.value')}`.as('center'),
-							sql<unknown>`${eb.ref('colorItemAttribute.value')}`.as('color')
+							'shapeItemAttribute.value as shape',
+							'centerItemAttribute.value as center',
+							'colorItemAttribute.value as color'
 						])
 						.execute()
 				: [];
@@ -326,24 +337,35 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 						])
 					])
 				)
-				.where(
-					sql<boolean>`exists (
-						select 1
-						from attribute_of_category as default_attribute
-						inner join attribute_of_item as name_attribute
-							on name_attribute.item_id = item.id
-							and name_attribute.attribute_id = default_attribute.attribute_id
-						where default_attribute.category_id = item_of_category.category_id
-							and default_attribute.is_default = true
-							and coalesce(
-								name_attribute.value->>${language ?? 'default'},
-								name_attribute.value->>'default',
-								name_attribute.value->>'en'
-							) is not null
-					)`
+				.where((eb) =>
+					eb.exists(
+						eb
+							.selectFrom('attributeOfCategory as defaultAttribute')
+							.innerJoin('attributeOfItem as nameAttribute', (join) =>
+								join
+									.onRef('nameAttribute.itemId', '=', 'item.id')
+									.onRef('nameAttribute.attributeId', '=', 'defaultAttribute.attributeId')
+							)
+							.whereRef('defaultAttribute.categoryId', '=', 'itemOfCategory.categoryId')
+							.where('defaultAttribute.isDefault', '=', true)
+							.where((innerEb) =>
+								innerEb(
+									innerEb.fn.coalesce(
+										sql<
+											string | null
+										>`${innerEb.ref('nameAttribute.value')}->>${language ?? 'default'}`,
+										sql<string | null>`${innerEb.ref('nameAttribute.value')}->>'default'`,
+										sql<string | null>`${innerEb.ref('nameAttribute.value')}->>'en'`
+									),
+									'is not',
+									null
+								)
+							)
+							.select('defaultAttribute.attributeId')
+					)
 				)
 				.select((eb) => [
-					sql<string>`${eb.ref('item.id')}`.as('id'),
+					'item.id as id',
 					sql<string | null>`(
 						select nullif(
 							string_agg(
@@ -364,10 +386,8 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 						where default_attribute.category_id = ${eb.ref('itemOfCategory.categoryId')}
 							and default_attribute.is_default = true
 					)`.as('name'),
-					sql<unknown>`${eb.ref('targetItemAttribute.value')}`.as('value'),
-					sql<string | null>`${eb.ref('targetItemAttribute.referencedItemId')}`.as(
-						'referencedItemId'
-					),
+					'targetItemAttribute.value as value',
+					'targetItemAttribute.referencedItemId as referencedItemId',
 					sql<string | null>`(
 						select nullif(
 							string_agg(

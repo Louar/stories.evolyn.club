@@ -2,7 +2,6 @@ import { db } from '$lib/db/database';
 import { UserRole } from '$lib/db/schemas/1-client-user-module';
 import { hasPermission, parseBody, requireParam } from '$lib/server/utils.server';
 import { error, json } from '@sveltejs/kit';
-import { sql } from 'kysely';
 import type { RequestHandler } from './$types';
 import {
 	categoryCreateSchema as createSchema,
@@ -34,11 +33,11 @@ const findOneCategoryById = async (taxonomyId: string, categoryId: string) => {
 			'category.image',
 			'category.description',
 			'category.map',
-			sql<number>`(
-				select count(*)::int
-				from attribute_of_category
-				where attribute_of_category.category_id = ${eb.ref('category.id')}
-			)`.as('attributes')
+			eb
+				.selectFrom('attributeOfCategory')
+				.whereRef('attributeOfCategory.categoryId', '=', 'category.id')
+				.select(eb.fn.countAll<number>().as('attributes'))
+				.as('attributes')
 		])
 		.executeTakeFirst();
 

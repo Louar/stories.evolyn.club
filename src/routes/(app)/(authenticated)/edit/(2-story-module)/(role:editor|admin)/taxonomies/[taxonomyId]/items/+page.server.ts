@@ -50,11 +50,11 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 				from item_of_category
 				where item_of_category.item_id = ${eb.ref('item.id')}
 			), '[]'::jsonb)`.as('categories'),
-			sql<number>`(
-				select count(*)::int
-				from attribute_of_item
-				where attribute_of_item.item_id = ${eb.ref('item.id')}
-			)`.as('attributes')
+			eb
+				.selectFrom('attributeOfItem')
+				.whereRef('attributeOfItem.itemId', '=', 'item.id')
+				.select(eb.fn.countAll<number>().as('attributes'))
+				.as('attributes')
 		])
 		.orderBy('item.id')
 		.execute();

@@ -2,7 +2,6 @@ import { db } from '$lib/db/database';
 import { UserRole } from '$lib/db/schemas/1-client-user-module';
 import { hasPermission, parseBody, requireParam } from '$lib/server/utils.server';
 import { error, json } from '@sveltejs/kit';
-import { sql } from 'kysely';
 import type { RequestHandler } from './$types';
 import {
 	taxonomyCreateSchema as createSchema,
@@ -21,26 +20,26 @@ const findOneTaxonomyById = async (clientId: string, taxonomyId: string) => {
 			'taxonomy.clientId',
 			'taxonomy.name',
 			'taxonomy.description',
-			sql<number>`(
-				select count(*)::int
-				from category
-				where category.taxonomy_id = ${eb.ref('taxonomy.id')}
-			)`.as('categories'),
-			sql<number>`(
-				select count(*)::int
-				from attribute
-				where attribute.taxonomy_id = ${eb.ref('taxonomy.id')}
-			)`.as('attributes'),
-			sql<number>`(
-				select count(*)::int
-				from item
-				where item.taxonomy_id = ${eb.ref('taxonomy.id')}
-			)`.as('items'),
-			sql<number>`(
-				select count(*)::int
-				from taxonomy_draft_for_part
-				where taxonomy_draft_for_part.taxonomy_id = ${eb.ref('taxonomy.id')}
-			)`.as('drafts')
+			eb
+				.selectFrom('category')
+				.whereRef('category.taxonomyId', '=', 'taxonomy.id')
+				.select(eb.fn.countAll<number>().as('categories'))
+				.as('categories'),
+			eb
+				.selectFrom('attribute')
+				.whereRef('attribute.taxonomyId', '=', 'taxonomy.id')
+				.select(eb.fn.countAll<number>().as('attributes'))
+				.as('attributes'),
+			eb
+				.selectFrom('item')
+				.whereRef('item.taxonomyId', '=', 'taxonomy.id')
+				.select(eb.fn.countAll<number>().as('items'))
+				.as('items'),
+			eb
+				.selectFrom('taxonomyDraftForPart')
+				.whereRef('taxonomyDraftForPart.taxonomyId', '=', 'taxonomy.id')
+				.select(eb.fn.countAll<number>().as('drafts'))
+				.as('drafts')
 		])
 		.executeTakeFirst();
 

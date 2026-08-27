@@ -1,5 +1,4 @@
 import { db } from '$lib/db/database';
-import { sql } from 'kysely';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -13,21 +12,21 @@ export const load: PageServerLoad = async ({ locals }) => {
 			'taxonomy.clientId',
 			'taxonomy.name',
 			'taxonomy.description',
-			sql<number>`(
-				select count(*)::int
-				from category
-				where category.taxonomy_id = ${eb.ref('taxonomy.id')}
-			)`.as('categories'),
-			sql<number>`(
-				select count(*)::int
-				from attribute
-				where attribute.taxonomy_id = ${eb.ref('taxonomy.id')}
-			)`.as('attributes'),
-			sql<number>`(
-				select count(*)::int
-				from item
-				where item.taxonomy_id = ${eb.ref('taxonomy.id')}
-			)`.as('items'),
+			eb
+				.selectFrom('category')
+				.whereRef('category.taxonomyId', '=', 'taxonomy.id')
+				.select(eb.fn.countAll<number>().as('categories'))
+				.as('categories'),
+			eb
+				.selectFrom('attribute')
+				.whereRef('attribute.taxonomyId', '=', 'taxonomy.id')
+				.select(eb.fn.countAll<number>().as('attributes'))
+				.as('attributes'),
+			eb
+				.selectFrom('item')
+				.whereRef('item.taxonomyId', '=', 'taxonomy.id')
+				.select(eb.fn.countAll<number>().as('items'))
+				.as('items')
 		])
 		.orderBy('taxonomy.name')
 		.execute();
