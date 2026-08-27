@@ -6,6 +6,7 @@
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
+	import { Separator } from '$lib/components/ui/separator';
 	import { Switch } from '$lib/components/ui/switch';
 	import { TranslatableInput } from '$lib/components/ui/translatable-input';
 	import type { findOneStoryById, storySchema } from '$lib/db/repositories/2-story-module';
@@ -114,7 +115,7 @@
 		oninput={scheduleAutosave}
 		onchange={scheduleAutosave}
 	>
-		<Field.Group class="gap-2">
+		<Field.Group class="gap-4">
 			<Field.Field>
 				<Field.Label>Slug</Field.Label>
 				<Input bind:value={story.slug} placeholder="Slug..." />
@@ -125,7 +126,7 @@
 
 			<Field.Field>
 				<Field.Label>Name</Field.Label>
-				<TranslatableInput bind:value={story.name} placeholder="Name..." languageselector={true} />
+				<TranslatableInput bind:value={story.name} placeholder="Name..." languageselector={false} />
 				<Field.Error>
 					{formatFormError(error, `name`)}
 				</Field.Error>
@@ -176,7 +177,9 @@
 				<Field.Error>{formatFormError(error, 'defaultBackgroundColor')}</Field.Error>
 			</Field.Field>
 
-			<Field.Field class="space-x-2">
+			<Separator class="mb-3" />
+
+			<Field.Field>
 				<div class="flex items-center space-x-2">
 					<Switch
 						id="ispublished"
