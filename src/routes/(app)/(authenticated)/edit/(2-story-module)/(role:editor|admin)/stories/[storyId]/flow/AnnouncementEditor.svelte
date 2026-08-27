@@ -86,7 +86,8 @@
 			}
 			error = null;
 			saveState = 'saved';
-			announcement = cloneAnnouncement(saved);
+			if (autosave) announcement.id = saved.id;
+			else announcement = cloneAnnouncement(saved);
 			close({ action: 'persist', announcement: saved, keepOpen: autosave });
 		} catch {
 			if (version === saveVersion) saveState = 'error';
@@ -125,30 +126,30 @@
 	{embedded}
 	class="muted-scrollbar {embedded ? '' : 'max-h-[90vh] pt-0 sm:max-w-200'}"
 >
-		<HeaderBlank class="w-full">
-			<div class="px-2">
-				<h1 class="truncate overflow-hidden text-sm whitespace-nowrap">
-					{announcement.id === 'new' ? 'New announcement' : 'Edit announcement'}
-				</h1>
-				<p class="self-center text-xs text-muted-foreground" aria-live="polite">
-					{saveState === 'saving'
-						? 'Saving...'
-						: saveState === 'saved'
-							? 'Saved'
-							: saveState === 'error'
-								? 'Save failed'
-								: saveState === 'dirty'
-									? 'Unsaved changes'
-									: 'No changes'}
-				</p>
-			</div>
-			<div class="ml-auto flex items-center gap-2">
-				{#if announcement.id && announcement.id !== 'new'}
-					<Button variant="destructive" size="icon" onclick={remove}><TrashIcon /></Button>
-				{/if}
-				<Button variant="ghost" size="icon" onclick={dismiss}><XIcon /></Button>
-			</div>
-		</HeaderBlank>
+	<HeaderBlank class="w-full">
+		<div class="px-2">
+			<h1 class="truncate overflow-hidden text-sm whitespace-nowrap">
+				{announcement.id === 'new' ? 'New announcement' : 'Edit announcement'}
+			</h1>
+			<p class="self-center text-xs text-muted-foreground" aria-live="polite">
+				{saveState === 'saving'
+					? 'Saving...'
+					: saveState === 'saved'
+						? 'Saved'
+						: saveState === 'error'
+							? 'Save failed'
+							: saveState === 'dirty'
+								? 'Unsaved changes'
+								: 'No changes'}
+			</p>
+		</div>
+		<div class="ml-auto flex items-center gap-2">
+			{#if announcement.id && announcement.id !== 'new'}
+				<Button variant="destructive" size="icon" onclick={remove}><TrashIcon /></Button>
+			{/if}
+			<Button variant="ghost" size="icon" onclick={dismiss}><XIcon /></Button>
+		</div>
+	</HeaderBlank>
 	<form
 		class={embedded ? 'block p-4' : 'contents'}
 		onsubmit={persist}

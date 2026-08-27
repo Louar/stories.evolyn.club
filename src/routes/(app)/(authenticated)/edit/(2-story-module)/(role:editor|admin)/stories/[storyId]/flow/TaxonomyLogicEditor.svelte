@@ -107,6 +107,16 @@
 		return value === undefined ? null : value;
 	}
 
+	function mergeSavedIds(saved: Draft) {
+		const rules = draft.rules.filter((rule) => !rule.isRemoved);
+		const savedRules = [...saved.rules].sort((a, b) => a.order - b.order);
+
+		for (const [index, rule] of rules.entries()) {
+			const savedRule = savedRules[index];
+			if (savedRule) rule.id = savedRule.id;
+		}
+	}
+
 	async function persist(event?: SubmitEvent, autosave = false) {
 		event?.preventDefault();
 		clearTimeout(autosaveTimer);
@@ -138,7 +148,8 @@
 			const saved = await request;
 			if (version !== saveVersion) return;
 			saveState = 'saved';
-			draft = structuredClone(saved);
+			if (autosave) mergeSavedIds(saved);
+			else draft = structuredClone(saved);
 			close(saved, autosave);
 		} catch {
 			if (version === saveVersion) saveState = 'error';
@@ -206,7 +217,7 @@
 
 		<DragDropProvider onDragEnd={(event) => handleRuleDrag(event as DragEndEvent)}>
 			<div class="grid gap-4">
-				{#each draft.rules as rule, r (rule.id)}
+				{#each draft.rules as rule, r (rule)}
 					{@const { ref, handleRef } = useSortable({
 						id: rule.id,
 						index: r

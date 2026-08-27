@@ -96,7 +96,8 @@
 			}
 			error = null;
 			saveState = 'saved';
-			video = cloneVideo(saved);
+			if (autosave) video.id = saved.id;
+			else video = cloneVideo(saved);
 			close({ action: 'persist', video: saved, keepOpen: autosave });
 		} catch {
 			if (version === saveVersion) saveState = 'error';

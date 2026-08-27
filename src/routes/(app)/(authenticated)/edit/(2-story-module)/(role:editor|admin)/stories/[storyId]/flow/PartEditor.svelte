@@ -75,7 +75,7 @@
 
 	const clonePart = (value: Part) => structuredClone($state.snapshot(value));
 
-	const persist = async (event?: Event) => {
+	const persist = async (event?: Event, autosave = false) => {
 		event?.preventDefault();
 		clearTimeout(autosaveTimer);
 		const version = ++saveVersion;
@@ -100,8 +100,8 @@
 		try {
 			const saved = await request;
 			if (version !== saveVersion) return;
-			draft = clonePart(saved);
 			saveState = 'saved';
+			if (!autosave) draft = clonePart(saved);
 			onSave(saved);
 		} catch {
 			if (version === saveVersion) saveState = 'error';
@@ -112,12 +112,12 @@
 		saveVersion += 1;
 		saveState = 'dirty';
 		clearTimeout(autosaveTimer);
-		autosaveTimer = setTimeout(() => persist(), 700);
+		autosaveTimer = setTimeout(() => persist(undefined, true), 700);
 	};
 
 	onDestroy(() => {
 		clearTimeout(autosaveTimer);
-		if (saveState === 'dirty') void persist();
+		if (saveState === 'dirty') void persist(undefined, true);
 	});
 
 	const setBackgroundType = (value: string) => {

@@ -26,7 +26,7 @@
 {#snippet inspector()}
 	<div class="relative h-full min-h-0 bg-background">
 		{#if part}
-			{#key part}
+			{#key part.id}
 				<Dialog.Root>
 					<PartEditor storyId={story.id} {part} {onSave} onDismiss={dismiss} />
 				</Dialog.Root>

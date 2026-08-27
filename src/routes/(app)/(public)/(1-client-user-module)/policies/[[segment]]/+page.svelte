@@ -1,6 +1,6 @@
 <script lang="ts">
-	import HeaderBlank from '$lib/components/app/header/app-header-blank.svelte';
 	import { acceptLatestPolicy, type PolicyAcceptance } from '$lib/client/policies';
+	import HeaderBlank from '$lib/components/app/header/app-header-blank.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Empty from '$lib/components/ui/empty/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
@@ -53,15 +53,15 @@
 	};
 </script>
 
-<div class="mx-auto w-full max-w-2xl">
-	<HeaderBlank>
-		<Button variant="ghost" size="icon" class="-ml-1 size-7" onclick={() => window.history.back()}>
-			<ArrowLeft class="size-6" />
-		</Button>
-		<Separator orientation="vertical" class="mr-2 data-[orientation=vertical]:h-4" />
-		<h1 class="overflow-hidden text-sm whitespace-nowrap">{m.policies_title()}</h1>
-	</HeaderBlank>
+<HeaderBlank>
+	<Button variant="ghost" size="icon" class="-ml-1 size-7" onclick={() => window.history.back()}>
+		<ArrowLeft class="size-6" />
+	</Button>
+	<Separator orientation="vertical" class="mr-2 data-[orientation=vertical]:h-4" />
+	<h1 class="overflow-hidden text-sm whitespace-nowrap">{m.policies_title()}</h1>
+</HeaderBlank>
 
+<div class="mx-auto mt-4 w-full max-w-2xl">
 	{#if license?.termsOfUse || license?.privacyPolicy}
 		{#if data.authusr}
 			<section

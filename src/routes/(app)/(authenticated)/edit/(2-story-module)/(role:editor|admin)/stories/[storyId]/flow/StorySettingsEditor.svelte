@@ -37,7 +37,7 @@
 	let autosaveTimer: ReturnType<typeof setTimeout> | undefined;
 	let saveVersion = 0;
 
-	const persist = async (event?: Event) => {
+	const persist = async (event?: Event, autosave = false) => {
 		event?.preventDefault();
 		clearTimeout(autosaveTimer);
 		const version = ++saveVersion;
@@ -66,7 +66,7 @@
 			if (version !== saveVersion) return;
 			error = null;
 			saveState = 'saved';
-			story = { ...story, ...saved };
+			if (!autosave) story = { ...story, ...saved };
 			close({ action: 'persist', data: saved });
 		} catch {
 			if (version === saveVersion) saveState = 'error';
@@ -76,7 +76,7 @@
 		saveVersion += 1;
 		saveState = 'dirty';
 		clearTimeout(autosaveTimer);
-		autosaveTimer = setTimeout(() => persist(), 700);
+		autosaveTimer = setTimeout(() => persist(undefined, true), 700);
 	};
 	const setDefaultBackgroundColor = (value: string) => {
 		story.defaultBackgroundColor = value;
@@ -84,7 +84,7 @@
 	};
 	onDestroy(() => {
 		clearTimeout(autosaveTimer);
-		if (saveState === 'dirty') void persist();
+		if (saveState === 'dirty') void persist(undefined, true);
 	});
 	const remove = async () => {
 		if (!storyId?.length) return;

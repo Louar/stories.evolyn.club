@@ -125,6 +125,28 @@
 		question.answerOptions = options;
 		scheduleAutosave();
 	};
+	const mergeSavedIds = (saved: NonNullable<Awaited<ReturnType<typeof findOneQuizById>>>) => {
+		quiz.id = saved.id;
+		const questions = quiz.questions.filter((question) => !question.isRemoved);
+		const savedQuestions = [...saved.questions].sort((a, b) => a.order - b.order);
+
+		for (const [index, question] of questions.entries()) {
+			const savedQuestion = savedQuestions[index];
+			if (!savedQuestion) continue;
+
+			question.id = savedQuestion.id;
+			if (question.answerGroup && savedQuestion.answerGroup) {
+				question.answerGroup.id = savedQuestion.answerGroup.id;
+			}
+
+			const options = question.answerOptions.filter((option) => !option.isRemoved);
+			const savedOptions = [...savedQuestion.answerOptions].sort((a, b) => a.order - b.order);
+			for (const [optionIndex, option] of options.entries()) {
+				const savedOption = savedOptions[optionIndex];
+				if (savedOption) option.id = savedOption.id;
+			}
+		}
+	};
 
 	const persist = async (event?: Event, autosave = false) => {
 		event?.preventDefault();
@@ -166,7 +188,8 @@
 			}
 			error = null;
 			saveState = 'saved';
-			quiz = cloneQuiz(saved);
+			if (autosave) mergeSavedIds(saved);
+			else quiz = cloneQuiz(saved);
 			close({ action: 'persist', quiz: saved, keepOpen: autosave });
 		} catch {
 			if (version === saveVersion) saveState = 'error';
@@ -259,7 +282,7 @@
 
 		<DragDropProvider onDragEnd={(event) => handleQuestionDrag(event as DragEndEvent)}>
 			<div class="grid gap-4">
-				{#each quiz.questions as question, q (question.id)}
+				{#each quiz.questions as question, q (question)}
 					{@const { ref, handleRef } = useSortable({
 						id: question.id,
 						index: q
@@ -348,7 +371,7 @@
 										onDragEnd={(event) => handleAnswerOptionDrag(event as DragEndEvent, question)}
 									>
 										<div class="space-y-3">
-											{#each question.answerOptions as option, o (option.id)}
+											{#each question.answerOptions as option, o (option)}
 												{@const { ref, handleRef, isDragging, isDropTarget } = useSortable({
 													id: option.id,
 													index: o

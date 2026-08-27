@@ -79,7 +79,8 @@
 			}
 			error = null;
 			saveState = 'saved';
-			still = cloneStill(saved);
+			if (autosave) still.id = saved.id;
+			else still = cloneStill(saved);
 			close({ action: 'persist', still: saved, keepOpen: autosave });
 		} catch {
 			if (version === saveVersion) saveState = 'error';
