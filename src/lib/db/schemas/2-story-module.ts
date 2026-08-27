@@ -379,6 +379,7 @@ type TaxonomyDraftLogicRule = {
   taxonomyDraftForPartId: string;
   nextPartId: string | null;
   order: number;
+  name: string;
   nrOfRounds: JSONColumnType<[number | null, number | null]> | null;
   score: JSONColumnType<[number | null, number | null]> | null;
   mistakes: JSONColumnType<[number | null, number | null]> | null;

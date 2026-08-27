@@ -55,9 +55,11 @@
 	];
 
 	function addRule() {
+		const order = draft.rules.filter((rule) => !rule.isRemoved).length + 1;
 		draft.rules.push({
 			id: `new-${crypto.randomUUID().slice(0, 8)}`,
-			order: draft.rules.filter((rule) => !rule.isRemoved).length + 1,
+			order,
+			name: `Rule ${order}`,
 			nextPartId: null,
 			nrOfRounds: null,
 			score: null,
@@ -220,6 +222,10 @@
 						<p class="text-sm text-muted-foreground">
 							Every configured range must match. Empty bounds are unbounded.
 						</p>
+						<Field.Field>
+							<Field.Label>Name</Field.Label>
+							<Input bind:value={rule.name} />
+						</Field.Field>
 						<div class="grid gap-3">
 							{#each metrics as metric (metric.key)}
 								<div class="grid grid-cols-[minmax(8rem,1fr)_1fr_1fr] items-end gap-2">

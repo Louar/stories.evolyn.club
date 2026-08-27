@@ -9,6 +9,7 @@ const rangeSchema = z.tuple([z.number().int().nullable(), z.number().int().nulla
 const ruleSchema = z.object({
   id: z.string().min(1),
   order: z.number().int().positive(),
+  name: z.string().trim().optional(),
   nextPartId: z.string().nullable().optional(),
   nrOfRounds: rangeSchema,
   score: rangeSchema,
@@ -103,6 +104,7 @@ export const POST = (async ({ locals, params, request }) => {
           id: rule.id.startsWith('new-') ? undefined : rule.id,
           taxonomyDraftForPartId: draft.id,
           order: rule.order,
+          name: rule.name || `Rule ${rule.order}`,
           nextPartId: rule.nextPartId ?? null,
           nrOfRounds: rule.nrOfRounds ? JSON.stringify(rule.nrOfRounds) : null,
           score: rule.score ? JSON.stringify(rule.score) : null,
@@ -113,6 +115,7 @@ export const POST = (async ({ locals, params, request }) => {
           oc.column('id').doUpdateSet({
             taxonomyDraftForPartId: draft.id,
             order: rule.order,
+            name: rule.name || `Rule ${rule.order}`,
             nrOfRounds: rule.nrOfRounds ? JSON.stringify(rule.nrOfRounds) : null,
             score: rule.score ? JSON.stringify(rule.score) : null,
             mistakes: rule.mistakes ? JSON.stringify(rule.mistakes) : null,

@@ -287,6 +287,7 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
                       .select([
                         'taxonomyDraftLogicRule.id',
                         'taxonomyDraftLogicRule.order',
+                        'taxonomyDraftLogicRule.name',
                         'taxonomyDraftLogicRule.nextPartId',
                         'taxonomyDraftLogicRule.nrOfRounds',
                         'taxonomyDraftLogicRule.score',
@@ -739,6 +740,7 @@ export const findOnePartById = async (partId: string) => {
                 .select([
                   'taxonomyDraftLogicRule.id',
                   'taxonomyDraftLogicRule.order',
+                  'taxonomyDraftLogicRule.name',
                   'taxonomyDraftLogicRule.nextPartId',
                   'taxonomyDraftLogicRule.nrOfRounds',
                   'taxonomyDraftLogicRule.score',

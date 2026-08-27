@@ -686,6 +686,7 @@ export const InitStoryModule: Migration = {
         col.references('taxonomy_draft_for_part.id').onDelete('cascade').notNull()
       )
       .addColumn('order', 'smallint', (col) => col.notNull())
+      .addColumn('name', 'text', (col) => col.notNull())
       .addColumn('nr_of_rounds', 'jsonb')
       .addColumn('score', 'jsonb')
       .addColumn('mistakes', 'jsonb')

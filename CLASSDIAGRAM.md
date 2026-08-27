@@ -396,6 +396,7 @@ classDiagram
 
   class TaxonomyDraftLogicRule {
       order: number
+      name: string
       nrOfRounds: [integer, integer]?
       score: [integer, integer]?
       mistakes: [integer, integer]?

@@ -161,7 +161,7 @@
 			{#each part.taxonomyDraftForPart?.rules ?? [] as rule (rule.id)}
 				{#if !rule.isRemoved}
 					<div class="relative px-4 pr-7">
-						<p class="text-xs">Rule {rule.order}</p>
+						<p class="truncate text-xs">{rule.name || `Rule ${rule.order}`}</p>
 						<Handle
 							type="source"
 							position={Position.Right}

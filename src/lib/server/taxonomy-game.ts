@@ -168,6 +168,7 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 			.select([
 				'taxonomyDraftLogicRule.id',
 				'taxonomyDraftLogicRule.order',
+				'taxonomyDraftLogicRule.name',
 				'taxonomyDraftLogicRule.nextPartId',
 				'taxonomyDraftLogicRule.nrOfRounds',
 				'taxonomyDraftLogicRule.score',
