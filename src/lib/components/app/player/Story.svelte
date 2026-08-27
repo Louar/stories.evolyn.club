@@ -30,6 +30,11 @@
 
 		class?: ClassValue | null | undefined;
 	};
+	type StoryPart = Props['story']['parts'][number];
+	type TaxonomyGameForeground = Extract<
+		NonNullable<StoryPart['foreground']>,
+		{ rounds: unknown; logic: unknown }
+	>;
 	let {
 		story = $bindable(),
 		players = $bindable(),
@@ -204,6 +209,27 @@
 		);
 	};
 
+	const getTaxonomyGame = (part: StoryPart): TaxonomyGameForeground | undefined => {
+		if (
+			part.foregroundType === 'taxonomy' &&
+			part.foreground &&
+			'rounds' in part.foreground &&
+			'logic' in part.foreground
+		) {
+			return part.foreground as TaxonomyGameForeground;
+		}
+	};
+
+	const hasQuizInteraction = (part: StoryPart, player: Player | undefined) =>
+		part.foregroundType === 'quiz' &&
+		part.foreground &&
+		'questions' in part.foreground &&
+		'logic' in part.foreground &&
+		hasOverlay(part, player);
+
+	const hasActiveForegroundInteraction = (part: StoryPart, player: Player | undefined) =>
+		!isEnded && (Boolean(getTaxonomyGame(part)) || hasQuizInteraction(part, player));
+
 	const mediaUrl = (media: Media | null | undefined) => {
 		if (!media) return undefined;
 		return media.collection === MediaCollection.externals
@@ -243,6 +269,7 @@
 	{#if story?.parts?.length}
 		{#each story?.parts as part (part.id)}
 			{@const player = players.find((player) => player.id === part.id)}
+			{@const taxonomyForeground = getTaxonomyGame(part)}
 
 			<div
 				class="absolute inset-0 {part.id === pid
@@ -303,7 +330,7 @@
 								nextPlayer.doBuffer = true;
 								nextPlayer.doPlay = true;
 								pid = nextPlayer.id;
-							} else if (!nextPlayers?.length) {
+							} else if (!nextPlayers?.length && !hasActiveForegroundInteraction(part, player)) {
 								end();
 							}
 						}}
@@ -342,8 +369,10 @@
 							}}
 						/>
 					{/if}
-					{#if part.id === pid && part.foregroundType === 'taxonomy' && 'rounds' in part.foreground && 'logic' in part.foreground}
-						{@const taxonomyForeground = part.foreground}
+				{/if}
+
+				{#if !isEnded && part.id === pid && taxonomyForeground}
+					<div class="absolute inset-0 z-20">
 						<TaxonomyGame
 							rounds={taxonomyForeground.rounds}
 							goal={taxonomyForeground.goal}
@@ -351,7 +380,7 @@
 							showHints={taxonomyForeground.showHints}
 							oncomplete={(performance) => submitTaxonomy(taxonomyForeground.logic, performance)}
 						/>
-					{/if}
+					</div>
 				{/if}
 			</div>
 		{/each}

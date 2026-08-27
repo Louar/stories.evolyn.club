@@ -60,9 +60,7 @@
 	<Handle type="source" position={Position.Right} id="default" class="size-4! bg-orange-300!" />
 
 	<div class="grid gap-2 p-2">
-		<div
-			class="flex items-center gap-2 rounded-lg border p-2 bg-background/60"
-		>
+		<div class="flex items-center gap-2 rounded-lg border bg-background/60 p-2">
 			<div
 				class="grid size-9 shrink-0 place-items-center rounded-md {part.backgroundType
 					? 'bg-sky-500/10 text-sky-600 dark:text-sky-400'
@@ -86,9 +84,7 @@
 			</div>
 		</div>
 
-		<div
-			class="flex items-center gap-2 rounded-lg border p-2 bg-background/60"
-		>
+		<div class="flex items-center gap-2 rounded-lg border bg-background/60 p-2">
 			<div
 				class="grid size-9 shrink-0 place-items-center rounded-md {part.foregroundType
 					? 'bg-violet-500/10 text-violet-600 dark:text-violet-400'
@@ -119,7 +115,7 @@
 
 	{#if part.foregroundType === 'quiz'}
 		<Separator />
-		<div class="grid gap-2 py-2">
+		<div class="grid gap-2 py-4">
 			{#each part.quizLogicForPart?.rules ?? [] as rule (rule.id)}
 				{#if !rule.isRemoved}
 					<div class="relative px-4 pr-7">
@@ -147,7 +143,7 @@
 
 	{#if part.foregroundType === 'taxonomy'}
 		<Separator />
-		<div class="grid gap-2 py-2">
+		<div class="grid gap-2 py-4">
 			{#each part.taxonomyDraftForPart?.rules ?? [] as rule (rule.id)}
 				{#if !rule.isRemoved}
 					<div class="relative px-4 pr-7">
@@ -162,7 +158,7 @@
 				{/if}
 			{/each}
 			<div class="relative px-4 pr-7">
-				<p class="text-xs text-muted-foreground italic">Default after taxonomy</p>
+				<p class="text-xs text-muted-foreground italic">Default after taxonomy draft</p>
 				<Handle
 					type="source"
 					position={Position.Right}
