@@ -511,6 +511,7 @@
 			<SvelteFlowProvider>
 				<Flow
 					{story}
+					{selectedPartId}
 					onSelectPart={(partId) => (selectedPartId = partId)}
 					onPartSaved={replacePart}
 					onPartCreated={addPart}

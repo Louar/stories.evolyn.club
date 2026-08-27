@@ -19,6 +19,7 @@
 	type Part = Story['parts'][number];
 	type Props = {
 		story: Story | undefined;
+		selectedPartId?: string;
 		onSelectPart: (partId?: string) => void;
 		onPartSaved: (part: Part) => void;
 		onPartCreated: (part: Part) => void;
@@ -27,6 +28,7 @@
 	};
 	let {
 		story,
+		selectedPartId,
 		onSelectPart,
 		onPartSaved,
 		onPartCreated,
@@ -39,6 +41,7 @@
 			id: part.id,
 			type: 'media',
 			position: part.position ?? { x: 0, y: 0 },
+			selected: part.id === selectedPartId,
 			data: { part }
 		})) ?? []
 	);
@@ -236,7 +239,7 @@
 	onpaneclick={() => onSelectPart(undefined)}
 	onnodedragstop={persistPosition}
 	proOptions={{ hideAttribution: true }}
-	snapGrid={[400, 200]}
+	snapGrid={[50, 50]}
 	colorMode={mode.current}
 >
 	<Background patternColor="#6a7282" gap={50} />
