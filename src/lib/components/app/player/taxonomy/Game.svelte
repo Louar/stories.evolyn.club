@@ -353,7 +353,7 @@
 			</div>
 		{:else}
 			<section
-				class="absolute inset-0 z-1 m-auto h-fit max-h-dvh w-full max-w-md scrollbar-none overflow-y-auto overscroll-contain [mask-image:linear-gradient(to_bottom,transparent,black_8rem,black_calc(100%-2rem),transparent)] px-4 pt-44 pb-8 sm:max-w-lg sm:px-5"
+				class="absolute inset-0 z-1 m-auto h-fit max-h-dvh w-full max-w-md scrollbar-none overflow-y-auto overscroll-contain mask-[linear-gradient(to_bottom,transparent,black_8rem,black_calc(100%-2rem),transparent)] px-4 pt-44 pb-8 sm:max-w-lg sm:px-5"
 			>
 				<SortableBoard
 					bind:items
