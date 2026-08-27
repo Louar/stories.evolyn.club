@@ -10,6 +10,7 @@
 	import { TranslatableInput } from '$lib/components/ui/translatable-input';
 	import type { findOneStoryById, storySchema } from '$lib/db/repositories/2-story-module';
 	import { formatFormError } from '$lib/db/schemas/0-utils';
+	import DeleteIcon from '@lucide/svelte/icons/delete';
 	import Paintbrush from '@lucide/svelte/icons/paintbrush';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import { onDestroy } from 'svelte';
@@ -78,6 +79,11 @@
 	};
 	const setDefaultBackgroundColor = (value: string) => {
 		story.defaultBackgroundColor = value;
+		scheduleAutosave();
+	};
+	const clearDefaultBackgroundColor = () => {
+		if (story.defaultBackgroundColor === null) return;
+		story.defaultBackgroundColor = null;
 		scheduleAutosave();
 	};
 	onDestroy(() => {
@@ -156,6 +162,16 @@
 							/>
 						</Popover.Content>
 					</Popover.Root>
+					<Button
+						type="button"
+						variant="outline"
+						size="icon"
+						aria-label="Clear default background color"
+						disabled={story.defaultBackgroundColor === null}
+						onclick={clearDefaultBackgroundColor}
+					>
+						<DeleteIcon class="size-4" />
+					</Button>
 				</div>
 				<Field.Error>{formatFormError(error, 'defaultBackgroundColor')}</Field.Error>
 			</Field.Field>

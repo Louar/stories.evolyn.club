@@ -8,6 +8,7 @@
 	import type { findOneStillById } from '$lib/db/repositories/2-story-module';
 	import { formatFormError, MediaCollection, type Media } from '$lib/db/schemas/0-utils';
 	import { EDITORS } from '$lib/states/editors.svelte';
+	import DeleteIcon from '@lucide/svelte/icons/delete';
 	import Paintbrush from '@lucide/svelte/icons/paintbrush';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import XIcon from '@lucide/svelte/icons/x';
@@ -94,6 +95,11 @@
 		still.color = value;
 		scheduleAutosave();
 	};
+	const clearStillColor = () => {
+		if (still.color === null) return;
+		still.color = null;
+		scheduleAutosave();
+	};
 	onDestroy(() => {
 		clearTimeout(autosaveTimer);
 		if (saveState === 'dirty') void persist(undefined, true);
@@ -173,6 +179,16 @@
 							/>
 						</Popover.Content>
 					</Popover.Root>
+					<Button
+						type="button"
+						variant="outline"
+						size="icon"
+						aria-label="Clear background color"
+						disabled={still.color === null}
+						onclick={clearStillColor}
+					>
+						<DeleteIcon class="size-4" />
+					</Button>
 				</div>
 				<Field.Error>{formatFormError(error, 'color')}</Field.Error>
 			</Field.Field>
