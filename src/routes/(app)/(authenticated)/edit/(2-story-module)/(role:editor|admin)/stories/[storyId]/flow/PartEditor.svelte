@@ -377,7 +377,7 @@
 			</Field.Field>
 		{/if}
 
-		{#if draft.foregroundType}
+		{#if draft.foregroundType && draft.backgroundType === 'video'}
 			<Field.Field>
 				<Field.Label>Start</Field.Label>
 				<Input
