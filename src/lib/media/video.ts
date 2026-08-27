@@ -122,6 +122,16 @@ export const getYouTubeThumbnailUrl = (src: string) => {
 	return videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : undefined;
 };
 
+export const isYouTubeShort = (src: string) => {
+	const url = parseUrl(src);
+	if (!url || !isYouTubeHost(url.hostname)) return false;
+
+	return (
+		url.pathname.split('/').filter(Boolean)[0] === 'shorts' ||
+		url.searchParams.get('stories_aspect') === 'shorts'
+	);
+};
+
 export const warmYouTubeConnections = () => {
 	if (didWarmYouTubeConnections) return;
 
@@ -144,6 +154,7 @@ export const getYouTubeEmbedUrl = (
 	originalUrl?.searchParams.forEach((value, key) => {
 		if (key !== 'v') url.searchParams.set(key, value);
 	});
+	if (isYouTubeShort(src)) url.searchParams.set('stories_aspect', 'shorts');
 	for (const [key, value] of Object.entries(hiddenYouTubePlayerVars)) {
 		url.searchParams.set(key, String(value));
 	}

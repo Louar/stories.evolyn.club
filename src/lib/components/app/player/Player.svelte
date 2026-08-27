@@ -5,6 +5,7 @@
 		createYouTubePlayer,
 		getYouTubeThumbnailUrl,
 		getVideoSourceType,
+		isYouTubeShort,
 		warmYouTubeConnections,
 		type YouTubePlayer,
 		type YouTubePlayerState
@@ -78,6 +79,7 @@
 	const youtubeThumbnailUrl = $derived(
 		sourceType === 'youtube' ? getYouTubeThumbnailUrl(source) : undefined
 	);
+	const isShort = $derived(sourceType === 'youtube' && isYouTubeShort(source));
 	const clipStart = $derived(start ?? 0);
 
 	let video: HTMLVideoElement = $state()!;
@@ -254,7 +256,15 @@
 				end,
 				onReady: (player) => {
 					youtube = player;
-					player.getIframe().title = title ?? 'YouTube video player';
+					const iframe = player.getIframe();
+					iframe.title = title ?? 'YouTube video player';
+					iframe.classList.add('vds-youtube');
+					iframe.dataset.noControls = 'true';
+					iframe.dataset.aspect = isShort ? 'shorts' : 'video';
+					iframe.style.width = isShort ? '1000%' : '100%';
+					iframe.style.height = isShort ? '100%' : '1000%';
+					iframe.style.left = isShort ? '-450%' : '0';
+					iframe.style.top = isShort ? '0' : '-450%';
 					if (!isActive) player.pauseVideo();
 					const markReady = () => {
 						const duration = player.getDuration();
@@ -524,7 +534,18 @@
 
 	.youtube-frame :global(iframe[src*='youtube-nocookie.com']) {
 		@apply size-full;
+		position: absolute;
+		inset: 0;
 		border: 0;
-		transform: scale(1.04);
+	}
+
+	.youtube-frame :global(iframe.vds-youtube[data-no-controls][data-aspect='video']) {
+		height: 1000% !important;
+		top: -450% !important;
+	}
+
+	.youtube-frame :global(iframe.vds-youtube[data-no-controls][data-aspect='shorts']) {
+		width: 1000% !important;
+		left: -450% !important;
 	}
 </style>
