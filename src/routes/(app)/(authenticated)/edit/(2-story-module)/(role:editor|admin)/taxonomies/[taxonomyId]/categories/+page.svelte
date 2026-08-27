@@ -131,7 +131,7 @@
 	<title>Edit categories</title>
 </svelte:head>
 
-<Header class="mx-auto w-full max-w-6xl">
+<Header>
 	<BreadcrumbMenu
 		menus={[
 			[

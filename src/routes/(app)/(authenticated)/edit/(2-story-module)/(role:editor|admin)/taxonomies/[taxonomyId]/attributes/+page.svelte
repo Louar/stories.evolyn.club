@@ -25,8 +25,8 @@
 		uploadMedia,
 		useDataGrid
 	} from '$lib/hooks/use-custom-data-grid.svelte';
-	import { UI } from '$lib/states/ui.svelte';
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
+	import { UI } from '$lib/states/ui.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
 
 	let { data } = $props();
@@ -156,7 +156,7 @@
 	<title>Edit attributes</title>
 </svelte:head>
 
-<Header class="mx-auto w-full max-w-6xl">
+<Header>
 	<BreadcrumbMenu
 		menus={[
 			[

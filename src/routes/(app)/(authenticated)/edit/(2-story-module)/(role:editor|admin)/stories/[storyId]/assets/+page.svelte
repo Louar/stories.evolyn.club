@@ -208,7 +208,7 @@
 	const quizGrid = createGrid(() => quizRows, 'quiz');
 </script>
 
-<Header class="mx-auto w-full max-w-6xl">
+<Header>
 	<BreadcrumbMenu
 		menus={[
 			[
@@ -224,7 +224,7 @@
 	/>
 </Header>
 
-<div class="mx-auto w-full max-w-6xl space-y-6 px-4 pb-10">
+<div class="mx-auto mt-4 w-full max-w-6xl space-y-6 px-4 pb-10">
 	<Item.Root variant="outline">
 		<Item.Content>
 			<Item.Title class="line-clamp-1">{story.name ?? story.slug}</Item.Title>

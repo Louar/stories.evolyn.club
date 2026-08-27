@@ -119,7 +119,7 @@
 	const { table, ...dataGridProps } = dataGrid;
 </script>
 
-<Header class="mx-auto w-full max-w-6xl">
+<Header>
 	<BreadcrumbMenu
 		menus={[
 			[
@@ -139,7 +139,7 @@
 	/>
 </Header>
 
-<div class="mx-auto w-full max-w-6xl space-y-4 px-4">
+<div class="mx-auto mt-4 w-full max-w-6xl space-y-4 px-4">
 	<Item.Root variant="outline">
 		<Item.Content>
 			<Item.Title class="line-clamp-1">{story.name ?? story.slug}</Item.Title>

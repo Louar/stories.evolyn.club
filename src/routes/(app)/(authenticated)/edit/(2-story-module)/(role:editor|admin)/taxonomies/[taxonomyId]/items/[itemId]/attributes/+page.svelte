@@ -14,8 +14,8 @@
 	import { renderComponent } from '$lib/components/ui/table-tanstack/index.js';
 	import { translateLocalizedField, type Translatable } from '$lib/db/schemas/0-utils.js';
 	import { useDataGrid } from '$lib/hooks/use-custom-data-grid.svelte';
-	import { UI } from '$lib/states/ui.svelte';
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
+	import { UI } from '$lib/states/ui.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
 
 	let { data } = $props();
@@ -32,8 +32,7 @@
 	const gridHeight = $derived(Math.max(250, windowSize.height - 150));
 	const attributeOptions = () =>
 		data.attributeOptions.map((attribute) => ({
-			title:
-				translateLocalizedField(attribute.name as Translatable, UI.language) ?? attribute.slug,
+			title: translateLocalizedField(attribute.name as Translatable, UI.language) ?? attribute.slug,
 			value: attribute.id,
 			summary: attribute.slug
 		}));
@@ -115,7 +114,7 @@
 	<title>Edit item attributes</title>
 </svelte:head>
 
-<Header class="mx-auto w-full max-w-6xl">
+<Header>
 	<BreadcrumbMenu
 		menus={[
 			[
