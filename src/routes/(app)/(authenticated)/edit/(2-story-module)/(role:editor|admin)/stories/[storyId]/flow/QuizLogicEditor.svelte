@@ -16,6 +16,7 @@
 	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
 	import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
+	import { onDestroy } from 'svelte';
 	import { toast } from 'svelte-sonner';
 	import type { $ZodIssue } from 'zod/v4/core';
 
@@ -39,6 +40,38 @@
 	let { storyId, partId, rules, quiz, close }: Props = $props();
 
 	let error = $state<$ZodIssue[] | null>(null);
+	let saveState = $state<'idle' | 'dirty' | 'saving' | 'saved' | 'error'>('idle');
+	let autosaveTimer: ReturnType<typeof setTimeout> | undefined;
+	let saveVersion = 0;
+
+	const scheduleAutosave = () => {
+		saveVersion += 1;
+		saveState = 'dirty';
+		clearTimeout(autosaveTimer);
+		autosaveTimer = setTimeout(() => persist(undefined, true), 700);
+	};
+	onDestroy(() => {
+		clearTimeout(autosaveTimer);
+		if (saveState === 'dirty') void persist(undefined, true);
+	});
+
+	const mergeSavedIds = (saved: NonNullable<Awaited<ReturnType<typeof findOneQuizLogicById>>>) => {
+		const activeRules = rules.filter((rule) => !rule.isRemoved);
+		const savedRules = [...saved.rules].sort((a, b) => a.order - b.order);
+
+		for (const [ruleIndex, rule] of activeRules.entries()) {
+			const savedRule = savedRules[ruleIndex];
+			if (!savedRule) continue;
+
+			rule.id = savedRule.id;
+			const activeInputs = rule.inputs.filter((input) => !input.isRemoved);
+			const savedInputs = [...savedRule.inputs];
+			for (const [inputIndex, input] of activeInputs.entries()) {
+				const savedInput = savedInputs[inputIndex];
+				if (savedInput) input.id = savedInput.id;
+			}
+		}
+	};
 
 	const addRule = () => {
 		rules?.push({
@@ -49,6 +82,7 @@
 			inputs: [],
 			isRemoved: false // Front-end purposes
 		});
+		scheduleAutosave();
 	};
 
 	const addRuleInput = (rule: (typeof rules)[number]) => {
@@ -59,6 +93,7 @@
 			quizQuestionTemplateAnswerItemId: null,
 			isRemoved: false // Front-end purposes
 		});
+		scheduleAutosave();
 	};
 
 	const handleRuleDrag = (event: DragEndEvent) => {
@@ -66,38 +101,77 @@
 		if (!sortable) return;
 		rules = moveArrayItem(rules, sortable.initialIndex, sortable.index);
 		rules.filter((rule) => !rule.isRemoved).forEach((rule, index) => (rule.order = index + 1));
+		scheduleAutosave();
 	};
 
-	const persist = async (event: Event) => {
-		event.preventDefault();
+	const persist = async (event?: Event, autosave = false) => {
+		event?.preventDefault();
+		clearTimeout(autosaveTimer);
+		const version = ++saveVersion;
+		saveState = 'saving';
 
-		const result = await fetch(`/api/stories/${storyId}/parts/${partId}/quizzes/${quiz.id}/logic`, {
-			method: 'POST',
-			body: JSON.stringify({ rules })
+		const request = (async () => {
+			const result = await fetch(
+				`/api/stories/${storyId}/parts/${partId}/quizzes/${quiz.id}/logic`,
+				{
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify({ rules })
+				}
+			);
+			if (!result.ok) {
+				if (result.status === 422) error = await result.json();
+				throw new Error(result.statusText ?? 'Saving quiz logic failed');
+			}
+			return (await result.json()) as NonNullable<Awaited<ReturnType<typeof findOneQuizLogicById>>>;
+		})();
+		toast.promise(request, {
+			loading: 'Saving quiz rules...',
+			success: 'Quiz rules saved',
+			error: 'Could not save quiz rules'
 		});
 
-		if (!result.ok) {
-			toast.error(result.statusText ?? 'Something went wrong', {
-				closeButton: true,
-				duration: Infinity
-			});
-			if (result.status === 422) error = await result.json();
-		} else close({ action: 'persist', logic: await result.json() });
+		try {
+			const saved = await request;
+			if (version !== saveVersion) {
+				mergeSavedIds(saved);
+				close({ action: 'persist', logic: saved });
+				return;
+			}
+			error = null;
+			saveState = 'saved';
+			if (autosave) mergeSavedIds(saved);
+			else rules = saved.rules;
+			close({ action: 'persist', logic: saved });
+		} catch {
+			if (version === saveVersion) saveState = 'error';
+		}
 	};
 </script>
 
 <div>
 	<HeaderBlank class="h-12 w-full bg-muted/50">
-		<div class="size-full">
+		<div>
 			<h1 class="flex items-center gap-2 truncate overflow-hidden text-sm whitespace-nowrap">
 				Foreground
 				<ChevronsRightIcon class="size-4 text-muted-foreground" />
 				<span class="font-medium">Quiz rules</span>
 			</h1>
 		</div>
+		<p class="ml-auto self-center text-xs text-muted-foreground" aria-live="polite">
+			{saveState === 'saving'
+				? 'Saving...'
+				: saveState === 'saved'
+					? 'Saved'
+					: saveState === 'error'
+						? 'Save failed'
+						: saveState === 'dirty'
+							? 'Unsaved changes'
+							: 'No changes'}
+		</p>
 	</HeaderBlank>
 
-	<form class="p-4" onsubmit={persist}>
+	<form class="p-4" onsubmit={persist} oninput={scheduleAutosave} onchange={scheduleAutosave}>
 		<DragDropProvider onDragEnd={(event) => handleRuleDrag(event as DragEndEvent)}>
 			<div class="grid gap-4">
 				{#each rules as rule, r (rule.id)}
@@ -144,6 +218,7 @@
 										onclick={() => {
 											rule.isRemoved = true;
 											rules?.filter((r) => !r.isRemoved)?.forEach((r, i) => (r.order = i + 1));
+											scheduleAutosave();
 										}}
 									>
 										<TrashIcon class="size-4" />
@@ -224,9 +299,11 @@
 														name="quizQuestionTemplateId"
 														value={input.quizQuestionTemplateAnswerItemId ?? 'none'}
 														disabled={!question}
-														onValueChange={(value) =>
-															(input.quizQuestionTemplateAnswerItemId =
-																value === 'none' ? null : value)}
+														onValueChange={(value) => {
+															input.quizQuestionTemplateAnswerItemId =
+																value === 'none' ? null : value;
+															scheduleAutosave();
+														}}
 													>
 														{@const answer = question?.answerOptions?.find(
 															(o) => o.id === input.quizQuestionTemplateAnswerItemId
@@ -273,7 +350,10 @@
 													variant="ghost"
 													size="icon"
 													class="text-destructive hover:bg-destructive/10 hover:text-destructive"
-													onclick={() => (input.isRemoved = true)}
+													onclick={() => {
+														input.isRemoved = true;
+														scheduleAutosave();
+													}}
 												>
 													<TrashIcon class="size-4" />
 												</Button>

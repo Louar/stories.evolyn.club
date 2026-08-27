@@ -154,13 +154,24 @@
 
 <div>
 	<HeaderBlank class="h-12 w-full bg-muted/50">
-		<div class="size-full">
+		<div>
 			<h1 class="flex items-center gap-2 truncate overflow-hidden text-sm whitespace-nowrap">
 				Foreground
 				<ChevronsRightIcon class="size-4 text-muted-foreground" />
 				<span class="font-medium">Taxonomy draft rules</span>
 			</h1>
 		</div>
+		<p class="ml-auto self-center text-xs text-muted-foreground" aria-live="polite">
+			{saveState === 'saving'
+				? 'Saving...'
+				: saveState === 'saved'
+					? 'Saved'
+					: saveState === 'error'
+						? 'Save failed'
+						: saveState === 'dirty'
+							? 'Unsaved changes'
+							: 'No changes'}
+		</p>
 	</HeaderBlank>
 
 	<form
