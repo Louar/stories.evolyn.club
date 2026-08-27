@@ -219,6 +219,7 @@ classDiagram
   class Story {
       slug: string
       name: Translatable
+      defaultBackgroundColor: string?
       configuration: jsonb?
       isPublished: boolean
       isPublic: boolean

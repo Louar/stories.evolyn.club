@@ -127,6 +127,7 @@ type Story = {
   clientId: string;
   slug: string;
   name: TranslatableColumn;
+  defaultBackgroundColor: string | null;
   configuration: JSONColumnType<object> | null;
   isPublished: ColumnType<boolean, boolean | null, boolean>;
   isPublic: ColumnType<boolean, boolean | null, boolean>;

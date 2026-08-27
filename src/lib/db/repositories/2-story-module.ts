@@ -12,6 +12,7 @@ import { Language, selectLocalizedField, selectLocalizedMediaField } from '../sc
 export const storySchema = z.object({
   slug: z.string().min(1),
   name: z.preprocess(formObjectPreprocessor, translatableValidator),
+  defaultBackgroundColor: z.string().nullable().default(null),
   isPublished: z.boolean().default(false),
   isPublic: z.boolean().default(true)
 });
@@ -66,6 +67,7 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
       'story.id',
       'story.slug',
       'story.name',
+      'story.defaultBackgroundColor',
       'story.isPublished',
       'story.isPublic',
 
@@ -324,6 +326,7 @@ export const findOneStoryBySlug = async (
     .select((eb) => [
       'story.id',
       'story.slug',
+      'story.defaultBackgroundColor',
       selectLocalizedField(eb, 'story.name', language).as('name'),
       jsonArrayFrom(
         eb
@@ -549,6 +552,7 @@ export const findOneStoryBySlug = async (
     id: rawstory.id,
     slug: rawstory.slug,
     name: rawstory.name,
+    defaultBackgroundColor: rawstory.defaultBackgroundColor,
     parts: rawstory.parts.map((part) => {
       const {
         background,

@@ -42,7 +42,6 @@
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-ring: var(--sidebar-ring);
 
-	--color-game-background: var(--game-background);
 	--color-game-panel: var(--game-panel);
 	--color-game-panel-muted: var(--game-panel-muted);
 	--color-game-text: var(--game-text);
@@ -66,7 +65,6 @@
 
 :root {
 	color-scheme: light;
-	/* --game-background: #fff4df; */
 	--game-panel: #fffaf1;
 	--game-panel-muted: #d9c7ad;
 	--game-text: #30231d;
@@ -86,7 +84,6 @@
 	--map-helper-fill: #30231d;
 	--map-found-fill: #d9c7ad;
 	--map-hint-fill: #00ff00;
-	/* background: var(--game-background); */
 	color: var(--game-text);
 	font-family: var(--font-sans);
 	font-synthesis: none;
@@ -95,7 +92,6 @@
 
 :root.dark {
 	color-scheme: dark;
-	--game-background: #282828;
 	--game-panel: #212121;
 	--game-panel-muted: #545454;
 	--game-text: #ebdbb2;

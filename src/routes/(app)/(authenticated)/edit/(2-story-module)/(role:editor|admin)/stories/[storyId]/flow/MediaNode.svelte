@@ -61,9 +61,7 @@
 
 	<div class="grid gap-2 p-2">
 		<div
-			class="flex items-center gap-2 rounded-lg border p-2 {part.backgroundType
-				? 'bg-background/60'
-				: 'bg-muted/70'}"
+			class="flex items-center gap-2 rounded-lg border p-2 bg-background/60"
 		>
 			<div
 				class="grid size-9 shrink-0 place-items-center rounded-md {part.backgroundType
@@ -79,9 +77,6 @@
 				{/if}
 			</div>
 			<div class="min-w-0 flex-1">
-				<p class="text-[0.65rem] font-medium tracking-wider text-muted-foreground uppercase">
-					Background
-				</p>
 				<p class="truncate text-sm font-medium">{backgroundLabel}</p>
 				{#if part.backgroundType === 'video' && video}
 					<p class="text-xs text-muted-foreground">{formatDuration(video.duration)}</p>
@@ -92,9 +87,7 @@
 		</div>
 
 		<div
-			class="flex items-center gap-2 rounded-lg border p-2 {part.foregroundType
-				? 'bg-background/60'
-				: 'bg-muted/70'}"
+			class="flex items-center gap-2 rounded-lg border p-2 bg-background/60"
 		>
 			<div
 				class="grid size-9 shrink-0 place-items-center rounded-md {part.foregroundType
@@ -112,9 +105,6 @@
 				{/if}
 			</div>
 			<div class="min-w-0 flex-1">
-				<p class="text-[0.65rem] font-medium tracking-wider text-muted-foreground uppercase">
-					Foreground
-				</p>
 				<p class="truncate text-sm font-medium">{foregroundLabel}</p>
 				{#if part.foregroundType === 'quiz'}
 					<p class="text-xs text-muted-foreground">{quiz?.questions.length ?? 0} questions</p>

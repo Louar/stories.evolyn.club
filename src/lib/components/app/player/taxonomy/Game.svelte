@@ -290,7 +290,7 @@
 
 <div
 	{@attach observeSize}
-	class="bg-game-background text-game-text absolute inset-0 overflow-hidden"
+	class="absolute inset-0 overflow-hidden text-game-text"
 	data-taxonomy-game
 >
 	{#if feedback}
@@ -320,22 +320,22 @@
 
 	{#if playableRounds.length === 0}
 		<section
-			class="border-game-danger bg-game-panel shadow-panel absolute top-1/2 left-1/2 z-2 w-[min(34rem,calc(100%-2rem))] -translate-x-1/2 -translate-y-1/2 rounded-md border p-5 text-center"
+			class="absolute top-1/2 left-1/2 z-2 w-[min(34rem,calc(100%-2rem))] -translate-x-1/2 -translate-y-1/2 rounded-md border border-game-danger bg-game-panel p-5 text-center shadow-panel"
 			role="alert"
 		>
 			<h2 class="text-2xl font-black">No playable rounds available</h2>
-			<p class="text-game-text-muted mt-2">
+			<p class="mt-2 text-game-text-muted">
 				This game needs number attributes or map references with valid shapes.
 			</p>
 		</section>
 	{:else if finished}
 		<section
-			class="border-game-border bg-game-panel shadow-panel absolute top-1/2 left-1/2 z-2 w-[min(24rem,calc(100%-2rem))] -translate-x-1/2 -translate-y-1/2 rounded-md border p-5 text-center"
+			class="absolute top-1/2 left-1/2 z-2 w-[min(24rem,calc(100%-2rem))] -translate-x-1/2 -translate-y-1/2 rounded-md border border-game-border bg-game-panel p-5 text-center shadow-panel"
 			aria-live="polite"
 		>
-			<p class="text-game-text-muted text-sm font-bold tracking-wide uppercase">Game complete</p>
+			<p class="text-sm font-bold tracking-wide text-game-text-muted uppercase">Game complete</p>
 			<h2 class="mt-2 text-3xl font-black">{completed} of {playableRounds.length} correct</h2>
-			<p class="text-game-text-muted mt-2">Mistakes: {mistakes}</p>
+			<p class="mt-2 text-game-text-muted">Mistakes: {mistakes}</p>
 		</section>
 	{:else if currentRound}
 		{#if currentRound.kind === 'map'}
@@ -370,7 +370,7 @@
 			in:fly={{ y: -100, duration: 250, delay: 50 }}
 		>
 			<div
-				class="border-game-border bg-game-panel/95 shadow-panel z-1 flex flex-wrap items-center justify-center gap-2 rounded-md border px-2.5 py-2 backdrop-blur"
+				class="z-1 flex flex-wrap items-center justify-center gap-2 rounded-md border border-game-border bg-game-panel/95 px-2.5 py-2 shadow-panel backdrop-blur"
 			>
 				{#if playableRounds.length !== goal}
 					<span
@@ -389,7 +389,7 @@
 					Score {#key completed}<span in:scale={{ start: 1.5 }}>{completed}</span>{/key} / {goal}
 				</span>
 				<span
-					class="text-game-danger rounded-md px-1.5 py-0.5 font-extrabold"
+					class="rounded-md px-1.5 py-0.5 font-extrabold text-game-danger"
 					aria-label={`${mistakes} mistakes`}
 				>
 					Mistakes {#key mistakes}<span in:scale={{ start: 1.5 }}>{mistakes}</span
@@ -405,7 +405,7 @@
 				{#key currentRoundIndex}
 					<div
 						in:fly={{ y: 20 }}
-						class="border-game-border bg-game-inverse text-game-inverse-text shadow-panel flex items-center justify-center rounded-md border px-4 py-2 text-center"
+						class="flex items-center justify-center rounded-md border border-game-border bg-game-inverse px-4 py-2 text-center text-game-inverse-text shadow-panel"
 					>
 						<div>
 							{#if currentRound.kind !== 'sortable'}<p class="mt-1 text-sm">
@@ -432,7 +432,7 @@
 			{/if}
 			{#if arrowRotation !== undefined}
 				<div
-					class="border-game-background bg-game-inverse text-game-inverse-text shadow-arrow pointer-events-none absolute top-[calc(100%+0.75rem)] left-1/2 grid size-18 -translate-x-1/2 place-items-center rounded-full border-8 text-4xl font-black"
+					class="pointer-events-none absolute top-[calc(100%+0.75rem)] left-1/2 grid size-18 -translate-x-1/2 place-items-center rounded-full border-8 border-background bg-game-inverse text-4xl font-black text-game-inverse-text shadow-arrow"
 					aria-label="Direction hint"
 					in:fly={{ y: -80, duration: 200 }}
 					out:fly={{ y: 20, duration: 500, easing: quartOut }}

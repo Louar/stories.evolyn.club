@@ -162,6 +162,7 @@ export const InitStoryModule: Migration = {
       )
       .addColumn('slug', 'text', (col) => col.notNull())
       .addColumn('name', 'jsonb', (col) => col.notNull())
+      .addColumn('default_background_color', 'text')
       .addColumn('configuration', 'jsonb')
       .addColumn('is_published', 'boolean', (col) => col.defaultTo(false).notNull())
       .addColumn('is_public', 'boolean', (col) => col.defaultTo(false).notNull())

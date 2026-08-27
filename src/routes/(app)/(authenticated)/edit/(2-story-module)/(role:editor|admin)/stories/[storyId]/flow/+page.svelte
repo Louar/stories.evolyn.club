@@ -325,6 +325,7 @@
 							story={{
 								slug: story.slug,
 								name: story.name,
+								defaultBackgroundColor: story.defaultBackgroundColor,
 								isPublished: story.isPublished,
 								isPublic: story.isPublic
 							}}

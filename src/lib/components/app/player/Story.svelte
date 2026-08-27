@@ -233,7 +233,13 @@
 	});
 </script>
 
-<div class={cn('relative mx-auto h-dvh max-h-dvh w-dvw max-w-dvw overflow-hidden', className)}>
+<div
+	class={cn(
+		'relative mx-auto h-dvh max-h-dvh w-dvw max-w-dvw overflow-hidden bg-background',
+		className
+	)}
+	style:background-color={story.defaultBackgroundColor ?? undefined}
+>
 	{#if story?.parts?.length}
 		{#each story?.parts as part (part.id)}
 			{@const player = players.find((player) => player.id === part.id)}
