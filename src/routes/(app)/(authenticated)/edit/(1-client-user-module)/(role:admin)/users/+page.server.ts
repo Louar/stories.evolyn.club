@@ -37,10 +37,6 @@ export const load: PageServerLoad = (async ({ locals }) => {
       'user.reasonForDeactivation',
       'user.createdAt',
       'user.updatedAt',
-      eb.selectFrom('membership')
-        .whereRef('membership.userId', '=', 'user.id')
-        .select(eb.fn.countAll<number>().as('memberships'))
-        .as('memberships'),
       jsonObjectFrom(
         eb.selectFrom('user as usr')
           .whereRef('usr.id', '=', 'user.createdBy')

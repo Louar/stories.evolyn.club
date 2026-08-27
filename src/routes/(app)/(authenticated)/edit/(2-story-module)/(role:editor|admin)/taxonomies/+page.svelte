@@ -124,7 +124,7 @@
 	<title>Edit taxonomies</title>
 </svelte:head>
 
-<Header class="mx-auto w-full max-w-6xl">
+<Header>
 	<BreadcrumbMenu menus={[[{ isTrigger: true, label: 'Taxonomies', url: `/edit/taxonomies` }]]} />
 </Header>
 
