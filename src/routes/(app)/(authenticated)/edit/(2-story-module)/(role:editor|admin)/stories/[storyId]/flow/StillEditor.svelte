@@ -4,6 +4,7 @@
 	import * as ColorPicker from '$lib/components/ui/color-picker/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { MediaFileInput } from '$lib/components/ui/media-file-input/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import type { findOneStillById } from '$lib/db/repositories/2-story-module';
 	import { formatFormError, MediaCollection, type Media } from '$lib/db/schemas/0-utils';
@@ -120,8 +121,12 @@
 	};
 	const dismiss = () => close({ action: 'close' });
 
-	const setExternalImage = (value: string): Media | null =>
-		value.length ? { collection: MediaCollection.externals, filename: value } : null;
+	const getMediaUrl = (value?: Media | null) => {
+		if (!value) return undefined;
+		return value.collection === MediaCollection.externals
+			? value.filename
+			: `/api/media/${value.collection}/${value.filename}`;
+	};
 </script>
 
 <div class="muted-scrollbar">
@@ -194,10 +199,13 @@
 			</Field.Field>
 			<Field.Field>
 				<Field.Label>Image URL (optional)</Field.Label>
-				<Input
-					value={still.image?.filename ?? ''}
+				<MediaFileInput
+					bind:value={still.image}
+					accept="image/*"
+					preview="image"
 					placeholder="https://..."
-					oninput={(event) => (still.image = setExternalImage(event.currentTarget.value))}
+					description="Drop an image, browse, or add an external image URL."
+					onValueChange={scheduleAutosave}
 				/>
 				<Field.Error>{formatFormError(error, 'image.filename')}</Field.Error>
 			</Field.Field>
@@ -216,7 +224,7 @@
 			<div
 				class="min-h-48 rounded-md border {still.style ?? ''}"
 				style:background-color={still.color ?? undefined}
-				style:background-image={still.image ? `url(${still.image.filename})` : undefined}
+				style:background-image={still.image ? `url(${getMediaUrl(still.image)})` : undefined}
 			></div>
 		</Field.Group>
 	</form>

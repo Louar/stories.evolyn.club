@@ -131,7 +131,7 @@
 	</Sheet.Root>
 {:else if open && selection}
 	<aside
-		class="fixed inset-y-0 start-(--sidebar-width) z-50 h-svh w-[30rem] border-r bg-background shadow-sm peer-data-[collapsible=offcanvas]:start-0"
+		class="fixed inset-y-0 inset-s-(--sidebar-width) z-50 h-svh w-120 border-r bg-background shadow-sm peer-data-[collapsible=offcanvas]:inset-s-0"
 	>
 		{@render inspector()}
 	</aside>

@@ -3,11 +3,13 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { MediaFileInput } from '$lib/components/ui/media-file-input/index.js';
 	import type { findOneVideoById } from '$lib/db/repositories/2-story-module';
 	import {
 		formatFormError,
 		MediaCollection,
 		translateLocalizedMediaField,
+		type Media,
 		type TranslatableMedia
 	} from '$lib/db/schemas/0-utils';
 	import { EDITORS } from '$lib/states/editors.svelte';
@@ -19,7 +21,6 @@
 	import XIcon from '@lucide/svelte/icons/x';
 	import { onDestroy } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { z } from 'zod/v4';
 	import type { $ZodIssue } from 'zod/v4/core';
 	import VideoValidator from './VideoValidator.svelte';
 
@@ -140,27 +141,39 @@
 		scheduleAutosave();
 	};
 
-	const getMediaFilename = (value?: TranslatableMedia | null) => {
-		return translateLocalizedMediaField(value, UI.language)?.filename ?? '';
+	const getMedia = (value?: TranslatableMedia | null) =>
+		translateLocalizedMediaField(value, UI.language);
+	const getMediaUrl = (value?: Media | null) => {
+		if (!value) return undefined;
+		return value.collection === MediaCollection.externals
+			? value.filename
+			: `/api/media/${value.collection}/${value.filename}`;
 	};
 
-	const setExternalMedia = (value: string, current?: TranslatableMedia | null) => {
-		if (!value.length) {
+	const setTranslatedMedia = (value: Media | null, current?: TranslatableMedia | null) => {
+		if (!value) {
 			const next = { ...current };
 			delete next[UI.language];
 			return Object.keys(next).length ? next : null;
 		}
 
-		const media = {
-			collection: MediaCollection.externals,
-			filename: value
-		};
-
 		return {
 			...current,
-			...(current?.default || current?.en ? {} : { default: media }),
-			[UI.language]: media
+			...(current?.default || current?.en ? {} : { default: value }),
+			[UI.language]: value
 		};
+	};
+	const updateSource = (value: Media | null) => {
+		video.source = setTranslatedMedia(value, video.source) ?? {};
+		const nextSrc = getMediaUrl(value);
+		src = nextSrc;
+		hasError = undefined;
+		isLoading = Boolean(nextSrc?.length);
+		scheduleAutosave();
+	};
+	const updateThumbnail = (value: Media | null) => {
+		video.thumbnail = setTranslatedMedia(value, video.thumbnail);
+		scheduleAutosave();
 	};
 </script>
 
@@ -199,6 +212,7 @@
 				</Field.Error>
 			</Field.Field>
 			<Field.Field>
+			<div>
 				<Field.Label>
 					Source
 					{#if isLoading}
@@ -214,16 +228,16 @@
 						/>
 					{/if}
 				</Field.Label>
-				<Input
-					value={getMediaFilename(video.source)}
+				<Field.Description>
+					Drop a video file, browse, or add a stream/YouTube URL.
+				</Field.Description>
+			</div>
+				<MediaFileInput
+					value={getMedia(video.source)}
+					accept="video/*,.m3u8"
+					preview="video"
 					placeholder=".m3u8 stream URL, or YouTube URL"
-					oninput={(e) => {
-						const value = e.currentTarget.value;
-						video.source = setExternalMedia(value, video.source) ?? {};
-						const url = z.url().min(1).safeParse(value)?.data;
-						src = url;
-						if (url?.length) isLoading = true;
-					}}
+					onValueChange={updateSource}
 				/>
 				<Field.Error>
 					{formatFormError(error, `source.*.filename`)}
@@ -235,11 +249,13 @@
 			</Field.Field>
 			<Field.Field>
 				<Field.Label>Thumbnail (optional)</Field.Label>
-				<Input
-					value={getMediaFilename(video.thumbnail)}
+				<MediaFileInput
+					value={getMedia(video.thumbnail)}
+					accept="image/*"
+					preview="image"
 					placeholder="Thumbnail URL"
-					oninput={(e) =>
-						(video.thumbnail = setExternalMedia(e.currentTarget.value, video.thumbnail))}
+					description="Drop an image, browse, or add an external thumbnail URL."
+					onValueChange={updateThumbnail}
 				/>
 				<Field.Error>
 					{formatFormError(error, `thumbnail.*.filename`)}
