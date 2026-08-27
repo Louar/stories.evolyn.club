@@ -163,6 +163,12 @@ const handleInteractionEvent = async (storyId: string, payload: StoryEvent) => {
   return json({ success: true }, { status: 201 });
 }
 
+/**
+ * @openapi
+ * summary: Create a story event
+ * tags:
+ *  - Stories
+ */
 export const POST: RequestHandler = async ({ locals, params, request }) => {
   const clientId = locals.client.id;
   const storyId = requireParam(params.storyId, 'The story parameter is required');

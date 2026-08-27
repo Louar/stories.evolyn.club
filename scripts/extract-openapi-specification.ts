@@ -329,13 +329,13 @@ interface SchemaObject extends OpenApiExtensionMap {
 	required?: string[];
 	enum?: Array<string | number | boolean | null>;
 	type?:
-		| 'string'
-		| 'number'
-		| 'integer'
-		| 'boolean'
-		| 'array'
-		| 'object'
-		| Array<'string' | 'number' | 'integer' | 'boolean' | 'array' | 'object' | 'null'>;
+	| 'string'
+	| 'number'
+	| 'integer'
+	| 'boolean'
+	| 'array'
+	| 'object'
+	| Array<'string' | 'number' | 'integer' | 'boolean' | 'array' | 'object' | 'null'>;
 	format?: string;
 	description?: string;
 	default?: unknown;
@@ -371,12 +371,9 @@ const OUTPUT_FILE = path.resolve('static/generated/openapi-specification.yaml');
 const TAG_ORDER = [
 	'Authentication',
 	'Current user (/me)',
-	'Campaign',
-	'Groups & holdings',
-	'Input collections',
-	'Menu items & app pages',
-	'Missions & skills',
-	'Providers & templates',
+	'Anthologies',
+	'Stories',
+	'Story assets',
 	'Users',
 	'Media',
 	'Clients',
@@ -480,10 +477,10 @@ export async function generateOpenApiDocument(): Promise<OpenApiDocument> {
 		...DEFAULT_INFO,
 		...(tags.size > 0
 			? {
-					tags: Array.from(tags)
-						.sort(compareTags)
-						.map((name) => ({ name }))
-				}
+				tags: Array.from(tags)
+					.sort(compareTags)
+					.map((name) => ({ name }))
+			}
 			: {}),
 		paths
 	};
@@ -1881,49 +1878,49 @@ function mergeTranslatableProperties(
 			...runtimeSchema,
 			...(runtimeSchema.oneOf
 				? {
-						oneOf: runtimeSchema.oneOf.map((schema) =>
-							mergeTranslatableProperties(
-								schema,
-								declarationSchema,
-								translatableProperties,
-								program
-							)
-						)
-					}
-				: {}),
-			...(runtimeSchema.anyOf
-				? {
-						anyOf: runtimeSchema.anyOf.map((schema) =>
-							mergeTranslatableProperties(
-								schema,
-								declarationSchema,
-								translatableProperties,
-								program
-							)
-						)
-					}
-				: {}),
-			...(runtimeSchema.allOf
-				? {
-						allOf: runtimeSchema.allOf.map((schema) =>
-							mergeTranslatableProperties(
-								schema,
-								declarationSchema,
-								translatableProperties,
-								program
-							)
-						)
-					}
-				: {}),
-			...(declarationObject?.properties || runtimeSchema.properties
-				? {
-						properties: mergeTranslatablePropertyMap(
-							runtimeSchema.properties,
-							declarationObject?.properties ?? {},
+					oneOf: runtimeSchema.oneOf.map((schema) =>
+						mergeTranslatableProperties(
+							schema,
+							declarationSchema,
 							translatableProperties,
 							program
 						)
-					}
+					)
+				}
+				: {}),
+			...(runtimeSchema.anyOf
+				? {
+					anyOf: runtimeSchema.anyOf.map((schema) =>
+						mergeTranslatableProperties(
+							schema,
+							declarationSchema,
+							translatableProperties,
+							program
+						)
+					)
+				}
+				: {}),
+			...(runtimeSchema.allOf
+				? {
+					allOf: runtimeSchema.allOf.map((schema) =>
+						mergeTranslatableProperties(
+							schema,
+							declarationSchema,
+							translatableProperties,
+							program
+						)
+					)
+				}
+				: {}),
+			...(declarationObject?.properties || runtimeSchema.properties
+				? {
+					properties: mergeTranslatablePropertyMap(
+						runtimeSchema.properties,
+						declarationObject?.properties ?? {},
+						translatableProperties,
+						program
+					)
+				}
 				: {})
 		};
 	}
@@ -1957,11 +1954,11 @@ function mergeTranslatablePropertyMap(
 				: isTranslatableSchema(declarationProperties[name])
 					? declarationProperties[name]
 					: mergeTranslatableProperties(
-							schema,
-							declarationProperties[name] ?? null,
-							translatableProperties,
-							program
-						)
+						schema,
+						declarationProperties[name] ?? null,
+						translatableProperties,
+						program
+					)
 		])
 	);
 }

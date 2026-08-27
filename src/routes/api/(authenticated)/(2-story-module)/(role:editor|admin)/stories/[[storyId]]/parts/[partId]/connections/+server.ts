@@ -9,6 +9,12 @@ const schema = z.object({
   target: z.string().min(1)
 });
 
+/**
+ * @openapi
+ * summary: Create story part connection
+ * tags:
+ *  - Stories
+ */
 export const POST = (async ({ locals, params, request }) => {
   const storyId = requireParam(params.storyId, 'The story path parameter is required');
   await canModifyStory(locals, storyId);
@@ -60,6 +66,12 @@ export const POST = (async ({ locals, params, request }) => {
   return json({ success: true });
 }) satisfies RequestHandler;
 
+/**
+ * @openapi
+ * summary: Delete story part connection
+ * tags:
+ *  - Stories
+ */
 export const DELETE = (async ({ locals, params, request }) => {
   const storyId = requireParam(params.storyId, 'The story path parameter is required');
   await canModifyStory(locals, storyId);

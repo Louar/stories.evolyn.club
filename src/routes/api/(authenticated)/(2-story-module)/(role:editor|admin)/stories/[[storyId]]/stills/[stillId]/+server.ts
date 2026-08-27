@@ -12,6 +12,12 @@ const stillSchema = z.object({
 	style: z.preprocess(formObjectPreprocessor, z.string().nullable())
 });
 
+/**
+ * @openapi
+ * summary: Create or update still
+ * tags:
+ *  - Story assets
+ */
 export const POST = (async ({ locals, params, request }) => {
 	const storyId = requireParam(params.storyId, 'The story path parameter is required');
 	await canModifyStory(locals, storyId);
@@ -44,6 +50,12 @@ export const POST = (async ({ locals, params, request }) => {
 	return json(await findOneStillById(stillId));
 }) satisfies RequestHandler;
 
+/**
+ * @openapi
+ * summary: Delete still
+ * tags:
+ *  - Story assets
+ */
 export const DELETE = (async ({ locals, params }) => {
 	const storyId = requireParam(params.storyId, 'The story path parameter is required');
 	await canModifyStory(locals, storyId);

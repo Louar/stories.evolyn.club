@@ -13,6 +13,12 @@ const videoSchema = z.object({
 	duration: z.number().int().min(1)
 });
 
+/**
+ * @openapi
+ * summary: Create or update video
+ * tags:
+ *  - Story assets
+ */
 export const POST = (async ({ locals, params, request }) => {
 	const storyId = requireParam(params.storyId, 'The story path parameter is required');
 	await canModifyStory(locals, storyId);
@@ -59,6 +65,12 @@ export const POST = (async ({ locals, params, request }) => {
 	return json(video);
 }) satisfies RequestHandler;
 
+/**
+ * @openapi
+ * summary: Delete video
+ * tags:
+ *  - Story assets
+ */
 export const DELETE = (async ({ locals, params }) => {
 	const storyId = requireParam(params.storyId, 'The story path parameter is required');
 	await canModifyStory(locals, storyId);

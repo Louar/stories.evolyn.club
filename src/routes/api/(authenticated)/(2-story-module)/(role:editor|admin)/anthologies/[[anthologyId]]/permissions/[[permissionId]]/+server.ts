@@ -68,6 +68,12 @@ const canModify = (locals: App.Locals, anthologyId: string) =>
 		}
 	});
 
+/**
+ * @openapi
+ * summary: Get anthology permission
+ * tags:
+ *  - Anthologies
+ */
 export const GET: RequestHandler = async ({ locals, params }) => {
 	const clientId = locals.client.id;
 	const anthologyId = requireParam(params.anthologyId, 'The anthology parameter is required');
@@ -77,6 +83,12 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 	return json(row);
 };
 
+/**
+ * @openapi
+ * summary: Create anthology permission
+ * tags:
+ *  - Anthologies
+ */
 export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const clientId = locals.client.id;
 	const anthologyId = requireParam(params.anthologyId, 'The anthology parameter is required');
@@ -84,7 +96,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const parsed = await parseBody(request, createSchema);
 	if (!parsed.ok) return parsed.response;
 
-	if (!await canModify(locals, anthologyId)) throw error(403, 'You are not allowed to create anthology permissions');
+	if (!await canModify(locals, anthologyId)) throw error(403, 'You are not allowed to create Anthologies');
 
 	try {
 		const authUserId = locals.authusr!.id;
@@ -112,6 +124,12 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	}
 };
 
+/**
+ * @openapi
+ * summary: Update anthology permission
+ * tags:
+ *  - Anthologies
+ */
 export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 	const clientId = locals.client.id;
 	const anthologyId = requireParam(params.anthologyId, 'The anthology parameter is required');
@@ -151,6 +169,12 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 	}
 };
 
+/**
+ * @openapi
+ * summary: Delete anthology permission
+ * tags:
+ *  - Anthologies
+ */
 export const DELETE: RequestHandler = async ({ locals, params }) => {
 	const anthologyId = requireParam(params.anthologyId, 'The anthology parameter is required');
 	const permissionId = requireParam(params.permissionId, 'The permission parameter is required');

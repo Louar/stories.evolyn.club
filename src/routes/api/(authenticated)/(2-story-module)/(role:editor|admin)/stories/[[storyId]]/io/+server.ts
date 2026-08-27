@@ -6,6 +6,12 @@ import YAML from 'yaml';
 import type { RequestHandler } from './$types';
 import { schema } from './schemas';
 
+/**
+ * @openapi
+ * summary: Export story
+ * tags:
+ *  - Stories
+ */
 export const GET = (async ({ locals, params }) => {
   const clientId = locals.client.id;
   const storyId = requireParam(params.storyId, 'The story path parameter is required');
@@ -22,6 +28,12 @@ export const GET = (async ({ locals, params }) => {
   });
 }) satisfies RequestHandler;
 
+/**
+ * @openapi
+ * summary: Import story
+ * tags:
+ *  - Stories
+ */
 export const POST = (async ({ locals, request }) => {
   const clientId = locals.client.id;
   const userId = locals.authusr!.id;

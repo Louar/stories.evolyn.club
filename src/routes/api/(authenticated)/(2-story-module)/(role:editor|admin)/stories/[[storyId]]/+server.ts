@@ -5,6 +5,12 @@ import { clean } from '$lib/utils';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
+/**
+ * @openapi
+ * summary: Update story
+ * tags:
+ *  - Stories
+ */
 export const PUT = (async ({ locals, params, request }) => {
 	const clientId = locals.client.id;
 	const userId = locals.authusr!.id;
@@ -62,6 +68,12 @@ export const PUT = (async ({ locals, params, request }) => {
 	return json(body.data);
 }) satisfies RequestHandler;
 
+/**
+ * @openapi
+ * summary: Delete story
+ * tags:
+ *  - Stories
+ */
 export const DELETE = (async ({ locals, params }) => {
 	const clientId = locals.client.id;
 	const storyId = requireParam(params.storyId, 'The story path parameter is required');

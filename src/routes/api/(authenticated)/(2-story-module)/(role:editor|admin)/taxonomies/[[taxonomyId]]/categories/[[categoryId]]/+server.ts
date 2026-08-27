@@ -51,6 +51,12 @@ const canModify = (locals: App.Locals) =>
 		elevatedRoles: [UserRole.editor, UserRole.admin]
 	});
 
+/**
+ * @openapi
+ * summary: Get taxonomy category
+ * tags:
+ *  - Story assets
+ */
 export const GET: RequestHandler = async ({ locals, params }) => {
 	const clientId = locals.client.id;
 	const taxonomyId = requireParam(params.taxonomyId, 'The taxonomy parameter is required');
@@ -61,6 +67,12 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 	return json(row);
 };
 
+/**
+ * @openapi
+ * summary: Create taxonomy category
+ * tags:
+ *  - Story assets
+ */
 export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const clientId = locals.client.id;
 	const taxonomyId = requireParam(params.taxonomyId, 'The taxonomy parameter is required');
@@ -85,6 +97,12 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	return json(row, { status: 201 });
 };
 
+/**
+ * @openapi
+ * summary: Update taxonomy category
+ * tags:
+ *  - Story assets
+ */
 export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 	const clientId = locals.client.id;
 	const taxonomyId = requireParam(params.taxonomyId, 'The taxonomy parameter is required');
@@ -112,6 +130,12 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 	return json(row, { status: 200 });
 };
 
+/**
+ * @openapi
+ * summary: Delete taxonomy category
+ * tags:
+ *  - Story assets
+ */
 export const DELETE: RequestHandler = async ({ locals, params }) => {
 	const clientId = locals.client.id;
 	const taxonomyId = requireParam(params.taxonomyId, 'The taxonomy parameter is required');

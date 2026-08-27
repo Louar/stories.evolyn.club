@@ -27,6 +27,12 @@ const partSchema = z.object({
   position: z.object({ x: z.number(), y: z.number() }).nullable()
 });
 
+/**
+ * @openapi
+ * summary: Create or update story part
+ * tags:
+ *  - Stories
+ */
 export const POST = async ({ locals, params, request }) => {
   const storyId = requireParam(params.storyId, 'The story path parameter is required');
   await canModifyStory(locals, storyId);
@@ -146,6 +152,12 @@ export const POST = async ({ locals, params, request }) => {
   return json(part);
 };
 
+/**
+ * @openapi
+ * summary: Delete story part
+ * tags:
+ *  - Stories
+ */
 export const DELETE = (async ({ locals, params }) => {
   const storyId = requireParam(params.storyId, 'The story path parameter is required');
   await canModifyStory(locals, storyId);

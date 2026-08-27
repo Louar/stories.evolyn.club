@@ -25,6 +25,12 @@ const logicSchema = z.object({
   rules: z.array(ruleSchema).min(1, 'At least one rule is required'),
 });
 
+/**
+ * @openapi
+ * summary: Update quiz logic
+ * tags:
+ *  - Stories
+ */
 export const POST = (async ({ locals, params, request }) => {
   const storyId = requireParam(params.storyId, 'The story path parameter is required');
   await canModifyStory(locals, storyId);

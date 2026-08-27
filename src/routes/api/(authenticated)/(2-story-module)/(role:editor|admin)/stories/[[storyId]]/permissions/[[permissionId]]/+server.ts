@@ -68,6 +68,12 @@ const canModify = (locals: App.Locals, storyId: string) =>
 		}
 	});
 
+/**
+ * @openapi
+ * summary: Get story permission
+ * tags:
+ *  - Stories
+ */
 export const GET: RequestHandler = async ({ locals, params }) => {
 	const clientId = locals.client.id;
 	const storyId = requireParam(params.storyId, 'The story parameter is required');
@@ -77,6 +83,12 @@ export const GET: RequestHandler = async ({ locals, params }) => {
 	return json(row);
 };
 
+/**
+ * @openapi
+ * summary: Create story permission
+ * tags:
+ *  - Stories
+ */
 export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const clientId = locals.client.id;
 	const storyId = requireParam(params.storyId, 'The story parameter is required');
@@ -112,6 +124,12 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 	}
 };
 
+/**
+ * @openapi
+ * summary: Update story permission
+ * tags:
+ *  - Stories
+ */
 export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 	const clientId = locals.client.id;
 	const storyId = requireParam(params.storyId, 'The story parameter is required');
@@ -151,6 +169,12 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 	}
 };
 
+/**
+ * @openapi
+ * summary: Delete story permission
+ * tags:
+ *  - Stories
+ */
 export const DELETE: RequestHandler = async ({ locals, params }) => {
 	const storyId = requireParam(params.storyId, 'The story parameter is required');
 	const permissionId = requireParam(params.permissionId, 'The permission parameter is required');

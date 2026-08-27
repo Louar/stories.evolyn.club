@@ -26,6 +26,12 @@ const schema = z.object({
   rules: z.array(ruleSchema)
 });
 
+/**
+ * @openapi
+ * summary: Update taxonomy logic
+ * tags:
+ *  - Stories
+ */
 export const POST = (async ({ locals, params, request }) => {
   const storyId = requireParam(params.storyId, 'The story path parameter is required');
   const partId = requireParam(params.partId, 'The part path parameter is required');

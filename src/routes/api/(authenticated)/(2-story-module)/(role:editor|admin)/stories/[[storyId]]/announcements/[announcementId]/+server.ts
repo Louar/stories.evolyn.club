@@ -12,6 +12,12 @@ const announcementSchema = z.object({
 	message: z.preprocess(formObjectPreprocessor, translatableValidator.nullable())
 });
 
+/**
+ * @openapi
+ * summary: Create or update announcement
+ * tags:
+ *  - Story assets
+ */
 export const POST = (async ({ locals, params, request }) => {
 	const storyId = requireParam(params.storyId, 'The story path parameter is required');
 	await canModifyStory(locals, storyId);
@@ -56,6 +62,12 @@ export const POST = (async ({ locals, params, request }) => {
 	return json(announcement);
 }) satisfies RequestHandler;
 
+/**
+ * @openapi
+ * summary: Delete announcement
+ * tags:
+ *  - Story assets
+ */
 export const DELETE = (async ({ locals, params }) => {
 	const storyId = requireParam(params.storyId, 'The story path parameter is required');
 	await canModifyStory(locals, storyId);

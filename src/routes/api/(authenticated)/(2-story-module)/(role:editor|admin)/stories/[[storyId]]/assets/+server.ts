@@ -336,6 +336,12 @@ const ensureSourceAccess = async (args: {
 // ENDPOINTS //
 // ********* //
 
+/**
+ * @openapi
+ * summary: Get story assets
+ * tags:
+ *  - Story assets
+ */
 export const GET: RequestHandler = async ({ locals, params, url }) => {
   if (!locals.authusr?.id) throw error(401, 'Unauthorized');
 
@@ -397,6 +403,12 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
   return json(chunks.flat());
 };
 
+/**
+ * @openapi
+ * summary: Add story asset
+ * tags:
+ *  - Story assets
+ */
 export const POST: RequestHandler = async ({ locals, params, request }) => {
   if (!locals.authusr?.id) throw error(401, 'Unauthorized');
 
@@ -464,6 +476,12 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
   }
 };
 
+/**
+ * @openapi
+ * summary: Remove story asset
+ * tags:
+ *  - Story assets
+ */
 export const DELETE: RequestHandler = async ({ locals, params, request }) => {
   if (!locals.authusr?.id) throw error(401, 'Unauthorized');
 

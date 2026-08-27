@@ -39,6 +39,12 @@ const quizSchema = z.object({
   questions: z.array(questionSchema).min(1, 'At least one question is required'),
 });
 
+/**
+ * @openapi
+ * summary: Create or update quiz questions
+ * tags:
+ *  - Story assets
+ */
 export const POST = (async ({ locals, params, request }) => {
   const storyId = requireParam(params.storyId, 'The story path parameter is required');
   await canModifyStory(locals, storyId);
@@ -165,6 +171,12 @@ export const POST = (async ({ locals, params, request }) => {
   return json(quiz);
 }) satisfies RequestHandler;
 
+/**
+ * @openapi
+ * summary: Delete quiz
+ * tags:
+ *  - Story assets
+ */
 export const DELETE = (async ({ locals, params }) => {
   const storyId = requireParam(params.storyId, 'The story path parameter is required');
   await canModifyStory(locals, storyId);
