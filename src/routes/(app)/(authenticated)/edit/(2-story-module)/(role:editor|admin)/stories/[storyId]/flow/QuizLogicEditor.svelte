@@ -17,6 +17,7 @@
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import { toast } from 'svelte-sonner';
 	import type { $ZodIssue } from 'zod/v4/core';
+	import EditorSurface from './EditorSurface.svelte';
 
 	type DragEndEvent = {
 		operation: { source: { sortable: { index: number; initialIndex: number } | null } | null };
@@ -29,13 +30,15 @@
 			Awaited<ReturnType<typeof findOneStoryById>>['parts'][number]['quizLogicForPart']
 		>['rules'];
 		quiz: Awaited<ReturnType<typeof findOneStoryById>>['quizzes'][number];
+		embedded?: boolean;
+		onBack?: () => void;
 		close: (output: {
 			action: 'persist' | 'delete';
 			id?: string;
 			logic?: Awaited<ReturnType<typeof findOneQuizLogicById>>;
 		}) => void;
 	};
-	let { storyId, partId, rules, quiz, close }: Props = $props();
+	let { storyId, partId, rules, quiz, embedded = false, onBack, close }: Props = $props();
 
 	let error = $state<$ZodIssue[] | null>(null);
 
@@ -63,9 +66,8 @@
 	const handleRuleDrag = (event: DragEndEvent) => {
 		const sortable = event.operation.source?.sortable;
 		if (!sortable) return;
-		const questions = moveArrayItem(quiz.questions ?? [], sortable.initialIndex, sortable.index);
-		questions?.filter((q) => !q.isRemoved)?.forEach((q, i) => (q.order = i + 1)) ?? [];
-		quiz.questions = questions;
+		rules = moveArrayItem(rules, sortable.initialIndex, sortable.index);
+		rules.filter((rule) => !rule.isRemoved).forEach((rule, index) => (rule.order = index + 1));
 	};
 
 	const persist = async (event: Event) => {
@@ -86,11 +88,8 @@
 	};
 </script>
 
-<form onsubmit={persist}>
-	<Dialog.Content
-		class="scrollbar-none max-h-[90vh] overflow-y-auto pt-0 md:max-w-190"
-		showCloseButton={false}
-	>
+<EditorSurface {embedded} class={embedded ? '' : 'max-h-[90vh] scrollbar-none pt-0 md:max-w-190'}>
+	<form class={embedded ? 'min-h-full p-4 pt-0' : 'contents'} onsubmit={persist}>
 		<Dialog.Header class="sticky top-0 z-50 -mx-6 bg-background/50 pt-6 backdrop-blur-md">
 			<div class="flex flex-col justify-between gap-2 px-6 md:flex-row">
 				<div class="grow space-y-2 text-left">
@@ -102,8 +101,12 @@
 				</Dialog.Close> -->
 
 				<div class="flex flex-wrap gap-2">
-					<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
-					<Button type="submit" onclick={persist}>Save logic</Button>
+					{#if embedded && onBack}
+						<Button type="button" variant="outline" onclick={onBack}>Back</Button>
+					{:else}
+						<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
+					{/if}
+					<Button type="submit">Save logic</Button>
 				</div>
 			</div>
 
@@ -316,5 +319,5 @@
 			<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
 			<Button type="submit" onclick={submit}>Save logic</Button>
 		</Dialog.Footer> -->
-	</Dialog.Content>
-</form>
+	</form>
+</EditorSurface>

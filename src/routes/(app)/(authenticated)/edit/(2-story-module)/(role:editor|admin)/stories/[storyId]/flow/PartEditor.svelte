@@ -4,10 +4,11 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
-	import * as Select from '$lib/components/ui/select/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
-	import { Switch } from '$lib/components/ui/switch/index.js';
-	import type { findOneStoryById } from '$lib/db/repositories/2-story-module.js';
+	import type {
+		findOneQuizLogicById,
+		findOneStoryById
+	} from '$lib/db/repositories/2-story-module.js';
 	import { EDITORS } from '$lib/states/editors.svelte.js';
 	import BanIcon from '@lucide/svelte/icons/ban';
 	import ImageIcon from '@lucide/svelte/icons/image';
@@ -18,7 +19,9 @@
 	import XIcon from '@lucide/svelte/icons/x';
 	import { onDestroy } from 'svelte';
 	import { toast } from 'svelte-sonner';
+	import QuizLogicEditor from './QuizLogicEditor.svelte';
 	import ResourceCombobox from './ResourceCombobox.svelte';
+	import TaxonomyLogicEditor from './TaxonomyLogicEditor.svelte';
 
 	type Story = Awaited<ReturnType<typeof findOneStoryById>>;
 	type Part = Story['parts'][number];
@@ -27,13 +30,11 @@
 	let {
 		storyId,
 		part,
-		parts,
 		onSave,
 		onDismiss
 	}: {
 		storyId: string;
 		part: Part;
-		parts: Story['parts'];
 		onSave: (part: Part) => void;
 		onDismiss: () => void;
 	} = $props();
@@ -70,6 +71,7 @@
 	let taxonomyItems = $derived(
 		EDITORS.taxonomies.map((item) => ({ value: item.id, label: item.name }))
 	);
+	let quiz = $derived(EDITORS.quizzes.find((item) => item.id === draft.quizTemplateId));
 
 	const clonePart = (value: Part) => structuredClone($state.snapshot(value));
 
@@ -145,12 +147,28 @@
 			[key]: Number.isFinite(parsed) ? parsed : undefined
 		} as (typeof draft)[typeof section];
 	};
+
+	const saveQuizLogic = (output: {
+		action: 'persist' | 'delete';
+		id?: string;
+		logic?: Awaited<ReturnType<typeof findOneQuizLogicById>>;
+	}) => {
+		if (output.action !== 'persist' || !output.logic) return;
+		draft.quizLogicForPart = output.logic;
+		onSave(clonePart(draft));
+	};
+
+	const saveTaxonomyLogic = (taxonomyDraft?: NonNullable<Part['taxonomyDraftForPart']>) => {
+		if (!taxonomyDraft) return;
+		draft.taxonomyDraftForPart = taxonomyDraft;
+		onSave(clonePart(draft));
+	};
 </script>
 
 <HeaderBlank class="w-full">
 	<div>
 		<p class="text-xs font-medium tracking-wider text-muted-foreground uppercase">Part</p>
-		<h2 class="font-mono text-sm font-semibold">{draft.id}</h2>
+		<!-- <h2 class="font-mono text-sm font-semibold">{draft.id}</h2> -->
 		<p class="self-center text-xs text-muted-foreground" aria-live="polite">
 			{saveState === 'saving'
 				? 'Saving...'
@@ -168,14 +186,13 @@
 	</div>
 </HeaderBlank>
 
-<form
+<div
 	class="h-[calc(100svh-(--spacing(16)))] muted-scrollbar overflow-y-auto p-4"
-	onsubmit={persist}
 	oninput={scheduleAutosave}
 	onchange={scheduleAutosave}
 >
 	<div class="grid gap-5">
-		<Field.Field orientation="horizontal">
+		<!-- <Field.Field orientation="horizontal">
 			<div class="grow">
 				<Field.Label for="part-initial">Initial part</Field.Label>
 				<Field.Description>Start the story at this part.</Field.Description>
@@ -190,27 +207,7 @@
 			/>
 		</Field.Field>
 
-		<Field.Field>
-			<Field.Label>Default next part</Field.Label>
-			<Select.Root
-				type="single"
-				value={draft.defaultNextPartId ?? 'none'}
-				onValueChange={(value) => {
-					draft.defaultNextPartId = value === 'none' ? null : value;
-					scheduleAutosave();
-				}}
-			>
-				<Select.Trigger>{draft.defaultNextPartId ?? 'No default destination'}</Select.Trigger>
-				<Select.Content>
-					<Select.Item value="none">No default destination</Select.Item>
-					{#each parts.filter((item) => item.id !== draft.id) as item (item.id)}
-						<Select.Item value={item.id}>{item.id}</Select.Item>
-					{/each}
-				</Select.Content>
-			</Select.Root>
-		</Field.Field>
-
-		<Separator />
+		<Separator /> -->
 
 		<Field.Set class="grid gap-4">
 			<Field.Legend>Background</Field.Legend>
@@ -390,6 +387,35 @@
 					/></Field.Field
 				>
 			{/if}
+
+			{#if draft.foregroundType === 'quiz' && quiz}
+				<div
+					oninput={(event) => event.stopPropagation()}
+					onchange={(event) => event.stopPropagation()}
+				>
+					<QuizLogicEditor
+						embedded
+						{storyId}
+						partId={draft.id}
+						rules={draft.quizLogicForPart?.rules ?? []}
+						{quiz}
+						close={saveQuizLogic}
+					/>
+				</div>
+			{:else if draft.foregroundType === 'taxonomy' && draft.taxonomyDraftForPart}
+				<div
+					oninput={(event) => event.stopPropagation()}
+					onchange={(event) => event.stopPropagation()}
+				>
+					<TaxonomyLogicEditor
+						embedded
+						{storyId}
+						partId={draft.id}
+						draft={draft.taxonomyDraftForPart}
+						close={saveTaxonomyLogic}
+					/>
+				</div>
+			{/if}
 		</Field.Set>
 	</div>
-</form>
+</div>

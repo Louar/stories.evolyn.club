@@ -441,8 +441,7 @@ classDiagram
       difficulty: integer?
   }
 
-  Story "*" -- "*" Taxonomy: TaxonomyAvailableToStory
-
+  Client "1" -- "*" Taxonomy
   Taxonomy "1" -- "*" Category
   Taxonomy "1" -- "*" Attribute
   Taxonomy "1" -- "*" Item

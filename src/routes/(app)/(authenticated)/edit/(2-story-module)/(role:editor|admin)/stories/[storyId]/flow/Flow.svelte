@@ -39,11 +39,7 @@
 			id: part.id,
 			type: 'media',
 			position: part.position ?? { x: 0, y: 0 },
-			data: {
-				storyId: story.id,
-				part,
-				onPartSaved
-			}
+			data: { part }
 		})) ?? []
 	);
 

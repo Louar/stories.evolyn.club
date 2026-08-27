@@ -20,12 +20,14 @@
 		partId,
 		draft: rawDraft,
 		embedded = false,
+		onBack,
 		close
 	}: {
 		storyId: string;
 		partId: string;
 		draft: Draft;
 		embedded?: boolean;
+		onBack?: () => void;
 		close: (draft?: Draft, keepOpen?: boolean) => void;
 	} = $props();
 	// svelte-ignore state_referenced_locally
@@ -149,9 +151,11 @@
 										? 'Unsaved changes'
 										: ''}
 					</span>
-					{#if !embedded}<Dialog.Close class={buttonVariants({ variant: 'outline' })}
-							>Cancel</Dialog.Close
-						>{/if}
+					{#if embedded && onBack}
+						<Button type="button" variant="outline" onclick={onBack}>Back</Button>
+					{:else if !embedded}
+						<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
+					{/if}
 				</div>
 			</div>
 			<Separator class="mt-4" />
