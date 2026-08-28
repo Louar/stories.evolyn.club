@@ -7,6 +7,7 @@ export type YouTubePlayer = {
 	getCurrentTime: () => number;
 	getDuration: () => number;
 	getIframe: () => HTMLIFrameElement;
+	mute: () => void;
 	pauseVideo: () => void;
 	playVideo: () => void;
 	seekTo: (seconds: number, allowSeekAhead: boolean) => void;
