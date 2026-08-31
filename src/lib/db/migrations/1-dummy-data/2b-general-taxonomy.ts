@@ -46,6 +46,8 @@ function getCategoryMap(categoryName: string) {
 	return {
 		type: 'topojson',
 		object: 'countries',
+		projection: 'naturalEarth',
+		showLabels: false,
 		topology: rawWorldCountryMap
 	};
 }

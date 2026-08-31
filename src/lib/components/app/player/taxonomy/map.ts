@@ -59,6 +59,8 @@ export function createPlayableMap(
 			topojson.objects[mapObjectKey] as never
 		) as unknown as ItemFeatureCollection,
 		geometries: topojson.objects[mapObjectKey].geometries,
+		projection: categoryMap.projection ?? 'naturalEarth',
+		showLabels: categoryMap.showLabels ?? false,
 		topojson
 	};
 }
@@ -74,6 +76,7 @@ function toGeometry(item: MapItem): TopoGeometry {
 				: null,
 			color: item.color,
 			helper: false,
+			icons: item.icons,
 			id: item.id,
 			isIsland: false,
 			name: item.name,

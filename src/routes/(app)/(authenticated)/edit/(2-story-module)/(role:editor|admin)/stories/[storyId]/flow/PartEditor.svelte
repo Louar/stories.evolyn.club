@@ -243,7 +243,7 @@
 		scheduleAutosave();
 	}
 
-	const persist = async (event?: Event, autosave = false) => {
+	const persist = async (event?: Event) => {
 		event?.preventDefault();
 		clearTimeout(autosaveTimer);
 		const version = ++saveVersion;
@@ -269,7 +269,7 @@
 			const saved = await request;
 			if (version !== saveVersion) return;
 			saveState = 'saved';
-			if (!autosave) draft = clonePart(saved);
+			draft = clonePart(saved);
 			onSave(saved);
 		} catch {
 			if (version === saveVersion) saveState = 'error';
@@ -280,12 +280,12 @@
 		saveVersion += 1;
 		saveState = 'dirty';
 		clearTimeout(autosaveTimer);
-		autosaveTimer = setTimeout(() => persist(undefined, true), 700);
+		autosaveTimer = setTimeout(() => persist(), 700);
 	};
 
 	onDestroy(() => {
 		clearTimeout(autosaveTimer);
-		if (saveState === 'dirty') void persist(undefined, true);
+		if (saveState === 'dirty') void persist();
 	});
 
 	const setBackgroundType = (value: string) => {

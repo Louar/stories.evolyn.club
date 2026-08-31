@@ -25,6 +25,7 @@ export type TaxonomyRound = {
 		shape: unknown;
 		center: unknown;
 		color: unknown;
+		icons: unknown;
 	}>;
 };
 

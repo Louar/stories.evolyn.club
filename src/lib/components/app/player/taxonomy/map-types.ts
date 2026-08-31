@@ -5,6 +5,7 @@ export type ShapeArcs = number[][] | number[][][];
 
 export type MapItem = {
 	color: string | null;
+	icons: string[];
 	id: string;
 	name: string;
 	shape: ShapeArcs;
@@ -13,6 +14,8 @@ export type MapItem = {
 
 export type CategoryMap = {
 	object?: string;
+	projection?: 'identity' | 'naturalEarth';
+	showLabels?: boolean;
 	topology?: Topology;
 	type?: string;
 };
@@ -21,6 +24,7 @@ export interface ItemProperties {
 	center: Feature<Point> | null;
 	color: string | null;
 	helper: boolean;
+	icons: string[];
 	id: string;
 	isIsland: boolean;
 	name: string;
@@ -49,5 +53,7 @@ export type ItemFeatureCollection = FeatureCollection<Geometry, ItemProperties>;
 export type LoadedPlayableMap = {
 	geojson: ItemFeatureCollection;
 	geometries: TopoGeometry[];
+	projection: 'identity' | 'naturalEarth';
+	showLabels: boolean;
 	topojson: Topology;
 };

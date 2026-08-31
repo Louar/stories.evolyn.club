@@ -1,6 +1,7 @@
 import { db } from '$lib/db/database';
 import { DummyDataStoryQuizOfCities } from './2a-story-quiz-of-cities';
 import { DummyDataGeneralTaxonomy } from './2b-general-taxonomy';
+import { DummyDataFoodTaxonomy } from './2c-food-taxonomy';
 
 
 export const DEMO_STORIES = {
@@ -9,6 +10,7 @@ export const DEMO_STORIES = {
 
 export const DEMO_TAXONOMIES = {
   'General taxonomy': DummyDataGeneralTaxonomy,
+  'Food taxonomy': DummyDataFoodTaxonomy,
 };
 
 export const createDemoStories = async (clientId: string) => {

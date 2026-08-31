@@ -179,11 +179,16 @@
 		}
 		return {
 			color: typeof item.color === 'string' ? item.color : null,
+			icons: isIcons(item.icons) ? item.icons : [],
 			id: item.id,
 			name: item.name,
 			shape: item.shape,
 			center: isCenter(item.center) ? item.center : null
 		};
+	}
+
+	function isIcons(value: unknown): value is string[] {
+		return Array.isArray(value) && value.every((icon) => typeof icon === 'string');
 	}
 
 	function isMapItem(item: MapItem | null): item is MapItem {

@@ -267,6 +267,16 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 								.onRef('colorItemAttribute.itemId', '=', 'mapItem.id')
 								.onRef('colorItemAttribute.attributeId', '=', 'colorAttribute.id')
 						)
+						.leftJoin('attribute as iconsAttribute', (join) =>
+							join
+								.on('iconsAttribute.taxonomyId', '=', category.taxonomyId)
+								.on('iconsAttribute.slug', '=', 'icons')
+						)
+						.leftJoin('attributeOfItem as iconsItemAttribute', (join) =>
+							join
+								.onRef('iconsItemAttribute.itemId', '=', 'mapItem.id')
+								.onRef('iconsItemAttribute.attributeId', '=', 'iconsAttribute.id')
+						)
 						.where('mapItem.taxonomyId', '=', category.taxonomyId)
 						.where('shapeItemAttribute.value', 'is not', null)
 						.select((eb) => [
@@ -293,7 +303,8 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 							)`.as('name'),
 							'shapeItemAttribute.value as shape',
 							'centerItemAttribute.value as center',
-							'colorItemAttribute.value as color'
+							'colorItemAttribute.value as color',
+							'iconsItemAttribute.value as icons'
 						])
 						.execute()
 				: [];
