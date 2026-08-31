@@ -107,6 +107,7 @@ export const schema = z.object({
   id: z.string().min(1).optional(),
   slug: z.string().min(1),
   name: translatableValidator,
+  defaultBackgroundColor: z.string().nullable().default(null),
   isPublished: z.boolean(),
   isPublic: z.boolean(),
   videos: z.array(videoSchema),
@@ -114,5 +115,5 @@ export const schema = z.object({
   announcements: z.array(announcementSchema),
   quizzes: z.array(quizSchema),
   parts: z.array(partSchema),
-  configuration: z.unknown().nullable()
+  configuration: z.unknown().nullish().default(null)
 });

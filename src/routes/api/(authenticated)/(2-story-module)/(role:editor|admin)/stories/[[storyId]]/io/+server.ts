@@ -6,6 +6,18 @@ import YAML from 'yaml';
 import type { RequestHandler } from './$types';
 import { schema } from './schemas';
 
+const parseBody = async (request: Request) => {
+  const body = await request.text();
+  const contentType = request.headers.get('content-type') ?? '';
+
+  try {
+    if (contentType.includes('json')) return JSON.parse(body);
+    return YAML.parse(body);
+  } catch {
+    return undefined;
+  }
+};
+
 /**
  * @openapi
  * summary: Export story
@@ -38,7 +50,10 @@ export const POST = (async ({ locals, request }) => {
   const clientId = locals.client.id;
   const userId = locals.authusr!.id;
 
-  const body = schema.safeParse(await request.json());
+  const rawBody = await parseBody(request);
+  if (rawBody === undefined) return json({ message: 'Invalid JSON or YAML body' }, { status: 400 });
+
+  const body = schema.safeParse(rawBody);
   if (!body.success) return json(body.error.issues, { status: 422 });
   const story_raw = body.data;
 
@@ -59,11 +74,12 @@ export const POST = (async ({ locals, request }) => {
         clientId,
         slug: storySlug,
         name: JSON.stringify(story_raw.name),
+        defaultBackgroundColor: story_raw.defaultBackgroundColor,
         configuration: JSON.stringify(story_raw.configuration),
         isPublished: story_raw.isPublished,
         isPublic: story_raw.isPublic,
         createdBy: userId,
-        updatedBy: userId,
+        updatedBy: userId
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -73,7 +89,7 @@ export const POST = (async ({ locals, request }) => {
         storyId: story.id,
         userId: userId,
         createdBy: userId,
-        updatedBy: userId,
+        updatedBy: userId
       })
       .returning('id')
       .executeTakeFirstOrThrow();
@@ -107,11 +123,14 @@ export const POST = (async ({ locals, request }) => {
           source: JSON.stringify(video_raw.source),
           thumbnail: JSON.stringify(video_raw.thumbnail),
           captions: JSON.stringify(video_raw.captions),
-          duration: video_raw.duration,
+          duration: video_raw.duration
         })
         .returning('id')
         .executeTakeFirstOrThrow();
-      await trx.insertInto('videoAvailableToStory').values({ storyId: story.id, videoId: video.id }).executeTakeFirstOrThrow();
+      await trx
+        .insertInto('videoAvailableToStory')
+        .values({ storyId: story.id, videoId: video.id })
+        .executeTakeFirstOrThrow();
       if (video_raw.id?.length) mapOfVideos.set(video_raw.id, video.id);
     }
 
@@ -123,11 +142,14 @@ export const POST = (async ({ locals, request }) => {
         .values({
           name: announcement_raw.name,
           title: JSON.stringify(announcement_raw.title),
-          message: JSON.stringify(announcement_raw.message),
+          message: JSON.stringify(announcement_raw.message)
         })
         .returning('id')
         .executeTakeFirstOrThrow();
-      await trx.insertInto('announcementTemplateAvailableToStory').values({ storyId: story.id, announcementTemplateId: announcement.id }).executeTakeFirstOrThrow();
+      await trx
+        .insertInto('announcementTemplateAvailableToStory')
+        .values({ storyId: story.id, announcementTemplateId: announcement.id })
+        .executeTakeFirstOrThrow();
       if (announcement_raw.id?.length) mapOfAnnouncements.set(announcement_raw.id, announcement.id);
     }
 
@@ -141,7 +163,10 @@ export const POST = (async ({ locals, request }) => {
         .values({ name: quiz_raw.name, doRandomize: quiz_raw.doRandomize })
         .returning('id')
         .executeTakeFirstOrThrow();
-      await trx.insertInto('quizTemplateAvailableToStory').values({ storyId: story.id, quizTemplateId: quiz.id }).executeTakeFirstOrThrow();
+      await trx
+        .insertInto('quizTemplateAvailableToStory')
+        .values({ storyId: story.id, quizTemplateId: quiz.id })
+        .executeTakeFirstOrThrow();
       if (quiz_raw.id?.length) mapOfQuizzes.set(quiz_raw.id, quiz.id);
 
       for (const question_raw of quiz_raw.questions) {
@@ -160,7 +185,7 @@ export const POST = (async ({ locals, request }) => {
                 quizQuestionTemplateAnswerGroupId: ag.id,
                 order: ao.order,
                 value: JSON.stringify(ao.value),
-                label: JSON.stringify(ao.label),
+                label: JSON.stringify(ao.label)
               })
               .returning('id')
               .executeTakeFirstOrThrow();
@@ -179,7 +204,7 @@ export const POST = (async ({ locals, request }) => {
             placeholder: JSON.stringify(question_raw.placeholder),
             configuration: JSON.stringify(question_raw.configuration),
             isRequired: question_raw.isRequired,
-            ...(ag?.id?.length ? { quizQuestionTemplateAnswerGroupId: ag.id } : {}),
+            ...(ag?.id?.length ? { quizQuestionTemplateAnswerGroupId: ag.id } : {})
           })
           .returning('id')
           .executeTakeFirstOrThrow();
@@ -197,7 +222,8 @@ export const POST = (async ({ locals, request }) => {
       if (part_raw.stillId) stillId = mapOfStills.get(part_raw.stillId);
 
       let announcementTemplateId: string | undefined = undefined;
-      if (part_raw.announcementTemplateId) announcementTemplateId = mapOfAnnouncements.get(part_raw.announcementTemplateId);
+      if (part_raw.announcementTemplateId)
+        announcementTemplateId = mapOfAnnouncements.get(part_raw.announcementTemplateId);
 
       const part = await trx
         .insertInto('part')
@@ -211,7 +237,7 @@ export const POST = (async ({ locals, request }) => {
           videoId,
           stillId,
           announcementTemplateId,
-          position: JSON.stringify(part_raw.position),
+          position: JSON.stringify(part_raw.position)
         })
         .returning('id')
         .executeTakeFirstOrThrow();
@@ -219,7 +245,9 @@ export const POST = (async ({ locals, request }) => {
     }
 
     // 6. Quiz logic for part
-    const partsWithLogic = story_raw.parts?.filter((p) => p.quizLogicForPartId && p.quizLogicForPart);
+    const partsWithLogic = story_raw.parts?.filter(
+      (p) => p.quizLogicForPartId && p.quizLogicForPart
+    );
     const mapOfPartsWithLogic: Map<string, string> = new Map();
     for (const part_raw of partsWithLogic) {
       const logic_raw = part_raw.quizLogicForPart!;
@@ -229,7 +257,10 @@ export const POST = (async ({ locals, request }) => {
         .values({
           hitpolicy: logic_raw.hitpolicy,
           quizTemplateId: mapOfQuizzes.get(logic_raw.quizTemplateId)!,
-          ...(logic_raw.defaultNextPartId?.length && mapOfParts.get(logic_raw.defaultNextPartId)?.length ? { defaultNextPartId: mapOfParts.get(logic_raw.defaultNextPartId) } : {}),
+          ...(logic_raw.defaultNextPartId?.length &&
+          mapOfParts.get(logic_raw.defaultNextPartId)?.length
+            ? { defaultNextPartId: mapOfParts.get(logic_raw.defaultNextPartId) }
+            : {})
         })
         .returning('id')
         .executeTakeFirstOrThrow();
@@ -242,7 +273,9 @@ export const POST = (async ({ locals, request }) => {
             order: rule_raw.order,
             name: rule_raw.name,
             quizLogicForPartId: logic.id,
-            ...(rule_raw.nextPartId?.length && mapOfParts.get(rule_raw.nextPartId)?.length ? { nextPartId: mapOfParts.get(rule_raw.nextPartId) } : {}),
+            ...(rule_raw.nextPartId?.length && mapOfParts.get(rule_raw.nextPartId)?.length
+              ? { nextPartId: mapOfParts.get(rule_raw.nextPartId) }
+              : {})
           })
           .returning('id')
           .executeTakeFirstOrThrow();
@@ -253,8 +286,15 @@ export const POST = (async ({ locals, request }) => {
             .values({
               quizLogicRuleId: rule.id,
               quizQuestionTemplateId: mapOfQuestions.get(input_raw.quizQuestionTemplateId)!,
-              ...(input_raw.quizQuestionTemplateAnswerItemId?.length && mapOfAnswerItems.get(input_raw.quizQuestionTemplateAnswerItemId)?.length ? { quizQuestionTemplateAnswerItemId: mapOfAnswerItems.get(input_raw.quizQuestionTemplateAnswerItemId) } : {}),
-              ...(input_raw.value ? { value: JSON.stringify(input_raw.value) } : {}),
+              ...(input_raw.quizQuestionTemplateAnswerItemId?.length &&
+              mapOfAnswerItems.get(input_raw.quizQuestionTemplateAnswerItemId)?.length
+                ? {
+                    quizQuestionTemplateAnswerItemId: mapOfAnswerItems.get(
+                      input_raw.quizQuestionTemplateAnswerItemId
+                    )
+                  }
+                : {}),
+              ...(input_raw.value ? { value: JSON.stringify(input_raw.value) } : {})
             })
             .executeTakeFirstOrThrow();
         }
@@ -268,7 +308,8 @@ export const POST = (async ({ locals, request }) => {
       if (!currentPartId?.length) continue;
 
       let defaultNextPartId: string | undefined = undefined;
-      if (part_raw.defaultNextPartId?.length) defaultNextPartId = mapOfParts.get(part_raw.defaultNextPartId);
+      if (part_raw.defaultNextPartId?.length)
+        defaultNextPartId = mapOfParts.get(part_raw.defaultNextPartId);
 
       let quizLogicForPartId: string | undefined = undefined;
       if (part_raw.quizLogicForPartId) quizLogicForPartId = mapOfPartsWithLogic.get(part_raw.id);
@@ -278,7 +319,7 @@ export const POST = (async ({ locals, request }) => {
         .updateTable('part')
         .set({
           defaultNextPartId,
-          quizLogicForPartId,
+          quizLogicForPartId
         })
         .where('id', '=', currentPartId)
         .executeTakeFirstOrThrow();
