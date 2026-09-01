@@ -1,15 +1,23 @@
 <script lang="ts">
 	import HeaderBlank from '$lib/components/app/header/app-header-blank.svelte';
+	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Command from '$lib/components/ui/command/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import * as Popover from '$lib/components/ui/popover/index.js';
+	import { translateLocalizedField, type Translatable } from '$lib/db/schemas/0-utils.js';
 	import type { findOneStoryById } from '$lib/db/repositories/2-story-module';
+	import { UI } from '$lib/states/ui.svelte';
 	import { moveArrayItem } from '$lib/utils';
 	import { DragDropProvider } from '@dnd-kit-svelte/svelte';
 	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
+	import CheckIcon from '@lucide/svelte/icons/check';
+	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
 	import ChevronsRightIcon from '@lucide/svelte/icons/chevrons-right';
 	import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
+	import XIcon from '@lucide/svelte/icons/x';
 	import { onDestroy } from 'svelte';
 	import { toast } from 'svelte-sonner';
 
@@ -21,6 +29,8 @@
 	type Draft = NonNullable<Part['taxonomyDraftForPart']>;
 	type Rule = Draft['rules'][number];
 	type RangeKey = 'nrOfRounds' | 'score' | 'mistakes' | 'duration';
+	type SelectionKey = 'draftedAttributeIds' | 'draftedCategoryIds' | 'draftedItemIds';
+	type ScopeOption = { id: string; label: string };
 
 	let {
 		storyId,
@@ -102,6 +112,51 @@
 		return value === undefined ? null : value;
 	}
 
+	function isSelected(key: SelectionKey, id: string) {
+		return (draft[key] ?? []).includes(id);
+	}
+
+	function toggleSelected(key: SelectionKey, id: string, selected: boolean) {
+		const current = draft[key] ?? [];
+		if (selected && !current.includes(id)) draft[key] = [...current, id];
+		else if (!selected) draft[key] = current.filter((selectedId) => selectedId !== id);
+		scheduleAutosave();
+	}
+
+	function clearSelected(key: SelectionKey) {
+		draft[key] = [];
+		scheduleAutosave();
+	}
+
+	function selectedOptions(key: SelectionKey, options: ScopeOption[]) {
+		return (draft[key] ?? []).map(
+			(id) => options.find((option) => option.id === id) ?? { id, label: id }
+		);
+	}
+
+	function translatedLabel(value: Translatable | null | undefined, fallback: string) {
+		return translateLocalizedField(value, UI.language) ?? fallback;
+	}
+
+	const attributeScopeOptions = $derived(
+		draft.attributeOptions.map((attribute) => ({
+			id: attribute.id,
+			label: translatedLabel(attribute.name as Translatable, attribute.slug)
+		}))
+	);
+	const categoryScopeOptions = $derived(
+		draft.categoryOptions.map((category) => ({
+			id: category.id,
+			label: translatedLabel(category.name as Translatable, category.id)
+		}))
+	);
+	const itemScopeOptions = $derived(
+		draft.itemOptions.map((item) => ({
+			id: item.id,
+			label: item.id
+		}))
+	);
+
 	function mergeSavedIds(saved: Draft) {
 		const rules = draft.rules.filter((rule) => !rule.isRemoved);
 		const savedRules = [...saved.rules].sort((a, b) => a.order - b.order);
@@ -128,6 +183,9 @@
 					goal: nullableNumber(draft.goal),
 					maxMistakes: nullableNumber(draft.maxMistakes),
 					difficulty: nullableNumber(draft.difficulty),
+					draftedAttributeIds: draft.draftedAttributeIds ?? [],
+					draftedCategoryIds: draft.draftedCategoryIds ?? [],
+					draftedItemIds: draft.draftedItemIds ?? [],
 					rules: draft.rules
 				})
 			});
@@ -218,6 +276,243 @@
 						bind:value={draft.difficulty}
 					/></Field.Field
 				>
+			</div>
+		</Field.Set>
+
+		<Field.Set class="grid gap-4 rounded-lg border p-4">
+			<Field.Legend>Drafting scope</Field.Legend>
+			<p class="text-sm text-muted-foreground">
+				Limit which taxonomy content can be drafted for rounds. Empty selections mean any option in
+				the taxonomy is allowed.
+			</p>
+			<div class="grid gap-4 md:grid-cols-3">
+				<Field.Field class="content-start gap-2">
+					<Field.Label>Attributes</Field.Label>
+					<p class="text-xs text-muted-foreground">Empty means any attribute.</p>
+					<Popover.Root>
+						<Popover.Trigger>
+							{#snippet child({ props })}
+								<Button
+									{...props}
+									type="button"
+									variant="outline"
+									class="min-h-10 w-full justify-between"
+								>
+									<span class="truncate text-left font-normal">
+										{(draft.draftedAttributeIds ?? []).length
+											? `${(draft.draftedAttributeIds ?? []).length} selected`
+											: 'Any attribute'}
+									</span>
+									<ChevronsUpDownIcon class="size-4 text-muted-foreground" />
+								</Button>
+							{/snippet}
+						</Popover.Trigger>
+						<Popover.Content align="start" class="w-80 p-0">
+							<Command.Root>
+								<div class="flex min-h-10 flex-wrap items-center gap-1 border-b px-3 py-1.5">
+									{#each selectedOptions('draftedAttributeIds', attributeScopeOptions) as option (option.id)}
+										<Badge variant="secondary" class="h-5 gap-1 px-1.5 text-xs">
+											{option.label}
+											<button
+												type="button"
+												onclick={() => toggleSelected('draftedAttributeIds', option.id, false)}
+											>
+												<XIcon class="size-3" />
+											</button>
+										</Badge>
+									{/each}
+									<Command.Input placeholder="Search attributes..." class="h-auto flex-1 py-1" />
+								</div>
+								<Command.List>
+									<Command.Empty>No attributes found.</Command.Empty>
+									<Command.Group class="max-h-64 overflow-auto">
+										{#each attributeScopeOptions as option (option.id)}
+											<Command.Item
+												value={option.label}
+												onSelect={() =>
+													toggleSelected(
+														'draftedAttributeIds',
+														option.id,
+														!isSelected('draftedAttributeIds', option.id)
+													)}
+											>
+												<CheckIcon
+													class="size-4 {isSelected('draftedAttributeIds', option.id)
+														? 'opacity-100'
+														: 'opacity-0'}"
+												/>
+												<span class="truncate">{option.label}</span>
+											</Command.Item>
+										{/each}
+									</Command.Group>
+									{#if (draft.draftedAttributeIds ?? []).length > 0}
+										<Command.Separator />
+										<Command.Group>
+											<Command.Item
+												onSelect={() => clearSelected('draftedAttributeIds')}
+												class="justify-center text-muted-foreground"
+											>
+												Clear all
+											</Command.Item>
+										</Command.Group>
+									{/if}
+								</Command.List>
+							</Command.Root>
+						</Popover.Content>
+					</Popover.Root>
+				</Field.Field>
+
+				<Field.Field class="content-start gap-2">
+					<Field.Label>Categories</Field.Label>
+					<p class="text-xs text-muted-foreground">Empty means any category.</p>
+					<Popover.Root>
+						<Popover.Trigger>
+							{#snippet child({ props })}
+								<Button
+									{...props}
+									type="button"
+									variant="outline"
+									class="min-h-10 w-full justify-between"
+								>
+									<span class="truncate text-left font-normal">
+										{(draft.draftedCategoryIds ?? []).length
+											? `${(draft.draftedCategoryIds ?? []).length} selected`
+											: 'Any category'}
+									</span>
+									<ChevronsUpDownIcon class="size-4 text-muted-foreground" />
+								</Button>
+							{/snippet}
+						</Popover.Trigger>
+						<Popover.Content align="start" class="w-80 p-0">
+							<Command.Root>
+								<div class="flex min-h-10 flex-wrap items-center gap-1 border-b px-3 py-1.5">
+									{#each selectedOptions('draftedCategoryIds', categoryScopeOptions) as option (option.id)}
+										<Badge variant="secondary" class="h-5 gap-1 px-1.5 text-xs">
+											{option.label}
+											<button
+												type="button"
+												onclick={() => toggleSelected('draftedCategoryIds', option.id, false)}
+											>
+												<XIcon class="size-3" />
+											</button>
+										</Badge>
+									{/each}
+									<Command.Input placeholder="Search categories..." class="h-auto flex-1 py-1" />
+								</div>
+								<Command.List>
+									<Command.Empty>No categories found.</Command.Empty>
+									<Command.Group class="max-h-64 overflow-auto">
+										{#each categoryScopeOptions as option (option.id)}
+											<Command.Item
+												value={option.label}
+												onSelect={() =>
+													toggleSelected(
+														'draftedCategoryIds',
+														option.id,
+														!isSelected('draftedCategoryIds', option.id)
+													)}
+											>
+												<CheckIcon
+													class="size-4 {isSelected('draftedCategoryIds', option.id)
+														? 'opacity-100'
+														: 'opacity-0'}"
+												/>
+												<span class="truncate">{option.label}</span>
+											</Command.Item>
+										{/each}
+									</Command.Group>
+									{#if (draft.draftedCategoryIds ?? []).length > 0}
+										<Command.Separator />
+										<Command.Group>
+											<Command.Item
+												onSelect={() => clearSelected('draftedCategoryIds')}
+												class="justify-center text-muted-foreground"
+											>
+												Clear all
+											</Command.Item>
+										</Command.Group>
+									{/if}
+								</Command.List>
+							</Command.Root>
+						</Popover.Content>
+					</Popover.Root>
+				</Field.Field>
+
+				<Field.Field class="content-start gap-2">
+					<Field.Label>Items</Field.Label>
+					<p class="text-xs text-muted-foreground">Empty means any item.</p>
+					<Popover.Root>
+						<Popover.Trigger>
+							{#snippet child({ props })}
+								<Button
+									{...props}
+									type="button"
+									variant="outline"
+									class="min-h-10 w-full justify-between"
+								>
+									<span class="truncate text-left font-normal">
+										{(draft.draftedItemIds ?? []).length
+											? `${(draft.draftedItemIds ?? []).length} selected`
+											: 'Any item'}
+									</span>
+									<ChevronsUpDownIcon class="size-4 text-muted-foreground" />
+								</Button>
+							{/snippet}
+						</Popover.Trigger>
+						<Popover.Content align="start" class="w-80 p-0">
+							<Command.Root>
+								<div class="flex min-h-10 flex-wrap items-center gap-1 border-b px-3 py-1.5">
+									{#each selectedOptions('draftedItemIds', itemScopeOptions) as option (option.id)}
+										<Badge variant="secondary" class="h-5 gap-1 px-1.5 text-xs">
+											{option.label}
+											<button
+												type="button"
+												onclick={() => toggleSelected('draftedItemIds', option.id, false)}
+											>
+												<XIcon class="size-3" />
+											</button>
+										</Badge>
+									{/each}
+									<Command.Input placeholder="Search items..." class="h-auto flex-1 py-1" />
+								</div>
+								<Command.List>
+									<Command.Empty>No items found.</Command.Empty>
+									<Command.Group class="max-h-64 overflow-auto">
+										{#each itemScopeOptions as option (option.id)}
+											<Command.Item
+												value={option.label}
+												onSelect={() =>
+													toggleSelected(
+														'draftedItemIds',
+														option.id,
+														!isSelected('draftedItemIds', option.id)
+													)}
+											>
+												<CheckIcon
+													class="size-4 {isSelected('draftedItemIds', option.id)
+														? 'opacity-100'
+														: 'opacity-0'}"
+												/>
+												<span class="truncate">{option.label}</span>
+											</Command.Item>
+										{/each}
+									</Command.Group>
+									{#if (draft.draftedItemIds ?? []).length > 0}
+										<Command.Separator />
+										<Command.Group>
+											<Command.Item
+												onSelect={() => clearSelected('draftedItemIds')}
+												class="justify-center text-muted-foreground"
+											>
+												Clear all
+											</Command.Item>
+										</Command.Group>
+									{/if}
+								</Command.List>
+							</Command.Root>
+						</Popover.Content>
+					</Popover.Root>
+				</Field.Field>
 			</div>
 		</Field.Set>
 
