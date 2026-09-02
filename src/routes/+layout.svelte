@@ -1,42 +1,24 @@
 <script lang="ts">
+	import { DEFAULT_CLIENT_NAME } from '$app/env/private';
 	import favicon from '$lib/assets/evolyn-logo.svg';
 	import PolicyConsent from '$lib/components/app/policy-consent/policy-consent.svelte';
-	import { UserRole } from '$lib/db/schemas/1-client-user-module';
-	import { afterNavigate, goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
-	import { page } from '$app/state';
 	import { ModeWatcher } from 'mode-watcher';
 
 	import { Toaster } from 'svelte-sonner';
 	import './layout.css';
 
 	let { data, children } = $props();
-	const { client } = $derived(data);
-	const needsConsent = $derived(
-		(data.authusr?.roles ?? []).includes(UserRole.participant) &&
-			data.consentState?.allRequiredAccepted === false &&
-			(data.consentState?.requiredConsentItemIds.length ?? 0) > 0
-	);
-
-	const enforceConsentRedirect = () => {
-		if (!needsConsent || page.url.pathname === '/consent') return;
-		const requestedUrl = `${page.url.pathname}${page.url.search}`;
-		goto(resolve(`/consent?r=${encodeURIComponent(requestedUrl)}` as `/${string}`), {
-			replaceState: true
-		});
-	};
-
-	afterNavigate(enforceConsentRedirect);
+	const client = $derived(data.client);
 </script>
 
 <svelte:head>
-	<title>{client.name}</title>
+	<title>{client?.name ?? DEFAULT_CLIENT_NAME}</title>
 
-	{#if !client.isFindableBySearchEngines}
+	{#if client && !client.isFindableBySearchEngines}
 		<meta name="robots" content="noindex, nofollow" />
 	{/if}
 
-	{#if client.favicon?.collection?.length && client.favicon?.filename?.length}
+	{#if client?.favicon?.collection?.length && client.favicon?.filename?.length}
 		<link rel="icon" href="/api/media/{client.favicon.collection}/{client.favicon.filename}" />
 		<link
 			rel="apple-touch-icon"
@@ -48,7 +30,7 @@
 		<link rel="apple-touch-icon" sizes="180x180" href={favicon} />
 	{/if}
 
-	{#if client.plausibleDomain?.length && import.meta.env.MODE === 'production'}
+	{#if client?.plausibleDomain?.length && import.meta.env.MODE === 'production'}
 		<script defer data-domain={client.plausibleDomain} src="/js/script.outbound-links.js"></script>
 	{/if}
 

@@ -102,7 +102,7 @@
 				{/if}
 				<DropdownMenu.Item>
 					{#snippet child({ props })}
-						<a href={resolve('/auth/logout')} {...props}>
+						<a href={resolve('/auth/logout')} data-sveltekit-reload {...props}>
 							<LogOutIcon />
 							<span>{m.menu_sign_out()}</span>
 							<ChevronRightIcon class="ml-auto" />
