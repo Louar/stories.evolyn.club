@@ -1,19 +1,20 @@
 import { findOneStoryBySlug } from '$lib/db/repositories/2-story-module';
 import { Language, MediaCollection } from '$lib/db/schemas/0-utils';
 import { getRoundedVideoTime, getYouTubeEmbedUrl } from '$lib/media/video';
+import { cookieName, isLocale } from '$lib/paraglide/runtime';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals, params }) => {
+export const load: PageServerLoad = async ({ cookies, locals, params }) => {
 	const clientId = locals.client.id;
 
-	const settings = params.settings?.toLowerCase()?.split('/');
-	const setLanguage = (input: string[]): Language | undefined => {
-		const values = new Set<string>(Object.values(Language));
-		const match = input.find((value) => values.has(value));
-		return (match as Language) ?? undefined;
-	};
-	const language = setLanguage(settings);
+	const clientLocales = locals.client.locales.filter(isLocale);
+	const defaultLanguage = clientLocales[0] ?? Language.English;
+	const cookieLanguage = cookies.get(cookieName);
+	const language =
+		cookieLanguage && isLocale(cookieLanguage) && clientLocales.includes(cookieLanguage as Language)
+			? (cookieLanguage as Language)
+			: defaultLanguage;
 
 	const story = await findOneStoryBySlug(clientId, params.storySlug, language);
 	if (!story)
