@@ -1,3 +1,5 @@
+import { DEFAULT_CLIENT_SLUG } from '$app/env/private';
+import { createDemoStories } from '$lib/db/migrations/1-dummy-data/2-demo-stories';
 import {
 	findOneAuthenticatedClient,
 	findOneAuthenticatedUser,
@@ -50,6 +52,8 @@ const handleAuthorization: Handle = async ({ event, resolve }) => {
 
 	const client = await findOneClientByOrigin(origin);
 	locals.client = client;
+
+	if (process.env.NODE_ENV !== 'production' && client.slug === DEFAULT_CLIENT_SLUG) await createDemoStories(client.id);
 
 	const authusr = await findOneAuthenticatedUser(event);
 	locals.authusr = authusr;
