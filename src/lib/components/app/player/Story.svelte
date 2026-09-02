@@ -6,6 +6,7 @@
 	} from '$lib/client/player-events.js';
 	import type { findOneStoryBySlug } from '$lib/db/repositories/2-story-module.js';
 	import { MediaCollection, type Media } from '$lib/db/schemas/0-utils.js';
+	import * as m from '$lib/paraglide/messages';
 	import { PLAYERS } from '$lib/states/players.svelte.js';
 	import { STORIES } from '$lib/states/stories.svelte.js';
 	import { cn } from '$lib/utils.js';
@@ -405,6 +406,7 @@
 				/>
 				<div class="absolute inset-0 z-30 grid place-items-center">
 					<button
+						aria-label={m.player_restart()}
 						onclick={restart}
 						out:fade
 						class="group grid size-24 cursor-pointer place-items-center rounded-full bg-black/50 text-white ring-black backdrop-blur-md transition-colors outline-none group-hover:bg-black/30 group-data-focus:ring-4"

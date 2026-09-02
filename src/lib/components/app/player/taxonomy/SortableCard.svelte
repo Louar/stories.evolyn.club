@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as Item from '$lib/components/ui/item';
 	import { cn } from '$lib/utils';
+	import * as m from '$lib/paraglide/messages';
 	import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical';
 	import { fly } from 'svelte/transition';
 	import type { SortableRoundItem } from './types';
@@ -45,7 +46,7 @@
 		<Item.Title class="truncate text-base font-black">{item.name}</Item.Title>
 		{#if showHints}
 			<Item.Description class="text-game-text-muted truncate"
-				>Value: {item.sortValue}</Item.Description
+				>{m.taxonomy_hint_value({ value: item.sortValue })}</Item.Description
 			>
 		{/if}
 	</Item.Content>

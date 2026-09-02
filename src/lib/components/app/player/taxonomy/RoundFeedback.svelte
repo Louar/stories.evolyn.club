@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages';
 	import type { Snippet } from 'svelte';
 
 	let { correct, title, description, children } = $props<{
@@ -25,13 +26,13 @@
 	</div>
 	<div class="p-5">
 		<strong class="text-lg font-black"
-			>{title ?? (correct ? 'Perfect order!' : 'Not quite.')}</strong
+			>{title ?? (correct ? m.taxonomy_sortable_correct_title() : m.taxonomy_sortable_wrong_title())}</strong
 		>
 		<p class="text-game-text-muted mt-1 text-sm">
 			{description ??
 				(correct
-					? 'You placed every item from lowest value to highest value.'
-					: 'Correct positions are marked. Adjust the order and try again.')}
+					? m.taxonomy_sortable_correct_description()
+					: m.taxonomy_sortable_wrong_description())}
 		</p>
 		{#if children}
 			<div class="mt-4">{@render children()}</div>

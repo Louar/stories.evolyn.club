@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as m from '$lib/paraglide/messages';
 	import * as d3 from 'd3';
 	import MapCountry from './MapCountry.svelte';
 	import type { GuessResult, LoadedPlayableMap, TopoGeometry } from './map-types';
@@ -87,7 +88,7 @@
 	}
 </script>
 
-<svg {@attach zoomable} {width} {height} viewBox={`0 0 ${width} ${height}`} aria-label="Item map">
+<svg {@attach zoomable} {width} {height} viewBox={`0 0 ${width} ${height}`} aria-label={m.taxonomy_item_map()}>
 	<g transform={transform.toString()}>
 		{#each mapData as data (data.geometry.properties.id)}
 			<MapCountry

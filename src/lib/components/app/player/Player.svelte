@@ -10,6 +10,7 @@
 		type YouTubePlayer,
 		type YouTubePlayerState
 	} from '$lib/media/video';
+	import * as m from '$lib/paraglide/messages';
 	import { PLAYERS } from '$lib/states/players.svelte';
 	import { cn } from '$lib/utils';
 	import LoaderIcon from '@lucide/svelte/icons/loader-circle';
@@ -257,7 +258,7 @@
 				onReady: (player) => {
 					youtube = player;
 					const iframe = player.getIframe();
-					iframe.title = title ?? 'YouTube video player';
+					iframe.title = title ?? m.player_youtube_video_player();
 					iframe.classList.add('vds-youtube');
 					iframe.dataset.noControls = 'true';
 					iframe.dataset.aspect = isShort ? 'shorts' : 'video';
@@ -481,7 +482,7 @@
 		<div class="pointer-events-auto grid h-full w-full place-items-center">
 			<button
 				type="button"
-				aria-label={isPlaying ? 'Pause' : 'Play'}
+				aria-label={isPlaying ? m.player_pause() : m.player_play()}
 				class="group/control grid size-full place-items-center px-2 pt-10 outline-none"
 				onclick={() => {
 					if (!isActive) return;
@@ -515,7 +516,7 @@
 				</div>
 				<input
 					type="range"
-					aria-label="Video progress"
+					aria-label={m.player_video_progress()}
 					class="absolute inset-0 size-full cursor-pointer opacity-0"
 					min="0"
 					max={clipDuration || 0}
