@@ -11,6 +11,7 @@ export const load: PageServerLoad = (async () => {
       'client.name',
       'client.description',
       'client.domains',
+      'client.locales',
       'client.administrationEmail',
       'client.logo',
       'client.favicon',

@@ -21,6 +21,7 @@ const findOneClientById = async (clientId: string) => {
 			'client.name',
 			'client.description',
 			'client.domains',
+			'client.locales',
 			'client.administrationEmail',
 			'client.logo',
 			'client.favicon',

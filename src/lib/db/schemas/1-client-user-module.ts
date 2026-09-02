@@ -32,6 +32,7 @@ type Client = {
 	name: string;
 	description: TranslatableColumn | null;
 	domains: string[];
+	locales: Language[];
 	administrationEmail: string | null;
 	logo: MediaColumn | null;
 	favicon: MediaColumn | null;

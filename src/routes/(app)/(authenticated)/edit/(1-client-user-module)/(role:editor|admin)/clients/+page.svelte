@@ -15,7 +15,7 @@
 	import DataGridLanguageSelectMenu from '$lib/components/data-grid/data-grid-language-select-menu.svelte';
 	import BreadcrumbMenu from '$lib/components/ui/breadcrumb-menu/breadcrumb-menu.svelte';
 	import { renderComponent } from '$lib/components/ui/table-tanstack/index.js';
-	import { MediaCollection } from '$lib/db/schemas/0-utils.js';
+	import { Language, LanguageReverse, MediaCollection } from '$lib/db/schemas/0-utils.js';
 	import { ClientAuthenticationMethod } from '$lib/db/schemas/1-client-user-module.js';
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
 	import type { ColumnDef } from '@tanstack/table-core';
@@ -29,6 +29,11 @@
 		Object.values(ClientAuthenticationMethod).map((method) => ({
 			title: method,
 			value: method
+		}));
+	const languageOptions = () =>
+		Object.values(Language).map((language) => ({
+			title: LanguageReverse[language],
+			value: language
 		}));
 
 	const filterFn = getFilterFn<Row>();
@@ -73,6 +78,12 @@
 			accessorKey: 'domains',
 			header: 'Domains',
 			meta: { cell: { variant: 'text-long' } },
+			filterFn
+		},
+		{
+			accessorKey: 'locales',
+			header: 'Locales',
+			meta: { cell: { variant: 'select-multiple', options: languageOptions() } },
 			filterFn
 		},
 		{

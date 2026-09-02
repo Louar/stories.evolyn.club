@@ -2,13 +2,14 @@ import { findPolicyState } from '$lib/db/repositories/1-client-user-module';
 import type { LayoutServerLoad } from './$types';
 
 export const load = (async ({ locals, depends }) => {
-	const { client, authusr } = locals;
+	const { client, authusr, language } = locals;
 	depends('app:policy-state');
-	const policyState = await findPolicyState(client.id, authusr?.id, authusr?.language ?? undefined);
+	const policyState = await findPolicyState(client.id, authusr?.id, language);
 
 	return {
 		client,
 		authusr,
+		language,
 		policyState: {
 			latestLicense: policyState.latestLicense
 				? {

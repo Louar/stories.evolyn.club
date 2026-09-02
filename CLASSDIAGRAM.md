@@ -62,6 +62,7 @@ classDiagram
       name: string
       description: jsonb?
       domains: string[]
+      locales: string[]
       administrationEmail: string?
       favicon: Media?
       logo: Media?

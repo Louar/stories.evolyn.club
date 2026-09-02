@@ -19,6 +19,7 @@ export const InitClientUserModule: Migration = {
 			.addColumn('name', 'text', (col) => col.notNull())
 			.addColumn('description', 'jsonb')
 			.addColumn('domains', sql`text[]`, (col) => col.notNull())
+			.addColumn('locales', sql`text[]`, (col) => col.notNull())
 			.addColumn('administration_email', 'text')
 			.addColumn('logo', 'jsonb')
 			.addColumn('favicon', 'jsonb')

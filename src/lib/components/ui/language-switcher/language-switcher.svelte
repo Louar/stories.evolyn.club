@@ -1,14 +1,15 @@
 <script lang="ts" module>
-	export type Language = {
+	export type LanguageOption = {
 		/** Language code (e.g., 'en', 'de') */
 		code: string;
 		/** Display name (e.g., 'English', 'Deutsch') */
 		label: string;
 	};
+	export type Language = LanguageOption;
 
 	export type LanguageSwitcherProps = {
 		/** List of available languages */
-		languages?: Language[];
+		languages?: LanguageOption[];
 
 		/** Current selected language code */
 		value?: string;
@@ -27,9 +28,10 @@
 </script>
 
 <script lang="ts">
+	import { page } from '$app/state';
 	import { buttonVariants } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import { LanguageReverse } from '$lib/db/schemas/0-utils';
+	import { LanguageReverse, type Language as DbLanguage } from '$lib/db/schemas/0-utils';
 	import {
 		locales as availableLocales,
 		getLocale,
@@ -40,11 +42,8 @@
 	import GlobeIcon from '@lucide/svelte/icons/globe';
 
 	let {
-		languages = availableLocales.map((code) => ({
-			code,
-			label: LanguageReverse[code] ?? code.toUpperCase()
-		})),
-		value = $bindable(getLocale()),
+		languages,
+		value = $bindable(page.data.language ?? getLocale()),
 		align = 'end',
 		variant = 'outline',
 		onChange,
@@ -52,13 +51,19 @@
 	}: LanguageSwitcherProps = $props();
 
 	const defaultOnChange = (code: string) => {
-		if (isLocale(code)) setLocale(code);
+		if (isLocale(code) && code !== getLocale()) setLocale(code);
 	};
 
-	// set default code if there isn't one selected
-	if (value === '') {
-		value = languages[0].code;
-	}
+	const resolvedLanguages: LanguageOption[] = $derived.by(() => {
+		if (languages) return languages;
+
+		return ((page.data.client?.locales ?? availableLocales) as string[])
+			.filter((code: string) => isLocale(code))
+			.map((code: string) => ({
+				code,
+				label: LanguageReverse[code as DbLanguage] ?? code.toUpperCase()
+			}));
+	});
 </script>
 
 <DropdownMenu.Root>
@@ -70,8 +75,8 @@
 		<span class="sr-only">Change language</span>
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content {align}>
-		<DropdownMenu.RadioGroup bind:value onValueChange={onChange ?? defaultOnChange}>
-			{#each languages as language (language.code)}
+		<DropdownMenu.RadioGroup {value} onValueChange={onChange ?? defaultOnChange}>
+			{#each resolvedLanguages as language (language.code)}
 				<DropdownMenu.RadioItem value={language.code}>
 					{language.label}
 				</DropdownMenu.RadioItem>

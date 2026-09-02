@@ -15,6 +15,7 @@ export const DummyDataDefaultClientAndUsers: Migration = {
         slug: DEFAULT_CLIENT_SLUG,
         name: DEFAULT_CLIENT_NAME,
         domains: [...(process.env.NODE_ENV !== 'production' ? ['localhost:5173', 'localhost:4173'] : []), DEFAULT_CLIENT_DEFAULT_DOMAIN],
+				locales: [Language.English, Language.Nederlands],
         administrationEmail: DEFAULT_CLIENT_ADMINISTRATION_EMAIL,
         css: JSON.stringify({
           ":root": {

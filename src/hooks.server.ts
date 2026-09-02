@@ -1,5 +1,3 @@
-import { DEFAULT_CLIENT_SLUG } from '$app/env/private';
-import { createDemoStories } from '$lib/db/migrations/1-dummy-data/2-demo-stories';
 import {
 	findOneAuthenticatedClient,
 	findOneAuthenticatedUser,
@@ -8,7 +6,14 @@ import {
 import { Language } from '$lib/db/schemas/0-utils';
 import { ClientAuthenticationMethod, UserRole } from '$lib/db/schemas/1-client-user-module';
 import * as m from '$lib/paraglide/messages';
-import { getLocale, getTextDirection, isLocale, setLocale } from '$lib/paraglide/runtime';
+import {
+	cookieMaxAge,
+	cookieName,
+	getLocale,
+	getServerAsyncLocalStorage,
+	getTextDirection,
+	isLocale
+} from '$lib/paraglide/runtime';
 import { paraglideMiddleware } from '$lib/paraglide/server';
 import { error, json, redirect, type Handle } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
@@ -46,14 +51,33 @@ const handleAuthorization: Handle = async ({ event, resolve }) => {
 	const client = await findOneClientByOrigin(origin);
 	locals.client = client;
 
-	if (process.env.NODE_ENV !== 'production' && client.slug === DEFAULT_CLIENT_SLUG) await createDemoStories(client.id);
-
 	const authusr = await findOneAuthenticatedUser(event);
 	locals.authusr = authusr;
 
-	const language = locals.authusr?.language ?? Language.English;
+	const clientLocales = locals.client.locales.filter(isLocale);
+	const defaultLanguage = clientLocales[0] ?? Language.English;
+	const cookieLanguage = event.cookies.get(cookieName);
+	const allowedCookieLanguage =
+		cookieLanguage && isLocale(cookieLanguage) && clientLocales.includes(cookieLanguage as Language)
+			? (cookieLanguage as Language)
+			: undefined;
+	const authenticatedUserLanguage =
+		authusr?.language && clientLocales.includes(authusr.language) ? authusr.language : undefined;
+	const language = authenticatedUserLanguage ?? allowedCookieLanguage ?? defaultLanguage;
 	locals.language = language;
-	if (isLocale(language)) setLocale(language);
+	if (isLocale(language)) {
+		const paraglideStore = getServerAsyncLocalStorage()?.getStore();
+		if (paraglideStore) paraglideStore.locale = language;
+
+		// Paraglide's client runtime reads this preference through document.cookie.
+		// Refresh it to also migrate locale cookies previously created as HttpOnly.
+		event.cookies.set(cookieName, language, {
+			path: '/',
+			maxAge: cookieMaxAge,
+			sameSite: 'lax',
+			httpOnly: false
+		});
+	}
 
 	const { id: routeFilePath } = route;
 	const routeSegments = routeFilePath?.split('/').filter(Boolean) ?? [];
@@ -151,4 +175,4 @@ const handleParaglide: Handle = ({ event, resolve }) =>
 		});
 	});
 
-export const handle = sequence(handleAuthorization, handleParaglide);
+export const handle = sequence(handleParaglide, handleAuthorization);
