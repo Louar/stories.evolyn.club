@@ -32,9 +32,10 @@ const wheelOfFiveIcons: Record<WheelOfFiveCategory, string[]> = {
 	[WheelOfFiveCategory.waterTeaAndCoffee]: ['💧', '🍵', '☕'],
 	[WheelOfFiveCategory.proteinAndDairy]: ['🫘', '🐟', '🥚', '🥛'],
 	[WheelOfFiveCategory.oilsAndFats]: ['🫒', '🥜', '🧈'],
-	[WheelOfFiveCategory.none]: []
+	[WheelOfFiveCategory.none]: ['🍟', '🍪', '🍫']
 };
 
+const wheelOfFiveRadius = 0.9;
 const noneCircleCenter: [number, number] = [1.5, 0];
 const noneCircleRadius = 0.18;
 
@@ -66,7 +67,7 @@ function createWheelOfFiveArc(category: WheelOfFiveCategory) {
 
 	for (let step = 0; step <= steps; step += 1) {
 		const angle = endAngle - ((endAngle - startAngle) * step) / steps;
-		points.push([Math.cos(angle), Math.sin(angle)]);
+		points.push([Math.cos(angle) * wheelOfFiveRadius, Math.sin(angle) * wheelOfFiveRadius]);
 	}
 	points.push([0, 0]);
 	return points;
@@ -95,7 +96,7 @@ function getWheelOfFiveCenter(category: WheelOfFiveCategory) {
 
 	const [startDegrees, endDegrees] = wheelOfFiveAngles[category];
 	const angle = (((startDegrees + endDegrees) / 2) * Math.PI) / 180;
-	return [Math.cos(angle) * 0.58, Math.sin(angle) * 0.58];
+	return [Math.cos(angle) * 0.58 * wheelOfFiveRadius, Math.sin(angle) * 0.58 * wheelOfFiveRadius];
 }
 
 function getWheelOfFiveColor(category: WheelOfFiveCategory) {

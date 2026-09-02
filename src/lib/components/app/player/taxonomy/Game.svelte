@@ -82,7 +82,7 @@
 		const resizeObserver = new ResizeObserver(([entry]) => {
 			if (!entry) return;
 			mapWidth = Math.max(1, entry.contentRect.width);
-			mapHeight = Math.max(1, entry.contentRect.height);
+			mapHeight = Math.max(1, entry.contentRect.height - 80);
 		});
 		resizeObserver.observe(node);
 		return () => resizeObserver.disconnect();
@@ -354,7 +354,7 @@
 		</section>
 	{:else if currentRound}
 		{#if currentRound.kind === 'map'}
-			<div class="absolute inset-0" in:fly={{ y: 20, duration: 500 }}>
+			<div class="absolute inset-0 top-20" in:fly={{ y: 20, duration: 500 }}>
 				<Map
 					map={currentRound.map}
 					width={mapWidth}
