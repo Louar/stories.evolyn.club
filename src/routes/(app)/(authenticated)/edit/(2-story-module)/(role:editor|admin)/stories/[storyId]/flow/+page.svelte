@@ -323,6 +323,7 @@
 							slug: story.slug,
 							name: story.name,
 							defaultBackgroundColor: story.defaultBackgroundColor,
+							thumbnail: story.thumbnail,
 							isPublished: story.isPublished,
 							isPublic: story.isPublic
 						}}

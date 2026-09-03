@@ -126,6 +126,7 @@
 		const openModal = async () => {
 			modalPlayers = data.playersOfStories[storyIndex].map((player) => ({ ...player }));
 			transitioningStorySlug = null;
+			// eslint-disable-next-line svelte/no-navigation-without-resolve
 			pushState(href, { storySlug: story.slug });
 			await tick();
 		};
@@ -192,7 +193,7 @@
 
 <Header>
 	<div class="mx-auto flex w-full max-w-7xl items-center px-4 py-8 sm:px-6 lg:px-8">
-		<h1 class="overflow-hidden text-base font-medium whitespace-nowrap">
+		<h1 class="overflow-hidden text-base whitespace-nowrap">
 			{anthology.name ?? anthology.slug}
 		</h1>
 		<div class="ml-auto">

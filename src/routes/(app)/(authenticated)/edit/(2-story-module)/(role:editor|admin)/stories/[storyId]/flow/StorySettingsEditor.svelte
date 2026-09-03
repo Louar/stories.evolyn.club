@@ -5,12 +5,19 @@
 	import { CopyButton } from '$lib/components/ui/copy-button';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
+	import { MediaFileInput } from '$lib/components/ui/media-file-input/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { Separator } from '$lib/components/ui/separator';
 	import { Switch } from '$lib/components/ui/switch';
 	import { TranslatableInput } from '$lib/components/ui/translatable-input';
 	import type { findOneStoryById, storySchema } from '$lib/db/repositories/2-story-module';
-	import { formatFormError } from '$lib/db/schemas/0-utils';
+	import {
+		formatFormError,
+		translateLocalizedMediaField,
+		type Media,
+		type TranslatableMedia
+	} from '$lib/db/schemas/0-utils';
+	import { UI } from '$lib/states/ui.svelte';
 	import DeleteIcon from '@lucide/svelte/icons/delete';
 	import Paintbrush from '@lucide/svelte/icons/paintbrush';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
@@ -23,7 +30,7 @@
 		storyId: string;
 		story: Pick<
 			Awaited<ReturnType<typeof findOneStoryById>>,
-			'slug' | 'name' | 'defaultBackgroundColor' | 'isPublished' | 'isPublic'
+			'slug' | 'name' | 'defaultBackgroundColor' | 'thumbnail' | 'isPublished' | 'isPublic'
 		>;
 		close: (output: { action: 'persist' | 'delete'; data?: z.infer<typeof storySchema> }) => void;
 	};
@@ -87,6 +94,25 @@
 		story.defaultBackgroundColor = null;
 		scheduleAutosave();
 	};
+	const getMedia = (value?: TranslatableMedia | null) =>
+		translateLocalizedMediaField(value, UI.language);
+	const setTranslatedMedia = (value: Media | null, current?: TranslatableMedia | null) => {
+		if (!value) {
+			const next = { ...current };
+			delete next[UI.language];
+			return Object.keys(next).length ? next : null;
+		}
+
+		return {
+			...current,
+			...(current?.default || current?.en ? {} : { default: value }),
+			[UI.language]: value
+		};
+	};
+	const updateThumbnail = (value: Media | null) => {
+		story.thumbnail = setTranslatedMedia(value, story.thumbnail);
+		scheduleAutosave();
+	};
 	onDestroy(() => {
 		clearTimeout(autosaveTimer);
 		if (saveState === 'dirty') void persist(undefined, true);
@@ -129,6 +155,20 @@
 				<TranslatableInput bind:value={story.name} placeholder="Name..." languageselector={false} />
 				<Field.Error>
 					{formatFormError(error, `name`)}
+				</Field.Error>
+			</Field.Field>
+
+			<Field.Field>
+				<Field.Label>Thumbnail (optional)</Field.Label>
+				<MediaFileInput
+					value={getMedia(story.thumbnail)}
+					accept="image/*"
+					preview="image"
+					placeholder="Thumbnail URL"
+					onValueChange={updateThumbnail}
+				/>
+				<Field.Error>
+					{formatFormError(error, `thumbnail.*.filename`)}
 				</Field.Error>
 			</Field.Field>
 

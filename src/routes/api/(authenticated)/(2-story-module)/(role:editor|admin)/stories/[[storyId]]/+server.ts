@@ -29,7 +29,7 @@ export const PUT = (async ({ locals, params, request }) => {
 		.executeTakeFirst();
 	if (!story) error(404, `Story not found`);
 
-	const { slug, name, ...rest } = body.data;
+	const { slug, name, thumbnail, ...rest } = body.data;
 	const slugConflict = await db
 		.selectFrom('story')
 		.where('clientId', '=', clientId)
@@ -49,6 +49,7 @@ export const PUT = (async ({ locals, params, request }) => {
 			id: storyId,
 			slug,
 			name: JSON.stringify(name),
+			thumbnail: JSON.stringify(thumbnail),
 			...rest,
 			createdBy: userId,
 			updatedBy: userId
@@ -57,6 +58,7 @@ export const PUT = (async ({ locals, params, request }) => {
 			oc.columns(['id']).doUpdateSet({
 				slug,
 				name: JSON.stringify(name),
+				thumbnail: JSON.stringify(thumbnail),
 				...rest,
 				updatedAt: new Date(),
 				updatedBy: userId

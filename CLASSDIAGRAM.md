@@ -221,6 +221,7 @@ classDiagram
       slug: string
       name: Translatable
       defaultBackgroundColor: string?
+      thumbnail: TranslatableMedia?
       configuration: jsonb?
       isPublished: boolean
       isPublic: boolean

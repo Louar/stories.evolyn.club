@@ -1,6 +1,10 @@
 import type { Rule } from '$lib/components/app/player/types';
 import { db } from '$lib/db/database';
-import { formObjectPreprocessor, translatableValidator } from '$lib/db/schemas/0-utils';
+import {
+	formObjectPreprocessor,
+	translatableMediaValidator,
+	translatableValidator
+} from '$lib/db/schemas/0-utils';
 import { LogicHitpolicy } from '$lib/db/schemas/2-story-module';
 import { loadTaxonomyGame } from '$lib/server/taxonomy-game';
 import { error } from '@sveltejs/kit';
@@ -13,6 +17,9 @@ export const storySchema = z.object({
 	slug: z.string().min(1),
 	name: z.preprocess(formObjectPreprocessor, translatableValidator),
 	defaultBackgroundColor: z.string().nullable().default(null),
+	thumbnail: z
+		.preprocess(formObjectPreprocessor, translatableMediaValidator.nullable())
+		.default(null),
 	isPublished: z.boolean().default(false),
 	isPublic: z.boolean().default(true)
 });
@@ -44,6 +51,7 @@ export const findOneAnthologyBySlug = async (
 						'anthologyPosition.order',
 						'story.id',
 						'story.slug',
+						selectLocalizedMediaField(eb, 'story.thumbnail', language).as('thumbnail'),
 						selectLocalizedField(eb, 'story.name', language).as('name')
 					])
 					.$narrowType<{ order: NotNull; id: NotNull; slug: NotNull }>()
@@ -68,6 +76,7 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
 			'story.slug',
 			'story.name',
 			'story.defaultBackgroundColor',
+			'story.thumbnail',
 			'story.isPublished',
 			'story.isPublic',
 
@@ -381,6 +390,7 @@ export const findOneStoryBySlug = async (
 			'story.id',
 			'story.slug',
 			'story.defaultBackgroundColor',
+			selectLocalizedMediaField(eb, 'story.thumbnail', language).as('thumbnail'),
 			selectLocalizedField(eb, 'story.name', language).as('name'),
 			jsonArrayFrom(
 				eb
@@ -607,6 +617,7 @@ export const findOneStoryBySlug = async (
 		slug: rawstory.slug,
 		name: rawstory.name,
 		defaultBackgroundColor: rawstory.defaultBackgroundColor,
+		thumbnail: rawstory.thumbnail,
 		parts: rawstory.parts.map((part) => {
 			const {
 				background,
