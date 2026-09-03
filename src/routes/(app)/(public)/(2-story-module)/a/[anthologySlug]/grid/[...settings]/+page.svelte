@@ -207,7 +207,13 @@
 					>
 						<Card.Content class="media flex border-b p-0">
 							{#if thumbnail}
-								<MediaFile src={thumbnail} class="aspect-video w-full bg-muted object-cover" />
+								<div class="relative aspect-video w-full overflow-hidden bg-muted">
+									<MediaFile
+										src={thumbnail}
+										class="absolute inset-0 h-full w-full scale-110 object-cover opacity-55 blur-xl"
+									/>
+									<MediaFile src={thumbnail} class="relative h-full w-full object-contain" />
+								</div>
 							{:else}
 								<div
 									class="grid aspect-video w-full place-items-center bg-linear-to-br from-muted to-muted/40 text-sm font-medium text-muted-foreground"
