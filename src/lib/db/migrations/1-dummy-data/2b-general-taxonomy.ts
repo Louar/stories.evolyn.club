@@ -65,6 +65,7 @@ function getCountryColor(countryName: string) {
 }
 
 export const DummyDataGeneralTaxonomy = async (
+	taxonomySlug = 'general-taxonomy',
 	taxonomyName = 'General taxonomy',
 	clientId?: string
 ) => {
@@ -2779,8 +2780,11 @@ export const DummyDataGeneralTaxonomy = async (
 			.insertInto('taxonomy')
 			.values({
 				clientId,
-				name: taxonomyName,
-				description: 'Demo taxonomy with countries and foods'
+				slug: taxonomySlug,
+				name: JSON.stringify({ en: taxonomyName } as Translatable),
+				description: JSON.stringify({
+					en: 'Demo taxonomy with countries and foods'
+				} as Translatable)
 			})
 			.returning('id')
 			.executeTakeFirstOrThrow();

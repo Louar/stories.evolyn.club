@@ -536,8 +536,10 @@ export const InitStoryModule: Migration = {
 			.addColumn('client_id', 'uuid', (col) =>
 				col.references('client.id').onDelete('cascade').notNull()
 			)
-			.addColumn('name', 'text', (col) => col.notNull())
-			.addColumn('description', 'text')
+			.addColumn('slug', 'text', (col) => col.notNull())
+			.addColumn('name', 'jsonb')
+			.addColumn('description', 'jsonb')
+			.addUniqueConstraint('unique_taxonomy_per_client', ['client_id', 'slug'])
 			.execute();
 
 		await db.schema

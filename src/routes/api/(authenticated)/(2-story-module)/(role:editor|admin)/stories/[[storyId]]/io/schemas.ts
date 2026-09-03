@@ -83,6 +83,33 @@ const quizLogicForPartSchema = z.object({
 	rules: z.array(quizLogicRuleSchema)
 });
 
+const rangeSchema = z.tuple([z.number().int().nullable(), z.number().int().nullable()]).nullable();
+
+const taxonomyDraftLogicRuleSchema = z.object({
+	id: z.string().min(1).optional(),
+	order: z.number().int(),
+	name: z.string().min(1),
+	nextPartId: z.string().min(1).nullable(),
+	nrOfRounds: rangeSchema,
+	score: rangeSchema,
+	mistakes: rangeSchema,
+	duration: rangeSchema
+});
+
+const taxonomyDraftForPartSchema = z.object({
+	taxonomySlug: z.string().min(1),
+	nrOfRounds: z.number().int().nullable(),
+	nrOfItemsPerRound: z.number().int().nullable(),
+	goal: z.number().int().nullable(),
+	maxMistakes: z.number().int().nullable(),
+	difficulty: z.number().int().nullable(),
+	defaultNextPartId: z.string().min(1).nullable(),
+	draftedAttributeIds: z.array(z.string().min(1)).nullish().default([]),
+	draftedCategoryIds: z.array(z.string().min(1)).nullish().default([]),
+	draftedItemIds: z.array(z.string().min(1)).nullish().default([]),
+	rules: z.array(taxonomyDraftLogicRuleSchema)
+});
+
 const partSchema = z.object({
 	id: z.string().min(1).optional(),
 	isInitial: z.boolean(),
@@ -100,7 +127,9 @@ const partSchema = z.object({
 	announcementTemplateId: z.string().min(1).nullable(),
 	quizTemplateId: z.string().min(1).nullable(),
 	quizLogicForPartId: z.string().min(1).nullable(),
-	quizLogicForPart: quizLogicForPartSchema.nullable()
+	quizLogicForPart: quizLogicForPartSchema.nullable(),
+	taxonomyDraftForPartId: z.string().min(1).nullable(),
+	taxonomyDraftForPart: taxonomyDraftForPartSchema.nullable().optional()
 });
 
 export const schema = z.object({

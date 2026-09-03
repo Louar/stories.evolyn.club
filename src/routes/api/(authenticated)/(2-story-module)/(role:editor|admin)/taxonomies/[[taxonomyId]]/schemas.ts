@@ -1,11 +1,14 @@
+import { translatableValidator } from '$lib/db/schemas/0-utils';
 import { z } from 'zod/v4';
 
 const taxonomySchema = z.object({
-	name: z.string().trim().min(1),
-	description: z.string().trim().nullable()
+	slug: z.string().trim().min(1),
+	name: translatableValidator.nullable(),
+	description: translatableValidator.nullable()
 });
 
 export const taxonomyCreateSchema = taxonomySchema.extend({
+	slug: taxonomySchema.shape.slug.optional(),
 	name: taxonomySchema.shape.name.optional(),
 	description: taxonomySchema.shape.description.optional()
 });

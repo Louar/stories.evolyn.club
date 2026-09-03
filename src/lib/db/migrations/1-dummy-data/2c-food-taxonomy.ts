@@ -103,7 +103,11 @@ function getWheelOfFiveColor(category: WheelOfFiveCategory) {
 	return wheelOfFiveColors[category];
 }
 
-export const DummyDataFoodTaxonomy = async (taxonomyName = 'Food taxonomy', clientId?: string) => {
+export const DummyDataFoodTaxonomy = async (
+	taxonomySlug = 'food-taxonomy',
+	taxonomyName = 'Food taxonomy',
+	clientId?: string
+) => {
 	await db.transaction().execute(async (trx) => {
 		const attributeDefinitions = {
 			name: {
@@ -1467,8 +1471,11 @@ export const DummyDataFoodTaxonomy = async (taxonomyName = 'Food taxonomy', clie
 			.insertInto('taxonomy')
 			.values({
 				clientId,
-				name: taxonomyName,
-				description: 'Demo taxonomy with foods and Schijf van Vijf classifications'
+				slug: taxonomySlug,
+				name: JSON.stringify({ en: taxonomyName } as Translatable),
+				description: JSON.stringify({
+					en: 'Demo taxonomy with foods and Schijf van Vijf classifications'
+				} as Translatable)
 			})
 			.returning('id')
 			.executeTakeFirstOrThrow();

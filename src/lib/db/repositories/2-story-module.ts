@@ -201,8 +201,8 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
 				eb
 					.selectFrom('taxonomy')
 					.whereRef('taxonomy.clientId', '=', 'story.clientId')
-					.select(['taxonomy.id', 'taxonomy.name'])
-					.orderBy('taxonomy.name', 'asc')
+					.select(['taxonomy.id', 'taxonomy.slug', 'taxonomy.name'])
+					.orderBy('taxonomy.slug', 'asc')
 			).as('taxonomies'),
 
 			jsonArrayFrom(
@@ -279,6 +279,7 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
 								.select((eb) => [
 									'taxonomyDraftForPart.id',
 									'taxonomyDraftForPart.taxonomyId',
+									'taxonomy.slug as taxonomySlug',
 									'taxonomy.name as taxonomyName',
 									'taxonomyDraftForPart.nrOfRounds',
 									'taxonomyDraftForPart.nrOfItemsPerRound',
@@ -790,6 +791,7 @@ export const findOnePartById = async (partId: string) => {
 					.select((eb) => [
 						'taxonomyDraftForPart.id',
 						'taxonomyDraftForPart.taxonomyId',
+						'taxonomy.slug as taxonomySlug',
 						'taxonomy.name as taxonomyName',
 						'taxonomyDraftForPart.nrOfRounds',
 						'taxonomyDraftForPart.nrOfItemsPerRound',

@@ -1,4 +1,5 @@
 import { db } from '$lib/db/database';
+import type { Translatable } from '$lib/db/schemas/0-utils';
 import { UserRole } from '$lib/db/schemas/1-client-user-module';
 import { hasPermission, parseBody, requireParam } from '$lib/server/utils.server';
 import { error, json } from '@sveltejs/kit';
@@ -8,7 +9,17 @@ import {
 	taxonomyPatchSchema as patchSchema
 } from './schemas';
 
-const defaultName = 'New taxonomy';
+const defaultSlug = 'new-taxonomy';
+const defaultName = { en: 'New taxonomy' } as Translatable;
+
+const serializeTaxonomyBody = (data: Partial<typeof createSchema._output>) => {
+	const serialized: { slug?: string; name?: string | null; description?: string | null } = {};
+	if (data.slug !== undefined) serialized.slug = data.slug;
+	if (data.name !== undefined) serialized.name = data.name ? JSON.stringify(data.name) : null;
+	if (data.description !== undefined)
+		serialized.description = data.description ? JSON.stringify(data.description) : null;
+	return serialized;
+};
 
 const findOneTaxonomyById = async (clientId: string, taxonomyId: string) => {
 	const row = await db
@@ -18,6 +29,7 @@ const findOneTaxonomyById = async (clientId: string, taxonomyId: string) => {
 		.select((eb) => [
 			'taxonomy.id',
 			'taxonomy.clientId',
+			'taxonomy.slug',
 			'taxonomy.name',
 			'taxonomy.description',
 			eb
@@ -84,8 +96,9 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 		.insertInto('taxonomy')
 		.values({
 			clientId,
-			name: defaultName,
-			...parsed.data
+			slug: defaultSlug,
+			name: JSON.stringify(defaultName),
+			...serializeTaxonomyBody(parsed.data)
 		})
 		.returning('taxonomy.id')
 		.executeTakeFirstOrThrow();
@@ -115,7 +128,7 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 		.updateTable('taxonomy')
 		.where('taxonomy.id', '=', taxonomyId)
 		.where('taxonomy.clientId', '=', clientId)
-		.set(parsed.data)
+		.set(serializeTaxonomyBody(parsed.data))
 		.returning('taxonomy.id')
 		.executeTakeFirst();
 

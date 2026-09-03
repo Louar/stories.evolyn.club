@@ -305,8 +305,9 @@ type EventInteraction = {
 type Taxonomy = {
 	id: Generated<string>;
 	clientId: string;
-	name: string;
-	description: string | null;
+	slug: string;
+	name: TranslatableColumn | null;
+	description: TranslatableColumn | null;
 };
 
 type Category = {

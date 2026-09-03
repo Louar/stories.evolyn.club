@@ -386,8 +386,9 @@ classDiagram
   EventInteraction "*" -- "0..1" QuizQuestionTemplateAnswerItem: answer
 
   class Taxonomy {
-      name: string
-      description: string?
+      slug: string
+      name: Translatable?
+      description: Translatable?
   }
 
   class TaxonomyDraftForPart {
