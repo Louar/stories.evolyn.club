@@ -1,5 +1,6 @@
 <script lang="ts">
 	import HeaderBlank from '$lib/components/app/header/app-header-blank.svelte';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import * as ButtonGroup from '$lib/components/ui/button-group/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Command from '$lib/components/ui/command/index.js';
@@ -60,6 +61,7 @@
 	// svelte-ignore state_referenced_locally
 	let draft = $state(structuredClone($state.snapshot(part)));
 	let saveState = $state<SaveState>('idle');
+	let isDeleteDialogOpen = $state(false);
 	let autosaveTimer: ReturnType<typeof setTimeout> | undefined;
 	let saveVersion = 0;
 	let stillItems = $derived(
@@ -339,9 +341,37 @@
 		}
 
 		saveState = 'idle';
+		isDeleteDialogOpen = false;
 		onDelete(draft.id);
 	};
 </script>
+
+<AlertDialog.Root bind:open={isDeleteDialogOpen}>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Media>
+				<TrashIcon class="text-destructive" />
+			</AlertDialog.Media>
+			<AlertDialog.Title>Delete part?</AlertDialog.Title>
+			<AlertDialog.Description>
+				This will permanently delete this story part and its flow connections.
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel disabled={saveState === 'saving'}>Cancel</AlertDialog.Cancel>
+			<AlertDialog.Action
+				variant="destructive"
+				disabled={saveState === 'saving'}
+				onclick={(event) => {
+					event.preventDefault();
+					void remove();
+				}}
+			>
+				Delete
+			</AlertDialog.Action>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>
 
 {#snippet backgroundSnapMenu(key: 'start' | 'end')}
 	<Popover.Root>
@@ -413,7 +443,7 @@
 			size="icon"
 			aria-label="Delete part"
 			disabled={saveState === 'saving'}
-			onclick={remove}
+			onclick={() => (isDeleteDialogOpen = true)}
 		>
 			<TrashIcon />
 		</Button>

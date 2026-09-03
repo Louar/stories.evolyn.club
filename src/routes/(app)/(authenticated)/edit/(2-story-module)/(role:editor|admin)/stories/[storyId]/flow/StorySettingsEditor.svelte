@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as ColorPicker from '$lib/components/ui/color-picker/index.js';
 	import { CopyButton } from '$lib/components/ui/copy-button';
@@ -41,6 +42,8 @@
 
 	let error = $state<$ZodIssue[] | null>(null);
 	let saveState = $state<'idle' | 'dirty' | 'saving' | 'saved' | 'error'>('idle');
+	let isDeleteDialogOpen = $state(false);
+	let isDeleting = $state(false);
 	let autosaveTimer: ReturnType<typeof setTimeout> | undefined;
 	let saveVersion = 0;
 
@@ -118,21 +121,55 @@
 		if (saveState === 'dirty') void persist(undefined, true);
 	});
 	const remove = async () => {
-		if (!storyId?.length) return;
-		const result = await fetch(`/api/stories/${storyId}`, {
-			method: 'DELETE'
-		});
-		if (!result.ok) {
-			toast.error(result.statusText ?? 'Something went wrong', {
-				closeButton: true,
-				duration: Infinity
+		if (!storyId?.length || isDeleting) return;
+		isDeleting = true;
+		try {
+			const result = await fetch(`/api/stories/${storyId}`, {
+				method: 'DELETE'
 			});
-			if (result.status === 422) error = await result.json();
-		} else {
-			close({ action: 'delete' });
+			if (!result.ok) {
+				toast.error(result.statusText ?? 'Something went wrong', {
+					closeButton: true,
+					duration: Infinity
+				});
+				if (result.status === 422) error = await result.json();
+			} else {
+				isDeleteDialogOpen = false;
+				close({ action: 'delete' });
+			}
+		} finally {
+			isDeleting = false;
 		}
 	};
 </script>
+
+<AlertDialog.Root bind:open={isDeleteDialogOpen}>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Media>
+				<TrashIcon class="text-destructive" />
+			</AlertDialog.Media>
+			<AlertDialog.Title>Delete story?</AlertDialog.Title>
+			<AlertDialog.Description>
+				This will permanently delete "{story.name?.default ?? story.slug}" and all of its parts and
+				assets.
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel disabled={isDeleting}>Cancel</AlertDialog.Cancel>
+			<AlertDialog.Action
+				variant="destructive"
+				disabled={isDeleting}
+				onclick={(event) => {
+					event.preventDefault();
+					void remove();
+				}}
+			>
+				Delete
+			</AlertDialog.Action>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>
 
 <div class="flex flex-col">
 	<form
@@ -276,7 +313,13 @@
 						? 'Save failed'
 						: ''}
 		</span>
-		<Button class="ml-auto" variant="destructive" size="icon" onclick={remove}>
+		<Button
+			class="ml-auto"
+			variant="destructive"
+			size="icon"
+			disabled={isDeleting}
+			onclick={() => (isDeleteDialogOpen = true)}
+		>
 			<TrashIcon />
 		</Button>
 	</div>

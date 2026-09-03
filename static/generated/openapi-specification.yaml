@@ -868,6 +868,1213 @@ paths:
           required: true
           schema:
             type: string
+  /anthologies/{anthologyId}/io:
+    get:
+      operationId: get_anthologies_anthologyId_io
+      summary: Export anthology
+      tags:
+        - Anthologies
+      security:
+        - BearerAuthCookie: &a6
+            - editor
+            - admin
+        - BearerAuthHeader: *a6
+      responses:
+        "200":
+          description: OK
+          content:
+            application/yaml:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: *a2
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - You are not allowed to access this anthology
+                required:
+                  - message
+      parameters:
+        - name: anthologyId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: includeStories
+          in: query
+          required: false
+          schema:
+            type: string
+    post:
+      operationId: post_anthologies_anthologyId_io
+      summary: Import anthology
+      tags:
+        - Anthologies
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      security:
+        - BearerAuthCookie: &a7
+            - editor
+            - admin
+        - BearerAuthHeader: *a7
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  slug:
+                    type: string
+                  name:
+                    type: object
+                    properties:
+                      default:
+                        type: string
+                      en:
+                        type: string
+                      bg:
+                        type: string
+                      ca:
+                        type: string
+                      da:
+                        type: string
+                      de:
+                        type: string
+                      es:
+                        type: string
+                      fi:
+                        type: string
+                      fr:
+                        type: string
+                      it:
+                        type: string
+                      nl:
+                        type: string
+                      no:
+                        type: string
+                      pt:
+                        type: string
+                      sv:
+                        type: string
+                  configuration:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          showPerformanceOverview:
+                            type: boolean
+                        required:
+                          - showPerformanceOverview
+                  isPublished:
+                    type: boolean
+                  isPublic:
+                    type: boolean
+                  positions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        configuration:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: object
+                              additionalProperties: true
+                        storyId:
+                          type: string
+                        order:
+                          type: number
+                        storySlug:
+                          type: string
+                      required:
+                        - id
+                        - configuration
+                        - storyId
+                        - order
+                        - storySlug
+                required:
+                  - id
+                  - slug
+                  - name
+                  - configuration
+                  - isPublished
+                  - isPublic
+                  - positions
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - Invalid JSON or YAML body
+                required:
+                  - message
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: *a2
+        "403":
+          description: Editor or Admin or Editor or Admin role required
+          content:
+            application/json:
+              schema: *a2
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - Some stories do not exist
+                  issues:
+                    type: array
+                    items:
+                      oneOf:
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - invalid_union
+                            errors:
+                              type: array
+                              items:
+                                type: object
+                                additionalProperties: true
+                            input:
+                              type: object
+                              additionalProperties: true
+                            discriminator:
+                              type: string
+                            options:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type:
+                                      - "null"
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      toLocaleString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                        enum:
+                                          - BigInt
+                                    required:
+                                      - toString
+                                      - toLocaleString
+                                      - valueOf
+                                      - __@toStringTag@895
+                                  - type: boolean
+                                    enum:
+                                      - false
+                                  - type: boolean
+                                    enum:
+                                      - true
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            inclusive:
+                              type: boolean
+                              enum:
+                                - true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - errors
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - invalid_union
+                            errors:
+                              type: array
+                              items: {}
+                            input:
+                              type: object
+                              additionalProperties: true
+                            discriminator:
+                              type: string
+                            inclusive:
+                              type: boolean
+                              enum:
+                                - false
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - errors
+                            - inclusive
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - invalid_type
+                            expected:
+                              oneOf:
+                                - type: string
+                                  enum:
+                                    - string
+                                - type: string
+                                  enum:
+                                    - number
+                                - type: string
+                                  enum:
+                                    - bigint
+                                - type: string
+                                  enum:
+                                    - boolean
+                                - type: string
+                                  enum:
+                                    - symbol
+                                - type: string
+                                  enum:
+                                    - undefined
+                                - type: string
+                                  enum:
+                                    - object
+                                - type: string
+                                  enum:
+                                    - function
+                                - type: string
+                                  enum:
+                                    - int
+                                - type: string
+                                  enum:
+                                    - "null"
+                                - type: string
+                                  enum:
+                                    - void
+                                - type: string
+                                  enum:
+                                    - never
+                                - type: string
+                                  enum:
+                                    - date
+                                - type: string
+                                  enum:
+                                    - record
+                                - type: string
+                                  enum:
+                                    - file
+                                - type: string
+                                  enum:
+                                    - array
+                                - type: string
+                                  enum:
+                                    - tuple
+                                - type: string
+                                  enum:
+                                    - map
+                                - type: string
+                                  enum:
+                                    - set
+                                - type: string
+                                  enum:
+                                    - nonoptional
+                                - type: string
+                                  enum:
+                                    - nan
+                                - allOf:
+                                    - type: string
+                                    - type: object
+                                      additionalProperties: true
+                            input:
+                              type: object
+                              additionalProperties: true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - expected
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - too_big
+                            origin:
+                              oneOf:
+                                - type: string
+                                  enum:
+                                    - string
+                                - type: string
+                                  enum:
+                                    - number
+                                - type: string
+                                  enum:
+                                    - bigint
+                                - type: string
+                                  enum:
+                                    - int
+                                - type: string
+                                  enum:
+                                    - date
+                                - type: string
+                                  enum:
+                                    - file
+                                - type: string
+                                  enum:
+                                    - array
+                                - type: string
+                                  enum:
+                                    - set
+                                - allOf:
+                                    - type: string
+                                    - type: object
+                                      additionalProperties: true
+                            maximum:
+                              oneOf:
+                                - type: number
+                                - type: object
+                                  properties:
+                                    toString:
+                                      type: object
+                                      additionalProperties: true
+                                    toLocaleString:
+                                      type: object
+                                      additionalProperties: true
+                                    valueOf:
+                                      type: object
+                                      additionalProperties: true
+                                    __@toStringTag@895:
+                                      type: string
+                                      enum:
+                                        - BigInt
+                                  required:
+                                    - toString
+                                    - toLocaleString
+                                    - valueOf
+                                    - __@toStringTag@895
+                            inclusive:
+                              type: boolean
+                              enum:
+                                - false
+                                - true
+                            exact:
+                              type: boolean
+                              enum:
+                                - false
+                                - true
+                            input:
+                              type: object
+                              additionalProperties: true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - origin
+                            - maximum
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - too_small
+                            origin:
+                              oneOf:
+                                - type: string
+                                  enum:
+                                    - string
+                                - type: string
+                                  enum:
+                                    - number
+                                - type: string
+                                  enum:
+                                    - bigint
+                                - type: string
+                                  enum:
+                                    - int
+                                - type: string
+                                  enum:
+                                    - date
+                                - type: string
+                                  enum:
+                                    - file
+                                - type: string
+                                  enum:
+                                    - array
+                                - type: string
+                                  enum:
+                                    - set
+                                - allOf:
+                                    - type: string
+                                    - type: object
+                                      additionalProperties: true
+                            minimum:
+                              oneOf:
+                                - type: number
+                                - type: object
+                                  properties:
+                                    toString:
+                                      type: object
+                                      additionalProperties: true
+                                    toLocaleString:
+                                      type: object
+                                      additionalProperties: true
+                                    valueOf:
+                                      type: object
+                                      additionalProperties: true
+                                    __@toStringTag@895:
+                                      type: string
+                                      enum:
+                                        - BigInt
+                                  required:
+                                    - toString
+                                    - toLocaleString
+                                    - valueOf
+                                    - __@toStringTag@895
+                            inclusive:
+                              type: boolean
+                              enum:
+                                - false
+                                - true
+                            exact:
+                              type: boolean
+                              enum:
+                                - false
+                                - true
+                            input:
+                              type: object
+                              additionalProperties: true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - origin
+                            - minimum
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - invalid_format
+                            format:
+                              oneOf:
+                                - type: string
+                                  enum:
+                                    - date
+                                - type: string
+                                  enum:
+                                    - email
+                                - type: string
+                                  enum:
+                                    - includes
+                                - type: string
+                                  enum:
+                                    - datetime
+                                - type: string
+                                  enum:
+                                    - time
+                                - type: string
+                                  enum:
+                                    - uuid
+                                - type: string
+                                  enum:
+                                    - e164
+                                - type: string
+                                  enum:
+                                    - url
+                                - type: string
+                                  enum:
+                                    - duration
+                                - allOf:
+                                    - type: string
+                                    - type: object
+                                      additionalProperties: true
+                                - type: string
+                                  enum:
+                                    - emoji
+                                - type: string
+                                  enum:
+                                    - guid
+                                - type: string
+                                  enum:
+                                    - nanoid
+                                - type: string
+                                  enum:
+                                    - cuid
+                                - type: string
+                                  enum:
+                                    - cuid2
+                                - type: string
+                                  enum:
+                                    - ulid
+                                - type: string
+                                  enum:
+                                    - xid
+                                - type: string
+                                  enum:
+                                    - ksuid
+                                - type: string
+                                  enum:
+                                    - ipv4
+                                - type: string
+                                  enum:
+                                    - ipv6
+                                - type: string
+                                  enum:
+                                    - cidrv4
+                                - type: string
+                                  enum:
+                                    - cidrv6
+                                - type: string
+                                  enum:
+                                    - base64
+                                - type: string
+                                  enum:
+                                    - base64url
+                                - type: string
+                                  enum:
+                                    - json_string
+                                - type: string
+                                  enum:
+                                    - lowercase
+                                - type: string
+                                  enum:
+                                    - uppercase
+                                - type: string
+                                  enum:
+                                    - regex
+                                - type: string
+                                  enum:
+                                    - jwt
+                                - type: string
+                                  enum:
+                                    - starts_with
+                                - type: string
+                                  enum:
+                                    - ends_with
+                            pattern:
+                              type: string
+                            input:
+                              type: string
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - format
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - not_multiple_of
+                            divisor:
+                              type: number
+                            input:
+                              oneOf:
+                                - type: number
+                                - type: object
+                                  properties:
+                                    toString:
+                                      type: object
+                                      additionalProperties: true
+                                    toLocaleString:
+                                      type: object
+                                      additionalProperties: true
+                                    valueOf:
+                                      type: object
+                                      additionalProperties: true
+                                    __@toStringTag@895:
+                                      type: string
+                                      enum:
+                                        - BigInt
+                                  required:
+                                    - toString
+                                    - toLocaleString
+                                    - valueOf
+                                    - __@toStringTag@895
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - divisor
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - unrecognized_keys
+                            keys:
+                              type: array
+                              items:
+                                type: string
+                            input:
+                              type: object
+                              additionalProperties:
+                                type: object
+                                additionalProperties: true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - keys
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - invalid_key
+                            origin:
+                              type: string
+                              enum:
+                                - record
+                                - map
+                            issues:
+                              type: object
+                              additionalProperties: true
+                            input:
+                              type: object
+                              additionalProperties: true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - origin
+                            - issues
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - invalid_element
+                            origin:
+                              type: string
+                              enum:
+                                - map
+                                - set
+                            key:
+                              type: object
+                              additionalProperties: true
+                            issues:
+                              type: object
+                              additionalProperties: true
+                            input:
+                              type: object
+                              additionalProperties: true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - origin
+                            - key
+                            - issues
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - invalid_value
+                            values:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type:
+                                      - "null"
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      toLocaleString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                        enum:
+                                          - BigInt
+                                    required:
+                                      - toString
+                                      - toLocaleString
+                                      - valueOf
+                                      - __@toStringTag@895
+                                  - type: boolean
+                                    enum:
+                                      - false
+                                  - type: boolean
+                                    enum:
+                                      - true
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            input:
+                              type: object
+                              additionalProperties: true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - values
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - custom
+                            params:
+                              type: object
+                              additionalProperties:
+                                type: object
+                                additionalProperties: true
+                            input:
+                              type: object
+                              additionalProperties: true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - path
+                            - message
+                  storySlugs:
+                    type: array
+                    items:
+                      type: string
+                required:
+                  - message
+                  - storySlugs
+      parameters:
+        - name: anthologyId
+          in: path
+          required: true
+          schema:
+            type: string
   /anthologies/{anthologyId}/permissions:
     post:
       operationId: post_anthologies_anthologyId_permissions
@@ -893,10 +2100,10 @@ paths:
               required:
                 - userId
       security:
-        - BearerAuthCookie: &a6
+        - BearerAuthCookie: &a8
             - editor
             - admin
-        - BearerAuthHeader: *a6
+        - BearerAuthHeader: *a8
       responses:
         "201":
           description: Created
@@ -1043,10 +2250,10 @@ paths:
       tags:
         - Anthologies
       security:
-        - BearerAuthCookie: &a7
+        - BearerAuthCookie: &a9
             - editor
             - admin
-        - BearerAuthHeader: *a7
+        - BearerAuthHeader: *a9
       responses:
         "200":
           description: OK
@@ -1195,10 +2402,10 @@ paths:
                     - editor
                     - owner
       security:
-        - BearerAuthCookie: &a8
+        - BearerAuthCookie: &a10
             - editor
             - admin
-        - BearerAuthHeader: *a8
+        - BearerAuthHeader: *a10
       responses:
         "200":
           description: OK
@@ -1354,10 +2561,10 @@ paths:
       tags:
         - Anthologies
       security:
-        - BearerAuthCookie: &a9
+        - BearerAuthCookie: &a11
             - editor
             - admin
-        - BearerAuthHeader: *a9
+        - BearerAuthHeader: *a11
       responses:
         "204":
           description: No Content
@@ -1403,7 +2610,7 @@ paths:
                 slug:
                   type: string
                   minLength: 1
-                name: &a24
+                name: &a26
                   type: object
                   properties:
                     en:
@@ -1447,10 +2654,10 @@ paths:
                 - slug
                 - name
       security:
-        - BearerAuthCookie: &a10
+        - BearerAuthCookie: &a12
             - editor
             - admin
-        - BearerAuthHeader: *a10
+        - BearerAuthHeader: *a12
       responses:
         "200":
           description: OK
@@ -2264,13 +3471,16 @@ paths:
                             - type: string
                               enum:
                                 - e164
+                            - type: string
+                              enum:
+                                - url
+                            - type: string
+                              enum:
+                                - duration
                             - allOf:
                                 - type: string
                                 - type: object
                                   additionalProperties: true
-                            - type: string
-                              enum:
-                                - url
                             - type: string
                               enum:
                                 - emoji
@@ -2295,9 +3505,6 @@ paths:
                             - type: string
                               enum:
                                 - ksuid
-                            - type: string
-                              enum:
-                                - duration
                             - type: string
                               enum:
                                 - ipv4
@@ -2768,10 +3975,10 @@ paths:
       tags:
         - Stories
       security:
-        - BearerAuthCookie: &a11
+        - BearerAuthCookie: &a13
             - editor
             - admin
-        - BearerAuthHeader: *a11
+        - BearerAuthHeader: *a13
       responses:
         "200":
           description: OK
@@ -2906,10 +4113,10 @@ paths:
       tags:
         - Stories
       security:
-        - BearerAuthCookie: &a12
+        - BearerAuthCookie: &a14
             - editor
             - admin
-        - BearerAuthHeader: *a12
+        - BearerAuthHeader: *a14
       responses:
         "200":
           description: OK
@@ -2939,10 +4146,10 @@ paths:
       tags:
         - Stories
       security:
-        - BearerAuthCookie: &a13
+        - BearerAuthCookie: &a15
             - editor
             - admin
-        - BearerAuthHeader: *a13
+        - BearerAuthHeader: *a15
       responses:
         "200":
           description: OK
@@ -3476,8 +4683,6 @@ paths:
                                   required:
                                     - collection
                                     - filename
-                        duration:
-                          type: number
                         source:
                           type: object
                           properties:
@@ -3725,18 +4930,22 @@ paths:
                                   type: string
                                 sv:
                                   type: string
+                        duration:
+                          type: number
                       required:
                         - id
                         - name
                         - thumbnail
-                        - duration
                         - source
                         - captions
+                        - duration
                   announcements:
                     type: array
                     items:
                       type: object
                       properties:
+                        id:
+                          type: string
                         message:
                           oneOf:
                             - type:
@@ -3771,8 +4980,6 @@ paths:
                                   type: string
                                 sv:
                                   type: string
-                        id:
-                          type: string
                         name:
                           type: string
                         title:
@@ -3810,8 +5017,8 @@ paths:
                                 sv:
                                   type: string
                       required:
-                        - message
                         - id
+                        - message
                         - name
                         - title
                   quizzes:
@@ -4015,17 +5222,30 @@ paths:
                       properties:
                         id:
                           type: string
-                        announcementTemplateId:
+                        position:
                           oneOf:
                             - type:
                                 - "null"
-                            - type: string
+                            - type: object
+                              properties:
+                                x:
+                                  type: number
+                                y:
+                                  type: number
+                              required:
+                                - x
+                                - y
                         stillId:
                           oneOf:
                             - type:
                                 - "null"
                             - type: string
                         videoId:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: string
+                        announcementTemplateId:
                           oneOf:
                             - type:
                                 - "null"
@@ -4073,19 +5293,6 @@ paths:
                             - type:
                                 - "null"
                             - type: string
-                        position:
-                          oneOf:
-                            - type:
-                                - "null"
-                            - type: object
-                              properties:
-                                x:
-                                  type: number
-                                y:
-                                  type: number
-                              required:
-                                - x
-                                - y
                         quizTemplateId:
                           oneOf:
                             - type:
@@ -4339,6 +5546,8 @@ paths:
                                         type: string
                                       name:
                                         type: string
+                                      order:
+                                        type: number
                                       duration:
                                         oneOf:
                                           - type:
@@ -4349,8 +5558,6 @@ paths:
                                                 - type:
                                                     - "null"
                                                 - type: number
-                                      order:
-                                        type: number
                                       nrOfRounds:
                                         oneOf:
                                           - type:
@@ -4390,8 +5597,8 @@ paths:
                                       - isRemoved
                                       - id
                                       - name
-                                      - duration
                                       - order
+                                      - duration
                                       - nrOfRounds
                                       - nextPartId
                                       - score
@@ -4415,9 +5622,10 @@ paths:
                                 - rules
                       required:
                         - id
-                        - announcementTemplateId
+                        - position
                         - stillId
                         - videoId
+                        - announcementTemplateId
                         - backgroundType
                         - backgroundConfiguration
                         - foregroundType
@@ -4426,7 +5634,6 @@ paths:
                         - defaultNextPartId
                         - quizLogicForPartId
                         - taxonomyDraftForPartId
-                        - position
                         - quizTemplateId
                         - taxonomyId
                         - quizLogicForPart
@@ -4993,13 +6200,16 @@ paths:
                             - type: string
                               enum:
                                 - e164
+                            - type: string
+                              enum:
+                                - url
+                            - type: string
+                              enum:
+                                - duration
                             - allOf:
                                 - type: string
                                 - type: object
                                   additionalProperties: true
-                            - type: string
-                              enum:
-                                - url
                             - type: string
                               enum:
                                 - emoji
@@ -5024,9 +6234,6 @@ paths:
                             - type: string
                               enum:
                                 - ksuid
-                            - type: string
-                              enum:
-                                - duration
                             - type: string
                               enum:
                                 - ipv4
@@ -5586,10 +6793,10 @@ paths:
                 - foregroundType
                 - position
       security:
-        - BearerAuthCookie: &a14
+        - BearerAuthCookie: &a16
             - editor
             - admin
-        - BearerAuthHeader: *a14
+        - BearerAuthHeader: *a16
       responses:
         "200":
           description: OK
@@ -5600,17 +6807,30 @@ paths:
                 properties:
                   id:
                     type: string
-                  announcementTemplateId:
+                  position:
                     oneOf:
                       - type:
                           - "null"
-                      - type: string
+                      - type: object
+                        properties:
+                          x:
+                            type: number
+                          y:
+                            type: number
+                        required:
+                          - x
+                          - y
                   stillId:
                     oneOf:
                       - type:
                           - "null"
                       - type: string
                   videoId:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: string
+                  announcementTemplateId:
                     oneOf:
                       - type:
                           - "null"
@@ -5658,19 +6878,6 @@ paths:
                       - type:
                           - "null"
                       - type: string
-                  position:
-                    oneOf:
-                      - type:
-                          - "null"
-                      - type: object
-                        properties:
-                          x:
-                            type: number
-                          y:
-                            type: number
-                        required:
-                          - x
-                          - y
                   quizTemplateId:
                     oneOf:
                       - type:
@@ -5921,6 +7128,8 @@ paths:
                                   type: string
                                 name:
                                   type: string
+                                order:
+                                  type: number
                                 duration:
                                   oneOf:
                                     - type:
@@ -5931,8 +7140,6 @@ paths:
                                           - type:
                                               - "null"
                                           - type: number
-                                order:
-                                  type: number
                                 nrOfRounds:
                                   oneOf:
                                     - type:
@@ -5972,8 +7179,8 @@ paths:
                                 - isRemoved
                                 - id
                                 - name
-                                - duration
                                 - order
+                                - duration
                                 - nrOfRounds
                                 - nextPartId
                                 - score
@@ -5997,9 +7204,10 @@ paths:
                           - rules
                 required:
                   - id
-                  - announcementTemplateId
+                  - position
                   - stillId
                   - videoId
+                  - announcementTemplateId
                   - backgroundType
                   - backgroundConfiguration
                   - foregroundType
@@ -6008,7 +7216,6 @@ paths:
                   - defaultNextPartId
                   - quizLogicForPartId
                   - taxonomyDraftForPartId
-                  - position
                   - quizTemplateId
                   - taxonomyId
                   - quizLogicForPart
@@ -6548,13 +7755,16 @@ paths:
                             - type: string
                               enum:
                                 - e164
+                            - type: string
+                              enum:
+                                - url
+                            - type: string
+                              enum:
+                                - duration
                             - allOf:
                                 - type: string
                                 - type: object
                                   additionalProperties: true
-                            - type: string
-                              enum:
-                                - url
                             - type: string
                               enum:
                                 - emoji
@@ -6579,9 +7789,6 @@ paths:
                             - type: string
                               enum:
                                 - ksuid
-                            - type: string
-                              enum:
-                                - duration
                             - type: string
                               enum:
                                 - ipv4
@@ -7043,10 +8250,10 @@ paths:
       tags:
         - Stories
       security:
-        - BearerAuthCookie: &a15
+        - BearerAuthCookie: &a17
             - editor
             - admin
-        - BearerAuthHeader: *a15
+        - BearerAuthHeader: *a17
       responses:
         "200":
           description: OK
@@ -7105,10 +8312,10 @@ paths:
                 - handle
                 - target
       security:
-        - BearerAuthCookie: &a16
+        - BearerAuthCookie: &a18
             - editor
             - admin
-        - BearerAuthHeader: *a16
+        - BearerAuthHeader: *a18
       responses:
         "200":
           description: OK
@@ -7658,13 +8865,16 @@ paths:
                             - type: string
                               enum:
                                 - e164
+                            - type: string
+                              enum:
+                                - url
+                            - type: string
+                              enum:
+                                - duration
                             - allOf:
                                 - type: string
                                 - type: object
                                   additionalProperties: true
-                            - type: string
-                              enum:
-                                - url
                             - type: string
                               enum:
                                 - emoji
@@ -7689,9 +8899,6 @@ paths:
                             - type: string
                               enum:
                                 - ksuid
-                            - type: string
-                              enum:
-                                - duration
                             - type: string
                               enum:
                                 - ipv4
@@ -8169,10 +9376,10 @@ paths:
                 - handle
                 - target
       security:
-        - BearerAuthCookie: &a17
+        - BearerAuthCookie: &a19
             - editor
             - admin
-        - BearerAuthHeader: *a17
+        - BearerAuthHeader: *a19
       responses:
         "200":
           description: OK
@@ -8722,13 +9929,16 @@ paths:
                             - type: string
                               enum:
                                 - e164
+                            - type: string
+                              enum:
+                                - url
+                            - type: string
+                              enum:
+                                - duration
                             - allOf:
                                 - type: string
                                 - type: object
                                   additionalProperties: true
-                            - type: string
-                              enum:
-                                - url
                             - type: string
                               enum:
                                 - emoji
@@ -8753,9 +9963,6 @@ paths:
                             - type: string
                               enum:
                                 - ksuid
-                            - type: string
-                              enum:
-                                - duration
                             - type: string
                               enum:
                                 - ipv4
@@ -9261,10 +10468,10 @@ paths:
               required:
                 - rules
       security:
-        - BearerAuthCookie: &a18
+        - BearerAuthCookie: &a20
             - editor
             - admin
-        - BearerAuthHeader: *a18
+        - BearerAuthHeader: *a20
       responses:
         "200":
           description: OK
@@ -9877,13 +11084,16 @@ paths:
                             - type: string
                               enum:
                                 - e164
+                            - type: string
+                              enum:
+                                - url
+                            - type: string
+                              enum:
+                                - duration
                             - allOf:
                                 - type: string
                                 - type: object
                                   additionalProperties: true
-                            - type: string
-                              enum:
-                                - url
                             - type: string
                               enum:
                                 - emoji
@@ -9908,9 +11118,6 @@ paths:
                             - type: string
                               enum:
                                 - ksuid
-                            - type: string
-                              enum:
-                                - duration
                             - type: string
                               enum:
                                 - ipv4
@@ -10500,10 +11707,10 @@ paths:
                 - difficulty
                 - rules
       security:
-        - BearerAuthCookie: &a19
+        - BearerAuthCookie: &a21
             - editor
             - admin
-        - BearerAuthHeader: *a19
+        - BearerAuthHeader: *a21
       responses:
         "200":
           description: OK
@@ -10677,6 +11884,8 @@ paths:
                               type: string
                             name:
                               type: string
+                            order:
+                              type: number
                             duration:
                               oneOf:
                                 - type:
@@ -10687,8 +11896,6 @@ paths:
                                       - type:
                                           - "null"
                                       - type: number
-                            order:
-                              type: number
                             nrOfRounds:
                               oneOf:
                                 - type:
@@ -10728,8 +11935,8 @@ paths:
                             - isRemoved
                             - id
                             - name
-                            - duration
                             - order
+                            - duration
                             - nrOfRounds
                             - nextPartId
                             - score
@@ -11299,13 +12506,16 @@ paths:
                             - type: string
                               enum:
                                 - e164
+                            - type: string
+                              enum:
+                                - url
+                            - type: string
+                              enum:
+                                - duration
                             - allOf:
                                 - type: string
                                 - type: object
                                   additionalProperties: true
-                            - type: string
-                              enum:
-                                - url
                             - type: string
                               enum:
                                 - emoji
@@ -11330,9 +12540,6 @@ paths:
                             - type: string
                               enum:
                                 - ksuid
-                            - type: string
-                              enum:
-                                - duration
                             - type: string
                               enum:
                                 - ipv4
@@ -11818,10 +13025,10 @@ paths:
               required:
                 - userId
       security:
-        - BearerAuthCookie: &a20
+        - BearerAuthCookie: &a22
             - editor
             - admin
-        - BearerAuthHeader: *a20
+        - BearerAuthHeader: *a22
       responses:
         "201":
           description: Created
@@ -11840,14 +13047,14 @@ paths:
                     format: date-time
                   userId:
                     type: string
+                  storyId:
+                    type: string
                   role:
                     type: string
                     enum:
                       - editor
                       - viewer
                       - owner
-                  storyId:
-                    type: string
                   createdBy:
                     oneOf:
                       - type:
@@ -11923,8 +13130,8 @@ paths:
                   - createdAt
                   - updatedAt
                   - userId
-                  - role
                   - storyId
+                  - role
                   - createdBy
                   - updatedBy
         "401":
@@ -11968,10 +13175,10 @@ paths:
       tags:
         - Stories
       security:
-        - BearerAuthCookie: &a21
+        - BearerAuthCookie: &a23
             - editor
             - admin
-        - BearerAuthHeader: *a21
+        - BearerAuthHeader: *a23
       responses:
         "200":
           description: OK
@@ -11990,14 +13197,14 @@ paths:
                     format: date-time
                   userId:
                     type: string
+                  storyId:
+                    type: string
                   role:
                     type: string
                     enum:
                       - editor
                       - viewer
                       - owner
-                  storyId:
-                    type: string
                   createdBy:
                     oneOf:
                       - type:
@@ -12073,8 +13280,8 @@ paths:
                   - createdAt
                   - updatedAt
                   - userId
-                  - role
                   - storyId
+                  - role
                   - createdBy
                   - updatedBy
         "401":
@@ -12120,10 +13327,10 @@ paths:
                     - editor
                     - owner
       security:
-        - BearerAuthCookie: &a22
+        - BearerAuthCookie: &a24
             - editor
             - admin
-        - BearerAuthHeader: *a22
+        - BearerAuthHeader: *a24
       responses:
         "200":
           description: OK
@@ -12142,14 +13349,14 @@ paths:
                     format: date-time
                   userId:
                     type: string
+                  storyId:
+                    type: string
                   role:
                     type: string
                     enum:
                       - editor
                       - viewer
                       - owner
-                  storyId:
-                    type: string
                   createdBy:
                     oneOf:
                       - type:
@@ -12225,8 +13432,8 @@ paths:
                   - createdAt
                   - updatedAt
                   - userId
-                  - role
                   - storyId
+                  - role
                   - createdBy
                   - updatedBy
         "401":
@@ -12279,10 +13486,10 @@ paths:
       tags:
         - Stories
       security:
-        - BearerAuthCookie: &a23
+        - BearerAuthCookie: &a25
             - editor
             - admin
-        - BearerAuthHeader: *a23
+        - BearerAuthHeader: *a25
       responses:
         "204":
           description: No Content
@@ -12332,21 +13539,21 @@ paths:
                   oneOf:
                     - type:
                         - "null"
-                    - *a24
+                    - *a26
                 message:
                   oneOf:
                     - type:
                         - "null"
-                    - *a24
+                    - *a26
               required:
                 - name
                 - title
                 - message
       security:
-        - BearerAuthCookie: &a25
+        - BearerAuthCookie: &a27
             - editor
             - admin
-        - BearerAuthHeader: *a25
+        - BearerAuthHeader: *a27
       responses:
         "200":
           description: OK
@@ -12355,6 +13562,8 @@ paths:
               schema:
                 type: object
                 properties:
+                  id:
+                    type: string
                   message:
                     oneOf:
                       - type:
@@ -12389,8 +13598,6 @@ paths:
                             type: string
                           sv:
                             type: string
-                  id:
-                    type: string
                   name:
                     type: string
                   title:
@@ -12428,8 +13635,8 @@ paths:
                           sv:
                             type: string
                 required:
-                  - message
                   - id
+                  - message
                   - name
                   - title
         "401":
@@ -12967,13 +14174,16 @@ paths:
                             - type: string
                               enum:
                                 - e164
+                            - type: string
+                              enum:
+                                - url
+                            - type: string
+                              enum:
+                                - duration
                             - allOf:
                                 - type: string
                                 - type: object
                                   additionalProperties: true
-                            - type: string
-                              enum:
-                                - url
                             - type: string
                               enum:
                                 - emoji
@@ -12998,9 +14208,6 @@ paths:
                             - type: string
                               enum:
                                 - ksuid
-                            - type: string
-                              enum:
-                                - duration
                             - type: string
                               enum:
                                 - ipv4
@@ -13462,10 +14669,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a26
+        - BearerAuthCookie: &a28
             - editor
             - admin
-        - BearerAuthHeader: *a26
+        - BearerAuthHeader: *a28
       responses:
         "200":
           description: OK
@@ -13508,10 +14715,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a27
+        - BearerAuthCookie: &a29
             - editor
             - admin
-        - BearerAuthHeader: *a27
+        - BearerAuthHeader: *a29
       responses:
         "200":
           description: OK
@@ -13580,10 +14787,10 @@ paths:
                 - type
                 - asset
       security:
-        - BearerAuthCookie: &a28
+        - BearerAuthCookie: &a30
             - editor
             - admin
-        - BearerAuthHeader: *a28
+        - BearerAuthHeader: *a30
       responses:
         "201":
           description: Created
@@ -13661,10 +14868,10 @@ paths:
                 - type
                 - asset
       security:
-        - BearerAuthCookie: &a29
+        - BearerAuthCookie: &a31
             - editor
             - admin
-        - BearerAuthHeader: *a29
+        - BearerAuthHeader: *a31
       responses:
         "200":
           description: OK
@@ -13784,10 +14991,10 @@ paths:
                 - name
                 - questions
       security:
-        - BearerAuthCookie: &a30
+        - BearerAuthCookie: &a32
             - editor
             - admin
-        - BearerAuthHeader: *a30
+        - BearerAuthHeader: *a32
       responses:
         "200":
           description: OK
@@ -14508,13 +15715,16 @@ paths:
                             - type: string
                               enum:
                                 - e164
+                            - type: string
+                              enum:
+                                - url
+                            - type: string
+                              enum:
+                                - duration
                             - allOf:
                                 - type: string
                                 - type: object
                                   additionalProperties: true
-                            - type: string
-                              enum:
-                                - url
                             - type: string
                               enum:
                                 - emoji
@@ -14539,9 +15749,6 @@ paths:
                             - type: string
                               enum:
                                 - ksuid
-                            - type: string
-                              enum:
-                                - duration
                             - type: string
                               enum:
                                 - ipv4
@@ -15003,10 +16210,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a31
+        - BearerAuthCookie: &a33
             - editor
             - admin
-        - BearerAuthHeader: *a31
+        - BearerAuthHeader: *a33
       responses:
         "200":
           description: OK
@@ -15089,10 +16296,10 @@ paths:
                 - image
                 - style
       security:
-        - BearerAuthCookie: &a32
+        - BearerAuthCookie: &a34
             - editor
             - admin
-        - BearerAuthHeader: *a32
+        - BearerAuthHeader: *a34
       responses:
         "200":
           description: OK
@@ -15671,13 +16878,16 @@ paths:
                             - type: string
                               enum:
                                 - e164
+                            - type: string
+                              enum:
+                                - url
+                            - type: string
+                              enum:
+                                - duration
                             - allOf:
                                 - type: string
                                 - type: object
                                   additionalProperties: true
-                            - type: string
-                              enum:
-                                - url
                             - type: string
                               enum:
                                 - emoji
@@ -15702,9 +16912,6 @@ paths:
                             - type: string
                               enum:
                                 - ksuid
-                            - type: string
-                              enum:
-                                - duration
                             - type: string
                               enum:
                                 - ipv4
@@ -16166,10 +17373,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a33
+        - BearerAuthCookie: &a35
             - editor
             - admin
-        - BearerAuthHeader: *a33
+        - BearerAuthHeader: *a35
       responses:
         "200":
           description: OK
@@ -16234,10 +17441,10 @@ paths:
                 - thumbnail
                 - duration
       security:
-        - BearerAuthCookie: &a34
+        - BearerAuthCookie: &a36
             - editor
             - admin
-        - BearerAuthHeader: *a34
+        - BearerAuthHeader: *a36
       responses:
         "200":
           description: OK
@@ -16466,8 +17673,6 @@ paths:
                             required:
                               - collection
                               - filename
-                  duration:
-                    type: number
                   source:
                     type: object
                     properties:
@@ -16715,13 +17920,15 @@ paths:
                             type: string
                           sv:
                             type: string
+                  duration:
+                    type: number
                 required:
                   - id
                   - name
                   - thumbnail
-                  - duration
                   - source
                   - captions
+                  - duration
         "401":
           description: Unauthorized
           content:
@@ -17257,13 +18464,16 @@ paths:
                             - type: string
                               enum:
                                 - e164
+                            - type: string
+                              enum:
+                                - url
+                            - type: string
+                              enum:
+                                - duration
                             - allOf:
                                 - type: string
                                 - type: object
                                   additionalProperties: true
-                            - type: string
-                              enum:
-                                - url
                             - type: string
                               enum:
                                 - emoji
@@ -17288,9 +18498,6 @@ paths:
                             - type: string
                               enum:
                                 - ksuid
-                            - type: string
-                              enum:
-                                - duration
                             - type: string
                               enum:
                                 - ipv4
@@ -17752,10 +18959,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a35
+        - BearerAuthCookie: &a37
             - editor
             - admin
-        - BearerAuthHeader: *a35
+        - BearerAuthHeader: *a37
       responses:
         "200":
           description: OK
@@ -17816,10 +19023,10 @@ paths:
                 - name
                 - description
       security:
-        - BearerAuthCookie: &a36
+        - BearerAuthCookie: &a38
             - editor
             - admin
-        - BearerAuthHeader: *a36
+        - BearerAuthHeader: *a38
       responses:
         "201":
           description: Created
@@ -17885,10 +19092,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a37
+        - BearerAuthCookie: &a39
             - editor
             - admin
-        - BearerAuthHeader: *a37
+        - BearerAuthHeader: *a39
       responses:
         "200":
           description: OK
@@ -17974,10 +19181,10 @@ paths:
                         - "null"
                     - type: string
       security:
-        - BearerAuthCookie: &a38
+        - BearerAuthCookie: &a40
             - editor
             - admin
-        - BearerAuthHeader: *a38
+        - BearerAuthHeader: *a40
       responses:
         "200":
           description: OK
@@ -18053,10 +19260,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a39
+        - BearerAuthCookie: &a41
             - editor
             - admin
-        - BearerAuthHeader: *a39
+        - BearerAuthHeader: *a41
       responses:
         "204":
           description: No Content
@@ -18154,10 +19361,10 @@ paths:
                   type: object
                   additionalProperties: true
       security:
-        - BearerAuthCookie: &a40
+        - BearerAuthCookie: &a42
             - editor
             - admin
-        - BearerAuthHeader: *a40
+        - BearerAuthHeader: *a42
       responses:
         "201":
           description: Created
@@ -18328,10 +19535,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a41
+        - BearerAuthCookie: &a43
             - editor
             - admin
-        - BearerAuthHeader: *a41
+        - BearerAuthHeader: *a43
       responses:
         "200":
           description: OK
@@ -18554,10 +19761,10 @@ paths:
                   type: object
                   additionalProperties: true
       security:
-        - BearerAuthCookie: &a42
+        - BearerAuthCookie: &a44
             - editor
             - admin
-        - BearerAuthHeader: *a42
+        - BearerAuthHeader: *a44
       responses:
         "200":
           description: OK
@@ -18737,10 +19944,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a43
+        - BearerAuthCookie: &a45
             - editor
             - admin
-        - BearerAuthHeader: *a43
+        - BearerAuthHeader: *a45
       responses:
         "204":
           description: No Content
@@ -18827,10 +20034,10 @@ paths:
                   type: object
                   additionalProperties: true
       security:
-        - BearerAuthCookie: &a44
+        - BearerAuthCookie: &a46
             - editor
             - admin
-        - BearerAuthHeader: *a44
+        - BearerAuthHeader: *a46
       responses:
         "201":
           description: Created
@@ -18968,10 +20175,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a45
+        - BearerAuthCookie: &a47
             - editor
             - admin
-        - BearerAuthHeader: *a45
+        - BearerAuthHeader: *a47
       responses:
         "200":
           description: OK
@@ -19163,10 +20370,10 @@ paths:
                   type: object
                   additionalProperties: true
       security:
-        - BearerAuthCookie: &a46
+        - BearerAuthCookie: &a48
             - editor
             - admin
-        - BearerAuthHeader: *a46
+        - BearerAuthHeader: *a48
       responses:
         "200":
           description: OK
@@ -19313,10 +20520,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a47
+        - BearerAuthCookie: &a49
             - editor
             - admin
-        - BearerAuthHeader: *a47
+        - BearerAuthHeader: *a49
       responses:
         "204":
           description: No Content
@@ -19375,10 +20582,10 @@ paths:
                     - false
                     - true
       security:
-        - BearerAuthCookie: &a48
+        - BearerAuthCookie: &a50
             - editor
             - admin
-        - BearerAuthHeader: *a48
+        - BearerAuthHeader: *a50
       responses:
         "201":
           description: Created
@@ -19487,10 +20694,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a49
+        - BearerAuthCookie: &a51
             - editor
             - admin
-        - BearerAuthHeader: *a49
+        - BearerAuthHeader: *a51
       responses:
         "200":
           description: OK
@@ -19607,10 +20814,10 @@ paths:
                     - false
                     - true
       security:
-        - BearerAuthCookie: &a50
+        - BearerAuthCookie: &a52
             - editor
             - admin
-        - BearerAuthHeader: *a50
+        - BearerAuthHeader: *a52
       responses:
         "200":
           description: OK
@@ -19728,10 +20935,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a51
+        - BearerAuthCookie: &a53
             - editor
             - admin
-        - BearerAuthHeader: *a51
+        - BearerAuthHeader: *a53
       responses:
         "204":
           description: No Content
@@ -19773,10 +20980,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a52
+        - BearerAuthCookie: &a54
             - editor
             - admin
-        - BearerAuthHeader: *a52
+        - BearerAuthHeader: *a54
       responses:
         "201":
           description: Created
@@ -19826,10 +21033,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a53
+        - BearerAuthCookie: &a55
             - editor
             - admin
-        - BearerAuthHeader: *a53
+        - BearerAuthHeader: *a55
       responses:
         "200":
           description: OK
@@ -19894,10 +21101,10 @@ paths:
                   items:
                     type: string
       security:
-        - BearerAuthCookie: &a54
+        - BearerAuthCookie: &a56
             - editor
             - admin
-        - BearerAuthHeader: *a54
+        - BearerAuthHeader: *a56
       responses:
         "200":
           description: OK
@@ -19969,10 +21176,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a55
+        - BearerAuthCookie: &a57
             - editor
             - admin
-        - BearerAuthHeader: *a55
+        - BearerAuthHeader: *a57
       responses:
         "204":
           description: No Content
@@ -20034,10 +21241,10 @@ paths:
                 - referencedItemId
                 - difficulty
       security:
-        - BearerAuthCookie: &a56
+        - BearerAuthCookie: &a58
             - editor
             - admin
-        - BearerAuthHeader: *a56
+        - BearerAuthHeader: *a58
       responses:
         "201":
           description: Created
@@ -20171,10 +21378,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a57
+        - BearerAuthCookie: &a59
             - editor
             - admin
-        - BearerAuthHeader: *a57
+        - BearerAuthHeader: *a59
       responses:
         "200":
           description: OK
@@ -20315,10 +21522,10 @@ paths:
                         - "null"
                     - type: integer
       security:
-        - BearerAuthCookie: &a58
+        - BearerAuthCookie: &a60
             - editor
             - admin
-        - BearerAuthHeader: *a58
+        - BearerAuthHeader: *a60
       responses:
         "200":
           description: OK
@@ -20461,10 +21668,10 @@ paths:
       tags:
         - Story assets
       security:
-        - BearerAuthCookie: &a59
+        - BearerAuthCookie: &a61
             - editor
             - admin
-        - BearerAuthHeader: *a59
+        - BearerAuthHeader: *a61
       responses:
         "204":
           description: No Content
@@ -20643,11 +21850,11 @@ paths:
                         - "null"
                     - type: string
       security:
-        - BearerAuthCookie: &a60
+        - BearerAuthCookie: &a62
             - participant
             - editor
             - admin
-        - BearerAuthHeader: *a60
+        - BearerAuthHeader: *a62
       responses:
         "201":
           description: Created
@@ -20910,11 +22117,11 @@ paths:
       tags:
         - Users
       security:
-        - BearerAuthCookie: &a61
+        - BearerAuthCookie: &a63
             - participant
             - editor
             - admin
-        - BearerAuthHeader: *a61
+        - BearerAuthHeader: *a63
       responses:
         "200":
           description: OK
@@ -21005,10 +22212,10 @@ paths:
               required:
                 - count
       security:
-        - BearerAuthCookie: &a62
+        - BearerAuthCookie: &a64
             - editor
             - admin
-        - BearerAuthHeader: *a62
+        - BearerAuthHeader: *a64
       responses:
         "201":
           description: Created
@@ -21419,9 +22626,9 @@ paths:
                 - authenticationMethods
                 - accessTokenKey
       security:
-        - BearerAuthCookie: &a63
+        - BearerAuthCookie: &a65
             - admin
-        - BearerAuthHeader: *a63
+        - BearerAuthHeader: *a65
       responses:
         "201":
           description: Created
@@ -21751,9 +22958,9 @@ paths:
       tags:
         - Clients
       security:
-        - BearerAuthCookie: &a64
+        - BearerAuthCookie: &a66
             - admin
-        - BearerAuthHeader: *a64
+        - BearerAuthHeader: *a66
       responses:
         "200":
           description: OK
@@ -22281,9 +23488,9 @@ paths:
                         - "null"
                     - type: string
       security:
-        - BearerAuthCookie: &a65
+        - BearerAuthCookie: &a67
             - admin
-        - BearerAuthHeader: *a65
+        - BearerAuthHeader: *a67
       responses:
         "200":
           description: OK
@@ -22623,9 +23830,9 @@ paths:
       tags:
         - Clients
       security:
-        - BearerAuthCookie: &a66
+        - BearerAuthCookie: &a68
             - admin
-        - BearerAuthHeader: *a66
+        - BearerAuthHeader: *a68
       responses:
         "204":
           description: No Content
@@ -22679,9 +23886,9 @@ paths:
                 - name
                 - scopes
       security:
-        - BearerAuthCookie: &a67
+        - BearerAuthCookie: &a69
             - admin
-        - BearerAuthHeader: *a67
+        - BearerAuthHeader: *a69
       responses:
         "201":
           description: Created
@@ -22836,9 +24043,9 @@ paths:
       tags:
         - Clients
       security:
-        - BearerAuthCookie: &a68
+        - BearerAuthCookie: &a70
             - admin
-        - BearerAuthHeader: *a68
+        - BearerAuthHeader: *a70
       responses:
         "200":
           description: OK
@@ -22998,9 +24205,9 @@ paths:
                     - type: string
                       format: date-time
       security:
-        - BearerAuthCookie: &a69
+        - BearerAuthCookie: &a71
             - admin
-        - BearerAuthHeader: *a69
+        - BearerAuthHeader: *a71
       responses:
         "200":
           description: OK
@@ -23164,9 +24371,9 @@ paths:
       tags:
         - Clients
       security:
-        - BearerAuthCookie: &a70
+        - BearerAuthCookie: &a72
             - admin
-        - BearerAuthHeader: *a70
+        - BearerAuthHeader: *a72
       responses:
         "204":
           description: No Content
@@ -23200,14 +24407,14 @@ paths:
     get:
       operationId: get_policies
       summary: Get policies
-      tags: &a73
+      tags: &a75
         - Policies
         - Assistant
-      security: &a74
-        - BearerAuthCookie: &a71
+      security: &a76
+        - BearerAuthCookie: &a73
             - admin
-        - BearerAuthHeader: *a71
-      responses: &a75
+        - BearerAuthHeader: *a73
+      responses: &a77
         "200":
           description: OK
           content:
@@ -23648,9 +24855,9 @@ paths:
                 - name
                 - version
       security:
-        - BearerAuthCookie: &a72
+        - BearerAuthCookie: &a74
             - admin
-        - BearerAuthHeader: *a72
+        - BearerAuthHeader: *a74
       responses:
         "201":
           description: Created
@@ -23886,9 +25093,9 @@ paths:
     get:
       operationId: get_policies_policyId
       summary: Get policy
-      tags: *a73
-      security: *a74
-      responses: *a75
+      tags: *a75
+      security: *a76
+      responses: *a77
       parameters:
         - name: policyId
           in: path
@@ -23920,9 +25127,9 @@ paths:
                   type: object
                   additionalProperties: true
       security:
-        - BearerAuthCookie: &a76
+        - BearerAuthCookie: &a78
             - admin
-        - BearerAuthHeader: *a76
+        - BearerAuthHeader: *a78
       responses:
         "200":
           description: OK
@@ -24172,9 +25379,9 @@ paths:
         - Policies
         - Assistant
       security:
-        - BearerAuthCookie: &a77
+        - BearerAuthCookie: &a79
             - admin
-        - BearerAuthHeader: *a77
+        - BearerAuthHeader: *a79
       responses:
         "204":
           description: No Content

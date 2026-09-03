@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import Header from '$lib/components/app/header/app-header.svelte';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import BreadcrumbMenu from '$lib/components/ui/breadcrumb-menu/breadcrumb-menu.svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
@@ -31,6 +32,7 @@
 	import MoreHorizontalIcon from '@lucide/svelte/icons/more-horizontal';
 	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import PlusIcon from '@lucide/svelte/icons/plus';
+	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import UserLockIcon from '@lucide/svelte/icons/user-lock';
 	import XIcon from '@lucide/svelte/icons/x';
 	import type { SubmitFunction } from '@sveltejs/kit';
@@ -41,6 +43,10 @@
 
 	let { data } = $props();
 	let stories = $derived(data.stories);
+	type Story = (typeof stories)[number];
+	let storyToDelete: Story | undefined = $state();
+	let isDeleteDialogOpen = $state(false);
+	let deletingStoryId: string | undefined = $state();
 
 	let isUploadPanelOpen = $state(false);
 	type UploadActionData = Extract<NonNullable<ActionData>, { form: 'upload' }>;
@@ -101,6 +107,34 @@
 	const onFileRejected: FileDropZoneProps['onFileRejected'] = async ({ reason, file }) => {
 		toast.error(`${file.name} failed to upload!`, { description: reason });
 	};
+
+	const requestDeleteStory = (story: Story) => {
+		storyToDelete = story;
+		isDeleteDialogOpen = true;
+	};
+
+	const deleteStory = async () => {
+		const story = storyToDelete;
+		if (!story || deletingStoryId) return;
+
+		deletingStoryId = story.id;
+		try {
+			const response = await fetch(resolve(`/api/stories/${story.id}`), { method: 'DELETE' });
+			if (!response.ok) {
+				const body = await response.json().catch(() => ({}));
+				throw new Error(body.message ?? 'Failed to delete story.');
+			}
+
+			toast.success('Story deleted successfully.');
+			isDeleteDialogOpen = false;
+			storyToDelete = undefined;
+			await invalidateAll();
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : 'Failed to delete story.');
+		} finally {
+			deletingStoryId = undefined;
+		}
+	};
 </script>
 
 <Header>
@@ -113,6 +147,34 @@
 		]}
 	/>
 </Header>
+
+<AlertDialog.Root bind:open={isDeleteDialogOpen}>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Media>
+				<TrashIcon class="text-destructive" />
+			</AlertDialog.Media>
+			<AlertDialog.Title>Delete story?</AlertDialog.Title>
+			<AlertDialog.Description>
+				This will permanently delete "{storyToDelete?.name}" and all of its parts and assets.
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel disabled={!!deletingStoryId}>Cancel</AlertDialog.Cancel>
+			<AlertDialog.Action
+				variant="destructive"
+				disabled={!!deletingStoryId}
+				onclick={(event) => {
+					event.preventDefault();
+					void deleteStory();
+				}}
+			>
+				{#if deletingStoryId}<LoaderCircleIcon class="size-4 animate-spin" />{/if}
+				Delete
+			</AlertDialog.Action>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>
 
 <div class="mx-auto w-full max-w-xl">
 	{#if stories.length}
@@ -188,6 +250,21 @@
 												Edit
 											</a>
 										{/snippet}
+									</DropdownMenu.Item>
+									<DropdownMenu.Item
+										class="text-destructive focus:text-destructive"
+										disabled={deletingStoryId === story.id}
+										onclick={(event) => {
+											event.stopPropagation();
+											requestDeleteStory(story);
+										}}
+									>
+										{#if deletingStoryId === story.id}
+											<LoaderCircleIcon class="animate-spin" />
+										{:else}
+											<TrashIcon />
+										{/if}
+										Delete
 									</DropdownMenu.Item>
 								</DropdownMenu.Group>
 							</DropdownMenu.Content>

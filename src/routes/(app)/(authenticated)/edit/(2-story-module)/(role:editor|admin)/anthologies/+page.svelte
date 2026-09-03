@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import Header from '$lib/components/app/header/app-header.svelte';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import BreadcrumbMenu from '$lib/components/ui/breadcrumb-menu/breadcrumb-menu.svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
@@ -30,6 +32,7 @@
 	import MoreHorizontalIcon from '@lucide/svelte/icons/more-horizontal';
 	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import PlusIcon from '@lucide/svelte/icons/plus';
+	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import UserLockIcon from '@lucide/svelte/icons/user-lock';
 	import XIcon from '@lucide/svelte/icons/x';
 	import type { SubmitFunction } from '@sveltejs/kit';
@@ -44,7 +47,11 @@
 	type Anthology = (typeof anthologies)[number];
 	let isEditorOpen: boolean = $state(false);
 	let anthologyToEdit: Anthology | undefined = $state();
+	let anthologyToDelete: Anthology | undefined = $state();
 	let includeStoryDefinitions = $state(false);
+	let deleteUnderlyingStories = $state(false);
+	let isDeleteDialogOpen = $state(false);
+	let deletingAnthologyId: string | undefined = $state();
 
 	let isUploadPanelOpen = $state(false);
 	type UploadActionData = Extract<NonNullable<ActionData>, { form: 'upload' }>;
@@ -110,6 +117,40 @@
 		resolve(
 			`/api/anthologies/${anthologyId}/io${includeStoryDefinitions ? '?includeStories=true' : ''}`
 		);
+
+	const requestDeleteAnthology = (anthology: Anthology) => {
+		anthologyToDelete = anthology;
+		isDeleteDialogOpen = true;
+	};
+
+	const deleteAnthology = async () => {
+		const anthology = anthologyToDelete;
+		if (!anthology || deletingAnthologyId) return;
+
+		deletingAnthologyId = anthology.id;
+		try {
+			const response = await fetch(
+				resolve(
+					`/api/anthologies/${anthology.id}${deleteUnderlyingStories ? '?deleteStories=true' : ''}`
+				),
+				{ method: 'DELETE' }
+			);
+
+			if (!response.ok) {
+				const body = await response.json().catch(() => ({}));
+				throw new Error(body.message ?? 'Failed to delete anthology.');
+			}
+
+			toast.success('Anthology deleted successfully.');
+			isDeleteDialogOpen = false;
+			anthologyToDelete = undefined;
+			await invalidateAll();
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : 'Failed to delete anthology.');
+		} finally {
+			deletingAnthologyId = undefined;
+		}
+	};
 </script>
 
 <Header>
@@ -126,6 +167,41 @@
 {#if isEditorOpen}
 	<Editor bind:isEditorOpen bind:anthology={anthologyToEdit} {data} />
 {/if}
+
+<AlertDialog.Root bind:open={isDeleteDialogOpen}>
+	<AlertDialog.Content>
+		<AlertDialog.Header>
+			<AlertDialog.Media>
+				<TrashIcon class="text-destructive" />
+			</AlertDialog.Media>
+			<AlertDialog.Title>Delete anthology?</AlertDialog.Title>
+			<AlertDialog.Description>
+				{#if deleteUnderlyingStories}
+					This will permanently delete "{anthologyToDelete?.name}" and its underlying stories.
+				{:else}
+					This will permanently delete "{anthologyToDelete?.name}". The underlying stories will stay
+					available.
+				{/if}
+			</AlertDialog.Description>
+		</AlertDialog.Header>
+		<AlertDialog.Footer>
+			<AlertDialog.Cancel disabled={!!deletingAnthologyId}>Cancel</AlertDialog.Cancel>
+			<AlertDialog.Action
+				variant="destructive"
+				disabled={!!deletingAnthologyId}
+				onclick={(event) => {
+					event.preventDefault();
+					void deleteAnthology();
+				}}
+			>
+				{#if deletingAnthologyId}
+					<LoaderCircleIcon class="size-4 animate-spin" />
+				{/if}
+				Delete
+			</AlertDialog.Action>
+		</AlertDialog.Footer>
+	</AlertDialog.Content>
+</AlertDialog.Root>
 
 <div class="mx-auto w-full max-w-xl">
 	{#if anthologies.length}
@@ -203,6 +279,37 @@
 											onclick={(event) => event.stopPropagation()}
 											onCheckedChange={(checked) => (includeStoryDefinitions = checked)}
 										/>
+									</DropdownMenu.Item>
+									<DropdownMenu.Separator />
+									<DropdownMenu.Item
+										class="justify-between text-muted-foreground"
+										onclick={(event) => {
+											event.preventDefault();
+											deleteUnderlyingStories = !deleteUnderlyingStories;
+										}}
+									>
+										<span>Delete stories</span>
+										<Switch
+											checked={deleteUnderlyingStories}
+											aria-label="Delete underlying stories when deleting an anthology"
+											onclick={(event) => event.stopPropagation()}
+											onCheckedChange={(checked) => (deleteUnderlyingStories = checked)}
+										/>
+									</DropdownMenu.Item>
+									<DropdownMenu.Item
+										class="text-destructive focus:text-destructive"
+										disabled={deletingAnthologyId === anthology.id}
+										onclick={(event) => {
+											event.stopPropagation();
+											requestDeleteAnthology(anthology);
+										}}
+									>
+										{#if deletingAnthologyId === anthology.id}
+											<LoaderCircleIcon class="animate-spin" />
+										{:else}
+											<TrashIcon />
+										{/if}
+										Delete
 									</DropdownMenu.Item>
 									<DropdownMenu.Separator />
 									<DropdownMenu.Item
