@@ -31,6 +31,7 @@ tags:
   - name: Clients
   - name: Policies
   - name: Assistant
+  - name: stories
 paths:
   /auth:
     post:
@@ -916,6 +917,16 @@ paths:
                       type: string
                     default:
                       type: string
+                configuration:
+                  oneOf:
+                    - type:
+                        - "null"
+                    - type: object
+                      properties:
+                        showPerformanceOverview:
+                          type: boolean
+                      required:
+                        - showPerformanceOverview
                 isPublished:
                   type: boolean
                 isPublic:
@@ -923,10 +934,12 @@ paths:
                 positions:
                   type: array
                   items: {}
-                  minItems: 1
               required:
                 - slug
                 - nameRaw
+                - configuration
+                - isPublished
+                - isPublic
                 - positions
       security:
         - BearerAuthCookie: &a6
@@ -1029,6 +1042,75 @@ paths:
                         type: string
                       sv:
                         type: string
+                  permissions:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: number
+                  createdBy:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                          image:
+                            oneOf:
+                              - type:
+                                  - "null"
+                              - type: object
+                                properties:
+                                  collection:
+                                    type: string
+                                    enum:
+                                      - externals
+                                      - internals
+                                      - clients
+                                      - users
+                                  filename:
+                                    type: string
+                                required:
+                                  - collection
+                                  - filename
+                          label:
+                            type: string
+                        required:
+                          - id
+                          - image
+                          - label
+                  updatedBy:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                          image:
+                            oneOf:
+                              - type:
+                                  - "null"
+                              - type: object
+                                properties:
+                                  collection:
+                                    type: string
+                                    enum:
+                                      - externals
+                                      - internals
+                                      - clients
+                                      - users
+                                  filename:
+                                    type: string
+                                required:
+                                  - collection
+                                  - filename
+                          label:
+                            type: string
+                        required:
+                          - id
+                          - image
+                          - label
                   positions:
                     type: array
                     items:
@@ -1062,6 +1144,9 @@ paths:
                   - isPublished
                   - isPublic
                   - nameRaw
+                  - permissions
+                  - createdBy
+                  - updatedBy
                   - positions
         "401":
           description: Unauthorized
@@ -1109,6 +1194,16 @@ paths:
                   type: string
                   minLength: 1
                 nameRaw: *a7
+                configuration:
+                  oneOf:
+                    - type:
+                        - "null"
+                    - type: object
+                      properties:
+                        showPerformanceOverview:
+                          type: boolean
+                      required:
+                        - showPerformanceOverview
                 isPublished:
                   type: boolean
                 isPublic:
@@ -1116,11 +1211,6 @@ paths:
                 positions:
                   type: array
                   items: {}
-                  minItems: 1
-              required:
-                - slug
-                - nameRaw
-                - positions
       security:
         - BearerAuthCookie: &a8
             - editor
@@ -1222,6 +1312,75 @@ paths:
                         type: string
                       sv:
                         type: string
+                  permissions:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: number
+                  createdBy:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                          image:
+                            oneOf:
+                              - type:
+                                  - "null"
+                              - type: object
+                                properties:
+                                  collection:
+                                    type: string
+                                    enum:
+                                      - externals
+                                      - internals
+                                      - clients
+                                      - users
+                                  filename:
+                                    type: string
+                                required:
+                                  - collection
+                                  - filename
+                          label:
+                            type: string
+                        required:
+                          - id
+                          - image
+                          - label
+                  updatedBy:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                          image:
+                            oneOf:
+                              - type:
+                                  - "null"
+                              - type: object
+                                properties:
+                                  collection:
+                                    type: string
+                                    enum:
+                                      - externals
+                                      - internals
+                                      - clients
+                                      - users
+                                  filename:
+                                    type: string
+                                required:
+                                  - collection
+                                  - filename
+                          label:
+                            type: string
+                        required:
+                          - id
+                          - image
+                          - label
                   positions:
                     type: array
                     items:
@@ -1255,6 +1414,9 @@ paths:
                   - isPublished
                   - isPublic
                   - nameRaw
+                  - permissions
+                  - createdBy
+                  - updatedBy
                   - positions
         "401":
           description: Unauthorized
@@ -4424,6 +4586,465 @@ paths:
           required: true
           schema:
             type: string
+    patch:
+      operationId: patch_stories_storyId
+      summary: PATCH /stories/{storyId}
+      tags:
+        - stories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                slug:
+                  type: string
+                name:
+                  type: object
+                  additionalProperties: true
+                defaultBackgroundColor:
+                  oneOf:
+                    - type:
+                        - "null"
+                    - type: string
+                thumbnail:
+                  type: object
+                  additionalProperties: true
+                configuration:
+                  oneOf:
+                    - type:
+                        - "null"
+                    - type: object
+                      additionalProperties:
+                        type: object
+                        additionalProperties: true
+                isPublished:
+                  type: boolean
+                  enum:
+                    - false
+                    - true
+                isPublic:
+                  type: boolean
+                  enum:
+                    - false
+                    - true
+      security:
+        - BearerAuthCookie: &a17
+            - editor
+            - admin
+        - BearerAuthHeader: *a17
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  slug:
+                    type: string
+                  name:
+                    type: object
+                    properties:
+                      default:
+                        type: string
+                      en:
+                        type: string
+                      bg:
+                        type: string
+                      ca:
+                        type: string
+                      da:
+                        type: string
+                      de:
+                        type: string
+                      es:
+                        type: string
+                      fi:
+                        type: string
+                      fr:
+                        type: string
+                      it:
+                        type: string
+                      nl:
+                        type: string
+                      no:
+                        type: string
+                      pt:
+                        type: string
+                      sv:
+                        type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+                  clientId:
+                    type: string
+                  configuration:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        additionalProperties: true
+                  isPublished:
+                    type: boolean
+                  isPublic:
+                    type: boolean
+                  defaultBackgroundColor:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: string
+                  thumbnail:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          default:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          en:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          bg:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          ca:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          da:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          de:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          es:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          fi:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          fr:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          it:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          nl:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          no:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          pt:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          sv:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                  permissions:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: number
+                  createdBy:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                          image:
+                            oneOf:
+                              - type:
+                                  - "null"
+                              - type: object
+                                properties:
+                                  collection:
+                                    type: string
+                                    enum:
+                                      - externals
+                                      - internals
+                                      - clients
+                                      - users
+                                  filename:
+                                    type: string
+                                required:
+                                  - collection
+                                  - filename
+                          label:
+                            oneOf:
+                              - type:
+                                  - "null"
+                              - type: string
+                        required:
+                          - id
+                          - image
+                          - label
+                  updatedBy:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                          image:
+                            oneOf:
+                              - type:
+                                  - "null"
+                              - type: object
+                                properties:
+                                  collection:
+                                    type: string
+                                    enum:
+                                      - externals
+                                      - internals
+                                      - clients
+                                      - users
+                                  filename:
+                                    type: string
+                                required:
+                                  - collection
+                                  - filename
+                          label:
+                            oneOf:
+                              - type:
+                                  - "null"
+                              - type: string
+                        required:
+                          - id
+                          - image
+                          - label
+                required:
+                  - id
+                  - slug
+                  - name
+                  - createdAt
+                  - updatedAt
+                  - clientId
+                  - configuration
+                  - isPublished
+                  - isPublic
+                  - defaultBackgroundColor
+                  - thumbnail
+                  - permissions
+                  - createdBy
+                  - updatedBy
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: *a2
+        "403":
+          description: Editor or Admin or Editor or Admin role required
+          content:
+            application/json:
+              schema: *a2
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: *a2
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    properties:
+                      slug:
+                        type: array
+                        items:
+                          type: string
+                    required:
+                      - slug
+                required:
+                  - errors
+      parameters:
+        - name: storyId
+          in: path
+          required: true
+          schema:
+            type: string
     delete:
       operationId: delete_stories_storyId
       summary: Delete story
@@ -4431,10 +5052,10 @@ paths:
         - Stories
         - Assistant
       security:
-        - BearerAuthCookie: &a17
+        - BearerAuthCookie: &a18
             - editor
             - admin
-        - BearerAuthHeader: *a17
+        - BearerAuthHeader: *a18
       responses:
         "200":
           description: OK
@@ -4570,10 +5191,10 @@ paths:
         - Stories
         - Assistant
       security:
-        - BearerAuthCookie: &a18
+        - BearerAuthCookie: &a19
             - editor
             - admin
-        - BearerAuthHeader: *a18
+        - BearerAuthHeader: *a19
       responses:
         "200":
           description: OK
@@ -4604,10 +5225,10 @@ paths:
         - Stories
         - Assistant
       security:
-        - BearerAuthCookie: &a19
+        - BearerAuthCookie: &a20
             - editor
             - admin
-        - BearerAuthHeader: *a19
+        - BearerAuthHeader: *a20
       responses:
         "200":
           description: OK
@@ -7338,10 +7959,10 @@ paths:
                 - foregroundType
                 - position
       security:
-        - BearerAuthCookie: &a20
+        - BearerAuthCookie: &a21
             - editor
             - admin
-        - BearerAuthHeader: *a20
+        - BearerAuthHeader: *a21
       responses:
         "200":
           description: OK
@@ -8831,10 +9452,10 @@ paths:
         - Stories
         - Assistant
       security:
-        - BearerAuthCookie: &a21
+        - BearerAuthCookie: &a22
             - editor
             - admin
-        - BearerAuthHeader: *a21
+        - BearerAuthHeader: *a22
       responses:
         "200":
           description: OK
@@ -8894,10 +9515,10 @@ paths:
                 - handle
                 - target
       security:
-        - BearerAuthCookie: &a22
+        - BearerAuthCookie: &a23
             - editor
             - admin
-        - BearerAuthHeader: *a22
+        - BearerAuthHeader: *a23
       responses:
         "200":
           description: OK
@@ -9959,10 +10580,10 @@ paths:
                 - handle
                 - target
       security:
-        - BearerAuthCookie: &a23
+        - BearerAuthCookie: &a24
             - editor
             - admin
-        - BearerAuthHeader: *a23
+        - BearerAuthHeader: *a24
       responses:
         "200":
           description: OK
@@ -11052,10 +11673,10 @@ paths:
               required:
                 - rules
       security:
-        - BearerAuthCookie: &a24
+        - BearerAuthCookie: &a25
             - editor
             - admin
-        - BearerAuthHeader: *a24
+        - BearerAuthHeader: *a25
       responses:
         "200":
           description: OK
@@ -12292,10 +12913,10 @@ paths:
                 - difficulty
                 - rules
       security:
-        - BearerAuthCookie: &a25
+        - BearerAuthCookie: &a26
             - editor
             - admin
-        - BearerAuthHeader: *a25
+        - BearerAuthHeader: *a26
       responses:
         "200":
           description: OK
@@ -13646,10 +14267,10 @@ paths:
               required:
                 - userId
       security:
-        - BearerAuthCookie: &a26
+        - BearerAuthCookie: &a27
             - editor
             - admin
-        - BearerAuthHeader: *a26
+        - BearerAuthHeader: *a27
       responses:
         "201":
           description: Created
@@ -13658,6 +14279,8 @@ paths:
               schema:
                 type: object
                 properties:
+                  storyId:
+                    type: string
                   id:
                     type: string
                   createdAt:
@@ -13667,8 +14290,6 @@ paths:
                     type: string
                     format: date-time
                   userId:
-                    type: string
-                  storyId:
                     type: string
                   role:
                     type: string
@@ -13747,11 +14368,11 @@ paths:
                           - label
                           - image
                 required:
+                  - storyId
                   - id
                   - createdAt
                   - updatedAt
                   - userId
-                  - storyId
                   - role
                   - createdBy
                   - updatedBy
@@ -13797,10 +14418,10 @@ paths:
         - Stories
         - Assistant
       security:
-        - BearerAuthCookie: &a27
+        - BearerAuthCookie: &a28
             - editor
             - admin
-        - BearerAuthHeader: *a27
+        - BearerAuthHeader: *a28
       responses:
         "200":
           description: OK
@@ -13809,6 +14430,8 @@ paths:
               schema:
                 type: object
                 properties:
+                  storyId:
+                    type: string
                   id:
                     type: string
                   createdAt:
@@ -13818,8 +14441,6 @@ paths:
                     type: string
                     format: date-time
                   userId:
-                    type: string
-                  storyId:
                     type: string
                   role:
                     type: string
@@ -13898,11 +14519,11 @@ paths:
                           - label
                           - image
                 required:
+                  - storyId
                   - id
                   - createdAt
                   - updatedAt
                   - userId
-                  - storyId
                   - role
                   - createdBy
                   - updatedBy
@@ -13950,10 +14571,10 @@ paths:
                     - editor
                     - owner
       security:
-        - BearerAuthCookie: &a28
+        - BearerAuthCookie: &a29
             - editor
             - admin
-        - BearerAuthHeader: *a28
+        - BearerAuthHeader: *a29
       responses:
         "200":
           description: OK
@@ -13962,6 +14583,8 @@ paths:
               schema:
                 type: object
                 properties:
+                  storyId:
+                    type: string
                   id:
                     type: string
                   createdAt:
@@ -13971,8 +14594,6 @@ paths:
                     type: string
                     format: date-time
                   userId:
-                    type: string
-                  storyId:
                     type: string
                   role:
                     type: string
@@ -14051,11 +14672,11 @@ paths:
                           - label
                           - image
                 required:
+                  - storyId
                   - id
                   - createdAt
                   - updatedAt
                   - userId
-                  - storyId
                   - role
                   - createdBy
                   - updatedBy
@@ -14110,10 +14731,10 @@ paths:
         - Stories
         - Assistant
       security:
-        - BearerAuthCookie: &a29
+        - BearerAuthCookie: &a30
             - editor
             - admin
-        - BearerAuthHeader: *a29
+        - BearerAuthHeader: *a30
       responses:
         "204":
           description: No Content
@@ -14175,10 +14796,10 @@ paths:
                 - title
                 - message
       security:
-        - BearerAuthCookie: &a30
+        - BearerAuthCookie: &a31
             - editor
             - admin
-        - BearerAuthHeader: *a30
+        - BearerAuthHeader: *a31
       responses:
         "200":
           description: OK
@@ -15295,10 +15916,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a31
+        - BearerAuthCookie: &a32
             - editor
             - admin
-        - BearerAuthHeader: *a31
+        - BearerAuthHeader: *a32
       responses:
         "200":
           description: OK
@@ -15342,10 +15963,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a32
+        - BearerAuthCookie: &a33
             - editor
             - admin
-        - BearerAuthHeader: *a32
+        - BearerAuthHeader: *a33
       responses:
         "200":
           description: OK
@@ -15415,10 +16036,10 @@ paths:
                 - type
                 - asset
       security:
-        - BearerAuthCookie: &a33
+        - BearerAuthCookie: &a34
             - editor
             - admin
-        - BearerAuthHeader: *a33
+        - BearerAuthHeader: *a34
       responses:
         "201":
           description: Created
@@ -15497,10 +16118,10 @@ paths:
                 - type
                 - asset
       security:
-        - BearerAuthCookie: &a34
+        - BearerAuthCookie: &a35
             - editor
             - admin
-        - BearerAuthHeader: *a34
+        - BearerAuthHeader: *a35
       responses:
         "200":
           description: OK
@@ -15621,10 +16242,10 @@ paths:
                 - name
                 - questions
       security:
-        - BearerAuthCookie: &a35
+        - BearerAuthCookie: &a36
             - editor
             - admin
-        - BearerAuthHeader: *a35
+        - BearerAuthHeader: *a36
       responses:
         "200":
           description: OK
@@ -16841,10 +17462,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a36
+        - BearerAuthCookie: &a37
             - editor
             - admin
-        - BearerAuthHeader: *a36
+        - BearerAuthHeader: *a37
       responses:
         "200":
           description: OK
@@ -16928,10 +17549,10 @@ paths:
                 - image
                 - style
       security:
-        - BearerAuthCookie: &a37
+        - BearerAuthCookie: &a38
             - editor
             - admin
-        - BearerAuthHeader: *a37
+        - BearerAuthHeader: *a38
       responses:
         "200":
           description: OK
@@ -18006,10 +18627,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a38
+        - BearerAuthCookie: &a39
             - editor
             - admin
-        - BearerAuthHeader: *a38
+        - BearerAuthHeader: *a39
       responses:
         "200":
           description: OK
@@ -18075,10 +18696,10 @@ paths:
                 - thumbnail
                 - duration
       security:
-        - BearerAuthCookie: &a39
+        - BearerAuthCookie: &a40
             - editor
             - admin
-        - BearerAuthHeader: *a39
+        - BearerAuthHeader: *a40
       responses:
         "200":
           description: OK
@@ -19594,10 +20215,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a40
+        - BearerAuthCookie: &a41
             - editor
             - admin
-        - BearerAuthHeader: *a40
+        - BearerAuthHeader: *a41
       responses:
         "200":
           description: OK
@@ -19665,10 +20286,10 @@ paths:
                 - name
                 - description
       security:
-        - BearerAuthCookie: &a41
+        - BearerAuthCookie: &a42
             - editor
             - admin
-        - BearerAuthHeader: *a41
+        - BearerAuthHeader: *a42
       responses:
         "201":
           description: Created
@@ -19799,10 +20420,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a42
+        - BearerAuthCookie: &a43
             - editor
             - admin
-        - BearerAuthHeader: *a42
+        - BearerAuthHeader: *a43
       responses:
         "200":
           description: OK
@@ -19958,10 +20579,10 @@ paths:
                         - "null"
                     - *a7
       security:
-        - BearerAuthCookie: &a43
+        - BearerAuthCookie: &a44
             - editor
             - admin
-        - BearerAuthHeader: *a43
+        - BearerAuthHeader: *a44
       responses:
         "200":
           description: OK
@@ -20102,10 +20723,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a44
+        - BearerAuthCookie: &a45
             - editor
             - admin
-        - BearerAuthHeader: *a44
+        - BearerAuthHeader: *a45
       responses:
         "204":
           description: No Content
@@ -20204,10 +20825,10 @@ paths:
                   type: object
                   additionalProperties: true
       security:
-        - BearerAuthCookie: &a45
+        - BearerAuthCookie: &a46
             - editor
             - admin
-        - BearerAuthHeader: *a45
+        - BearerAuthHeader: *a46
       responses:
         "201":
           description: Created
@@ -20379,10 +21000,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a46
+        - BearerAuthCookie: &a47
             - editor
             - admin
-        - BearerAuthHeader: *a46
+        - BearerAuthHeader: *a47
       responses:
         "200":
           description: OK
@@ -20606,10 +21227,10 @@ paths:
                   type: object
                   additionalProperties: true
       security:
-        - BearerAuthCookie: &a47
+        - BearerAuthCookie: &a48
             - editor
             - admin
-        - BearerAuthHeader: *a47
+        - BearerAuthHeader: *a48
       responses:
         "200":
           description: OK
@@ -20790,10 +21411,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a48
+        - BearerAuthCookie: &a49
             - editor
             - admin
-        - BearerAuthHeader: *a48
+        - BearerAuthHeader: *a49
       responses:
         "204":
           description: No Content
@@ -20881,10 +21502,10 @@ paths:
                   type: object
                   additionalProperties: true
       security:
-        - BearerAuthCookie: &a49
+        - BearerAuthCookie: &a50
             - editor
             - admin
-        - BearerAuthHeader: *a49
+        - BearerAuthHeader: *a50
       responses:
         "201":
           description: Created
@@ -21023,10 +21644,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a50
+        - BearerAuthCookie: &a51
             - editor
             - admin
-        - BearerAuthHeader: *a50
+        - BearerAuthHeader: *a51
       responses:
         "200":
           description: OK
@@ -21219,10 +21840,10 @@ paths:
                   type: object
                   additionalProperties: true
       security:
-        - BearerAuthCookie: &a51
+        - BearerAuthCookie: &a52
             - editor
             - admin
-        - BearerAuthHeader: *a51
+        - BearerAuthHeader: *a52
       responses:
         "200":
           description: OK
@@ -21370,10 +21991,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a52
+        - BearerAuthCookie: &a53
             - editor
             - admin
-        - BearerAuthHeader: *a52
+        - BearerAuthHeader: *a53
       responses:
         "204":
           description: No Content
@@ -21433,10 +22054,10 @@ paths:
                     - false
                     - true
       security:
-        - BearerAuthCookie: &a53
+        - BearerAuthCookie: &a54
             - editor
             - admin
-        - BearerAuthHeader: *a53
+        - BearerAuthHeader: *a54
       responses:
         "201":
           description: Created
@@ -21546,10 +22167,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a54
+        - BearerAuthCookie: &a55
             - editor
             - admin
-        - BearerAuthHeader: *a54
+        - BearerAuthHeader: *a55
       responses:
         "200":
           description: OK
@@ -21667,10 +22288,10 @@ paths:
                     - false
                     - true
       security:
-        - BearerAuthCookie: &a55
+        - BearerAuthCookie: &a56
             - editor
             - admin
-        - BearerAuthHeader: *a55
+        - BearerAuthHeader: *a56
       responses:
         "200":
           description: OK
@@ -21789,10 +22410,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a56
+        - BearerAuthCookie: &a57
             - editor
             - admin
-        - BearerAuthHeader: *a56
+        - BearerAuthHeader: *a57
       responses:
         "204":
           description: No Content
@@ -21835,10 +22456,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a57
+        - BearerAuthCookie: &a58
             - editor
             - admin
-        - BearerAuthHeader: *a57
+        - BearerAuthHeader: *a58
       responses:
         "200":
           description: OK
@@ -21869,10 +22490,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a58
+        - BearerAuthCookie: &a59
             - editor
             - admin
-        - BearerAuthHeader: *a58
+        - BearerAuthHeader: *a59
       responses:
         "201":
           description: Created
@@ -23317,10 +23938,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a59
+        - BearerAuthCookie: &a60
             - editor
             - admin
-        - BearerAuthHeader: *a59
+        - BearerAuthHeader: *a60
       responses:
         "201":
           description: Created
@@ -23371,10 +23992,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a60
+        - BearerAuthCookie: &a61
             - editor
             - admin
-        - BearerAuthHeader: *a60
+        - BearerAuthHeader: *a61
       responses:
         "200":
           description: OK
@@ -23440,10 +24061,10 @@ paths:
                   items:
                     type: string
       security:
-        - BearerAuthCookie: &a61
+        - BearerAuthCookie: &a62
             - editor
             - admin
-        - BearerAuthHeader: *a61
+        - BearerAuthHeader: *a62
       responses:
         "200":
           description: OK
@@ -23516,10 +24137,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a62
+        - BearerAuthCookie: &a63
             - editor
             - admin
-        - BearerAuthHeader: *a62
+        - BearerAuthHeader: *a63
       responses:
         "204":
           description: No Content
@@ -23582,10 +24203,10 @@ paths:
                 - referencedItemId
                 - difficulty
       security:
-        - BearerAuthCookie: &a63
+        - BearerAuthCookie: &a64
             - editor
             - admin
-        - BearerAuthHeader: *a63
+        - BearerAuthHeader: *a64
       responses:
         "201":
           description: Created
@@ -23720,10 +24341,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a64
+        - BearerAuthCookie: &a65
             - editor
             - admin
-        - BearerAuthHeader: *a64
+        - BearerAuthHeader: *a65
       responses:
         "200":
           description: OK
@@ -23865,10 +24486,10 @@ paths:
                         - "null"
                     - type: integer
       security:
-        - BearerAuthCookie: &a65
+        - BearerAuthCookie: &a66
             - editor
             - admin
-        - BearerAuthHeader: *a65
+        - BearerAuthHeader: *a66
       responses:
         "200":
           description: OK
@@ -24012,10 +24633,10 @@ paths:
         - Story assets
         - Assistant
       security:
-        - BearerAuthCookie: &a66
+        - BearerAuthCookie: &a67
             - editor
             - admin
-        - BearerAuthHeader: *a66
+        - BearerAuthHeader: *a67
       responses:
         "204":
           description: No Content
@@ -24194,11 +24815,11 @@ paths:
                         - "null"
                     - type: string
       security:
-        - BearerAuthCookie: &a67
+        - BearerAuthCookie: &a68
             - participant
             - editor
             - admin
-        - BearerAuthHeader: *a67
+        - BearerAuthHeader: *a68
       responses:
         "201":
           description: Created
@@ -24461,11 +25082,11 @@ paths:
       tags:
         - Users
       security:
-        - BearerAuthCookie: &a68
+        - BearerAuthCookie: &a69
             - participant
             - editor
             - admin
-        - BearerAuthHeader: *a68
+        - BearerAuthHeader: *a69
       responses:
         "200":
           description: OK
@@ -24556,10 +25177,10 @@ paths:
               required:
                 - count
       security:
-        - BearerAuthCookie: &a69
+        - BearerAuthCookie: &a70
             - editor
             - admin
-        - BearerAuthHeader: *a69
+        - BearerAuthHeader: *a70
       responses:
         "201":
           description: Created
@@ -24970,9 +25591,9 @@ paths:
                 - authenticationMethods
                 - accessTokenKey
       security:
-        - BearerAuthCookie: &a70
+        - BearerAuthCookie: &a71
             - admin
-        - BearerAuthHeader: *a70
+        - BearerAuthHeader: *a71
       responses:
         "201":
           description: Created
@@ -25302,9 +25923,9 @@ paths:
       tags:
         - Clients
       security:
-        - BearerAuthCookie: &a71
+        - BearerAuthCookie: &a72
             - admin
-        - BearerAuthHeader: *a71
+        - BearerAuthHeader: *a72
       responses:
         "200":
           description: OK
@@ -25832,9 +26453,9 @@ paths:
                         - "null"
                     - type: string
       security:
-        - BearerAuthCookie: &a72
+        - BearerAuthCookie: &a73
             - admin
-        - BearerAuthHeader: *a72
+        - BearerAuthHeader: *a73
       responses:
         "200":
           description: OK
@@ -26174,9 +26795,9 @@ paths:
       tags:
         - Clients
       security:
-        - BearerAuthCookie: &a73
+        - BearerAuthCookie: &a74
             - admin
-        - BearerAuthHeader: *a73
+        - BearerAuthHeader: *a74
       responses:
         "204":
           description: No Content
@@ -26230,9 +26851,9 @@ paths:
                 - name
                 - scopes
       security:
-        - BearerAuthCookie: &a74
+        - BearerAuthCookie: &a75
             - admin
-        - BearerAuthHeader: *a74
+        - BearerAuthHeader: *a75
       responses:
         "201":
           description: Created
@@ -26387,9 +27008,9 @@ paths:
       tags:
         - Clients
       security:
-        - BearerAuthCookie: &a75
+        - BearerAuthCookie: &a76
             - admin
-        - BearerAuthHeader: *a75
+        - BearerAuthHeader: *a76
       responses:
         "200":
           description: OK
@@ -26549,9 +27170,9 @@ paths:
                     - type: string
                       format: date-time
       security:
-        - BearerAuthCookie: &a76
+        - BearerAuthCookie: &a77
             - admin
-        - BearerAuthHeader: *a76
+        - BearerAuthHeader: *a77
       responses:
         "200":
           description: OK
@@ -26715,9 +27336,9 @@ paths:
       tags:
         - Clients
       security:
-        - BearerAuthCookie: &a77
+        - BearerAuthCookie: &a78
             - admin
-        - BearerAuthHeader: *a77
+        - BearerAuthHeader: *a78
       responses:
         "204":
           description: No Content
@@ -26751,14 +27372,14 @@ paths:
     get:
       operationId: get_policies
       summary: Get policies
-      tags: &a80
+      tags: &a81
         - Policies
         - Assistant
-      security: &a81
-        - BearerAuthCookie: &a78
+      security: &a82
+        - BearerAuthCookie: &a79
             - admin
-        - BearerAuthHeader: *a78
-      responses: &a82
+        - BearerAuthHeader: *a79
+      responses: &a83
         "200":
           description: OK
           content:
@@ -27199,9 +27820,9 @@ paths:
                 - name
                 - version
       security:
-        - BearerAuthCookie: &a79
+        - BearerAuthCookie: &a80
             - admin
-        - BearerAuthHeader: *a79
+        - BearerAuthHeader: *a80
       responses:
         "201":
           description: Created
@@ -27437,9 +28058,9 @@ paths:
     get:
       operationId: get_policies_policyId
       summary: Get policy
-      tags: *a80
-      security: *a81
-      responses: *a82
+      tags: *a81
+      security: *a82
+      responses: *a83
       parameters:
         - name: policyId
           in: path
@@ -27471,9 +28092,9 @@ paths:
                   type: object
                   additionalProperties: true
       security:
-        - BearerAuthCookie: &a83
+        - BearerAuthCookie: &a84
             - admin
-        - BearerAuthHeader: *a83
+        - BearerAuthHeader: *a84
       responses:
         "200":
           description: OK
@@ -27723,9 +28344,9 @@ paths:
         - Policies
         - Assistant
       security:
-        - BearerAuthCookie: &a84
+        - BearerAuthCookie: &a85
             - admin
-        - BearerAuthHeader: *a84
+        - BearerAuthHeader: *a85
       responses:
         "204":
           description: No Content
@@ -27750,3 +28371,443 @@ paths:
           required: true
           schema:
             type: string
+  /stories:
+    post:
+      operationId: post_stories
+      summary: POST /stories/{storyId}
+      tags:
+        - stories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                slug:
+                  type: string
+                  minLength: 1
+                name: *a7
+                defaultBackgroundColor:
+                  oneOf:
+                    - type:
+                        - "null"
+                    - type: string
+                isPublished:
+                  type: boolean
+                isPublic:
+                  type: boolean
+                configuration:
+                  oneOf:
+                    - type:
+                        - "null"
+                    - type: object
+                      additionalProperties: {}
+              required:
+                - slug
+                - name
+      security:
+        - BearerAuthCookie: &a86
+            - editor
+            - admin
+        - BearerAuthHeader: *a86
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  slug:
+                    type: string
+                  name:
+                    type: object
+                    properties:
+                      default:
+                        type: string
+                      en:
+                        type: string
+                      bg:
+                        type: string
+                      ca:
+                        type: string
+                      da:
+                        type: string
+                      de:
+                        type: string
+                      es:
+                        type: string
+                      fi:
+                        type: string
+                      fr:
+                        type: string
+                      it:
+                        type: string
+                      nl:
+                        type: string
+                      no:
+                        type: string
+                      pt:
+                        type: string
+                      sv:
+                        type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+                  clientId:
+                    type: string
+                  configuration:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        additionalProperties: true
+                  isPublished:
+                    type: boolean
+                  isPublic:
+                    type: boolean
+                  defaultBackgroundColor:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: string
+                  thumbnail:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          default:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          en:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          bg:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          ca:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          da:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          de:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          es:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          fi:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          fr:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          it:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          nl:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          no:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          pt:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          sv:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                  permissions:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: number
+                  createdBy:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                          image:
+                            oneOf:
+                              - type:
+                                  - "null"
+                              - type: object
+                                properties:
+                                  collection:
+                                    type: string
+                                    enum:
+                                      - externals
+                                      - internals
+                                      - clients
+                                      - users
+                                  filename:
+                                    type: string
+                                required:
+                                  - collection
+                                  - filename
+                          label:
+                            oneOf:
+                              - type:
+                                  - "null"
+                              - type: string
+                        required:
+                          - id
+                          - image
+                          - label
+                  updatedBy:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                          image:
+                            oneOf:
+                              - type:
+                                  - "null"
+                              - type: object
+                                properties:
+                                  collection:
+                                    type: string
+                                    enum:
+                                      - externals
+                                      - internals
+                                      - clients
+                                      - users
+                                  filename:
+                                    type: string
+                                required:
+                                  - collection
+                                  - filename
+                          label:
+                            oneOf:
+                              - type:
+                                  - "null"
+                              - type: string
+                        required:
+                          - id
+                          - image
+                          - label
+                required:
+                  - id
+                  - slug
+                  - name
+                  - createdAt
+                  - updatedAt
+                  - clientId
+                  - configuration
+                  - isPublished
+                  - isPublic
+                  - defaultBackgroundColor
+                  - thumbnail
+                  - permissions
+                  - createdBy
+                  - updatedBy
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: *a2
+        "403":
+          description: Editor or Admin or Editor or Admin role required
+          content:
+            application/json:
+              schema: *a2
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    properties:
+                      slug:
+                        type: array
+                        items:
+                          type: string
+                    required:
+                      - slug
+                required:
+                  - errors
