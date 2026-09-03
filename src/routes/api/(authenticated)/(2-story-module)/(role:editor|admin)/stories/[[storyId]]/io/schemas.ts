@@ -96,6 +96,11 @@ const taxonomyDraftLogicRuleSchema = z.object({
 	duration: rangeSchema
 });
 
+const taxonomyDraftAttributeOptionSchema = z.object({
+	id: z.string().min(1),
+	slug: z.string().min(1)
+});
+
 const taxonomyDraftForPartSchema = z.object({
 	taxonomySlug: z.string().min(1),
 	nrOfRounds: z.number().int().nullable(),
@@ -105,6 +110,7 @@ const taxonomyDraftForPartSchema = z.object({
 	difficulty: z.number().int().nullable(),
 	defaultNextPartId: z.string().min(1).nullable(),
 	draftedAttributeIds: z.array(z.string().min(1)).nullish().default([]),
+	attributeOptions: z.array(taxonomyDraftAttributeOptionSchema).nullish().default([]),
 	draftedCategoryIds: z.array(z.string().min(1)).nullish().default([]),
 	draftedItemIds: z.array(z.string().min(1)).nullish().default([]),
 	rules: z.array(taxonomyDraftLogicRuleSchema)
@@ -137,6 +143,7 @@ export const schema = z.object({
 	slug: z.string().min(1),
 	name: translatableValidator,
 	defaultBackgroundColor: z.string().nullable().default(null),
+	thumbnail: translatableMediaValidator.nullable().default(null),
 	isPublished: z.boolean(),
 	isPublic: z.boolean(),
 	videos: z.array(videoSchema),

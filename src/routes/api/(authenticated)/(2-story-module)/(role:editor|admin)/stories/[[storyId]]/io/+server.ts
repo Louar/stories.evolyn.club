@@ -1,7 +1,7 @@
 import { db } from '$lib/db/database';
 import { findOneStoryById } from '$lib/db/repositories/2-story-module';
 import { requireParam } from '$lib/server/utils.server';
-import { json } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 import YAML from 'yaml';
 import type { RequestHandler } from './$types';
 import { schema } from './schemas';
@@ -82,6 +82,55 @@ export const POST = (async ({ locals, request }) => {
 		);
 	}
 
+	const attributeSlugsByTaxonomyId = new Map<string, Set<string>>();
+	const attributeSlugByImportedId = new Map<string, string>();
+	const missingDraftedAttributeIds: string[] = [];
+	for (const part_raw of story_raw.parts) {
+		const draft_raw = part_raw.taxonomyDraftForPart;
+		if (!draft_raw) continue;
+
+		const taxonomyId = taxonomyIdBySlug.get(draft_raw.taxonomySlug)!;
+		const attributeSlugById = new Map(
+			(draft_raw.attributeOptions ?? []).map((attribute) => [attribute.id, attribute.slug])
+		);
+		for (const attributeId of draft_raw.draftedAttributeIds ?? []) {
+			const attributeSlug = attributeSlugById.get(attributeId);
+			if (!attributeSlug) {
+				missingDraftedAttributeIds.push(attributeId);
+				continue;
+			}
+
+			attributeSlugByImportedId.set(attributeId, attributeSlug);
+			const attributeSlugs = attributeSlugsByTaxonomyId.get(taxonomyId) ?? new Set<string>();
+			attributeSlugs.add(attributeSlug);
+			attributeSlugsByTaxonomyId.set(taxonomyId, attributeSlugs);
+		}
+	}
+	if (missingDraftedAttributeIds.length) {
+		return json(
+			{
+				message: 'Some drafted attributes are missing from attributeOptions',
+				attributeIds: [...new Set(missingDraftedAttributeIds)]
+			},
+			{ status: 422 }
+		);
+	}
+
+	const attributeIdByTaxonomyIdAndSlug = new Map<string, string>();
+	for (const [taxonomyId, attributeSlugs] of attributeSlugsByTaxonomyId) {
+		const attributes = attributeSlugs.size
+			? await db
+					.selectFrom('attribute')
+					.where('attribute.taxonomyId', '=', taxonomyId)
+					.where('attribute.slug', 'in', [...attributeSlugs])
+					.select(['attribute.id', 'attribute.slug'])
+					.execute()
+			: [];
+		for (const attribute of attributes) {
+			attributeIdByTaxonomyIdAndSlug.set(`${taxonomyId}:${attribute.slug}`, attribute.id);
+		}
+	}
+
 	const storyId = await db.transaction().execute(async (trx) => {
 		// 1. Story
 		let storySlug = story_raw.slug;
@@ -100,6 +149,7 @@ export const POST = (async ({ locals, request }) => {
 				slug: storySlug,
 				name: JSON.stringify(story_raw.name),
 				defaultBackgroundColor: story_raw.defaultBackgroundColor,
+				thumbnail: JSON.stringify(story_raw.thumbnail),
 				configuration: JSON.stringify(story_raw.configuration),
 				isPublished: story_raw.isPublished,
 				isPublic: story_raw.isPublic,
@@ -353,7 +403,15 @@ export const POST = (async ({ locals, request }) => {
 				.executeTakeFirstOrThrow();
 			if (part_raw.id?.length) mapOfPartsWithTaxonomyDraft.set(part_raw.id, draft.id);
 
-			const draftedAttributeIds = draft_raw.draftedAttributeIds ?? [];
+			const draftedAttributeIds = (draft_raw.draftedAttributeIds ?? []).map((attributeId) => {
+				const attributeSlug = attributeSlugByImportedId.get(attributeId)!;
+				const draftedAttributeId = attributeIdByTaxonomyIdAndSlug.get(`${taxonomyId}:${attributeSlug}`);
+				if (!draftedAttributeId) {
+					throw error(422, { message: 'A drafted attribute references a missing record' });
+				}
+
+				return draftedAttributeId;
+			});
 			const draftedCategoryIds = draft_raw.draftedCategoryIds ?? [];
 			const draftedItemIds = draft_raw.draftedItemIds ?? [];
 

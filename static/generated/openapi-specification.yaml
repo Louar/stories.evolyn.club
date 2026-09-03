@@ -7210,14 +7210,18 @@ paths:
                   message:
                     type: string
                     enum:
-                      - Some taxonomies do not exist
+                      - Some drafted attributes are missing from attributeOptions
                   taxonomySlugs:
+                    type: array
+                    items:
+                      type: string
+                  attributeIds:
                     type: array
                     items:
                       type: string
                 required:
                   - message
-                  - taxonomySlugs
+                  - attributeIds
       parameters:
         - name: storyId
           in: path
