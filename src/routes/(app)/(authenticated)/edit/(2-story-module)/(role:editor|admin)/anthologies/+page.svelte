@@ -325,7 +325,7 @@
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
 						<Button
-							href="/a/{anthology.slug}"
+							href="/a/{anthology.slug}/grid"
 							target="_blank"
 							disabled={!anthology.slug?.length}
 							variant="ghost"
