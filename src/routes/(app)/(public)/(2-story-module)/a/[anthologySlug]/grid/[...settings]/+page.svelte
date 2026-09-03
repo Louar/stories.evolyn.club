@@ -83,6 +83,8 @@
 	};
 
 	const getStoryThumbnail = (story: Story) => {
+		if (isMedia(story.thumbnail)) return story.thumbnail;
+
 		for (const part of story.parts) {
 			const background = part.background;
 			if (!background || Array.isArray(background)) continue;
