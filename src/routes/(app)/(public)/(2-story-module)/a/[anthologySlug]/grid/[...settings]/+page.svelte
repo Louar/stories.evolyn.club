@@ -118,7 +118,8 @@
 		const openModal = async () => {
 			modalPlayers = data.playersOfStories[storyIndex].map((player) => ({ ...player }));
 			transitioningStorySlug = null;
-			pushState(resolve(href as '/'), { storySlug: story.slug });
+			// eslint-disable-next-line svelte/no-navigation-without-resolve
+			pushState(href, { storySlug: story.slug });
 			await tick();
 		};
 
