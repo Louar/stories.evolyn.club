@@ -25,6 +25,7 @@ export * from './cells';
 // Re-export the hook
 export {
 	DataGridAdapterError,
+	createEndpointDataGridAdapter,
 	fileCellMediaToFileCellData,
 	hasTranslatableFields,
 	uploadMedia,

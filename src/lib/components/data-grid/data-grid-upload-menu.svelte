@@ -25,6 +25,7 @@
 		description?: string;
 		maxFileSize?: number;
 		maxFiles?: number;
+		onSuccess?: () => void | Promise<void>;
 		class?: string;
 	} & PopoverPrimitive.ContentProps;
 	let {
@@ -32,6 +33,7 @@
 		description = 'Upload .YAMLs.',
 		maxFileSize = 5 * MEGABYTE,
 		maxFiles = 10,
+		onSuccess,
 		align = 'end',
 		class: className
 	}: Props = $props();
@@ -96,6 +98,7 @@
 		const submissionId = submission.start();
 		try {
 			const summaries: string[] = [];
+			let uploadedCount = 0;
 			for (let i = 0; i < validated.data.attachments.length; i++) {
 				const attachment = validated.data.attachments[i];
 
@@ -109,7 +112,7 @@
 					if (!res.ok) {
 						attachmentIssues.push(i);
 						attachmentErrors[i] = ['Upload failed'];
-					}
+					} else uploadedCount++;
 					const summary = formatSummary(await res.json().catch(() => undefined));
 					if (summary) summaries.push(summary);
 				} catch {
@@ -117,7 +120,9 @@
 					attachmentErrors[i] = ['Attachment failed to parse'];
 				}
 			}
+			if (uploadedCount) await onSuccess?.();
 			if (!attachmentIssues?.length) {
+				attachments = [];
 				isUploadPanelOpen = false;
 				toast.success('The attachments were uploaded successfully', {
 					description: summaries.join('\n\n') || undefined,

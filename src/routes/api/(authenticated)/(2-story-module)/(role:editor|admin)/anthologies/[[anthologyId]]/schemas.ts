@@ -9,12 +9,20 @@ const anthologyPositionSchema = z.object({
 	isRemoved: z.boolean().optional().default(false)
 });
 
-export const anthologyCreateSchema = z.object({
+const anthologyFieldsSchema = z.object({
 	slug: z.string().min(1),
 	nameRaw: z.preprocess(formObjectPreprocessor, translatableValidator),
-	isPublished: z.boolean().default(false),
-	isPublic: z.boolean().default(true),
-	positions: z.array(anthologyPositionSchema).min(1, 'At least one story is required')
+	configuration: z.object({ showPerformanceOverview: z.boolean() }).nullable(),
+	isPublished: z.boolean(),
+	isPublic: z.boolean(),
+	positions: z.array(anthologyPositionSchema)
 });
 
-export const anthologyPatchSchema = anthologyCreateSchema;
+export const anthologyCreateSchema = anthologyFieldsSchema.extend({
+	configuration: anthologyFieldsSchema.shape.configuration.default(null),
+	isPublished: anthologyFieldsSchema.shape.isPublished.default(false),
+	isPublic: anthologyFieldsSchema.shape.isPublic.default(true),
+	positions: anthologyFieldsSchema.shape.positions.default([])
+});
+
+export const anthologyPatchSchema = anthologyFieldsSchema.partial();

@@ -1,385 +1,259 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import { goto, invalidateAll } from '$app/navigation';
-	import { resolve } from '$app/paths';
+	import { invalidateAll } from '$app/navigation';
 	import Header from '$lib/components/app/header/app-header.svelte';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
-	import BreadcrumbMenu from '$lib/components/ui/breadcrumb-menu/breadcrumb-menu.svelte';
-	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import * as Empty from '$lib/components/ui/empty/index.js';
 	import {
-		displaySize,
-		FileDropZone,
-		MEGABYTE,
-		type FileDropZoneProps
-	} from '$lib/components/ui/file-drop-zone';
-	import * as Item from '$lib/components/ui/item/index.js';
-	import * as Popover from '$lib/components/ui/popover/index.js';
-	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
-	import { useSubmissionState } from '$lib/hooks/use-submission-state.svelte.js';
-	import BookCheckIcon from '@lucide/svelte/icons/book-check';
-	import BookOpenIcon from '@lucide/svelte/icons/book-open';
-	import BookXIcon from '@lucide/svelte/icons/book-x';
-	import CheckIcon from '@lucide/svelte/icons/check';
-	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
-	import FileDownIcon from '@lucide/svelte/icons/file-down';
-	import FilePlusIcon from '@lucide/svelte/icons/file-plus';
-	import FileUpIcon from '@lucide/svelte/icons/file-up';
-	import LoaderCircleIcon from '@lucide/svelte/icons/loader-circle';
-	import LockIcon from '@lucide/svelte/icons/lock';
-	import LockOpenIcon from '@lucide/svelte/icons/lock-open';
-	import MoreHorizontalIcon from '@lucide/svelte/icons/more-horizontal';
-	import PencilIcon from '@lucide/svelte/icons/pencil';
-	import PlusIcon from '@lucide/svelte/icons/plus';
-	import TrashIcon from '@lucide/svelte/icons/trash-2';
-	import UserLockIcon from '@lucide/svelte/icons/user-lock';
-	import XIcon from '@lucide/svelte/icons/x';
-	import type { SubmitFunction } from '@sveltejs/kit';
-	import { toast } from 'svelte-sonner';
-	import { z } from 'zod/v4';
-	import type { ActionData } from './$types';
-	import { schemaOfAttachments } from './schemas';
+		createDataGridPersistenceIdentity,
+		DataGrid,
+		DataGridToolbar,
+		fileCellMediaToFileCellData,
+		getFilterFn,
+		hasTranslatableFields,
+		RowSelectHeader,
+		uploadMedia,
+		useDataGrid
+	} from '$lib/components/data-grid';
+	import DataGridLanguageSelectMenu from '$lib/components/data-grid/data-grid-language-select-menu.svelte';
+	import DataGridUploadMenu from '$lib/components/data-grid/data-grid-upload-menu.svelte';
+	import BreadcrumbMenu from '$lib/components/ui/breadcrumb-menu/breadcrumb-menu.svelte';
+	import { MEGABYTE } from '$lib/components/ui/file-drop-zone';
+	import { renderComponent } from '$lib/components/ui/table-tanstack/index.js';
+	import {
+		MediaCollection,
+		translateLocalizedMediaField,
+		type Media
+	} from '$lib/db/schemas/0-utils.js';
+	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
+	import { UI } from '$lib/states/ui.svelte';
+	import type { ColumnDef } from '@tanstack/table-core';
 
 	let { data } = $props();
-	let stories = $derived(data.stories);
-	type Story = (typeof stories)[number];
-	let storyToDelete: Story | undefined = $state();
-	let isDeleteDialogOpen = $state(false);
-	let deletingStoryId: string | undefined = $state();
+	const endpoint = '/api/stories';
+	let rows = $derived(data.stories);
+	type Row = (typeof rows)[number];
 
-	let isUploadPanelOpen = $state(false);
-	type UploadActionData = Extract<NonNullable<ActionData>, { form: 'upload' }>;
-	let attachments: FileList | undefined = $state();
-	let attachmentErrors: string[] = $state([]);
-	const attachmentList = $derived(Array.from(attachments ?? []));
-	const uploadSubmission = useSubmissionState();
-
-	const setAttachments = (files: File[]) => {
-		const transfer = new DataTransfer();
-		for (const file of files) transfer.items.add(file);
-		attachments = transfer.files;
-	};
-
-	const enhanceUpload: SubmitFunction = ({ formData, cancel }) => {
-		if (uploadSubmission.submitting) {
-			cancel();
-			return;
+	const filterFn = getFilterFn<Row>();
+	const windowSize = useWindowSize({ defaultHeight: 800 });
+	const gridHeight = $derived(Math.max(250, windowSize.height - 150));
+	const setThumbnail = (row: Row, value: unknown): Row => {
+		const file = (Array.isArray(value) ? value[0] : value) as Media | undefined;
+		const thumbnail = { ...(row.thumbnail ?? {}) };
+		const language =
+			file || thumbnail[UI.language] ? UI.language : thumbnail.default ? 'default' : 'en';
+		if (file) {
+			thumbnail[language] = { collection: file.collection, filename: file.filename };
+			if (!thumbnail.default && !thumbnail.en) thumbnail.default = thumbnail[language];
+		} else {
+			delete thumbnail[language];
 		}
+		return { ...row, thumbnail: Object.keys(thumbnail).length ? thumbnail : null };
+	};
 
-		const result = schemaOfAttachments.safeParse({
-			attachments: formData
-				.getAll('attachments')
-				.filter((value): value is File => value instanceof File)
-		});
-		if (!result.success) {
-			cancel();
-			attachmentErrors = z.flattenError(result.error).fieldErrors.attachments ?? [];
-			return;
+	const columns: ColumnDef<Row, unknown>[] = [
+		{
+			id: 'select-row',
+			size: 40,
+			enableSorting: false,
+			enableHiding: false,
+			enableResizing: false,
+			header: ({ table }) => renderComponent(RowSelectHeader, { table }),
+			meta: { cell: { variant: 'row-select' } }
+		},
+		{
+			accessorKey: 'id',
+			header: 'ID',
+			meta: { cell: { variant: 'text-short' }, readOnly: true },
+			filterFn
+		},
+		{
+			accessorKey: 'clientId',
+			header: 'Client',
+			meta: { cell: { variant: 'text-short' }, readOnly: true },
+			filterFn
+		},
+		{ accessorKey: 'slug', header: 'Slug', meta: { cell: { variant: 'text-short' } }, filterFn },
+		{
+			accessorKey: 'name',
+			header: 'Name',
+			meta: { cell: { variant: 'text-translated-short' } },
+			filterFn
+		},
+		{
+			accessorKey: 'defaultBackgroundColor',
+			header: 'Background color',
+			meta: { cell: { variant: 'text-short' } },
+			filterFn
+		},
+		{
+			accessorKey: 'thumbnail',
+			header: 'Thumbnail',
+			size: 240,
+			cell: ({ row }) =>
+				fileCellMediaToFileCellData(
+					translateLocalizedMediaField(row.original.thumbnail, UI.language) ?? null
+				),
+			meta: {
+				cell: { variant: 'file-or-url', accept: 'image/*', maxFiles: 1, multiple: false },
+				setValue: setThumbnail,
+				serializePatch: (row, value) => ({ thumbnail: setThumbnail(row, value).thumbnail })
+			},
+			filterFn
+		},
+		{
+			accessorKey: 'configuration',
+			header: 'Configuration',
+			size: 240,
+			meta: { cell: { variant: 'json-yaml' } },
+			filterFn
+		},
+		{
+			accessorKey: 'isPublished',
+			header: 'Published',
+			meta: { cell: { variant: 'checkbox' } },
+			filterFn
+		},
+		{
+			accessorKey: 'isPublic',
+			header: 'Public',
+			meta: { cell: { variant: 'checkbox' } },
+			filterFn
+		},
+		{
+			accessorKey: 'permissions',
+			header: 'Permissions',
+			size: 120,
+			meta: {
+				cell: { variant: 'relation-follow', url: '/edit/stories/{row}/permissions' },
+				readOnly: true
+			},
+			filterFn
+		},
+		{
+			id: 'assets',
+			accessorFn: () => 'Open',
+			header: 'Assets',
+			size: 90,
+			meta: {
+				cell: { variant: 'relation-follow', url: '/edit/stories/{row}/assets' },
+				readOnly: true
+			},
+			filterFn
+		},
+		{
+			id: 'flow',
+			accessorFn: () => 'Edit',
+			header: 'Flow',
+			size: 80,
+			meta: {
+				cell: { variant: 'relation-follow', url: '/edit/stories/{row}/flow' },
+				readOnly: true
+			},
+			filterFn
+		},
+		{
+			id: 'url',
+			accessorFn: (row) => `/s/${row.slug}`,
+			header: 'Story URL',
+			size: 220,
+			meta: { cell: { variant: 'relation-follow', url: '/s/{slug}' }, readOnly: true },
+			filterFn
+		},
+		{
+			accessorKey: 'createdAt',
+			header: 'Created at',
+			meta: { cell: { variant: 'date-time' }, readOnly: true },
+			filterFn
+		},
+		{
+			accessorKey: 'createdBy',
+			header: 'Created by',
+			meta: { cell: { variant: 'badge-item' }, readOnly: true },
+			filterFn
+		},
+		{
+			accessorKey: 'updatedAt',
+			header: 'Updated at',
+			meta: { cell: { variant: 'date-time' }, readOnly: true },
+			filterFn
+		},
+		{
+			accessorKey: 'updatedBy',
+			header: 'Updated by',
+			meta: { cell: { variant: 'badge-item' }, readOnly: true },
+			filterFn
 		}
+	];
 
-		attachmentErrors = [];
-		const submissionId = uploadSubmission.start();
-		return async ({ result: actionResult, update }) => {
-			try {
-				if (actionResult.type === 'success') {
-					attachments = undefined;
-					isUploadPanelOpen = false;
-					toast.success('Form posted successfully!', {
-						description: 'Your attachments were uploaded.'
-					});
-				} else if (actionResult.type === 'failure' && actionResult.data) {
-					const uploadData = actionResult.data as UploadActionData;
-					attachmentErrors =
-						(uploadData.errors as { attachments?: string[] } | undefined)?.attachments ?? [];
-					toast.error(uploadData.message ?? 'Upload failed.');
-				}
-				await update({ reset: false });
-			} finally {
-				uploadSubmission.finish(submissionId);
-			}
-		};
-	};
-
-	const onUpload: FileDropZoneProps['onUpload'] = async (uploadedFiles) => {
-		setAttachments([...attachmentList, ...uploadedFiles]);
-	};
-	const onFileRejected: FileDropZoneProps['onFileRejected'] = async ({ reason, file }) => {
-		toast.error(`${file.name} failed to upload!`, { description: reason });
-	};
-
-	const requestDeleteStory = (story: Story) => {
-		storyToDelete = story;
-		isDeleteDialogOpen = true;
-	};
-
-	const deleteStory = async () => {
-		const story = storyToDelete;
-		if (!story || deletingStoryId) return;
-
-		deletingStoryId = story.id;
-		try {
-			const response = await fetch(resolve(`/api/stories/${story.id}`), { method: 'DELETE' });
-			if (!response.ok) {
-				const body = await response.json().catch(() => ({}));
-				throw new Error(body.message ?? 'Failed to delete story.');
-			}
-
-			toast.success('Story deleted successfully.');
-			isDeleteDialogOpen = false;
-			storyToDelete = undefined;
-			await invalidateAll();
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Failed to delete story.');
-		} finally {
-			deletingStoryId = undefined;
+	const dataGrid = useDataGrid<Row>({
+		columns,
+		data: () => rows,
+		persistence: createDataGridPersistenceIdentity('edit.stories', () => data),
+		getRowId: (row) => row.id,
+		endpoint,
+		defaultRow: () => ({
+			slug: crypto.randomUUID().slice(0, 8),
+			name: { en: 'New story' },
+			defaultBackgroundColor: null,
+			thumbnail: null,
+			configuration: null,
+			isPublished: false,
+			isPublic: true
+		}),
+		onDataChange: (nextRows) => (rows = nextRows),
+		onFilesUpload: async ({ files, columnId, rowId }) =>
+			uploadMedia({
+				collection: MediaCollection.clients,
+				files,
+				rowId,
+				columnId
+			}),
+		onDownload: true,
+		enableSearch: true,
+		enablePaste: true,
+		initialState: {
+			sorting: [{ id: 'updatedAt', desc: true }],
+			columnVisibility: {
+				id: false,
+				clientId: false,
+				createdAt: false,
+				createdBy: false,
+				thumbnail: false,
+				configuration: false
+			},
+			columnPinning: { left: ['select-row'] }
 		}
-	};
+	} as const);
+
+	const { table, ...dataGridProps } = dataGrid;
+	const showLanguageMenu = $derived(hasTranslatableFields(columns));
 </script>
+
+<svelte:head><title>Edit stories</title></svelte:head>
 
 <Header>
 	<BreadcrumbMenu
 		menus={[
 			[
-				{ label: 'Anthologies', url: `/edit/anthologies` },
-				{ isTrigger: true, label: 'Stories', url: `/edit/stories` }
+				{ label: 'Anthologies', url: '/edit/anthologies' },
+				{ isTrigger: true, label: 'Stories', url: '/edit/stories' }
 			]
 		]}
 	/>
 </Header>
 
-<AlertDialog.Root bind:open={isDeleteDialogOpen}>
-	<AlertDialog.Content>
-		<AlertDialog.Header>
-			<AlertDialog.Media>
-				<TrashIcon class="text-destructive" />
-			</AlertDialog.Media>
-			<AlertDialog.Title>Delete story?</AlertDialog.Title>
-			<AlertDialog.Description>
-				This will permanently delete "{storyToDelete?.name}" and all of its parts and assets.
-			</AlertDialog.Description>
-		</AlertDialog.Header>
-		<AlertDialog.Footer>
-			<AlertDialog.Cancel disabled={!!deletingStoryId}>Cancel</AlertDialog.Cancel>
-			<AlertDialog.Action
-				variant="destructive"
-				disabled={!!deletingStoryId}
-				onclick={(event) => {
-					event.preventDefault();
-					void deleteStory();
-				}}
-			>
-				{#if deletingStoryId}<LoaderCircleIcon class="size-4 animate-spin" />{/if}
-				Delete
-			</AlertDialog.Action>
-		</AlertDialog.Footer>
-	</AlertDialog.Content>
-</AlertDialog.Root>
-
-<div class="mx-auto w-full max-w-xl">
-	{#if stories.length}
-		<div class="grid w-full gap-4 p-4">
-			<div class="flex gap-2">
-				<Button href="/edit/stories/new/flow" data-sveltekit-preload-data="tap">
-					<PlusIcon class="size-4" />
-					Create story
-				</Button>
-				{@render upload()}
+<div class="mx-auto mt-4 w-full max-w-6xl space-y-4 px-4">
+	<DataGridToolbar {table} enableSearch={!!dataGridProps.searchState}>
+		{#snippet actions()}
+			<div class="ml-auto flex items-center gap-2">
+				<DataGridUploadMenu
+					endpoint="{endpoint}/io"
+					description="Upload story .YAMLs with their parts, assets, and logic."
+					maxFileSize={50 * MEGABYTE}
+					maxFiles={50}
+					onSuccess={invalidateAll}
+				/>
+				{#if showLanguageMenu}<DataGridLanguageSelectMenu />{/if}
 			</div>
-			{#each stories as story (story.id)}
-				<Item.Root
-					variant="outline"
-					onclick={() => goto(resolve(`/edit/stories/${story.id}/flow`))}
-				>
-					<Item.Content class=" min-w-0">
-						<Item.Title>{story.name}</Item.Title>
-						<Item.Description class="flex items-center gap-1">
-							{#if story.isPublished}
-								<BookCheckIcon class="size-3.5" />
-							{:else}
-								<BookXIcon class="size-3.5" />
-							{/if}
-							{#if story.isPublic}
-								<LockOpenIcon class="size-3.5" />
-							{:else}
-								<LockIcon class="size-3.5" />
-							{/if}
-							<span class="truncate pl-2">{story.slug}</span>
-						</Item.Description>
-					</Item.Content>
-					<Item.Actions>
-						<DropdownMenu.Root>
-							<DropdownMenu.Trigger>
-								{#snippet child({ props })}
-									<Button {...props} variant="outline" size="icon-sm">
-										<MoreHorizontalIcon />
-									</Button>
-								{/snippet}
-							</DropdownMenu.Trigger>
-							<DropdownMenu.Content class="w-56" align="end">
-								<DropdownMenu.Group>
-									<DropdownMenu.Item>
-										{#snippet child({ props })}
-											<a href={resolve(`/edit/stories/${story.id}/permissions`)} {...props}>
-												<UserLockIcon />
-												Permissions
-											</a>
-										{/snippet}
-									</DropdownMenu.Item>
-									<DropdownMenu.Item>
-										{#snippet child({ props })}
-											<a href={resolve(`/edit/stories/${story.id}/assets`)} {...props}>
-												<FilePlusIcon />
-												Assets
-											</a>
-										{/snippet}
-									</DropdownMenu.Item>
-									<DropdownMenu.Item>
-										{#snippet child({ props })}
-											<a href={resolve(`/api/stories/${story.id}/io`)} {...props}>
-												<FileDownIcon />
-												Download
-											</a>
-										{/snippet}
-									</DropdownMenu.Item>
-									<DropdownMenu.Separator />
-									<DropdownMenu.Item>
-										{#snippet child({ props })}
-											<a href={resolve(`/edit/stories/${story.id}/flow`)} {...props}>
-												<PencilIcon />
-												Edit
-											</a>
-										{/snippet}
-									</DropdownMenu.Item>
-									<DropdownMenu.Item
-										class="text-destructive focus:text-destructive"
-										disabled={deletingStoryId === story.id}
-										onclick={(event) => {
-											event.stopPropagation();
-											requestDeleteStory(story);
-										}}
-									>
-										{#if deletingStoryId === story.id}
-											<LoaderCircleIcon class="animate-spin" />
-										{:else}
-											<TrashIcon />
-										{/if}
-										Delete
-									</DropdownMenu.Item>
-								</DropdownMenu.Group>
-							</DropdownMenu.Content>
-						</DropdownMenu.Root>
-
-						<a
-							href={resolve(`/edit/stories/${story.id}/flow`)}
-							class={buttonVariants({ variant: 'ghost', size: 'icon' })}
-						>
-							<ChevronRightIcon class="size-4" />
-						</a>
-					</Item.Actions>
-				</Item.Root>
-			{/each}
-		</div>
-	{:else}
-		<Empty.Root>
-			<Empty.Header>
-				<Empty.Media variant="icon">
-					<BookOpenIcon />
-				</Empty.Media>
-				<Empty.Title>No stories yet</Empty.Title>
-				<Empty.Description>Create your first story to get started.</Empty.Description>
-			</Empty.Header>
-			<Empty.Content>
-				<div class="flex gap-2">
-					<Button href="/edit/stories/new/flow" data-sveltekit-preload-data="tap">
-						<PlusIcon class="size-4" />
-						Create story
-					</Button>
-					{@render upload()}
-				</div>
-			</Empty.Content>
-		</Empty.Root>
-	{/if}
+		{/snippet}
+	</DataGridToolbar>
+	<DataGrid {...dataGridProps} {table} height={gridHeight} />
 </div>
-
-{#snippet upload()}
-	<Popover.Root bind:open={isUploadPanelOpen}>
-		<Popover.Trigger class={buttonVariants({ variant: 'outline', size: 'default' })}>
-			<FileUpIcon class="size-4" />
-			Upload stories
-		</Popover.Trigger>
-		<Popover.Content class="w-80" align="start">
-			<div class="grid gap-4">
-				<div class="space-y-2">
-					<h4 class="leading-none font-medium">Upload stories</h4>
-					<p class="text-sm text-muted-foreground">Upload story .YAMLs.</p>
-				</div>
-				<div class="grid gap-2">
-					<form
-						method="POST"
-						action="?/upload"
-						enctype="multipart/form-data"
-						use:enhance={enhanceUpload}
-						class="flex w-full flex-col gap-2"
-					>
-						<div class="space-y-2">
-							<FileDropZone
-								{onUpload}
-								{onFileRejected}
-								maxFileSize={50 * MEGABYTE}
-								accept=".yml,.yaml,application/yaml,application/x-yaml"
-								maxFiles={50}
-								fileCount={attachmentList.length}
-							/>
-							<input
-								name="attachments"
-								type="file"
-								bind:files={attachments}
-								multiple
-								class="hidden"
-							/>
-							{#if attachmentList.length}
-								<ScrollArea class="h-32 rounded-md border p-4">
-									<div class="flex flex-col gap-2">
-										{#each attachmentList as file, i (file.name)}
-											<div class="flex place-items-center justify-between gap-2">
-												<div class="flex flex-col">
-													<span>{file.name}</span>
-													<span class="text-xs text-muted-foreground">{displaySize(file.size)}</span
-													>
-												</div>
-												<Button
-													type="button"
-													variant="outline"
-													size="icon"
-													onclick={() =>
-														setAttachments([
-															...attachmentList.slice(0, i),
-															...attachmentList.slice(i + 1)
-														])}
-												>
-													<XIcon class="size-5" />
-												</Button>
-											</div>
-										{/each}
-									</div>
-								</ScrollArea>
-							{/if}
-							{#if attachmentErrors.length}<div
-									class="text-sm font-medium wrap-break-word whitespace-pre-line text-destructive"
-									role="alert"
-								>
-									{#each attachmentErrors as error, i (`${error}-${i}`)}<div>{error}</div>{/each}
-								</div>{/if}
-						</div>
-						<Button type="submit" class="w-full" disabled={uploadSubmission.delayed}>
-							{#if uploadSubmission.delayed}<LoaderCircleIcon class="size-5 animate-spin" />
-							{:else}<CheckIcon class="size-5" />{/if}
-							<span>Upload</span>
-						</Button>
-					</form>
-				</div>
-			</div>
-		</Popover.Content>
-	</Popover.Root>
-{/snippet}

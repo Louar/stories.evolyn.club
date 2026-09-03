@@ -11,7 +11,7 @@ import {
 } from '$lib/server/utils.server';
 import { error, json } from '@sveltejs/kit';
 import type { NotNull, Transaction } from 'kysely';
-import { jsonArrayFrom } from 'kysely/helpers/postgres';
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import type { RequestHandler } from './$types';
 import {
 	anthologyCreateSchema as createSchema,
@@ -34,6 +34,31 @@ const findOneAnthologyById = async (clientId: string, anthologyId: string) => {
 			'anthology.isPublic',
 			'anthology.createdAt',
 			'anthology.updatedAt',
+			eb
+				.selectFrom('anthologyPermission')
+				.whereRef('anthologyPermission.anthologyId', '=', 'anthology.id')
+				.select(eb.fn.countAll<number>().as('permissions'))
+				.as('permissions'),
+			jsonObjectFrom(
+				eb
+					.selectFrom('user')
+					.whereRef('user.id', '=', 'anthology.createdBy')
+					.select((eb) => [
+						'user.id',
+						eb.fn<string>('concat', ['user.firstName', eb.val(' '), 'user.lastName']).as('label'),
+						'user.picture as image'
+					])
+			).as('createdBy'),
+			jsonObjectFrom(
+				eb
+					.selectFrom('user')
+					.whereRef('user.id', '=', 'anthology.updatedBy')
+					.select((eb) => [
+						'user.id',
+						eb.fn<string>('concat', ['user.firstName', eb.val(' '), 'user.lastName']).as('label'),
+						'user.picture as image'
+					])
+			).as('updatedBy'),
 			jsonArrayFrom(
 				eb
 					.selectFrom('anthologyPosition')
@@ -69,7 +94,10 @@ const canModifyAnthology = (locals: App.Locals, anthologyId: string) =>
 				.selectFrom('anthologyPermission')
 				.where('anthologyPermission.anthologyId', '=', anthologyId)
 				.where('anthologyPermission.userId', '=', userId)
-				.where('anthologyPermission.role', '=', AnthologyPermissionRole.owner)
+				.where('anthologyPermission.role', 'in', [
+					AnthologyPermissionRole.owner,
+					AnthologyPermissionRole.editor
+				])
 				.select('anthologyPermission.id');
 		}
 	});
@@ -85,18 +113,14 @@ const saveAnthologyPositions = async (
 		isRemoved?: boolean;
 	}>
 ) => {
-	const removedPositionIds = positions
-		.filter((position) => position.isRemoved)
-		.map((position) => position.id)
-		.filter((positionId) => !positionId.startsWith('new'));
-
-	if (removedPositionIds.length) {
-		await trx
-			.deleteFrom('anthologyPosition')
-			.where('anthologyId', '=', anthologyId)
-			.where('id', 'in', removedPositionIds)
-			.execute();
+	const retainedPositionIds = positions
+		.filter((position) => !position.isRemoved && !position.id.startsWith('new'))
+		.map((position) => position.id);
+	let omittedPositions = trx.deleteFrom('anthologyPosition').where('anthologyId', '=', anthologyId);
+	if (retainedPositionIds.length) {
+		omittedPositions = omittedPositions.where('id', 'not in', retainedPositionIds);
 	}
+	await omittedPositions.execute();
 
 	for (const position of positions.filter((position) => !position.isRemoved)) {
 		const { id: positionId, configuration, storyId, order } = position;
@@ -133,12 +157,13 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 	const clientId = locals.client.id;
 	const authUserId = locals.authusr!.id;
 
-	if (!(await canCreateAnthology(locals))) throw error(403, 'You are not allowed to create anthologies');
+	if (!(await canCreateAnthology(locals)))
+		throw error(403, 'You are not allowed to create anthologies');
 
 	const parsed = await parseBody(request, createSchema, locals.language);
 	if (!parsed.ok) return parsed.response;
 
-	const { slug, nameRaw, positions, ...rest } = parsed.data;
+	const { slug, nameRaw, positions, configuration, ...rest } = parsed.data;
 
 	try {
 		const anthologyId = await db.transaction().execute(async (trx) => {
@@ -148,6 +173,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 					clientId,
 					slug,
 					name: JSON.stringify(nameRaw),
+					configuration: configuration ? JSON.stringify(configuration) : null,
 					createdBy: authUserId,
 					updatedBy: authUserId,
 					...rest
@@ -199,7 +225,7 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 	const parsed = await parseBody(request, patchSchema, locals.language);
 	if (!parsed.ok) return parsed.response;
 
-	const { slug, nameRaw, positions, ...rest } = parsed.data;
+	const { slug, nameRaw, positions, configuration, ...rest } = parsed.data;
 
 	try {
 		await db.transaction().execute(async (trx) => {
@@ -208,8 +234,11 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 				.where('anthology.id', '=', anthologyId)
 				.where('anthology.clientId', '=', clientId)
 				.set({
-					slug,
-					name: JSON.stringify(nameRaw),
+					...(slug !== undefined ? { slug } : {}),
+					...(nameRaw !== undefined ? { name: JSON.stringify(nameRaw) } : {}),
+					...(configuration !== undefined
+						? { configuration: configuration ? JSON.stringify(configuration) : null }
+						: {}),
 					updatedAt: new Date(),
 					updatedBy: authUserId,
 					...rest
@@ -219,7 +248,7 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 
 			if (!updated) throw error(404, 'The anthology does not exist');
 
-			await saveAnthologyPositions(trx, anthologyId, positions);
+			if (positions) await saveAnthologyPositions(trx, anthologyId, positions);
 		});
 
 		const row = await findOneAnthologyById(clientId, anthologyId);

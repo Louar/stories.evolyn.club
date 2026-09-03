@@ -113,6 +113,7 @@ export const MEDIA_REFERENCE_LOCATIONS = [
 	'client.splash',
 	'client.hero',
 	'user.picture',
+	'story.thumbnail'
 ] as const;
 
 type DatabaseExecutor = Kysely<Schema> | Transaction<Schema>;
@@ -151,6 +152,17 @@ export async function isMediaReferenced(
 			.where('u.clientId', '=', clientId)
 			.where(matches('u.picture'))
 			.select('u.id'),
+		db
+			.selectFrom('story as s')
+			.where('s.clientId', '=', clientId)
+			.where((eb) =>
+				eb.or(
+					['default', ...Object.values(Language)].map((language) =>
+						eb('s.thumbnail', '@>', eb.cast(eb.val(JSON.stringify({ [language]: media })), 'jsonb'))
+					)
+				)
+			)
+			.select('s.id')
 	];
 
 	for (const query of queries) {

@@ -1,5 +1,5 @@
 import { db } from '$lib/db/database';
-import { selectLocalizedField } from '$lib/db/schemas/0-utils';
+import { StoryPermissionRole } from '$lib/db/schemas/2-story-module';
 import { UserRole } from '$lib/db/schemas/1-client-user-module';
 import { fail } from '@sveltejs/kit';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
@@ -11,8 +11,6 @@ import { schemaOfAttachments } from './schemas';
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const clientId = locals.client.id;
 	const userId = locals.authusr!.id;
-	const language = locals.authusr!.language;
-
 	const showAll = url.searchParams.get('show') === 'all';
 	const isAdmin = locals.authusr?.roles?.includes(UserRole.admin) ?? false;
 
@@ -21,14 +19,19 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!isAdmin || !showAll) {
 		query = query
 			.innerJoin('storyPermission', 'storyPermission.storyId', 'story.id')
-			.where('storyPermission.userId', '=', userId);
+			.where('storyPermission.userId', '=', userId)
+			.where('storyPermission.role', 'in', [StoryPermissionRole.owner, StoryPermissionRole.editor]);
 	}
 
 	const stories = await query
 		.select((eb) => [
 			'story.id',
+			'story.clientId',
 			'story.slug',
-			selectLocalizedField(eb, 'story.name', language).as('name'),
+			'story.name',
+			'story.defaultBackgroundColor',
+			'story.thumbnail',
+			'story.configuration',
 			'story.isPublic',
 			'story.isPublished',
 			'story.createdAt',
@@ -36,8 +39,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			eb
 				.selectFrom('storyPermission')
 				.whereRef('storyPermission.storyId', '=', 'story.id')
-				.select(eb.fn.countAll<number>().as('editors'))
-				.as('editors'),
+				.select(eb.fn.countAll<number>().as('permissions'))
+				.as('permissions'),
 			jsonObjectFrom(
 				eb
 					.selectFrom('user')

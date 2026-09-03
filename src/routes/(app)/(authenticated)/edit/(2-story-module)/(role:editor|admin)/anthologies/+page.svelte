@@ -1,443 +1,323 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import { resolve } from '$app/paths';
 	import Header from '$lib/components/app/header/app-header.svelte';
+	import {
+		createDataGridPersistenceIdentity,
+		createEndpointDataGridAdapter,
+		DataGrid,
+		DataGridAdapterError,
+		DataGridToolbar,
+		getFilterFn,
+		hasTranslatableFields,
+		RowSelectHeader,
+		useDataGrid,
+		type DataGridDataAdapter,
+		type DataGridDeleteResult
+	} from '$lib/components/data-grid';
+	import DataGridLanguageSelectMenu from '$lib/components/data-grid/data-grid-language-select-menu.svelte';
+	import DataGridUploadMenu from '$lib/components/data-grid/data-grid-upload-menu.svelte';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import BreadcrumbMenu from '$lib/components/ui/breadcrumb-menu/breadcrumb-menu.svelte';
-	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import * as Empty from '$lib/components/ui/empty/index.js';
-	import {
-		displaySize,
-		FileDropZone,
-		MEGABYTE,
-		type FileDropZoneProps
-	} from '$lib/components/ui/file-drop-zone';
-	import * as Item from '$lib/components/ui/item/index.js';
-	import * as Popover from '$lib/components/ui/popover/index.js';
-	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { Switch } from '$lib/components/ui/switch';
-	import { useSubmissionState } from '$lib/hooks/use-submission-state.svelte.js';
-	import BookCheckIcon from '@lucide/svelte/icons/book-check';
-	import BookOpenIcon from '@lucide/svelte/icons/book-open';
-	import BookXIcon from '@lucide/svelte/icons/book-x';
-	import CheckIcon from '@lucide/svelte/icons/check';
-	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
-	import FileDownIcon from '@lucide/svelte/icons/file-down';
-	import FileUpIcon from '@lucide/svelte/icons/file-up';
+	import { MEGABYTE } from '$lib/components/ui/file-drop-zone';
+	import { renderComponent } from '$lib/components/ui/table-tanstack/index.js';
+	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
 	import LoaderCircleIcon from '@lucide/svelte/icons/loader-circle';
-	import LockIcon from '@lucide/svelte/icons/lock';
-	import LockOpenIcon from '@lucide/svelte/icons/lock-open';
-	import MoreHorizontalIcon from '@lucide/svelte/icons/more-horizontal';
-	import PencilIcon from '@lucide/svelte/icons/pencil';
-	import PlusIcon from '@lucide/svelte/icons/plus';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
-	import UserLockIcon from '@lucide/svelte/icons/user-lock';
-	import XIcon from '@lucide/svelte/icons/x';
-	import type { SubmitFunction } from '@sveltejs/kit';
-	import { toast } from 'svelte-sonner';
-	import { z } from 'zod/v4';
-	import type { ActionData } from './$types';
-	import Editor from './editor.svelte';
-	import { schemaOfAttachments } from './schemas';
+	import type { ColumnDef } from '@tanstack/table-core';
 
 	let { data } = $props();
-	let anthologies = $derived(data.anthologies);
-	type Anthology = (typeof anthologies)[number];
-	let isEditorOpen: boolean = $state(false);
-	let anthologyToEdit: Anthology | undefined = $state();
-	let anthologyToDelete: Anthology | undefined = $state();
+	const endpoint = '/api/anthologies';
+	let rows = $derived(data.anthologies);
+	type Row = (typeof rows)[number];
+	type PendingDelete = {
+		rows: Row[];
+		resolve: (result: DataGridDeleteResult | boolean) => void;
+	};
+
 	let includeStoryDefinitions = $state(false);
-	let deleteUnderlyingStories = $state(false);
 	let isDeleteDialogOpen = $state(false);
-	let deletingAnthologyId: string | undefined = $state();
+	let isDeleting = $state(false);
+	let pendingDelete = $state.raw<PendingDelete | null>(null);
+	const filterFn = getFilterFn<Row>();
+	const windowSize = useWindowSize({ defaultHeight: 800 });
+	const gridHeight = $derived(Math.max(250, windowSize.height - 150));
 
-	let isUploadPanelOpen = $state(false);
-	type UploadActionData = Extract<NonNullable<ActionData>, { form: 'upload' }>;
-	let attachments: FileList | undefined = $state();
-	let attachmentErrors: string[] = $state([]);
-	const attachmentList = $derived(Array.from(attachments ?? []));
-	const uploadSubmission = useSubmissionState();
-
-	const setAttachments = (files: File[]) => {
-		const transfer = new DataTransfer();
-		for (const file of files) transfer.items.add(file);
-		attachments = transfer.files;
-	};
-
-	const enhanceUpload: SubmitFunction = ({ formData, cancel }) => {
-		if (uploadSubmission.submitting) {
-			cancel();
-			return;
-		}
-
-		const result = schemaOfAttachments.safeParse({
-			attachments: formData
-				.getAll('attachments')
-				.filter((value): value is File => value instanceof File)
-		});
-		if (!result.success) {
-			cancel();
-			attachmentErrors = z.flattenError(result.error).fieldErrors.attachments ?? [];
-			return;
-		}
-
-		attachmentErrors = [];
-		const submissionId = uploadSubmission.start();
-		return async ({ result: actionResult, update }) => {
-			try {
-				if (actionResult.type === 'success') {
-					attachments = undefined;
-					isUploadPanelOpen = false;
-					toast.success('Form posted successfully!', {
-						description: 'Your attachments were uploaded.'
-					});
-				} else if (actionResult.type === 'failure' && actionResult.data) {
-					const uploadData = actionResult.data as UploadActionData;
-					attachmentErrors =
-						(uploadData.errors as { attachments?: string[] } | undefined)?.attachments ?? [];
-					toast.error(uploadData.message ?? 'Upload failed.');
-				}
-				await update({ reset: false });
-			} finally {
-				uploadSubmission.finish(submissionId);
-			}
-		};
-	};
-
-	const onUpload: FileDropZoneProps['onUpload'] = async (uploadedFiles) => {
-		setAttachments([...attachmentList, ...uploadedFiles]);
-	};
-	const onFileRejected: FileDropZoneProps['onFileRejected'] = async ({ reason, file }) => {
-		toast.error(`${file.name} failed to upload!`, { description: reason });
-	};
-
-	const getAnthologyDownloadUrl = (anthologyId: string) =>
-		resolve(
-			`/api/anthologies/${anthologyId}/io${includeStoryDefinitions ? '?includeStories=true' : ''}`
+	const download = async (rowId: string) => {
+		const response = await fetch(
+			`${endpoint}/${encodeURIComponent(rowId)}/io${includeStoryDefinitions ? '?includeStories=true' : ''}`
 		);
-
-	const requestDeleteAnthology = (anthology: Anthology) => {
-		anthologyToDelete = anthology;
-		isDeleteDialogOpen = true;
+		if (!response.ok)
+			throw new DataGridAdapterError('Failed to download anthology', response.status);
+		const disposition = response.headers.get('content-disposition') ?? '';
+		const filename = disposition.match(/filename="?([^";]+)"?/i)?.[1] ?? `anthology-${rowId}.yaml`;
+		const url = URL.createObjectURL(await response.blob());
+		const anchor = document.createElement('a');
+		anchor.href = url;
+		anchor.download = filename;
+		anchor.click();
+		URL.revokeObjectURL(url);
 	};
 
-	const deleteAnthology = async () => {
-		const anthology = anthologyToDelete;
-		if (!anthology || deletingAnthologyId) return;
-
-		deletingAnthologyId = anthology.id;
-		try {
-			const response = await fetch(
-				resolve(
-					`/api/anthologies/${anthology.id}${deleteUnderlyingStories ? '?deleteStories=true' : ''}`
-				),
-				{ method: 'DELETE' }
-			);
-
-			if (!response.ok) {
-				const body = await response.json().catch(() => ({}));
-				throw new Error(body.message ?? 'Failed to delete anthology.');
-			}
-
-			toast.success('Anthology deleted successfully.');
-			isDeleteDialogOpen = false;
-			anthologyToDelete = undefined;
-			await invalidateAll();
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Failed to delete anthology.');
-		} finally {
-			deletingAnthologyId = undefined;
+	const defaultAdapter = createEndpointDataGridAdapter<Row>(endpoint);
+	const dataAdapter: DataGridDataAdapter<Row> = {
+		...defaultAdapter,
+		download: async ({ rowIds }) => {
+			for (const rowId of rowIds) await download(rowId);
 		}
 	};
+
+	const requestRowsDelete = (selectedRows: Row[]) =>
+		new Promise<DataGridDeleteResult | boolean>((resolve) => {
+			pendingDelete = { rows: selectedRows, resolve };
+			isDeleteDialogOpen = true;
+		});
+
+	const finishDelete = (result: DataGridDeleteResult | boolean) => {
+		const request = pendingDelete;
+		pendingDelete = null;
+		isDeleteDialogOpen = false;
+		request?.resolve(result);
+	};
+	const cancelDelete = () => finishDelete({ deletedRowIds: [], failedRowIds: [] });
+
+	const deleteRows = async (deleteStories: boolean) => {
+		const request = pendingDelete;
+		if (!request || isDeleting) return;
+		isDeleting = true;
+		const deletedRowIds: string[] = [];
+		const failedRowIds: string[] = [];
+		try {
+			for (const row of request.rows) {
+				try {
+					const response = await fetch(
+						`${endpoint}/${encodeURIComponent(row.id)}${deleteStories ? '?deleteStories=true' : ''}`,
+						{ method: 'DELETE' }
+					);
+					(response.ok ? deletedRowIds : failedRowIds).push(row.id);
+				} catch {
+					failedRowIds.push(row.id);
+				}
+			}
+			const deletedIds = new Set(deletedRowIds);
+			rows = rows.filter((row) => !deletedIds.has(row.id));
+			finishDelete({ deletedRowIds, failedRowIds });
+		} finally {
+			isDeleting = false;
+		}
+	};
+
+	const columns: ColumnDef<Row, unknown>[] = [
+		{
+			id: 'select-row',
+			size: 40,
+			enableSorting: false,
+			enableHiding: false,
+			enableResizing: false,
+			header: ({ table }) => renderComponent(RowSelectHeader, { table }),
+			meta: { cell: { variant: 'row-select' } }
+		},
+		{
+			accessorKey: 'id',
+			header: 'ID',
+			meta: { cell: { variant: 'text-short' }, readOnly: true },
+			filterFn
+		},
+		{
+			accessorKey: 'clientId',
+			header: 'Client',
+			meta: { cell: { variant: 'text-short' }, readOnly: true },
+			filterFn
+		},
+		{ accessorKey: 'slug', header: 'Slug', meta: { cell: { variant: 'text-short' } }, filterFn },
+		{
+			accessorKey: 'nameRaw',
+			header: 'Name',
+			meta: { cell: { variant: 'text-translated-short' } },
+			filterFn
+		},
+		{
+			accessorKey: 'configuration',
+			header: 'Configuration',
+			meta: { cell: { variant: 'json-yaml' } },
+			filterFn
+		},
+		{
+			accessorKey: 'isPublished',
+			header: 'Published',
+			meta: { cell: { variant: 'checkbox' } },
+			filterFn
+		},
+		{
+			accessorKey: 'isPublic',
+			header: 'Public',
+			meta: { cell: { variant: 'checkbox' } },
+			filterFn
+		},
+		{
+			id: 'stories',
+			accessorFn: (row) => row.positions.length,
+			header: 'Stories',
+			size: 100,
+			meta: {
+				cell: { variant: 'relation-follow', url: '/edit/anthologies/{row}/stories' },
+				readOnly: true
+			},
+			filterFn
+		},
+		{
+			accessorKey: 'permissions',
+			header: 'Permissions',
+			size: 120,
+			meta: {
+				cell: { variant: 'relation-follow', url: '/edit/anthologies/{row}/permissions' },
+				readOnly: true
+			},
+			filterFn
+		},
+		{
+			id: 'url',
+			accessorFn: (row) => `/a/${row.slug}/grid`,
+			header: 'Anthology URL',
+			size: 220,
+			meta: { cell: { variant: 'relation-follow', url: '/a/{slug}/grid' }, readOnly: true },
+			filterFn
+		},
+		{
+			accessorKey: 'createdAt',
+			header: 'Created at',
+			meta: { cell: { variant: 'date-time' }, readOnly: true },
+			filterFn
+		},
+		{
+			accessorKey: 'createdBy',
+			header: 'Created by',
+			meta: { cell: { variant: 'badge-item' }, readOnly: true },
+			filterFn
+		},
+		{
+			accessorKey: 'updatedAt',
+			header: 'Updated at',
+			meta: { cell: { variant: 'date-time' }, readOnly: true },
+			filterFn
+		},
+		{
+			accessorKey: 'updatedBy',
+			header: 'Updated by',
+			meta: { cell: { variant: 'badge-item' }, readOnly: true },
+			filterFn
+		}
+	];
+
+	const dataGrid = useDataGrid<Row>({
+		columns,
+		data: () => rows,
+		persistence: createDataGridPersistenceIdentity('edit.anthologies', () => data),
+		getRowId: (row) => row.id,
+		dataAdapter,
+		defaultRow: () => ({
+			slug: crypto.randomUUID().slice(0, 8),
+			nameRaw: { en: 'New anthology' },
+			configuration: null,
+			isPublished: false,
+			isPublic: true,
+			positions: []
+		}),
+		onRowsDelete: requestRowsDelete,
+		onDataChange: (nextRows) => (rows = nextRows),
+		onDownload: true,
+		enableSearch: true,
+		enablePaste: true,
+		initialState: {
+			sorting: [{ id: 'updatedAt', desc: true }],
+			columnVisibility: {
+				id: false,
+				clientId: false,
+				createdAt: false,
+				createdBy: false,
+				configuration: false
+			},
+			columnPinning: { left: ['select-row'] }
+		}
+	} as const);
+
+	const { table, ...dataGridProps } = dataGrid;
+	const showLanguageMenu = $derived(hasTranslatableFields(columns));
 </script>
+
+<svelte:head><title>Edit anthologies</title></svelte:head>
 
 <Header>
 	<BreadcrumbMenu
 		menus={[
 			[
-				{ isTrigger: true, label: 'Anthologies', url: `/edit/anthologies` },
-				{ label: 'Stories', url: `/edit/stories` }
+				{ isTrigger: true, label: 'Anthologies', url: '/edit/anthologies' },
+				{ label: 'Stories', url: '/edit/stories' }
 			]
 		]}
 	/>
 </Header>
 
-{#if isEditorOpen}
-	<Editor bind:isEditorOpen bind:anthology={anthologyToEdit} {data} />
-{/if}
-
-<AlertDialog.Root bind:open={isDeleteDialogOpen}>
+<AlertDialog.Root
+	bind:open={isDeleteDialogOpen}
+	onOpenChange={(open) => {
+		if (!open && !isDeleting && pendingDelete) cancelDelete();
+	}}
+>
 	<AlertDialog.Content>
 		<AlertDialog.Header>
-			<AlertDialog.Media>
-				<TrashIcon class="text-destructive" />
-			</AlertDialog.Media>
-			<AlertDialog.Title>Delete anthology?</AlertDialog.Title>
+			<AlertDialog.Media><TrashIcon class="text-destructive" /></AlertDialog.Media>
+			<AlertDialog.Title>Delete selected anthologies?</AlertDialog.Title>
 			<AlertDialog.Description>
-				{#if deleteUnderlyingStories}
-					This will permanently delete "{anthologyToDelete?.name}" and its underlying stories.
-				{:else}
-					This will permanently delete "{anthologyToDelete?.name}". The underlying stories will stay
-					available.
-				{/if}
+				Choose whether to keep or permanently delete the stories used by the selected
+				{pendingDelete?.rows.length === 1 ? 'anthology' : 'anthologies'}.
 			</AlertDialog.Description>
 		</AlertDialog.Header>
 		<AlertDialog.Footer>
-			<AlertDialog.Cancel disabled={!!deletingAnthologyId}>Cancel</AlertDialog.Cancel>
+			<AlertDialog.Cancel disabled={isDeleting}>Cancel</AlertDialog.Cancel>
 			<AlertDialog.Action
-				variant="destructive"
-				disabled={!!deletingAnthologyId}
+				variant="outline"
+				disabled={isDeleting}
 				onclick={(event) => {
 					event.preventDefault();
-					void deleteAnthology();
+					void deleteRows(false);
 				}}
 			>
-				{#if deletingAnthologyId}
-					<LoaderCircleIcon class="size-4 animate-spin" />
-				{/if}
-				Delete
+				{#if isDeleting}<LoaderCircleIcon class="size-4 animate-spin" />{/if}
+				Anthologies only
+			</AlertDialog.Action>
+			<AlertDialog.Action
+				variant="destructive"
+				disabled={isDeleting}
+				onclick={(event) => {
+					event.preventDefault();
+					void deleteRows(true);
+				}}
+			>
+				{#if isDeleting}<LoaderCircleIcon class="size-4 animate-spin" />{/if}
+				Anthologies and stories
 			</AlertDialog.Action>
 		</AlertDialog.Footer>
 	</AlertDialog.Content>
 </AlertDialog.Root>
 
-<div class="mx-auto w-full max-w-xl">
-	{#if anthologies.length}
-		<div class="grid w-full gap-4 p-4">
-			<div class="flex gap-2">
-				<Button onclick={() => (isEditorOpen = true)}>
-					<PlusIcon class="size-4" />
-					Create anthology
-				</Button>
-				{@render upload()}
-			</div>
-			{#each anthologies as anthology (anthology.id)}
-				<Item.Root
-					variant="outline"
-					onclick={() => {
-						anthologyToEdit = anthology;
-						isEditorOpen = true;
-					}}
+<div class="mx-auto mt-4 w-full max-w-6xl space-y-4 px-4">
+	<DataGridToolbar {table} enableSearch={!!dataGridProps.searchState}>
+		{#snippet actions()}
+			<div class="ml-auto flex items-center gap-3 text-xs text-muted-foreground">
+				<label class="flex items-center gap-2"
+					><Switch bind:checked={includeStoryDefinitions} />Include stories</label
 				>
-					<Item.Content class=" min-w-0">
-						<Item.Title>{anthology.name}</Item.Title>
-						<Item.Description class="flex items-center gap-1">
-							{#if anthology.isPublished}
-								<BookCheckIcon class="size-3.5" />
-							{:else}
-								<BookXIcon class="size-3.5" />
-							{/if}
-							{#if anthology.isPublic}
-								<LockOpenIcon class="size-3.5" />
-							{:else}
-								<LockIcon class="size-3.5" />
-							{/if}
-							<span class="truncate pl-2">{anthology.slug}</span>
-						</Item.Description>
-					</Item.Content>
-					<Item.Actions>
-						<DropdownMenu.Root>
-							<DropdownMenu.Trigger>
-								{#snippet child({ props })}
-									<Button {...props} variant="outline" size="icon-sm">
-										<MoreHorizontalIcon />
-									</Button>
-								{/snippet}
-							</DropdownMenu.Trigger>
-							<DropdownMenu.Content class="w-56" align="end">
-								<DropdownMenu.Group>
-									<DropdownMenu.Item>
-										{#snippet child({ props })}
-											<a href={resolve(`/edit/anthologies/${anthology.id}/permissions`)} {...props}>
-												<UserLockIcon />
-												Permissions
-											</a>
-										{/snippet}
-									</DropdownMenu.Item>
-									<DropdownMenu.Separator />
-									<DropdownMenu.Item>
-										{#snippet child({ props })}
-											<a href={getAnthologyDownloadUrl(anthology.id)} {...props}>
-												<FileDownIcon />
-												Download
-											</a>
-										{/snippet}
-									</DropdownMenu.Item>
-									<DropdownMenu.Item
-										class="justify-between text-muted-foreground"
-										onclick={(event) => {
-											event.preventDefault();
-											includeStoryDefinitions = !includeStoryDefinitions;
-										}}
-									>
-										<span>Include stories</span>
-										<Switch
-											checked={includeStoryDefinitions}
-											aria-label="Include story definitions in anthology downloads"
-											onclick={(event) => event.stopPropagation()}
-											onCheckedChange={(checked) => (includeStoryDefinitions = checked)}
-										/>
-									</DropdownMenu.Item>
-									<DropdownMenu.Separator />
-									<DropdownMenu.Item
-										class="justify-between text-muted-foreground"
-										onclick={(event) => {
-											event.preventDefault();
-											deleteUnderlyingStories = !deleteUnderlyingStories;
-										}}
-									>
-										<span>Delete stories</span>
-										<Switch
-											checked={deleteUnderlyingStories}
-											aria-label="Delete underlying stories when deleting an anthology"
-											onclick={(event) => event.stopPropagation()}
-											onCheckedChange={(checked) => (deleteUnderlyingStories = checked)}
-										/>
-									</DropdownMenu.Item>
-									<DropdownMenu.Item
-										class="text-destructive focus:text-destructive"
-										disabled={deletingAnthologyId === anthology.id}
-										onclick={(event) => {
-											event.stopPropagation();
-											requestDeleteAnthology(anthology);
-										}}
-									>
-										{#if deletingAnthologyId === anthology.id}
-											<LoaderCircleIcon class="animate-spin" />
-										{:else}
-											<TrashIcon />
-										{/if}
-										Delete
-									</DropdownMenu.Item>
-									<DropdownMenu.Separator />
-									<DropdownMenu.Item
-										onclick={() => {
-											anthologyToEdit = anthology;
-											isEditorOpen = true;
-										}}
-									>
-										<PencilIcon />
-										Edit
-									</DropdownMenu.Item>
-								</DropdownMenu.Group>
-							</DropdownMenu.Content>
-						</DropdownMenu.Root>
-						<Button
-							href="/a/{anthology.slug}/grid"
-							target="_blank"
-							disabled={!anthology.slug?.length}
-							variant="ghost"
-							size="icon"
-							onclick={(e) => e.stopPropagation()}
-						>
-							<ChevronRightIcon class="size-4" />
-						</Button>
-					</Item.Actions>
-				</Item.Root>
-			{/each}
-		</div>
-	{:else}
-		<Empty.Root>
-			<Empty.Header>
-				<Empty.Media variant="icon">
-					<BookOpenIcon />
-				</Empty.Media>
-				<Empty.Title>No anthologies yet</Empty.Title>
-				<Empty.Description>Create your first anthology to get started.</Empty.Description>
-			</Empty.Header>
-			<Empty.Content>
-				<div class="flex gap-2">
-					<Button onclick={() => (isEditorOpen = true)}>
-						<PlusIcon class="size-4" />
-						Create anthology
-					</Button>
-					{@render upload()}
-				</div>
-			</Empty.Content>
-		</Empty.Root>
-	{/if}
-</div>
-
-{#snippet upload()}
-	<Popover.Root bind:open={isUploadPanelOpen}>
-		<Popover.Trigger class={buttonVariants({ variant: 'outline', size: 'default' })}>
-			<FileUpIcon class="size-4" />
-			Upload anthologies
-		</Popover.Trigger>
-		<Popover.Content class="w-80" align="start">
-			<div class="grid gap-4">
-				<div class="space-y-2">
-					<h4 class="leading-none font-medium">Upload anthologies</h4>
-					<p class="text-sm text-muted-foreground">Upload anthology .YAMLs.</p>
-				</div>
-				<div class="grid gap-2">
-					<form
-						method="POST"
-						action="?/upload"
-						enctype="multipart/form-data"
-						use:enhance={enhanceUpload}
-						class="flex w-full flex-col gap-2"
-					>
-						<div class="space-y-2">
-							<FileDropZone
-								{onUpload}
-								{onFileRejected}
-								maxFileSize={50 * MEGABYTE}
-								accept=".yml,.yaml,application/yaml,application/x-yaml"
-								maxFiles={50}
-								fileCount={attachmentList.length}
-							/>
-							<input
-								name="attachments"
-								type="file"
-								bind:files={attachments}
-								multiple
-								class="hidden"
-							/>
-							{#if attachmentList.length}
-								<ScrollArea class="h-32 rounded-md border p-4">
-									<div class="flex flex-col gap-2">
-										{#each attachmentList as file, i (file.name)}
-											<div class="flex place-items-center justify-between gap-2">
-												<div class="flex flex-col">
-													<span>{file.name}</span>
-													<span class="text-xs text-muted-foreground">{displaySize(file.size)}</span
-													>
-												</div>
-												<Button
-													type="button"
-													variant="outline"
-													size="icon"
-													onclick={() =>
-														setAttachments([
-															...attachmentList.slice(0, i),
-															...attachmentList.slice(i + 1)
-														])}
-												>
-													<XIcon class="size-5" />
-												</Button>
-											</div>
-										{/each}
-									</div>
-								</ScrollArea>
-							{/if}
-							{#if attachmentErrors.length}<div
-									class="text-sm font-medium wrap-break-word whitespace-pre-line text-destructive"
-									role="alert"
-								>
-									{#each attachmentErrors as error, i (`${error}-${i}`)}<div>{error}</div>{/each}
-								</div>{/if}
-						</div>
-						<Button type="submit" class="w-full" disabled={uploadSubmission.delayed}>
-							{#if uploadSubmission.delayed}<LoaderCircleIcon class="size-5 animate-spin" />
-							{:else}<CheckIcon class="size-5" />{/if}
-							<span>Upload</span>
-						</Button>
-					</form>
-				</div>
+				<DataGridUploadMenu
+					endpoint="{endpoint}/io"
+					description="Upload anthology .YAMLs, optionally with embedded story definitions."
+					maxFileSize={50 * MEGABYTE}
+					maxFiles={50}
+					onSuccess={invalidateAll}
+				/>
+				{#if showLanguageMenu}<DataGridLanguageSelectMenu />{/if}
 			</div>
-		</Popover.Content>
-	</Popover.Root>
-{/snippet}
+		{/snippet}
+	</DataGridToolbar>
+	<DataGrid {...dataGridProps} {table} height={gridHeight} />
+</div>

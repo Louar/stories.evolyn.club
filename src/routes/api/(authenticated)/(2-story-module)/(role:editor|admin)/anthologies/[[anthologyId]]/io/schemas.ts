@@ -30,6 +30,6 @@ export const schema = z.object({
 	configuration: configurationSchema,
 	isPublished: z.boolean(),
 	isPublic: z.boolean(),
-	positions: z.array(anthologyPositionSchema).min(1, 'At least one story is required'),
+	positions: z.array(anthologyPositionSchema).default([]),
 	stories: z.array(storySchema).optional()
 });
