@@ -278,7 +278,7 @@
 	>
 		{#if selectedStory && modalPlayers.length}
 			<div class="relative h-dvh w-dvw" style:view-transition-name="selected-story-card">
-				<StoryPlayer story={selectedStory} players={modalPlayers} />
+				<StoryPlayer story={selectedStory} players={modalPlayers} onnext={closeStoryDialog} />
 				<button
 					type="button"
 					class="absolute top-4 left-4 z-50 inline-flex size-12 items-center justify-center rounded-full bg-black/45 text-white shadow-sm backdrop-blur transition hover:bg-black/60 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-hidden"
