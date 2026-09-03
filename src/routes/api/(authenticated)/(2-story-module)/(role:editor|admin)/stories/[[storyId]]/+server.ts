@@ -10,6 +10,7 @@ import type { RequestHandler } from './$types';
  * summary: Update story
  * tags:
  *  - Stories
+ *  - Assistant
  */
 export const PUT = (async ({ locals, params, request }) => {
 	const clientId = locals.client.id;
@@ -75,6 +76,7 @@ export const PUT = (async ({ locals, params, request }) => {
  * summary: Delete story
  * tags:
  *  - Stories
+ *  - Assistant
  */
 export const DELETE = (async ({ locals, params }) => {
 	const clientId = locals.client.id;

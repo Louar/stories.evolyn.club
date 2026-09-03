@@ -341,6 +341,7 @@ const ensureSourceAccess = async (args: {
  * summary: Get story assets
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const GET: RequestHandler = async ({ locals, params, url }) => {
   if (!locals.authusr?.id) throw error(401, 'Unauthorized');
@@ -408,6 +409,7 @@ export const GET: RequestHandler = async ({ locals, params, url }) => {
  * summary: Add story asset
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const POST: RequestHandler = async ({ locals, params, request }) => {
   if (!locals.authusr?.id) throw error(401, 'Unauthorized');
@@ -481,6 +483,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
  * summary: Remove story asset
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const DELETE: RequestHandler = async ({ locals, params, request }) => {
   if (!locals.authusr?.id) throw error(401, 'Unauthorized');

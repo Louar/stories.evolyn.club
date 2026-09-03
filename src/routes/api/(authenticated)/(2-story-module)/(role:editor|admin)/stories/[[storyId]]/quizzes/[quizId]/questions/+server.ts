@@ -44,6 +44,7 @@ const quizSchema = z.object({
  * summary: Create or update quiz questions
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const POST = (async ({ locals, params, request }) => {
   const storyId = requireParam(params.storyId, 'The story path parameter is required');
@@ -176,6 +177,7 @@ export const POST = (async ({ locals, params, request }) => {
  * summary: Delete quiz
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const DELETE = (async ({ locals, params }) => {
   const storyId = requireParam(params.storyId, 'The story path parameter is required');

@@ -76,6 +76,7 @@ const findOneAnthologyById = async (clientId: string, anthologyId: string) =>
  * summary: Export anthology
  * tags:
  *  - Anthologies
+ *  - Assistant
  */
 export const GET = (async ({ locals, params, url }) => {
 	const clientId = locals.client.id;
@@ -112,6 +113,7 @@ export const GET = (async ({ locals, params, url }) => {
  * summary: Import anthology
  * tags:
  *  - Anthologies
+ *  - Assistant
  */
 export const POST = (async ({ locals, request, fetch }) => {
 	const clientId = locals.client.id;

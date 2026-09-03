@@ -17,6 +17,7 @@ const announcementSchema = z.object({
  * summary: Create or update announcement
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const POST = (async ({ locals, params, request }) => {
 	const storyId = requireParam(params.storyId, 'The story path parameter is required');
@@ -67,6 +68,7 @@ export const POST = (async ({ locals, params, request }) => {
  * summary: Delete announcement
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const DELETE = (async ({ locals, params }) => {
 	const storyId = requireParam(params.storyId, 'The story path parameter is required');

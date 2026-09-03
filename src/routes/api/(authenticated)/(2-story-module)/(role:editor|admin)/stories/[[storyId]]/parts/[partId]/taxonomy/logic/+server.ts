@@ -57,6 +57,7 @@ const assertTaxonomyMembers = async (
  * summary: Update taxonomy logic
  * tags:
  *  - Stories
+ *  - Assistant
  */
 export const POST = (async ({ locals, params, request }) => {
 	const storyId = requireParam(params.storyId, 'The story path parameter is required');

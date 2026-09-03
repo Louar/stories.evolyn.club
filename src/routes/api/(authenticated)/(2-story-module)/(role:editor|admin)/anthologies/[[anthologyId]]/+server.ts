@@ -127,6 +127,7 @@ const saveAnthologyPositions = async (
  * summary: Create anthology
  * tags:
  *  - Anthologies
+ *  - Assistant
  */
 export const POST: RequestHandler = async ({ locals, request }) => {
 	const clientId = locals.client.id;
@@ -184,6 +185,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
  * summary: Update anthology
  * tags:
  *  - Anthologies
+ *  - Assistant
  */
 export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 	const clientId = locals.client.id;
@@ -235,6 +237,7 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
  * summary: Delete anthology
  * tags:
  *  - Anthologies
+ *  - Assistant
  */
 export const DELETE = (async ({ locals, params, url }) => {
 	const clientId = locals.client.id;

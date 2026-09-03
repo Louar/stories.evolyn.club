@@ -23,6 +23,7 @@ const parseBody = async (request: Request) => {
  * summary: Export story
  * tags:
  *  - Stories
+ *  - Assistant
  */
 export const GET = (async ({ locals, params }) => {
 	const clientId = locals.client.id;
@@ -45,6 +46,7 @@ export const GET = (async ({ locals, params }) => {
  * summary: Import story
  * tags:
  *  - Stories
+ *  - Assistant
  */
 export const POST = (async ({ locals, request }) => {
 	const clientId = locals.client.id;

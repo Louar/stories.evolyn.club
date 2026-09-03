@@ -123,6 +123,7 @@ const findOneAttributeOfItem = async (taxonomyId: string, itemId: string, attrib
  * summary: Get item attribute
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const GET: RequestHandler = async ({ locals, params }) => {
 	const clientId = locals.client.id;
@@ -140,6 +141,7 @@ export const GET: RequestHandler = async ({ locals, params }) => {
  * summary: Create item attribute
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const clientId = locals.client.id;
@@ -196,6 +198,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
  * summary: Update item attribute
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 	const clientId = locals.client.id;
@@ -251,6 +254,7 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
  * summary: Delete item attribute
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const DELETE: RequestHandler = async ({ locals, params }) => {
 	const clientId = locals.client.id;

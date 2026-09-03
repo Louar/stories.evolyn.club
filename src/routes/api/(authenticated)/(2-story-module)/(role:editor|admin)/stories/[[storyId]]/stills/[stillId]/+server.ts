@@ -17,6 +17,7 @@ const stillSchema = z.object({
  * summary: Create or update still
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const POST = (async ({ locals, params, request }) => {
 	const storyId = requireParam(params.storyId, 'The story path parameter is required');
@@ -55,6 +56,7 @@ export const POST = (async ({ locals, params, request }) => {
  * summary: Delete still
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const DELETE = (async ({ locals, params }) => {
 	const storyId = requireParam(params.storyId, 'The story path parameter is required');

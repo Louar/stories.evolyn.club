@@ -14,6 +14,7 @@ const schema = z.object({
  * summary: Create story part connection
  * tags:
  *  - Stories
+ *  - Assistant
  */
 export const POST = (async ({ locals, params, request }) => {
   const storyId = requireParam(params.storyId, 'The story path parameter is required');
@@ -71,6 +72,7 @@ export const POST = (async ({ locals, params, request }) => {
  * summary: Delete story part connection
  * tags:
  *  - Stories
+ *  - Assistant
  */
 export const DELETE = (async ({ locals, params, request }) => {
   const storyId = requireParam(params.storyId, 'The story path parameter is required');

@@ -868,17 +868,496 @@ paths:
           required: true
           schema:
             type: string
+  /anthologies:
+    post:
+      operationId: post_anthologies
+      summary: Create anthology
+      tags:
+        - Anthologies
+        - Assistant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                slug:
+                  type: string
+                  minLength: 1
+                nameRaw: &a7
+                  type: object
+                  properties:
+                    en:
+                      type: string
+                    bg:
+                      type: string
+                    ca:
+                      type: string
+                    da:
+                      type: string
+                    de:
+                      type: string
+                    es:
+                      type: string
+                    fi:
+                      type: string
+                    fr:
+                      type: string
+                    it:
+                      type: string
+                    nl:
+                      type: string
+                    no:
+                      type: string
+                    pt:
+                      type: string
+                    sv:
+                      type: string
+                    default:
+                      type: string
+                isPublished:
+                  type: boolean
+                isPublic:
+                  type: boolean
+                positions:
+                  type: array
+                  items: {}
+                  minItems: 1
+              required:
+                - slug
+                - nameRaw
+                - positions
+      security:
+        - BearerAuthCookie: &a6
+            - editor
+            - admin
+        - BearerAuthHeader: *a6
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  slug:
+                    type: string
+                  name:
+                    type: object
+                    properties:
+                      default:
+                        type: string
+                      en:
+                        type: string
+                      bg:
+                        type: string
+                      ca:
+                        type: string
+                      da:
+                        type: string
+                      de:
+                        type: string
+                      es:
+                        type: string
+                      fi:
+                        type: string
+                      fr:
+                        type: string
+                      it:
+                        type: string
+                      nl:
+                        type: string
+                      no:
+                        type: string
+                      pt:
+                        type: string
+                      sv:
+                        type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+                  clientId:
+                    type: string
+                  configuration:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          showPerformanceOverview:
+                            type: boolean
+                        required:
+                          - showPerformanceOverview
+                  isPublished:
+                    type: boolean
+                  isPublic:
+                    type: boolean
+                  nameRaw:
+                    type: object
+                    properties:
+                      default:
+                        type: string
+                      en:
+                        type: string
+                      bg:
+                        type: string
+                      ca:
+                        type: string
+                      da:
+                        type: string
+                      de:
+                        type: string
+                      es:
+                        type: string
+                      fi:
+                        type: string
+                      fr:
+                        type: string
+                      it:
+                        type: string
+                      nl:
+                        type: string
+                      no:
+                        type: string
+                      pt:
+                        type: string
+                      sv:
+                        type: string
+                  positions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        configuration:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: object
+                              additionalProperties: true
+                        order:
+                          type: number
+                        storyId:
+                          type: string
+                      required:
+                        - id
+                        - configuration
+                        - order
+                        - storyId
+                required:
+                  - id
+                  - slug
+                  - name
+                  - createdAt
+                  - updatedAt
+                  - clientId
+                  - configuration
+                  - isPublished
+                  - isPublic
+                  - nameRaw
+                  - positions
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: *a2
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema: *a2
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    properties:
+                      slug:
+                        type: array
+                        items:
+                          type: string
+                    required:
+                      - slug
+                required:
+                  - errors
+  /anthologies/{anthologyId}:
+    patch:
+      operationId: patch_anthologies_anthologyId
+      summary: Update anthology
+      tags:
+        - Anthologies
+        - Assistant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                slug:
+                  type: string
+                  minLength: 1
+                nameRaw: *a7
+                isPublished:
+                  type: boolean
+                isPublic:
+                  type: boolean
+                positions:
+                  type: array
+                  items: {}
+                  minItems: 1
+              required:
+                - slug
+                - nameRaw
+                - positions
+      security:
+        - BearerAuthCookie: &a8
+            - editor
+            - admin
+        - BearerAuthHeader: *a8
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  slug:
+                    type: string
+                  name:
+                    type: object
+                    properties:
+                      default:
+                        type: string
+                      en:
+                        type: string
+                      bg:
+                        type: string
+                      ca:
+                        type: string
+                      da:
+                        type: string
+                      de:
+                        type: string
+                      es:
+                        type: string
+                      fi:
+                        type: string
+                      fr:
+                        type: string
+                      it:
+                        type: string
+                      nl:
+                        type: string
+                      no:
+                        type: string
+                      pt:
+                        type: string
+                      sv:
+                        type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+                  updatedAt:
+                    type: string
+                    format: date-time
+                  clientId:
+                    type: string
+                  configuration:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          showPerformanceOverview:
+                            type: boolean
+                        required:
+                          - showPerformanceOverview
+                  isPublished:
+                    type: boolean
+                  isPublic:
+                    type: boolean
+                  nameRaw:
+                    type: object
+                    properties:
+                      default:
+                        type: string
+                      en:
+                        type: string
+                      bg:
+                        type: string
+                      ca:
+                        type: string
+                      da:
+                        type: string
+                      de:
+                        type: string
+                      es:
+                        type: string
+                      fi:
+                        type: string
+                      fr:
+                        type: string
+                      it:
+                        type: string
+                      nl:
+                        type: string
+                      no:
+                        type: string
+                      pt:
+                        type: string
+                      sv:
+                        type: string
+                  positions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        configuration:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: object
+                              additionalProperties: true
+                        order:
+                          type: number
+                        storyId:
+                          type: string
+                      required:
+                        - id
+                        - configuration
+                        - order
+                        - storyId
+                required:
+                  - id
+                  - slug
+                  - name
+                  - createdAt
+                  - updatedAt
+                  - clientId
+                  - configuration
+                  - isPublished
+                  - isPublic
+                  - nameRaw
+                  - positions
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: *a2
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema: *a2
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: *a2
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: object
+                    properties:
+                      slug:
+                        type: array
+                        items:
+                          type: string
+                    required:
+                      - slug
+                required:
+                  - errors
+      parameters:
+        - name: anthologyId
+          in: path
+          required: true
+          schema:
+            type: string
+    delete:
+      operationId: delete_anthologies_anthologyId
+      summary: Delete anthology
+      tags:
+        - Anthologies
+        - Assistant
+      security:
+        - BearerAuthCookie: &a9
+            - editor
+            - admin
+        - BearerAuthHeader: *a9
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    enum:
+                      - true
+                required:
+                  - success
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: *a2
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema: *a2
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: *a2
+      parameters:
+        - name: anthologyId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: deleteStories
+          in: query
+          required: false
+          schema:
+            type: string
   /anthologies/{anthologyId}/io:
     get:
       operationId: get_anthologies_anthologyId_io
       summary: Export anthology
       tags:
         - Anthologies
+        - Assistant
       security:
-        - BearerAuthCookie: &a6
+        - BearerAuthCookie: &a10
             - editor
             - admin
-        - BearerAuthHeader: *a6
+        - BearerAuthHeader: *a10
       responses:
         "200":
           description: OK
@@ -920,6 +1399,7 @@ paths:
       summary: Import anthology
       tags:
         - Anthologies
+        - Assistant
       requestBody:
         required: true
         content:
@@ -928,10 +1408,10 @@ paths:
               type: object
               additionalProperties: true
       security:
-        - BearerAuthCookie: &a7
+        - BearerAuthCookie: &a11
             - editor
             - admin
-        - BearerAuthHeader: *a7
+        - BearerAuthHeader: *a11
       responses:
         "200":
           description: OK
@@ -1009,17 +1489,17 @@ paths:
                                 - "null"
                             - type: object
                               additionalProperties: true
-                        storyId:
-                          type: string
                         order:
                           type: number
+                        storyId:
+                          type: string
                         storySlug:
                           type: string
                       required:
                         - id
                         - configuration
-                        - storyId
                         - order
+                        - storyId
                         - storySlug
                 required:
                   - id
@@ -2081,6 +2561,7 @@ paths:
       summary: Create anthology permission
       tags:
         - Anthologies
+        - Assistant
       requestBody:
         required: true
         content:
@@ -2100,10 +2581,10 @@ paths:
               required:
                 - userId
       security:
-        - BearerAuthCookie: &a8
+        - BearerAuthCookie: &a12
             - editor
             - admin
-        - BearerAuthHeader: *a8
+        - BearerAuthHeader: *a12
       responses:
         "201":
           description: Created
@@ -2249,11 +2730,12 @@ paths:
       summary: Get anthology permission
       tags:
         - Anthologies
+        - Assistant
       security:
-        - BearerAuthCookie: &a9
+        - BearerAuthCookie: &a13
             - editor
             - admin
-        - BearerAuthHeader: *a9
+        - BearerAuthHeader: *a13
       responses:
         "200":
           description: OK
@@ -2385,6 +2867,7 @@ paths:
       summary: Update anthology permission
       tags:
         - Anthologies
+        - Assistant
       requestBody:
         required: true
         content:
@@ -2402,10 +2885,10 @@ paths:
                     - editor
                     - owner
       security:
-        - BearerAuthCookie: &a10
+        - BearerAuthCookie: &a14
             - editor
             - admin
-        - BearerAuthHeader: *a10
+        - BearerAuthHeader: *a14
       responses:
         "200":
           description: OK
@@ -2560,11 +3043,12 @@ paths:
       summary: Delete anthology permission
       tags:
         - Anthologies
+        - Assistant
       security:
-        - BearerAuthCookie: &a11
+        - BearerAuthCookie: &a15
             - editor
             - admin
-        - BearerAuthHeader: *a11
+        - BearerAuthHeader: *a15
       responses:
         "204":
           description: No Content
@@ -2600,6 +3084,7 @@ paths:
       summary: Update story
       tags:
         - Stories
+        - Assistant
       requestBody:
         required: true
         content:
@@ -2610,37 +3095,7 @@ paths:
                 slug:
                   type: string
                   minLength: 1
-                name: &a26
-                  type: object
-                  properties:
-                    en:
-                      type: string
-                    bg:
-                      type: string
-                    ca:
-                      type: string
-                    da:
-                      type: string
-                    de:
-                      type: string
-                    es:
-                      type: string
-                    fi:
-                      type: string
-                    fr:
-                      type: string
-                    it:
-                      type: string
-                    nl:
-                      type: string
-                    no:
-                      type: string
-                    pt:
-                      type: string
-                    sv:
-                      type: string
-                    default:
-                      type: string
+                name: *a7
                 defaultBackgroundColor:
                   oneOf:
                     - type:
@@ -2654,10 +3109,10 @@ paths:
                 - slug
                 - name
       security:
-        - BearerAuthCookie: &a12
+        - BearerAuthCookie: &a16
             - editor
             - admin
-        - BearerAuthHeader: *a12
+        - BearerAuthHeader: *a16
       responses:
         "200":
           description: OK
@@ -3974,11 +4429,12 @@ paths:
       summary: Delete story
       tags:
         - Stories
+        - Assistant
       security:
-        - BearerAuthCookie: &a13
+        - BearerAuthCookie: &a17
             - editor
             - admin
-        - BearerAuthHeader: *a13
+        - BearerAuthHeader: *a17
       responses:
         "200":
           description: OK
@@ -4112,11 +4568,12 @@ paths:
       summary: Export story
       tags:
         - Stories
+        - Assistant
       security:
-        - BearerAuthCookie: &a14
+        - BearerAuthCookie: &a18
             - editor
             - admin
-        - BearerAuthHeader: *a14
+        - BearerAuthHeader: *a18
       responses:
         "200":
           description: OK
@@ -4145,11 +4602,12 @@ paths:
       summary: Import story
       tags:
         - Stories
+        - Assistant
       security:
-        - BearerAuthCookie: &a15
+        - BearerAuthCookie: &a19
             - editor
             - admin
-        - BearerAuthHeader: *a15
+        - BearerAuthHeader: *a19
       responses:
         "200":
           description: OK
@@ -5210,10 +5668,45 @@ paths:
                       properties:
                         id:
                           type: string
-                        name:
+                        slug:
                           type: string
+                        name:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: object
+                              properties:
+                                default:
+                                  type: string
+                                en:
+                                  type: string
+                                bg:
+                                  type: string
+                                ca:
+                                  type: string
+                                da:
+                                  type: string
+                                de:
+                                  type: string
+                                es:
+                                  type: string
+                                fi:
+                                  type: string
+                                fr:
+                                  type: string
+                                it:
+                                  type: string
+                                nl:
+                                  type: string
+                                no:
+                                  type: string
+                                pt:
+                                  type: string
+                                sv:
+                                  type: string
                       required:
                         - id
+                        - slug
                         - name
                   parts:
                     type: array
@@ -5418,8 +5911,42 @@ paths:
                                     - type:
                                         - "null"
                                     - type: number
-                                taxonomyName:
+                                taxonomySlug:
                                   type: string
+                                taxonomyName:
+                                  oneOf:
+                                    - type:
+                                        - "null"
+                                    - type: object
+                                      properties:
+                                        default:
+                                          type: string
+                                        en:
+                                          type: string
+                                        bg:
+                                          type: string
+                                        ca:
+                                          type: string
+                                        da:
+                                          type: string
+                                        de:
+                                          type: string
+                                        es:
+                                          type: string
+                                        fi:
+                                          type: string
+                                        fr:
+                                          type: string
+                                        it:
+                                          type: string
+                                        nl:
+                                          type: string
+                                        no:
+                                          type: string
+                                        pt:
+                                          type: string
+                                        sv:
+                                          type: string
                                 draftedAttributeIds:
                                   oneOf:
                                     - type:
@@ -5612,6 +6139,7 @@ paths:
                                 - goal
                                 - maxMistakes
                                 - difficulty
+                                - taxonomySlug
                                 - taxonomyName
                                 - draftedAttributeIds
                                 - draftedCategoryIds
@@ -5680,7 +6208,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
+                type: object
                 items:
                   oneOf:
                     - type: object
@@ -6678,6 +7206,18 @@ paths:
                         - code
                         - path
                         - message
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - Some taxonomies do not exist
+                  taxonomySlugs:
+                    type: array
+                    items:
+                      type: string
+                required:
+                  - message
+                  - taxonomySlugs
       parameters:
         - name: storyId
           in: path
@@ -6690,6 +7230,7 @@ paths:
       summary: Create or update story part
       tags:
         - Stories
+        - Assistant
       requestBody:
         required: true
         content:
@@ -6793,10 +7334,10 @@ paths:
                 - foregroundType
                 - position
       security:
-        - BearerAuthCookie: &a16
+        - BearerAuthCookie: &a20
             - editor
             - admin
-        - BearerAuthHeader: *a16
+        - BearerAuthHeader: *a20
       responses:
         "200":
           description: OK
@@ -7000,8 +7541,42 @@ paths:
                               - type:
                                   - "null"
                               - type: number
-                          taxonomyName:
+                          taxonomySlug:
                             type: string
+                          taxonomyName:
+                            oneOf:
+                              - type:
+                                  - "null"
+                              - type: object
+                                properties:
+                                  default:
+                                    type: string
+                                  en:
+                                    type: string
+                                  bg:
+                                    type: string
+                                  ca:
+                                    type: string
+                                  da:
+                                    type: string
+                                  de:
+                                    type: string
+                                  es:
+                                    type: string
+                                  fi:
+                                    type: string
+                                  fr:
+                                    type: string
+                                  it:
+                                    type: string
+                                  nl:
+                                    type: string
+                                  no:
+                                    type: string
+                                  pt:
+                                    type: string
+                                  sv:
+                                    type: string
                           draftedAttributeIds:
                             oneOf:
                               - type:
@@ -7194,6 +7769,7 @@ paths:
                           - goal
                           - maxMistakes
                           - difficulty
+                          - taxonomySlug
                           - taxonomyName
                           - draftedAttributeIds
                           - draftedCategoryIds
@@ -8249,11 +8825,12 @@ paths:
       summary: Delete story part
       tags:
         - Stories
+        - Assistant
       security:
-        - BearerAuthCookie: &a17
+        - BearerAuthCookie: &a21
             - editor
             - admin
-        - BearerAuthHeader: *a17
+        - BearerAuthHeader: *a21
       responses:
         "200":
           description: OK
@@ -8295,6 +8872,7 @@ paths:
       summary: Create story part connection
       tags:
         - Stories
+        - Assistant
       requestBody:
         required: true
         content:
@@ -8312,10 +8890,10 @@ paths:
                 - handle
                 - target
       security:
-        - BearerAuthCookie: &a18
+        - BearerAuthCookie: &a22
             - editor
             - admin
-        - BearerAuthHeader: *a18
+        - BearerAuthHeader: *a22
       responses:
         "200":
           description: OK
@@ -9359,6 +9937,7 @@ paths:
       summary: Delete story part connection
       tags:
         - Stories
+        - Assistant
       requestBody:
         required: true
         content:
@@ -9376,10 +9955,10 @@ paths:
                 - handle
                 - target
       security:
-        - BearerAuthCookie: &a19
+        - BearerAuthCookie: &a23
             - editor
             - admin
-        - BearerAuthHeader: *a19
+        - BearerAuthHeader: *a23
       responses:
         "200":
           description: OK
@@ -10424,6 +11003,7 @@ paths:
       summary: Update quiz logic
       tags:
         - Stories
+        - Assistant
       requestBody:
         required: true
         content:
@@ -10468,10 +11048,10 @@ paths:
               required:
                 - rules
       security:
-        - BearerAuthCookie: &a20
+        - BearerAuthCookie: &a24
             - editor
             - admin
-        - BearerAuthHeader: *a20
+        - BearerAuthHeader: *a24
       responses:
         "200":
           description: OK
@@ -11584,6 +12164,7 @@ paths:
       summary: Update taxonomy logic
       tags:
         - Stories
+        - Assistant
       requestBody:
         required: true
         content:
@@ -11707,10 +12288,10 @@ paths:
                 - difficulty
                 - rules
       security:
-        - BearerAuthCookie: &a21
+        - BearerAuthCookie: &a25
             - editor
             - admin
-        - BearerAuthHeader: *a21
+        - BearerAuthHeader: *a25
       responses:
         "200":
           description: OK
@@ -11756,8 +12337,42 @@ paths:
                           - type:
                               - "null"
                           - type: number
-                      taxonomyName:
+                      taxonomySlug:
                         type: string
+                      taxonomyName:
+                        oneOf:
+                          - type:
+                              - "null"
+                          - type: object
+                            properties:
+                              default:
+                                type: string
+                              en:
+                                type: string
+                              bg:
+                                type: string
+                              ca:
+                                type: string
+                              da:
+                                type: string
+                              de:
+                                type: string
+                              es:
+                                type: string
+                              fi:
+                                type: string
+                              fr:
+                                type: string
+                              it:
+                                type: string
+                              nl:
+                                type: string
+                              no:
+                                type: string
+                              pt:
+                                type: string
+                              sv:
+                                type: string
                       draftedAttributeIds:
                         oneOf:
                           - type:
@@ -11950,6 +12565,7 @@ paths:
                       - goal
                       - maxMistakes
                       - difficulty
+                      - taxonomySlug
                       - taxonomyName
                       - draftedAttributeIds
                       - draftedCategoryIds
@@ -13006,6 +13622,7 @@ paths:
       summary: Create story permission
       tags:
         - Stories
+        - Assistant
       requestBody:
         required: true
         content:
@@ -13025,10 +13642,10 @@ paths:
               required:
                 - userId
       security:
-        - BearerAuthCookie: &a22
+        - BearerAuthCookie: &a26
             - editor
             - admin
-        - BearerAuthHeader: *a22
+        - BearerAuthHeader: *a26
       responses:
         "201":
           description: Created
@@ -13174,11 +13791,12 @@ paths:
       summary: Get story permission
       tags:
         - Stories
+        - Assistant
       security:
-        - BearerAuthCookie: &a23
+        - BearerAuthCookie: &a27
             - editor
             - admin
-        - BearerAuthHeader: *a23
+        - BearerAuthHeader: *a27
       responses:
         "200":
           description: OK
@@ -13310,6 +13928,7 @@ paths:
       summary: Update story permission
       tags:
         - Stories
+        - Assistant
       requestBody:
         required: true
         content:
@@ -13327,10 +13946,10 @@ paths:
                     - editor
                     - owner
       security:
-        - BearerAuthCookie: &a24
+        - BearerAuthCookie: &a28
             - editor
             - admin
-        - BearerAuthHeader: *a24
+        - BearerAuthHeader: *a28
       responses:
         "200":
           description: OK
@@ -13485,11 +14104,12 @@ paths:
       summary: Delete story permission
       tags:
         - Stories
+        - Assistant
       security:
-        - BearerAuthCookie: &a25
+        - BearerAuthCookie: &a29
             - editor
             - admin
-        - BearerAuthHeader: *a25
+        - BearerAuthHeader: *a29
       responses:
         "204":
           description: No Content
@@ -13525,6 +14145,7 @@ paths:
       summary: Create or update announcement
       tags:
         - Story assets
+        - Assistant
       requestBody:
         required: true
         content:
@@ -13539,21 +14160,21 @@ paths:
                   oneOf:
                     - type:
                         - "null"
-                    - *a26
+                    - *a7
                 message:
                   oneOf:
                     - type:
                         - "null"
-                    - *a26
+                    - *a7
               required:
                 - name
                 - title
                 - message
       security:
-        - BearerAuthCookie: &a27
+        - BearerAuthCookie: &a30
             - editor
             - admin
-        - BearerAuthHeader: *a27
+        - BearerAuthHeader: *a30
       responses:
         "200":
           description: OK
@@ -14668,11 +15289,12 @@ paths:
       summary: Delete announcement
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a28
+        - BearerAuthCookie: &a31
             - editor
             - admin
-        - BearerAuthHeader: *a28
+        - BearerAuthHeader: *a31
       responses:
         "200":
           description: OK
@@ -14714,11 +15336,12 @@ paths:
       summary: Get story assets
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a29
+        - BearerAuthCookie: &a32
             - editor
             - admin
-        - BearerAuthHeader: *a29
+        - BearerAuthHeader: *a32
       responses:
         "200":
           description: OK
@@ -14766,6 +15389,7 @@ paths:
       summary: Add story asset
       tags:
         - Story assets
+        - Assistant
       requestBody:
         required: true
         content:
@@ -14787,10 +15411,10 @@ paths:
                 - type
                 - asset
       security:
-        - BearerAuthCookie: &a30
+        - BearerAuthCookie: &a33
             - editor
             - admin
-        - BearerAuthHeader: *a30
+        - BearerAuthHeader: *a33
       responses:
         "201":
           description: Created
@@ -14847,6 +15471,7 @@ paths:
       summary: Remove story asset
       tags:
         - Story assets
+        - Assistant
       requestBody:
         required: true
         content:
@@ -14868,10 +15493,10 @@ paths:
                 - type
                 - asset
       security:
-        - BearerAuthCookie: &a31
+        - BearerAuthCookie: &a34
             - editor
             - admin
-        - BearerAuthHeader: *a31
+        - BearerAuthHeader: *a34
       responses:
         "200":
           description: OK
@@ -14913,6 +15538,7 @@ paths:
       summary: Create or update quiz questions
       tags:
         - Story assets
+        - Assistant
       requestBody:
         required: true
         content:
@@ -14991,10 +15617,10 @@ paths:
                 - name
                 - questions
       security:
-        - BearerAuthCookie: &a32
+        - BearerAuthCookie: &a35
             - editor
             - admin
-        - BearerAuthHeader: *a32
+        - BearerAuthHeader: *a35
       responses:
         "200":
           description: OK
@@ -16209,11 +16835,12 @@ paths:
       summary: Delete quiz
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a33
+        - BearerAuthCookie: &a36
             - editor
             - admin
-        - BearerAuthHeader: *a33
+        - BearerAuthHeader: *a36
       responses:
         "200":
           description: OK
@@ -16255,6 +16882,7 @@ paths:
       summary: Create or update still
       tags:
         - Story assets
+        - Assistant
       requestBody:
         required: true
         content:
@@ -16296,10 +16924,10 @@ paths:
                 - image
                 - style
       security:
-        - BearerAuthCookie: &a34
+        - BearerAuthCookie: &a37
             - editor
             - admin
-        - BearerAuthHeader: *a34
+        - BearerAuthHeader: *a37
       responses:
         "200":
           description: OK
@@ -17372,11 +18000,12 @@ paths:
       summary: Delete still
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a35
+        - BearerAuthCookie: &a38
             - editor
             - admin
-        - BearerAuthHeader: *a35
+        - BearerAuthHeader: *a38
       responses:
         "200":
           description: OK
@@ -17418,6 +18047,7 @@ paths:
       summary: Create or update video
       tags:
         - Story assets
+        - Assistant
       requestBody:
         required: true
         content:
@@ -17441,10 +18071,10 @@ paths:
                 - thumbnail
                 - duration
       security:
-        - BearerAuthCookie: &a36
+        - BearerAuthCookie: &a39
             - editor
             - admin
-        - BearerAuthHeader: *a36
+        - BearerAuthHeader: *a39
       responses:
         "200":
           description: OK
@@ -18958,11 +19588,12 @@ paths:
       summary: Delete video
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a37
+        - BearerAuthCookie: &a40
             - editor
             - admin
-        - BearerAuthHeader: *a37
+        - BearerAuthHeader: *a40
       responses:
         "200":
           description: OK
@@ -19004,6 +19635,7 @@ paths:
       summary: Create taxonomy
       tags:
         - Story assets
+        - Assistant
       requestBody:
         required: true
         content:
@@ -19011,22 +19643,28 @@ paths:
             schema:
               type: object
               properties:
-                name:
+                slug:
                   type: string
                   minLength: 1
+                name:
+                  oneOf:
+                    - type:
+                        - "null"
+                    - *a7
                 description:
                   oneOf:
                     - type:
                         - "null"
-                    - type: string
+                    - *a7
               required:
+                - slug
                 - name
                 - description
       security:
-        - BearerAuthCookie: &a38
+        - BearerAuthCookie: &a41
             - editor
             - admin
-        - BearerAuthHeader: *a38
+        - BearerAuthHeader: *a41
       responses:
         "201":
           description: Created
@@ -19039,13 +19677,76 @@ paths:
                     type: string
                   id:
                     type: string
-                  name:
+                  slug:
                     type: string
+                  name:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          default:
+                            type: string
+                          en:
+                            type: string
+                          bg:
+                            type: string
+                          ca:
+                            type: string
+                          da:
+                            type: string
+                          de:
+                            type: string
+                          es:
+                            type: string
+                          fi:
+                            type: string
+                          fr:
+                            type: string
+                          it:
+                            type: string
+                          nl:
+                            type: string
+                          no:
+                            type: string
+                          pt:
+                            type: string
+                          sv:
+                            type: string
                   description:
                     oneOf:
                       - type:
                           - "null"
-                      - type: string
+                      - type: object
+                        properties:
+                          default:
+                            type: string
+                          en:
+                            type: string
+                          bg:
+                            type: string
+                          ca:
+                            type: string
+                          da:
+                            type: string
+                          de:
+                            type: string
+                          es:
+                            type: string
+                          fi:
+                            type: string
+                          fr:
+                            type: string
+                          it:
+                            type: string
+                          nl:
+                            type: string
+                          no:
+                            type: string
+                          pt:
+                            type: string
+                          sv:
+                            type: string
                   categories:
                     oneOf:
                       - type:
@@ -19069,6 +19770,7 @@ paths:
                 required:
                   - clientId
                   - id
+                  - slug
                   - name
                   - description
                   - categories
@@ -19091,11 +19793,12 @@ paths:
       summary: Get taxonomy
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a39
+        - BearerAuthCookie: &a42
             - editor
             - admin
-        - BearerAuthHeader: *a39
+        - BearerAuthHeader: *a42
       responses:
         "200":
           description: OK
@@ -19108,13 +19811,76 @@ paths:
                     type: string
                   id:
                     type: string
-                  name:
+                  slug:
                     type: string
+                  name:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          default:
+                            type: string
+                          en:
+                            type: string
+                          bg:
+                            type: string
+                          ca:
+                            type: string
+                          da:
+                            type: string
+                          de:
+                            type: string
+                          es:
+                            type: string
+                          fi:
+                            type: string
+                          fr:
+                            type: string
+                          it:
+                            type: string
+                          nl:
+                            type: string
+                          no:
+                            type: string
+                          pt:
+                            type: string
+                          sv:
+                            type: string
                   description:
                     oneOf:
                       - type:
                           - "null"
-                      - type: string
+                      - type: object
+                        properties:
+                          default:
+                            type: string
+                          en:
+                            type: string
+                          bg:
+                            type: string
+                          ca:
+                            type: string
+                          da:
+                            type: string
+                          de:
+                            type: string
+                          es:
+                            type: string
+                          fi:
+                            type: string
+                          fr:
+                            type: string
+                          it:
+                            type: string
+                          nl:
+                            type: string
+                          no:
+                            type: string
+                          pt:
+                            type: string
+                          sv:
+                            type: string
                   categories:
                     oneOf:
                       - type:
@@ -19138,6 +19904,7 @@ paths:
                 required:
                   - clientId
                   - id
+                  - slug
                   - name
                   - description
                   - categories
@@ -19165,6 +19932,7 @@ paths:
       summary: Update taxonomy
       tags:
         - Story assets
+        - Assistant
       requestBody:
         required: true
         content:
@@ -19172,19 +19940,24 @@ paths:
             schema:
               type: object
               properties:
-                name:
+                slug:
                   type: string
                   minLength: 1
+                name:
+                  oneOf:
+                    - type:
+                        - "null"
+                    - *a7
                 description:
                   oneOf:
                     - type:
                         - "null"
-                    - type: string
+                    - *a7
       security:
-        - BearerAuthCookie: &a40
+        - BearerAuthCookie: &a43
             - editor
             - admin
-        - BearerAuthHeader: *a40
+        - BearerAuthHeader: *a43
       responses:
         "200":
           description: OK
@@ -19197,13 +19970,76 @@ paths:
                     type: string
                   id:
                     type: string
-                  name:
+                  slug:
                     type: string
+                  name:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          default:
+                            type: string
+                          en:
+                            type: string
+                          bg:
+                            type: string
+                          ca:
+                            type: string
+                          da:
+                            type: string
+                          de:
+                            type: string
+                          es:
+                            type: string
+                          fi:
+                            type: string
+                          fr:
+                            type: string
+                          it:
+                            type: string
+                          nl:
+                            type: string
+                          no:
+                            type: string
+                          pt:
+                            type: string
+                          sv:
+                            type: string
                   description:
                     oneOf:
                       - type:
                           - "null"
-                      - type: string
+                      - type: object
+                        properties:
+                          default:
+                            type: string
+                          en:
+                            type: string
+                          bg:
+                            type: string
+                          ca:
+                            type: string
+                          da:
+                            type: string
+                          de:
+                            type: string
+                          es:
+                            type: string
+                          fi:
+                            type: string
+                          fr:
+                            type: string
+                          it:
+                            type: string
+                          nl:
+                            type: string
+                          no:
+                            type: string
+                          pt:
+                            type: string
+                          sv:
+                            type: string
                   categories:
                     oneOf:
                       - type:
@@ -19227,6 +20063,7 @@ paths:
                 required:
                   - clientId
                   - id
+                  - slug
                   - name
                   - description
                   - categories
@@ -19259,11 +20096,12 @@ paths:
       summary: Delete taxonomy
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a41
+        - BearerAuthCookie: &a44
             - editor
             - admin
-        - BearerAuthHeader: *a41
+        - BearerAuthHeader: *a44
       responses:
         "204":
           description: No Content
@@ -19294,6 +20132,7 @@ paths:
       summary: Create taxonomy attribute
       tags:
         - Story assets
+        - Assistant
       requestBody:
         required: true
         content:
@@ -19361,10 +20200,10 @@ paths:
                   type: object
                   additionalProperties: true
       security:
-        - BearerAuthCookie: &a42
+        - BearerAuthCookie: &a45
             - editor
             - admin
-        - BearerAuthHeader: *a42
+        - BearerAuthHeader: *a45
       responses:
         "201":
           description: Created
@@ -19534,11 +20373,12 @@ paths:
       summary: Get taxonomy attribute
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a43
+        - BearerAuthCookie: &a46
             - editor
             - admin
-        - BearerAuthHeader: *a43
+        - BearerAuthHeader: *a46
       responses:
         "200":
           description: OK
@@ -19694,6 +20534,7 @@ paths:
       summary: Update taxonomy attribute
       tags:
         - Story assets
+        - Assistant
       requestBody:
         required: true
         content:
@@ -19761,10 +20602,10 @@ paths:
                   type: object
                   additionalProperties: true
       security:
-        - BearerAuthCookie: &a44
+        - BearerAuthCookie: &a47
             - editor
             - admin
-        - BearerAuthHeader: *a44
+        - BearerAuthHeader: *a47
       responses:
         "200":
           description: OK
@@ -19943,11 +20784,12 @@ paths:
       summary: Delete taxonomy attribute
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a45
+        - BearerAuthCookie: &a48
             - editor
             - admin
-        - BearerAuthHeader: *a45
+        - BearerAuthHeader: *a48
       responses:
         "204":
           description: No Content
@@ -19983,6 +20825,7 @@ paths:
       summary: Create taxonomy category
       tags:
         - Story assets
+        - Assistant
       requestBody:
         required: true
         content:
@@ -20034,10 +20877,10 @@ paths:
                   type: object
                   additionalProperties: true
       security:
-        - BearerAuthCookie: &a46
+        - BearerAuthCookie: &a49
             - editor
             - admin
-        - BearerAuthHeader: *a46
+        - BearerAuthHeader: *a49
       responses:
         "201":
           description: Created
@@ -20174,11 +21017,12 @@ paths:
       summary: Get taxonomy category
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a47
+        - BearerAuthCookie: &a50
             - editor
             - admin
-        - BearerAuthHeader: *a47
+        - BearerAuthHeader: *a50
       responses:
         "200":
           description: OK
@@ -20319,6 +21163,7 @@ paths:
       summary: Update taxonomy category
       tags:
         - Story assets
+        - Assistant
       requestBody:
         required: true
         content:
@@ -20370,10 +21215,10 @@ paths:
                   type: object
                   additionalProperties: true
       security:
-        - BearerAuthCookie: &a48
+        - BearerAuthCookie: &a51
             - editor
             - admin
-        - BearerAuthHeader: *a48
+        - BearerAuthHeader: *a51
       responses:
         "200":
           description: OK
@@ -20519,11 +21364,12 @@ paths:
       summary: Delete taxonomy category
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a49
+        - BearerAuthCookie: &a52
             - editor
             - admin
-        - BearerAuthHeader: *a49
+        - BearerAuthHeader: *a52
       responses:
         "204":
           description: No Content
@@ -20559,6 +21405,7 @@ paths:
       summary: Create category attribute
       tags:
         - Story assets
+        - Assistant
       requestBody:
         required: true
         content:
@@ -20582,10 +21429,10 @@ paths:
                     - false
                     - true
       security:
-        - BearerAuthCookie: &a50
+        - BearerAuthCookie: &a53
             - editor
             - admin
-        - BearerAuthHeader: *a50
+        - BearerAuthHeader: *a53
       responses:
         "201":
           description: Created
@@ -20693,11 +21540,12 @@ paths:
       summary: Get category attribute
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a51
+        - BearerAuthCookie: &a54
             - editor
             - admin
-        - BearerAuthHeader: *a51
+        - BearerAuthHeader: *a54
       responses:
         "200":
           description: OK
@@ -20791,6 +21639,7 @@ paths:
       summary: Update category attribute
       tags:
         - Story assets
+        - Assistant
       requestBody:
         required: true
         content:
@@ -20814,10 +21663,10 @@ paths:
                     - false
                     - true
       security:
-        - BearerAuthCookie: &a52
+        - BearerAuthCookie: &a55
             - editor
             - admin
-        - BearerAuthHeader: *a52
+        - BearerAuthHeader: *a55
       responses:
         "200":
           description: OK
@@ -20934,11 +21783,12 @@ paths:
       summary: Delete category attribute
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a53
+        - BearerAuthCookie: &a56
             - editor
             - admin
-        - BearerAuthHeader: *a53
+        - BearerAuthHeader: *a56
       responses:
         "204":
           description: No Content
@@ -20973,17 +21823,1500 @@ paths:
           required: true
           schema:
             type: string
+  /taxonomies/{taxonomyId}/io:
+    get:
+      operationId: get_taxonomies_taxonomyId_io
+      summary: Export taxonomy
+      tags:
+        - Story assets
+        - Assistant
+      security:
+        - BearerAuthCookie: &a57
+            - editor
+            - admin
+        - BearerAuthHeader: *a57
+      responses:
+        "200":
+          description: OK
+          content:
+            application/yaml:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: *a2
+        "403":
+          description: Editor or Admin or Editor or Admin role required
+          content:
+            application/json:
+              schema: *a2
+      parameters:
+        - name: taxonomyId
+          in: path
+          required: true
+          schema:
+            type: string
+    post:
+      operationId: post_taxonomies_taxonomyId_io
+      summary: Import taxonomy
+      tags:
+        - Story assets
+        - Assistant
+      security:
+        - BearerAuthCookie: &a58
+            - editor
+            - admin
+        - BearerAuthHeader: *a58
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  categories:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        map:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: object
+                              additionalProperties: true
+                        id:
+                          type: string
+                        name:
+                          type: object
+                          properties:
+                            default:
+                              type: string
+                            en:
+                              type: string
+                            bg:
+                              type: string
+                            ca:
+                              type: string
+                            da:
+                              type: string
+                            de:
+                              type: string
+                            es:
+                              type: string
+                            fi:
+                              type: string
+                            fr:
+                              type: string
+                            it:
+                              type: string
+                            nl:
+                              type: string
+                            no:
+                              type: string
+                            pt:
+                              type: string
+                            sv:
+                              type: string
+                        description:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: object
+                              properties:
+                                default:
+                                  type: string
+                                en:
+                                  type: string
+                                bg:
+                                  type: string
+                                ca:
+                                  type: string
+                                da:
+                                  type: string
+                                de:
+                                  type: string
+                                es:
+                                  type: string
+                                fi:
+                                  type: string
+                                fr:
+                                  type: string
+                                it:
+                                  type: string
+                                nl:
+                                  type: string
+                                no:
+                                  type: string
+                                pt:
+                                  type: string
+                                sv:
+                                  type: string
+                        image:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: object
+                              properties:
+                                collection:
+                                  type: string
+                                  enum:
+                                    - externals
+                                    - internals
+                                    - clients
+                                    - users
+                                filename:
+                                  type: string
+                              required:
+                                - collection
+                                - filename
+                      required:
+                        - map
+                        - id
+                        - name
+                        - description
+                        - image
+                  attributes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          enum:
+                            - number
+                            - custom
+                            - integer
+                            - translatable
+                            - translatable_category
+                            - item_reference
+                        id:
+                          type: string
+                        slug:
+                          type: string
+                        name:
+                          type: object
+                          properties:
+                            default:
+                              type: string
+                            en:
+                              type: string
+                            bg:
+                              type: string
+                            ca:
+                              type: string
+                            da:
+                              type: string
+                            de:
+                              type: string
+                            es:
+                              type: string
+                            fi:
+                              type: string
+                            fr:
+                              type: string
+                            it:
+                              type: string
+                            nl:
+                              type: string
+                            no:
+                              type: string
+                            pt:
+                              type: string
+                            sv:
+                              type: string
+                        description:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: object
+                              properties:
+                                default:
+                                  type: string
+                                en:
+                                  type: string
+                                bg:
+                                  type: string
+                                ca:
+                                  type: string
+                                da:
+                                  type: string
+                                de:
+                                  type: string
+                                es:
+                                  type: string
+                                fi:
+                                  type: string
+                                fr:
+                                  type: string
+                                it:
+                                  type: string
+                                nl:
+                                  type: string
+                                no:
+                                  type: string
+                                pt:
+                                  type: string
+                                sv:
+                                  type: string
+                        image:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: object
+                              properties:
+                                collection:
+                                  type: string
+                                  enum:
+                                    - externals
+                                    - internals
+                                    - clients
+                                    - users
+                                filename:
+                                  type: string
+                              required:
+                                - collection
+                                - filename
+                        referencedCategoryId:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: string
+                        schema:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: object
+                              additionalProperties:
+                                type: object
+                                additionalProperties: true
+                      required:
+                        - type
+                        - id
+                        - slug
+                        - name
+                        - description
+                        - image
+                        - referencedCategoryId
+                        - schema
+                  attributeOfCategories:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        categoryId:
+                          type: string
+                        order:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: number
+                        isRequired:
+                          type: boolean
+                        attributeId:
+                          type: string
+                        isDefault:
+                          type: boolean
+                      required:
+                        - categoryId
+                        - order
+                        - isRequired
+                        - attributeId
+                        - isDefault
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                      required:
+                        - id
+                  itemOfCategories:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        itemId:
+                          type: string
+                        categoryId:
+                          type: string
+                      required:
+                        - itemId
+                        - categoryId
+                  attributeOfItems:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        itemId:
+                          type: string
+                        value:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: object
+                              additionalProperties:
+                                type: object
+                                additionalProperties: true
+                        difficulty:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: number
+                        attributeId:
+                          type: string
+                        referencedItemId:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: string
+                      required:
+                        - itemId
+                        - value
+                        - difficulty
+                        - attributeId
+                        - referencedItemId
+                  id:
+                    type: string
+                  slug:
+                    type: string
+                  name:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          default:
+                            type: string
+                          en:
+                            type: string
+                          bg:
+                            type: string
+                          ca:
+                            type: string
+                          da:
+                            type: string
+                          de:
+                            type: string
+                          es:
+                            type: string
+                          fi:
+                            type: string
+                          fr:
+                            type: string
+                          it:
+                            type: string
+                          nl:
+                            type: string
+                          no:
+                            type: string
+                          pt:
+                            type: string
+                          sv:
+                            type: string
+                  description:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          default:
+                            type: string
+                          en:
+                            type: string
+                          bg:
+                            type: string
+                          ca:
+                            type: string
+                          da:
+                            type: string
+                          de:
+                            type: string
+                          es:
+                            type: string
+                          fi:
+                            type: string
+                          fr:
+                            type: string
+                          it:
+                            type: string
+                          nl:
+                            type: string
+                          no:
+                            type: string
+                          pt:
+                            type: string
+                          sv:
+                            type: string
+                required:
+                  - categories
+                  - attributes
+                  - attributeOfCategories
+                  - items
+                  - itemOfCategories
+                  - attributeOfItems
+                  - id
+                  - slug
+                  - name
+                  - description
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - Invalid JSON or YAML body
+                required:
+                  - message
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema: *a2
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema: *a2
+        "422":
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    enum:
+                      - Invalid taxonomy body
+                  issues:
+                    type: array
+                    items:
+                      oneOf:
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - invalid_union
+                            errors:
+                              type: array
+                              items:
+                                type: object
+                                additionalProperties: true
+                            input:
+                              type: object
+                              additionalProperties: true
+                            discriminator:
+                              type: string
+                            options:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type:
+                                      - "null"
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      toLocaleString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                        enum:
+                                          - BigInt
+                                    required:
+                                      - toString
+                                      - toLocaleString
+                                      - valueOf
+                                      - __@toStringTag@895
+                                  - type: boolean
+                                    enum:
+                                      - false
+                                  - type: boolean
+                                    enum:
+                                      - true
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            inclusive:
+                              type: boolean
+                              enum:
+                                - true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - errors
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - invalid_union
+                            errors:
+                              type: array
+                              items: {}
+                            input:
+                              type: object
+                              additionalProperties: true
+                            discriminator:
+                              type: string
+                            inclusive:
+                              type: boolean
+                              enum:
+                                - false
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - errors
+                            - inclusive
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - invalid_type
+                            expected:
+                              oneOf:
+                                - type: string
+                                  enum:
+                                    - string
+                                - type: string
+                                  enum:
+                                    - number
+                                - type: string
+                                  enum:
+                                    - bigint
+                                - type: string
+                                  enum:
+                                    - boolean
+                                - type: string
+                                  enum:
+                                    - symbol
+                                - type: string
+                                  enum:
+                                    - undefined
+                                - type: string
+                                  enum:
+                                    - object
+                                - type: string
+                                  enum:
+                                    - function
+                                - type: string
+                                  enum:
+                                    - int
+                                - type: string
+                                  enum:
+                                    - "null"
+                                - type: string
+                                  enum:
+                                    - void
+                                - type: string
+                                  enum:
+                                    - never
+                                - type: string
+                                  enum:
+                                    - date
+                                - type: string
+                                  enum:
+                                    - record
+                                - type: string
+                                  enum:
+                                    - file
+                                - type: string
+                                  enum:
+                                    - array
+                                - type: string
+                                  enum:
+                                    - tuple
+                                - type: string
+                                  enum:
+                                    - map
+                                - type: string
+                                  enum:
+                                    - set
+                                - type: string
+                                  enum:
+                                    - nonoptional
+                                - type: string
+                                  enum:
+                                    - nan
+                                - allOf:
+                                    - type: string
+                                    - type: object
+                                      additionalProperties: true
+                            input:
+                              type: object
+                              additionalProperties: true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - expected
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - too_big
+                            origin:
+                              oneOf:
+                                - type: string
+                                  enum:
+                                    - string
+                                - type: string
+                                  enum:
+                                    - number
+                                - type: string
+                                  enum:
+                                    - bigint
+                                - type: string
+                                  enum:
+                                    - int
+                                - type: string
+                                  enum:
+                                    - date
+                                - type: string
+                                  enum:
+                                    - file
+                                - type: string
+                                  enum:
+                                    - array
+                                - type: string
+                                  enum:
+                                    - set
+                                - allOf:
+                                    - type: string
+                                    - type: object
+                                      additionalProperties: true
+                            maximum:
+                              oneOf:
+                                - type: number
+                                - type: object
+                                  properties:
+                                    toString:
+                                      type: object
+                                      additionalProperties: true
+                                    toLocaleString:
+                                      type: object
+                                      additionalProperties: true
+                                    valueOf:
+                                      type: object
+                                      additionalProperties: true
+                                    __@toStringTag@895:
+                                      type: string
+                                      enum:
+                                        - BigInt
+                                  required:
+                                    - toString
+                                    - toLocaleString
+                                    - valueOf
+                                    - __@toStringTag@895
+                            inclusive:
+                              type: boolean
+                              enum:
+                                - false
+                                - true
+                            exact:
+                              type: boolean
+                              enum:
+                                - false
+                                - true
+                            input:
+                              type: object
+                              additionalProperties: true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - origin
+                            - maximum
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - too_small
+                            origin:
+                              oneOf:
+                                - type: string
+                                  enum:
+                                    - string
+                                - type: string
+                                  enum:
+                                    - number
+                                - type: string
+                                  enum:
+                                    - bigint
+                                - type: string
+                                  enum:
+                                    - int
+                                - type: string
+                                  enum:
+                                    - date
+                                - type: string
+                                  enum:
+                                    - file
+                                - type: string
+                                  enum:
+                                    - array
+                                - type: string
+                                  enum:
+                                    - set
+                                - allOf:
+                                    - type: string
+                                    - type: object
+                                      additionalProperties: true
+                            minimum:
+                              oneOf:
+                                - type: number
+                                - type: object
+                                  properties:
+                                    toString:
+                                      type: object
+                                      additionalProperties: true
+                                    toLocaleString:
+                                      type: object
+                                      additionalProperties: true
+                                    valueOf:
+                                      type: object
+                                      additionalProperties: true
+                                    __@toStringTag@895:
+                                      type: string
+                                      enum:
+                                        - BigInt
+                                  required:
+                                    - toString
+                                    - toLocaleString
+                                    - valueOf
+                                    - __@toStringTag@895
+                            inclusive:
+                              type: boolean
+                              enum:
+                                - false
+                                - true
+                            exact:
+                              type: boolean
+                              enum:
+                                - false
+                                - true
+                            input:
+                              type: object
+                              additionalProperties: true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - origin
+                            - minimum
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - invalid_format
+                            format:
+                              oneOf:
+                                - type: string
+                                  enum:
+                                    - date
+                                - type: string
+                                  enum:
+                                    - email
+                                - type: string
+                                  enum:
+                                    - includes
+                                - type: string
+                                  enum:
+                                    - datetime
+                                - type: string
+                                  enum:
+                                    - time
+                                - type: string
+                                  enum:
+                                    - uuid
+                                - type: string
+                                  enum:
+                                    - e164
+                                - type: string
+                                  enum:
+                                    - url
+                                - type: string
+                                  enum:
+                                    - duration
+                                - allOf:
+                                    - type: string
+                                    - type: object
+                                      additionalProperties: true
+                                - type: string
+                                  enum:
+                                    - emoji
+                                - type: string
+                                  enum:
+                                    - guid
+                                - type: string
+                                  enum:
+                                    - nanoid
+                                - type: string
+                                  enum:
+                                    - cuid
+                                - type: string
+                                  enum:
+                                    - cuid2
+                                - type: string
+                                  enum:
+                                    - ulid
+                                - type: string
+                                  enum:
+                                    - xid
+                                - type: string
+                                  enum:
+                                    - ksuid
+                                - type: string
+                                  enum:
+                                    - ipv4
+                                - type: string
+                                  enum:
+                                    - ipv6
+                                - type: string
+                                  enum:
+                                    - cidrv4
+                                - type: string
+                                  enum:
+                                    - cidrv6
+                                - type: string
+                                  enum:
+                                    - base64
+                                - type: string
+                                  enum:
+                                    - base64url
+                                - type: string
+                                  enum:
+                                    - json_string
+                                - type: string
+                                  enum:
+                                    - lowercase
+                                - type: string
+                                  enum:
+                                    - uppercase
+                                - type: string
+                                  enum:
+                                    - regex
+                                - type: string
+                                  enum:
+                                    - jwt
+                                - type: string
+                                  enum:
+                                    - starts_with
+                                - type: string
+                                  enum:
+                                    - ends_with
+                            pattern:
+                              type: string
+                            input:
+                              type: string
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - format
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - not_multiple_of
+                            divisor:
+                              type: number
+                            input:
+                              oneOf:
+                                - type: number
+                                - type: object
+                                  properties:
+                                    toString:
+                                      type: object
+                                      additionalProperties: true
+                                    toLocaleString:
+                                      type: object
+                                      additionalProperties: true
+                                    valueOf:
+                                      type: object
+                                      additionalProperties: true
+                                    __@toStringTag@895:
+                                      type: string
+                                      enum:
+                                        - BigInt
+                                  required:
+                                    - toString
+                                    - toLocaleString
+                                    - valueOf
+                                    - __@toStringTag@895
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - divisor
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - unrecognized_keys
+                            keys:
+                              type: array
+                              items:
+                                type: string
+                            input:
+                              type: object
+                              additionalProperties:
+                                type: object
+                                additionalProperties: true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - keys
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - invalid_key
+                            origin:
+                              type: string
+                              enum:
+                                - record
+                                - map
+                            issues:
+                              type: object
+                              additionalProperties: true
+                            input:
+                              type: object
+                              additionalProperties: true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - origin
+                            - issues
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - invalid_element
+                            origin:
+                              type: string
+                              enum:
+                                - map
+                                - set
+                            key:
+                              type: object
+                              additionalProperties: true
+                            issues:
+                              type: object
+                              additionalProperties: true
+                            input:
+                              type: object
+                              additionalProperties: true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - origin
+                            - key
+                            - issues
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - invalid_value
+                            values:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type:
+                                      - "null"
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      toLocaleString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                        enum:
+                                          - BigInt
+                                    required:
+                                      - toString
+                                      - toLocaleString
+                                      - valueOf
+                                      - __@toStringTag@895
+                                  - type: boolean
+                                    enum:
+                                      - false
+                                  - type: boolean
+                                    enum:
+                                      - true
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            input:
+                              type: object
+                              additionalProperties: true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - values
+                            - path
+                            - message
+                        - type: object
+                          properties:
+                            code:
+                              type: string
+                              enum:
+                                - custom
+                            params:
+                              type: object
+                              additionalProperties:
+                                type: object
+                                additionalProperties: true
+                            input:
+                              type: object
+                              additionalProperties: true
+                            path:
+                              type: array
+                              items:
+                                oneOf:
+                                  - type: string
+                                  - type: number
+                                  - type: object
+                                    properties:
+                                      toString:
+                                        type: object
+                                        additionalProperties: true
+                                      valueOf:
+                                        type: object
+                                        additionalProperties: true
+                                      description:
+                                        type: string
+                                      __@toPrimitive@1890:
+                                        type: object
+                                        additionalProperties: true
+                                      __@toStringTag@895:
+                                        type: string
+                                    required:
+                                      - toString
+                                      - valueOf
+                                      - description
+                                      - __@toPrimitive@1890
+                                      - __@toStringTag@895
+                            message:
+                              type: string
+                          required:
+                            - code
+                            - path
+                            - message
+                required:
+                  - message
+                  - issues
+      parameters:
+        - name: taxonomyId
+          in: path
+          required: true
+          schema:
+            type: string
   /taxonomies/{taxonomyId}/items:
     post:
       operationId: post_taxonomies_taxonomyId_items
       summary: Create taxonomy item
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a54
+        - BearerAuthCookie: &a59
             - editor
             - admin
-        - BearerAuthHeader: *a54
+        - BearerAuthHeader: *a59
       responses:
         "201":
           description: Created
@@ -21032,11 +23365,12 @@ paths:
       summary: Get taxonomy item
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a55
+        - BearerAuthCookie: &a60
             - editor
             - admin
-        - BearerAuthHeader: *a55
+        - BearerAuthHeader: *a60
       responses:
         "200":
           description: OK
@@ -21089,6 +23423,7 @@ paths:
       summary: Update taxonomy item
       tags:
         - Story assets
+        - Assistant
       requestBody:
         required: true
         content:
@@ -21101,10 +23436,10 @@ paths:
                   items:
                     type: string
       security:
-        - BearerAuthCookie: &a56
+        - BearerAuthCookie: &a61
             - editor
             - admin
-        - BearerAuthHeader: *a56
+        - BearerAuthHeader: *a61
       responses:
         "200":
           description: OK
@@ -21175,11 +23510,12 @@ paths:
       summary: Delete taxonomy item
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a57
+        - BearerAuthCookie: &a62
             - editor
             - admin
-        - BearerAuthHeader: *a57
+        - BearerAuthHeader: *a62
       responses:
         "204":
           description: No Content
@@ -21215,6 +23551,7 @@ paths:
       summary: Create item attribute
       tags:
         - Story assets
+        - Assistant
       requestBody:
         required: true
         content:
@@ -21241,10 +23578,10 @@ paths:
                 - referencedItemId
                 - difficulty
       security:
-        - BearerAuthCookie: &a58
+        - BearerAuthCookie: &a63
             - editor
             - admin
-        - BearerAuthHeader: *a58
+        - BearerAuthHeader: *a63
       responses:
         "201":
           description: Created
@@ -21377,11 +23714,12 @@ paths:
       summary: Get item attribute
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a59
+        - BearerAuthCookie: &a64
             - editor
             - admin
-        - BearerAuthHeader: *a59
+        - BearerAuthHeader: *a64
       responses:
         "200":
           description: OK
@@ -21500,6 +23838,7 @@ paths:
       summary: Update item attribute
       tags:
         - Story assets
+        - Assistant
       requestBody:
         required: true
         content:
@@ -21522,10 +23861,10 @@ paths:
                         - "null"
                     - type: integer
       security:
-        - BearerAuthCookie: &a60
+        - BearerAuthCookie: &a65
             - editor
             - admin
-        - BearerAuthHeader: *a60
+        - BearerAuthHeader: *a65
       responses:
         "200":
           description: OK
@@ -21667,11 +24006,12 @@ paths:
       summary: Delete item attribute
       tags:
         - Story assets
+        - Assistant
       security:
-        - BearerAuthCookie: &a61
+        - BearerAuthCookie: &a66
             - editor
             - admin
-        - BearerAuthHeader: *a61
+        - BearerAuthHeader: *a66
       responses:
         "204":
           description: No Content
@@ -21850,11 +24190,11 @@ paths:
                         - "null"
                     - type: string
       security:
-        - BearerAuthCookie: &a62
+        - BearerAuthCookie: &a67
             - participant
             - editor
             - admin
-        - BearerAuthHeader: *a62
+        - BearerAuthHeader: *a67
       responses:
         "201":
           description: Created
@@ -22117,11 +24457,11 @@ paths:
       tags:
         - Users
       security:
-        - BearerAuthCookie: &a63
+        - BearerAuthCookie: &a68
             - participant
             - editor
             - admin
-        - BearerAuthHeader: *a63
+        - BearerAuthHeader: *a68
       responses:
         "200":
           description: OK
@@ -22212,10 +24552,10 @@ paths:
               required:
                 - count
       security:
-        - BearerAuthCookie: &a64
+        - BearerAuthCookie: &a69
             - editor
             - admin
-        - BearerAuthHeader: *a64
+        - BearerAuthHeader: *a69
       responses:
         "201":
           description: Created
@@ -22626,9 +24966,9 @@ paths:
                 - authenticationMethods
                 - accessTokenKey
       security:
-        - BearerAuthCookie: &a65
+        - BearerAuthCookie: &a70
             - admin
-        - BearerAuthHeader: *a65
+        - BearerAuthHeader: *a70
       responses:
         "201":
           description: Created
@@ -22958,9 +25298,9 @@ paths:
       tags:
         - Clients
       security:
-        - BearerAuthCookie: &a66
+        - BearerAuthCookie: &a71
             - admin
-        - BearerAuthHeader: *a66
+        - BearerAuthHeader: *a71
       responses:
         "200":
           description: OK
@@ -23488,9 +25828,9 @@ paths:
                         - "null"
                     - type: string
       security:
-        - BearerAuthCookie: &a67
+        - BearerAuthCookie: &a72
             - admin
-        - BearerAuthHeader: *a67
+        - BearerAuthHeader: *a72
       responses:
         "200":
           description: OK
@@ -23830,9 +26170,9 @@ paths:
       tags:
         - Clients
       security:
-        - BearerAuthCookie: &a68
+        - BearerAuthCookie: &a73
             - admin
-        - BearerAuthHeader: *a68
+        - BearerAuthHeader: *a73
       responses:
         "204":
           description: No Content
@@ -23886,9 +26226,9 @@ paths:
                 - name
                 - scopes
       security:
-        - BearerAuthCookie: &a69
+        - BearerAuthCookie: &a74
             - admin
-        - BearerAuthHeader: *a69
+        - BearerAuthHeader: *a74
       responses:
         "201":
           description: Created
@@ -24043,9 +26383,9 @@ paths:
       tags:
         - Clients
       security:
-        - BearerAuthCookie: &a70
+        - BearerAuthCookie: &a75
             - admin
-        - BearerAuthHeader: *a70
+        - BearerAuthHeader: *a75
       responses:
         "200":
           description: OK
@@ -24205,9 +26545,9 @@ paths:
                     - type: string
                       format: date-time
       security:
-        - BearerAuthCookie: &a71
+        - BearerAuthCookie: &a76
             - admin
-        - BearerAuthHeader: *a71
+        - BearerAuthHeader: *a76
       responses:
         "200":
           description: OK
@@ -24371,9 +26711,9 @@ paths:
       tags:
         - Clients
       security:
-        - BearerAuthCookie: &a72
+        - BearerAuthCookie: &a77
             - admin
-        - BearerAuthHeader: *a72
+        - BearerAuthHeader: *a77
       responses:
         "204":
           description: No Content
@@ -24407,14 +26747,14 @@ paths:
     get:
       operationId: get_policies
       summary: Get policies
-      tags: &a75
+      tags: &a80
         - Policies
         - Assistant
-      security: &a76
-        - BearerAuthCookie: &a73
+      security: &a81
+        - BearerAuthCookie: &a78
             - admin
-        - BearerAuthHeader: *a73
-      responses: &a77
+        - BearerAuthHeader: *a78
+      responses: &a82
         "200":
           description: OK
           content:
@@ -24855,9 +27195,9 @@ paths:
                 - name
                 - version
       security:
-        - BearerAuthCookie: &a74
+        - BearerAuthCookie: &a79
             - admin
-        - BearerAuthHeader: *a74
+        - BearerAuthHeader: *a79
       responses:
         "201":
           description: Created
@@ -25093,9 +27433,9 @@ paths:
     get:
       operationId: get_policies_policyId
       summary: Get policy
-      tags: *a75
-      security: *a76
-      responses: *a77
+      tags: *a80
+      security: *a81
+      responses: *a82
       parameters:
         - name: policyId
           in: path
@@ -25127,9 +27467,9 @@ paths:
                   type: object
                   additionalProperties: true
       security:
-        - BearerAuthCookie: &a78
+        - BearerAuthCookie: &a83
             - admin
-        - BearerAuthHeader: *a78
+        - BearerAuthHeader: *a83
       responses:
         "200":
           description: OK
@@ -25379,9 +27719,9 @@ paths:
         - Policies
         - Assistant
       security:
-        - BearerAuthCookie: &a79
+        - BearerAuthCookie: &a84
             - admin
-        - BearerAuthHeader: *a79
+        - BearerAuthHeader: *a84
       responses:
         "204":
           description: No Content

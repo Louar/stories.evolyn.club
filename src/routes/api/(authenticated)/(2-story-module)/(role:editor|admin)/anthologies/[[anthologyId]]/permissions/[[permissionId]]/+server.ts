@@ -73,6 +73,7 @@ const canModify = (locals: App.Locals, anthologyId: string) =>
  * summary: Get anthology permission
  * tags:
  *  - Anthologies
+ *  - Assistant
  */
 export const GET: RequestHandler = async ({ locals, params }) => {
 	const clientId = locals.client.id;
@@ -88,6 +89,7 @@ export const GET: RequestHandler = async ({ locals, params }) => {
  * summary: Create anthology permission
  * tags:
  *  - Anthologies
+ *  - Assistant
  */
 export const POST: RequestHandler = async ({ locals, params, request }) => {
 	const clientId = locals.client.id;
@@ -129,6 +131,7 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
  * summary: Update anthology permission
  * tags:
  *  - Anthologies
+ *  - Assistant
  */
 export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 	const clientId = locals.client.id;
@@ -174,6 +177,7 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
  * summary: Delete anthology permission
  * tags:
  *  - Anthologies
+ *  - Assistant
  */
 export const DELETE: RequestHandler = async ({ locals, params }) => {
 	const anthologyId = requireParam(params.anthologyId, 'The anthology parameter is required');

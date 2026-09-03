@@ -142,6 +142,7 @@ const findOneTaxonomyById = async (clientId: string, taxonomyId: string) => {
  * summary: Export taxonomy
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const GET = (async ({ locals, params }) => {
 	const clientId = locals.client.id;
@@ -163,6 +164,7 @@ export const GET = (async ({ locals, params }) => {
  * summary: Import taxonomy
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const POST = (async ({ locals, request }) => {
 	const clientId = locals.client.id;

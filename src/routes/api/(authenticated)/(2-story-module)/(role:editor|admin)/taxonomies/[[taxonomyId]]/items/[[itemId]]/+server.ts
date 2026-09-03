@@ -56,6 +56,7 @@ const canModify = (locals: App.Locals) =>
  * summary: Get taxonomy item
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const GET: RequestHandler = async ({ locals, params }) => {
 	const clientId = locals.client.id;
@@ -72,6 +73,7 @@ export const GET: RequestHandler = async ({ locals, params }) => {
  * summary: Create taxonomy item
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const POST: RequestHandler = async ({ locals, params }) => {
 	const clientId = locals.client.id;
@@ -95,6 +97,7 @@ export const POST: RequestHandler = async ({ locals, params }) => {
  * summary: Update taxonomy item
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 	const clientId = locals.client.id;
@@ -147,6 +150,7 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
  * summary: Delete taxonomy item
  * tags:
  *  - Story assets
+ *  - Assistant
  */
 export const DELETE: RequestHandler = async ({ locals, params }) => {
 	const clientId = locals.client.id;
