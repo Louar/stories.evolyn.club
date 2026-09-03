@@ -11,8 +11,14 @@
 	let {
 		story,
 		partId = $bindable(),
-		onSave
-	}: { story: Story; partId?: string; onSave: (part: Part) => void } = $props();
+		onSave,
+		onDelete
+	}: {
+		story: Story;
+		partId?: string;
+		onSave: (part: Part) => void;
+		onDelete: (partId: string) => void;
+	} = $props();
 
 	const sidebar = useSidebar();
 	let part = $derived(story.parts.find((item) => item.id === partId));
@@ -28,7 +34,7 @@
 		{#if part}
 			{#key part.id}
 				<Dialog.Root>
-					<PartEditor {story} storyId={story.id} {part} {onSave} onDismiss={dismiss} />
+					<PartEditor {story} storyId={story.id} {part} {onSave} {onDelete} onDismiss={dismiss} />
 				</Dialog.Root>
 			{/key}
 		{/if}

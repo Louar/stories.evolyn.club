@@ -522,5 +522,5 @@
 			</SvelteFlowProvider>
 		</div>
 	</Sidebar.Inset>
-	<PartInspector {story} bind:partId={selectedPartId} onSave={replacePart} />
+	<PartInspector {story} bind:partId={selectedPartId} onSave={replacePart} onDelete={removePart} />
 </Sidebar.Provider>

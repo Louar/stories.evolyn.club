@@ -25,6 +25,7 @@
 	import MagnetIcon from '@lucide/svelte/icons/magnet';
 	import MessageSquareIcon from '@lucide/svelte/icons/message-square';
 	import ShapesIcon from '@lucide/svelte/icons/shapes';
+	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import VideoIcon from '@lucide/svelte/icons/video';
 	import XIcon from '@lucide/svelte/icons/x';
 	import { onDestroy } from 'svelte';
@@ -45,12 +46,14 @@
 		storyId,
 		part,
 		onSave,
+		onDelete,
 		onDismiss
 	}: {
 		story: Story;
 		storyId: string;
 		part: Part;
 		onSave: (part: Part) => void;
+		onDelete: (partId: string) => void;
 		onDismiss: () => void;
 	} = $props();
 
@@ -319,6 +322,25 @@
 		draft.taxonomyDraftForPart = taxonomyDraft;
 		onSave(clonePart(draft));
 	};
+
+	const remove = async () => {
+		if (!draft.id?.length || saveState === 'saving') return;
+		clearTimeout(autosaveTimer);
+		saveVersion += 1;
+
+		const result = await fetch(`/api/stories/${storyId}/parts/${draft.id}`, { method: 'DELETE' });
+		if (!result.ok) {
+			saveState = 'error';
+			toast.error('Deleting part failed, please refresh', {
+				closeButton: true,
+				duration: Infinity
+			});
+			return;
+		}
+
+		saveState = 'idle';
+		onDelete(draft.id);
+	};
 </script>
 
 {#snippet backgroundSnapMenu(key: 'start' | 'end')}
@@ -385,6 +407,16 @@
 		</p>
 	</div>
 	<div class="ml-auto flex items-center gap-2">
+		<Button
+			type="button"
+			variant="destructive"
+			size="icon"
+			aria-label="Delete part"
+			disabled={saveState === 'saving'}
+			onclick={remove}
+		>
+			<TrashIcon />
+		</Button>
 		<Button variant="ghost" size="icon" onclick={onDismiss}><XIcon /></Button>
 	</div>
 </HeaderBlank>
