@@ -83,18 +83,31 @@ export const actions: Actions = {
 			try {
 				yaml = YAML.parse(await attachment.text());
 			} catch {
-				// return setError(form, 'attachments', 'Invalid YAML');
-			}
-			const res = await fetch(`/api/io/anthologies`, {
-				method: 'POST',
-				body: JSON.stringify(yaml)
-			});
-			if (!res.ok) {
-				console.error(await res.json());
 				return fail(400, {
 					form: 'upload' as const,
-					errors: {},
+					errors: { attachments: ['Invalid YAML'] },
 					message: 'Upload failed.'
+				});
+			}
+			const res = await fetch(`/api/anthologies/io`, {
+				method: 'POST',
+				body: JSON.stringify(yaml),
+				headers: { 'content-type': 'application/json' }
+			});
+			if (!res.ok) {
+				const response = await res.json().catch(() => ({}));
+				console.error(response);
+				return fail(400, {
+					form: 'upload' as const,
+					errors: {
+						attachments: [
+							response.message ??
+								response.issues?.[0]?.message ??
+								response.storySlugs?.join(', ') ??
+								'Upload failed.'
+						]
+					},
+					message: response.message ?? 'Upload failed.'
 				});
 			}
 		}
@@ -124,13 +137,13 @@ export const actions: Actions = {
 			});
 		}
 
-		const { id: anthologyId, reference, nameRaw, positions, ...rest } = result.data;
+		const { id: anthologyId, slug, nameRaw, positions, ...rest } = result.data;
 
 		const isNotUnique = await db
 			.selectFrom('anthology')
 			.where('clientId', '=', clientId)
 			.$if(anthologyId != null, (qb) => qb.where('id', '!=', anthologyId!))
-			.where('slug', '=', reference)
+			.where('slug', '=', slug)
 			.select('id')
 			.executeTakeFirst();
 		if (isNotUnique) {
@@ -148,7 +161,7 @@ export const actions: Actions = {
 				.values({
 					id: anthologyId ?? undefined,
 					clientId,
-					reference,
+					slug,
 					name: JSON.stringify(nameRaw),
 					createdBy: userId,
 					updatedBy: userId,
@@ -156,7 +169,7 @@ export const actions: Actions = {
 				})
 				.onConflict((oc) =>
 					oc.columns(['id']).doUpdateSet({
-						reference,
+						slug,
 						name: JSON.stringify(nameRaw),
 						updatedBy: userId,
 						updatedAt: new Date(),

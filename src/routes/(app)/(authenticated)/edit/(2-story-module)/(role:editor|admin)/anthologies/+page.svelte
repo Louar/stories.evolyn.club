@@ -15,6 +15,7 @@
 	import * as Item from '$lib/components/ui/item/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
+	import { Switch } from '$lib/components/ui/switch';
 	import { useSubmissionState } from '$lib/hooks/use-submission-state.svelte.js';
 	import BookCheckIcon from '@lucide/svelte/icons/book-check';
 	import BookOpenIcon from '@lucide/svelte/icons/book-open';
@@ -43,6 +44,7 @@
 	type Anthology = (typeof anthologies)[number];
 	let isEditorOpen: boolean = $state(false);
 	let anthologyToEdit: Anthology | undefined = $state();
+	let includeStoryDefinitions = $state(false);
 
 	let isUploadPanelOpen = $state(false);
 	type UploadActionData = Extract<NonNullable<ActionData>, { form: 'upload' }>;
@@ -103,6 +105,11 @@
 	const onFileRejected: FileDropZoneProps['onFileRejected'] = async ({ reason, file }) => {
 		toast.error(`${file.name} failed to upload!`, { description: reason });
 	};
+
+	const getAnthologyDownloadUrl = (anthologyId: string) =>
+		resolve(
+			`/api/anthologies/${anthologyId}/io${includeStoryDefinitions ? '?includeStories=true' : ''}`
+		);
 </script>
 
 <Header>
@@ -173,13 +180,29 @@
 											</a>
 										{/snippet}
 									</DropdownMenu.Item>
-									<DropdownMenu.Item disabled>
+									<DropdownMenu.Separator />
+									<DropdownMenu.Item>
 										{#snippet child({ props })}
-											<a href={resolve(`/api/anthologies/${anthology.id}/io`)} {...props}>
+											<a href={getAnthologyDownloadUrl(anthology.id)} {...props}>
 												<FileDownIcon />
 												Download
 											</a>
 										{/snippet}
+									</DropdownMenu.Item>
+									<DropdownMenu.Item
+										class="justify-between text-muted-foreground"
+										onclick={(event) => {
+											event.preventDefault();
+											includeStoryDefinitions = !includeStoryDefinitions;
+										}}
+									>
+										<span>Include stories</span>
+										<Switch
+											checked={includeStoryDefinitions}
+											aria-label="Include story definitions in anthology downloads"
+											onclick={(event) => event.stopPropagation()}
+											onCheckedChange={(checked) => (includeStoryDefinitions = checked)}
+										/>
 									</DropdownMenu.Item>
 									<DropdownMenu.Separator />
 									<DropdownMenu.Item
@@ -232,7 +255,7 @@
 
 {#snippet upload()}
 	<Popover.Root bind:open={isUploadPanelOpen}>
-		<Popover.Trigger disabled class={buttonVariants({ variant: 'outline', size: 'default' })}>
+		<Popover.Trigger class={buttonVariants({ variant: 'outline', size: 'default' })}>
 			<FileUpIcon class="size-4" />
 			Upload anthologies
 		</Popover.Trigger>
