@@ -3,14 +3,11 @@
 	import Header from '$lib/components/app/header/app-header.svelte';
 	import {
 		DataGrid,
-		DataGridFilterMenu,
-		DataGridKeyboardShortcuts,
-		DataGridRowHeightMenu,
-		DataGridSortMenu,
-		DataGridViewMenu,
+		DataGridToolbar,
 		getFilterFn,
 		RowSelectHeader
 	} from '$lib/components/data-grid';
+	import DataGridUploadMenu from '$lib/components/data-grid/data-grid-upload-menu.svelte';
 	import BreadcrumbMenu from '$lib/components/ui/breadcrumb-menu/breadcrumb-menu.svelte';
 	import { renderComponent } from '$lib/components/ui/table-tanstack/index.js';
 	import { useDataGrid } from '$lib/hooks/use-custom-data-grid.svelte';
@@ -50,15 +47,21 @@
 			filterFn
 		},
 		{
+			accessorKey: 'slug',
+			header: 'Slug',
+			meta: { cell: { variant: 'text-short' } },
+			filterFn
+		},
+		{
 			accessorKey: 'name',
 			header: 'Name',
-			meta: { cell: { variant: 'text-short' } },
+			meta: { cell: { variant: 'text-translated-short' } },
 			filterFn
 		},
 		{
 			accessorKey: 'description',
 			header: 'Description',
-			meta: { cell: { variant: 'text-long' } },
+			meta: { cell: { variant: 'text-translated-long' } },
 			filterFn
 		},
 		{
@@ -109,6 +112,7 @@
 		getRowId: (row) => row.id,
 		endpoint,
 		onDataChange: (nextRows) => (rows = nextRows),
+		onDownload: true,
 		enableSearch: true,
 		enablePaste: true,
 		initialState: {
@@ -129,15 +133,14 @@
 </Header>
 
 <div class="mx-auto mt-4 w-full max-w-6xl space-y-4 px-4">
-	<div role="toolbar" aria-orientation="horizontal" class="flex items-center justify-between">
-		<DataGridKeyboardShortcuts enableSearch={!!dataGridProps.searchState} />
-		<div class="flex w-full items-center gap-1">
-			<DataGridFilterMenu {table} />
-			<DataGridSortMenu {table} />
-			<DataGridRowHeightMenu {table} />
-			<DataGridViewMenu {table} />
-		</div>
-	</div>
+	<DataGridToolbar {table} enableSearch={!!dataGridProps.searchState}>
+		{#snippet actions()}
+			<DataGridUploadMenu
+				endpoint="{endpoint}/io"
+				description="Upload .YAMLs. Taxonomies are imported as new taxonomies with all categories, attributes, items, and relations preserved."
+			/>
+		{/snippet}
+	</DataGridToolbar>
 
 	<DataGrid {...dataGridProps} {table} height={gridHeight} />
 </div>

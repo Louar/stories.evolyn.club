@@ -10,6 +10,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.select((eb) => [
 			'taxonomy.id',
 			'taxonomy.clientId',
+			'taxonomy.slug',
 			'taxonomy.name',
 			'taxonomy.description',
 			eb
