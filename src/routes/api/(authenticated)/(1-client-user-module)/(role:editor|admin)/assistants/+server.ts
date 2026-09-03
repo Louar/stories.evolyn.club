@@ -44,6 +44,34 @@ type AllowedApiOperation = {
 	responses: Record<string, string>;
 };
 
+const parseAllowedApiOperations = (yaml: string): AllowedApiOperation[] => {
+	const specification = parseYaml(yaml, { maxAliasCount: -1 }) as OpenApiSpecification;
+
+	return Object.entries(specification.paths ?? {}).flatMap(([apiPath, methods]) => {
+		return Object.entries(methods).flatMap(([method, operation]) => {
+			if (!operation?.operationId || !operation.tags?.includes('Assistant')) return [];
+
+			return [
+				{
+					operationId: operation.operationId,
+					method: method.toUpperCase(),
+					path: apiPath,
+					summary: operation.summary ?? operation.operationId,
+					description: operation.description,
+					parameters: operation.parameters ?? [],
+					requestBodySchema: operation.requestBody?.content?.['application/json']?.schema,
+					responses: Object.fromEntries(
+						Object.entries(operation.responses ?? {}).map(([status, response]) => [
+							status,
+							response.description ?? ''
+						])
+					)
+				}
+			];
+		});
+	});
+};
+
 const openai = createOpenAI({
 	apiKey: DEFAULT_OPENAI_API_KEY
 });
@@ -51,33 +79,7 @@ const openai = createOpenAI({
 let allowedOperationsPromise: Promise<AllowedApiOperation[]> | undefined;
 
 const getAllowedOperations = async () => {
-	allowedOperationsPromise ??= readFile(SPECIFICATION_FILE, 'utf8').then((yaml) => {
-		const specification = parseYaml(yaml, { maxAliasCount: -1 }) as OpenApiSpecification;
-
-		return Object.entries(specification.paths ?? {}).flatMap(([apiPath, methods]) => {
-			return Object.entries(methods).flatMap(([method, operation]) => {
-				if (!operation?.operationId || !operation.tags?.includes('AI')) return [];
-
-				return [
-					{
-						operationId: operation.operationId,
-						method: method.toUpperCase(),
-						path: apiPath,
-						summary: operation.summary ?? operation.operationId,
-						description: operation.description,
-						parameters: operation.parameters ?? [],
-						requestBodySchema: operation.requestBody?.content?.['application/json']?.schema,
-						responses: Object.fromEntries(
-							Object.entries(operation.responses ?? {}).map(([status, response]) => [
-								status,
-								response.description ?? ''
-							])
-						)
-					}
-				];
-			});
-		});
-	});
+	allowedOperationsPromise ??= readFile(SPECIFICATION_FILE, 'utf8').then(parseAllowedApiOperations);
 
 	return allowedOperationsPromise;
 };
