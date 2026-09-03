@@ -12,6 +12,7 @@
 	import { LanguageSwitcher } from '$lib/components/ui/language-switcher';
 	import { MediaFile } from '$lib/components/ui/media-file';
 	import type { Media } from '$lib/db/schemas/0-utils';
+	import * as m from '$lib/paraglide/messages';
 	import { STORIES } from '$lib/states/stories.svelte.js';
 	import { cn } from '$lib/utils';
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
@@ -125,7 +126,6 @@
 		const openModal = async () => {
 			modalPlayers = data.playersOfStories[storyIndex].map((player) => ({ ...player }));
 			transitioningStorySlug = null;
-			// eslint-disable-next-line svelte/no-navigation-without-resolve
 			pushState(href, { storySlug: story.slug });
 			await tick();
 		};
@@ -223,7 +223,7 @@
 					<a
 						class="absolute inset-0 z-10 rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-hidden"
 						href={resolve(`/s/${story.slug}` as '/s/[storySlug]/[...settings]')}
-						aria-label={`Open ${story.name ?? story.slug}`}
+						aria-label={m.story_grid_open_story({ storyName: story.name ?? story.slug })}
 						onpointerdown={() => prepareStoryTransition(story.slug)}
 						onclick={(event) => openStory(event, story, i)}
 					></a>
@@ -248,7 +248,7 @@
 								<div
 									class="grid aspect-video w-full place-items-center bg-linear-to-br from-muted to-muted/40 text-sm font-medium text-muted-foreground"
 								>
-									Story {i + 1}
+									{m.story_grid_story_fallback({ storyNumber: i + 1 })}
 								</div>
 							{/if}
 						</Card.Content>
@@ -260,7 +260,7 @@
 										{story.name ?? story.slug}
 									</Card.Title>
 									<Card.Description class="mt-1 line-clamp-1">
-										{Math.round(progress)}% watched
+										{m.story_grid_watched_percentage({ percentage: Math.round(progress) })}
 									</Card.Description>
 								</div>
 
@@ -284,8 +284,8 @@
 			{:else}
 				<Card.Root class="border-dashed sm:col-span-2 lg:col-span-3 xl:col-span-4">
 					<Card.Header>
-						<Card.Title>No stories yet</Card.Title>
-						<Card.Description>This anthology does not contain any public stories.</Card.Description>
+						<Card.Title>{m.story_grid_empty_title()}</Card.Title>
+						<Card.Description>{m.story_grid_empty_description()}</Card.Description>
 					</Card.Header>
 				</Card.Root>
 			{/each}
@@ -305,7 +305,7 @@
 					type="button"
 					class="absolute top-4 left-4 z-50 inline-flex size-12 items-center justify-center rounded-full bg-black/45 text-white shadow-sm backdrop-blur transition hover:bg-black/60 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-hidden"
 					onclick={closeStoryDialog}
-					aria-label="Previous"
+					aria-label={m.story_grid_previous_story()}
 				>
 					<ArrowLeftIcon class="size-6" />
 				</button>
