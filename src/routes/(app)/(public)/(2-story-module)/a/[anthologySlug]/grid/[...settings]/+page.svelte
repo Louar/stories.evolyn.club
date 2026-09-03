@@ -3,10 +3,13 @@
 	import { pushState } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import Header from '$lib/components/app/header/app-header-blank.svelte';
 	import StoryPlayer from '$lib/components/app/player/Story.svelte';
 	import type { Player } from '$lib/components/app/player/types';
+	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import { LanguageSwitcher } from '$lib/components/ui/language-switcher';
 	import { MediaFile } from '$lib/components/ui/media-file';
 	import type { Media } from '$lib/db/schemas/0-utils';
 	import { STORIES } from '$lib/states/stories.svelte.js';
@@ -14,6 +17,9 @@
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import ArrowUpRightIcon from '@lucide/svelte/icons/arrow-up-right';
 	import FlagIcon from '@lucide/svelte/icons/flag';
+	import MoonIcon from '@lucide/svelte/icons/moon';
+	import SunIcon from '@lucide/svelte/icons/sun';
+	import { toggleMode } from 'mode-watcher';
 	import { onMount, tick } from 'svelte';
 	import type { PageData } from './$types';
 
@@ -25,6 +31,7 @@
 	let stories = $derived(data.stories);
 	let transitioningStorySlug = $state<string | null>(null);
 	let modalPlayers = $state<Player[]>([]);
+	let hasHydratedProgress = $state(false);
 
 	type Story = PageData['stories'][number];
 	type StoryWatchProgress = Record<string, number>;
@@ -158,6 +165,24 @@
 				persistedPercentage
 			);
 		}
+		hasHydratedProgress = true;
+	});
+
+	$effect(() => {
+		if (!browser || !hasHydratedProgress) return;
+
+		const progressForCurrentAnthology: StoryWatchProgress = {};
+		let hasProgress = false;
+		for (const { id: storyId } of stories) {
+			const percentage = STORIES.averageWatchTimePercentages[storyId];
+			if (typeof percentage !== 'number' || !Number.isFinite(percentage)) continue;
+			progressForCurrentAnthology[storyId] = percentage;
+			hasProgress = true;
+		}
+
+		if (progressStorage && hasProgress) {
+			localStorage.setItem(progressStorage, JSON.stringify(progressForCurrentAnthology));
+		}
 	});
 </script>
 
@@ -165,21 +190,25 @@
 	<title>{anthology.name}</title>
 </svelte:head>
 
+<Header>
+	<div class="mx-auto flex w-full max-w-7xl items-center px-4 py-8 sm:px-6 lg:px-8">
+		<h1 class="overflow-hidden text-base font-medium whitespace-nowrap">
+			{anthology.name ?? anthology.slug}
+		</h1>
+		<div class="ml-auto">
+			{#if page.data.client?.locales?.length > 1}
+				<LanguageSwitcher class="ml-auto" />
+			{/if}
+			<Button onclick={toggleMode} size="icon" variant="outline">
+				<SunIcon class="scale-100 transition-all! dark:scale-0 dark:-rotate-90" />
+				<MoonIcon class="absolute scale-0 transition-all! dark:scale-100 dark:rotate-0" />
+			</Button>
+		</div>
+	</div>
+</Header>
+
 <main class="min-h-dvh bg-background text-foreground">
 	<div class="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
-		<header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-			<div class="space-y-2">
-				<p class="text-sm font-medium text-muted-foreground">Anthology</p>
-				<h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">
-					{anthology.name ?? anthology.slug}
-				</h1>
-			</div>
-			<p class="text-sm text-muted-foreground">
-				{stories.length}
-				{stories.length === 1 ? 'story' : 'stories'}
-			</p>
-		</header>
-
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 			{#each stories as story, i (story.id)}
 				{@const thumbnail = getStoryThumbnail(story)}
@@ -231,7 +260,7 @@
 										{story.name ?? story.slug}
 									</Card.Title>
 									<Card.Description class="mt-1 line-clamp-1">
-										{anthology.name ?? anthology.slug} / {i + 1} of {stories.length}
+										{Math.round(progress)}% watched
 									</Card.Description>
 								</div>
 
@@ -250,13 +279,6 @@
 								</div>
 							</div>
 						</Card.Header>
-
-						<Card.Content
-							class="mt-auto flex items-center justify-between gap-3 text-sm text-muted-foreground"
-						>
-							<span>{story.parts.length} {story.parts.length === 1 ? 'part' : 'parts'}</span>
-							<span>{Math.round(progress)}% watched</span>
-						</Card.Content>
 					</Card.Root>
 				</div>
 			{:else}
