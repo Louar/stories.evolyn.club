@@ -1,5 +1,6 @@
 import { db } from '$lib/db/database';
 import { findOneStoryById } from '$lib/db/repositories/2-story-module';
+import { PartTerminationStrategy } from '$lib/db/schemas/2-story-module';
 import { requireParam } from '$lib/server/utils.server';
 import { error, json } from '@sveltejs/kit';
 import YAML from 'yaml';
@@ -17,6 +18,9 @@ const parseBody = async (request: Request) => {
 		return undefined;
 	}
 };
+
+const canHaveOutgoingConnections = (terminationStrategy: PartTerminationStrategy) =>
+	terminationStrategy === PartTerminationStrategy.none;
 
 /**
  * @openapi
@@ -327,31 +331,34 @@ export const POST = (async ({ locals, request }) => {
 		const mapOfPartsWithLogic: Map<string, string> = new Map();
 		for (const part_raw of partsWithLogic) {
 			const logic_raw = part_raw.quizLogicForPart!;
+			const canSetOutgoingConnections = canHaveOutgoingConnections(part_raw.terminationStrategy);
+			const defaultNextPartId = canSetOutgoingConnections
+				? mapOfParts.get(logic_raw.defaultNextPartId ?? '')
+				: undefined;
 
 			const logic = await trx
 				.insertInto('quizLogicForPart')
 				.values({
 					hitpolicy: logic_raw.hitpolicy,
 					quizTemplateId: mapOfQuizzes.get(logic_raw.quizTemplateId)!,
-					...(logic_raw.defaultNextPartId?.length &&
-					mapOfParts.get(logic_raw.defaultNextPartId)?.length
-						? { defaultNextPartId: mapOfParts.get(logic_raw.defaultNextPartId) }
-						: {})
+					...(defaultNextPartId?.length ? { defaultNextPartId } : {})
 				})
 				.returning('id')
 				.executeTakeFirstOrThrow();
 			if (part_raw.id?.length) mapOfPartsWithLogic.set(part_raw.id, logic.id);
 
 			for (const rule_raw of logic_raw.rules) {
+				const nextPartId = canSetOutgoingConnections
+					? mapOfParts.get(rule_raw.nextPartId ?? '')
+					: undefined;
+
 				const rule = await trx
 					.insertInto('quizLogicRule')
 					.values({
 						order: rule_raw.order,
 						name: rule_raw.name,
 						quizLogicForPartId: logic.id,
-						...(rule_raw.nextPartId?.length && mapOfParts.get(rule_raw.nextPartId)?.length
-							? { nextPartId: mapOfParts.get(rule_raw.nextPartId) }
-							: {})
+						...(nextPartId?.length ? { nextPartId } : {})
 					})
 					.returning('id')
 					.executeTakeFirstOrThrow();
@@ -385,6 +392,10 @@ export const POST = (async ({ locals, request }) => {
 		for (const part_raw of partsWithTaxonomyDraft) {
 			const draft_raw = part_raw.taxonomyDraftForPart!;
 			const taxonomyId = taxonomyIdBySlug.get(draft_raw.taxonomySlug)!;
+			const canSetOutgoingConnections = canHaveOutgoingConnections(part_raw.terminationStrategy);
+			const defaultNextPartId = canSetOutgoingConnections
+				? mapOfParts.get(draft_raw.defaultNextPartId ?? '')
+				: undefined;
 
 			const draft = await trx
 				.insertInto('taxonomyDraftForPart')
@@ -395,10 +406,7 @@ export const POST = (async ({ locals, request }) => {
 					goal: draft_raw.goal,
 					maxMistakes: draft_raw.maxMistakes,
 					difficulty: draft_raw.difficulty,
-					...(draft_raw.defaultNextPartId?.length &&
-					mapOfParts.get(draft_raw.defaultNextPartId)?.length
-						? { defaultNextPartId: mapOfParts.get(draft_raw.defaultNextPartId) }
-						: {})
+					...(defaultNextPartId?.length ? { defaultNextPartId } : {})
 				})
 				.returning('id')
 				.executeTakeFirstOrThrow();
@@ -452,15 +460,17 @@ export const POST = (async ({ locals, request }) => {
 			]);
 
 			for (const rule_raw of draft_raw.rules) {
+				const nextPartId = canSetOutgoingConnections
+					? mapOfParts.get(rule_raw.nextPartId ?? '')
+					: undefined;
+
 				await trx
 					.insertInto('taxonomyDraftLogicRule')
 					.values({
 						order: rule_raw.order,
 						name: rule_raw.name,
 						taxonomyDraftForPartId: draft.id,
-						...(rule_raw.nextPartId?.length && mapOfParts.get(rule_raw.nextPartId)?.length
-							? { nextPartId: mapOfParts.get(rule_raw.nextPartId) }
-							: {}),
+						...(nextPartId?.length ? { nextPartId } : {}),
 						nrOfRounds: rule_raw.nrOfRounds ? JSON.stringify(rule_raw.nrOfRounds) : null,
 						score: rule_raw.score ? JSON.stringify(rule_raw.score) : null,
 						mistakes: rule_raw.mistakes ? JSON.stringify(rule_raw.mistakes) : null,
@@ -476,7 +486,10 @@ export const POST = (async ({ locals, request }) => {
 			if (!currentPartId?.length) continue;
 
 			let defaultNextPartId: string | undefined = undefined;
-			if (part_raw.defaultNextPartId?.length)
+			if (
+				canHaveOutgoingConnections(part_raw.terminationStrategy) &&
+				part_raw.defaultNextPartId?.length
+			)
 				defaultNextPartId = mapOfParts.get(part_raw.defaultNextPartId);
 
 			let quizLogicForPartId: string | undefined = undefined;
