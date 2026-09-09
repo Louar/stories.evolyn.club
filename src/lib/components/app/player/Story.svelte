@@ -412,7 +412,7 @@
 				{/if}
 			</div>
 		{/each}
-		{#if isEnded && isCompleted}
+		{#if isEnded}
 			<div
 				class="absolute inset-0 z-20 bg-black/20 backdrop-blur-md"
 				in:fade={{ duration: 250 }}
@@ -421,15 +421,17 @@
 				class="absolute inset-0 z-30 grid place-items-center"
 				in:fade={{ delay: 500, duration: 250 }}
 			>
-				<Confetti
-					noGravity
-					x={[-1.5, 1.5]}
-					y={[-1.5, 1.5]}
-					size={25}
-					delay={[0, 150]}
-					duration={750}
-					iterationCount={2}
-				/>
+				{#if isCompleted}
+					<Confetti
+						noGravity
+						x={[-1.5, 1.5]}
+						y={[-1.5, 1.5]}
+						size={25}
+						delay={[0, 150]}
+						duration={750}
+						iterationCount={2}
+					/>
+				{/if}
 				<div class="absolute inset-0 z-30 grid place-items-center">
 					<button
 						aria-label={m.player_restart()}

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import type { findOneStoryById } from '$lib/db/repositories/2-story-module';
-	import { PartTerminationStrategy } from '$lib/db/schemas/2-story-module.js';
 	import { formatDuration } from '$lib/db/schemas/0-utils';
+	import { PartTerminationStrategy } from '$lib/db/schemas/2-story-module.js';
 	import { EDITORS } from '$lib/states/editors.svelte';
 	import BanIcon from '@lucide/svelte/icons/ban';
 	import CirclePlayIcon from '@lucide/svelte/icons/circle-play';
@@ -69,8 +69,8 @@
 		<span
 			class="absolute -right-2 -bottom-2 z-10 inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[0.65rem] font-medium shadow-sm {part.terminationStrategy ===
 			PartTerminationStrategy.completeStory
-				? 'bg-emerald-600 text-white'
-				: 'text-destructive-foreground bg-destructive'}"
+				? 'bg-emerald-600 text-primary-foreground'
+				: 'bg-destructive text-primary-foreground'}"
 		>
 			{terminationLabel}
 		</span>

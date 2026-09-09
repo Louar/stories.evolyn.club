@@ -146,12 +146,12 @@
 		{
 			value: PartTerminationStrategy.completeStory,
 			label: 'Complete story',
-			description: 'End successfully when this part finishes.'
+			description: 'End the story successfully when this part finishes.'
 		},
 		{
 			value: PartTerminationStrategy.failStory,
 			label: 'Fail story',
-			description: 'End unsuccessfully when this part finishes.'
+			description: 'End the story unsuccessfully when this part finishes.'
 		}
 	] as const;
 	let selectedTerminationStrategy = $derived(
@@ -498,7 +498,7 @@
 		</div>
 	</HeaderBlank>
 	<Field.Set class="grid gap-4 p-4">
-		<Field.Field>
+		<Field.Field class="grid grid-cols-2 items-center gap-4">
 			<Field.Label>Termination strategy</Field.Label>
 			<Select.Root
 				type="single"
@@ -506,12 +506,7 @@
 				onValueChange={setTerminationStrategy}
 			>
 				<Select.Trigger class="w-full">
-					<div class="min-w-0 text-left">
-						<p class="truncate">{selectedTerminationStrategy.label}</p>
-						<p class="truncate text-xs text-muted-foreground">
-							{selectedTerminationStrategy.description}
-						</p>
-					</div>
+					<p class="truncate">{selectedTerminationStrategy.label}</p>
 				</Select.Trigger>
 				<Select.Content>
 					<Select.Group>
@@ -526,9 +521,6 @@
 					</Select.Group>
 				</Select.Content>
 			</Select.Root>
-			<Field.Description>
-				Complete and fail outcomes make this part terminal and remove outgoing edges.
-			</Field.Description>
 		</Field.Field>
 	</Field.Set>
 
