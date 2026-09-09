@@ -2,6 +2,7 @@ import {
 	AnthologyPermissionRole,
 	AttributeType,
 	LogicHitpolicy,
+	PartTerminationStrategy,
 	StoryPermissionRole
 } from '$lib/db/schemas/2-story-module';
 import type { Kysely } from 'kysely';
@@ -26,6 +27,11 @@ export const InitStoryModule: Migration = {
 			.execute();
 		await db.schema.dropType('attribute_type').ifExists().execute();
 		await db.schema.createType('attribute_type').asEnum(Object.values(AttributeType)).execute();
+		await db.schema.dropType('part_termination_strategy').ifExists().execute();
+		await db.schema
+			.createType('part_termination_strategy')
+			.asEnum(Object.values(PartTerminationStrategy))
+			.execute();
 
 		// Create Video table
 		await db.schema
@@ -244,6 +250,9 @@ export const InitStoryModule: Migration = {
 			.addColumn('foreground_type', 'text')
 			.addColumn('foreground_configuration', 'jsonb')
 			.addColumn('is_initial', 'boolean', (col) => col.defaultTo(false).notNull())
+			.addColumn('termination_strategy', sql`part_termination_strategy`, (col) =>
+				col.defaultTo(PartTerminationStrategy.none).notNull()
+			)
 			.addColumn('default_next_part_id', 'uuid', (col) =>
 				col.references('part.id').onDelete('set null')
 			)
@@ -798,5 +807,6 @@ export const InitStoryModule: Migration = {
 		await db.schema.dropType('anthology_permission_role').ifExists().execute();
 		await db.schema.dropType('story_permission_role').ifExists().execute();
 		await db.schema.dropType('attribute_type').ifExists().execute();
+		await db.schema.dropType('part_termination_strategy').ifExists().execute();
 	}
 };

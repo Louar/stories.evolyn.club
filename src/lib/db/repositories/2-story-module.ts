@@ -215,6 +215,7 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
 					.select((eb) => [
 						'part.id',
 						'part.isInitial',
+						'part.terminationStrategy',
 						'part.position',
 
 						// Background
@@ -399,6 +400,7 @@ export const findOneStoryBySlug = async (
 					.whereRef('part.storyId', '=', 'story.id')
 					.select((eb) => [
 						'part.id',
+						'part.terminationStrategy',
 
 						// Background
 						'part.backgroundType',
@@ -728,6 +730,7 @@ export const findOnePartById = async (partId: string) => {
 		.select((eb) => [
 			'part.id',
 			'part.isInitial',
+			'part.terminationStrategy',
 			'part.position',
 
 			// Background

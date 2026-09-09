@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import type { findOneStoryById } from '$lib/db/repositories/2-story-module';
+	import { PartTerminationStrategy } from '$lib/db/schemas/2-story-module.js';
 	import { formatDuration } from '$lib/db/schemas/0-utils';
 	import { EDITORS } from '$lib/states/editors.svelte';
 	import BanIcon from '@lucide/svelte/icons/ban';
@@ -41,6 +42,14 @@
 					? (announcement?.name ?? 'Unselected announcement')
 					: 'No foreground'
 	);
+	let isTerminal = $derived(part.terminationStrategy !== PartTerminationStrategy.none);
+	let terminationLabel = $derived(
+		part.terminationStrategy === PartTerminationStrategy.completeStory
+			? 'Completes story'
+			: part.terminationStrategy === PartTerminationStrategy.failStory
+				? 'Fails story'
+				: undefined
+	);
 </script>
 
 <div
@@ -56,8 +65,20 @@
 			<CirclePlayIcon class="size-3" />Initial
 		</span>
 	{/if}
+	{#if terminationLabel}
+		<span
+			class="absolute -right-2 -bottom-2 z-10 inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[0.65rem] font-medium shadow-sm {part.terminationStrategy ===
+			PartTerminationStrategy.completeStory
+				? 'bg-emerald-600 text-white'
+				: 'text-destructive-foreground bg-destructive'}"
+		>
+			{terminationLabel}
+		</span>
+	{/if}
 	<Handle type="target" position={Position.Left} class="size-4! bg-blue-400!" />
-	<Handle type="source" position={Position.Right} id="default" class="size-4! bg-orange-300!" />
+	{#if !isTerminal}
+		<Handle type="source" position={Position.Right} id="default" class="size-4! bg-orange-300!" />
+	{/if}
 
 	<div class="grid gap-2 p-2">
 		<div class="flex items-center gap-2 rounded-lg border bg-background/60 p-2">
@@ -113,7 +134,7 @@
 		</div>
 	</div>
 
-	{#if part.foregroundType === 'quiz'}
+	{#if part.foregroundType === 'quiz' && !isTerminal}
 		<Separator />
 		<div class="grid gap-2 py-4">
 			{#each part.quizLogicForPart?.rules ?? [] as rule (rule.id)}
@@ -141,7 +162,7 @@
 		</div>
 	{/if}
 
-	{#if part.foregroundType === 'taxonomy'}
+	{#if part.foregroundType === 'taxonomy' && !isTerminal}
 		<Separator />
 		<div class="grid gap-2 py-4">
 			{#each part.taxonomyDraftForPart?.rules ?? [] as rule (rule.id)}

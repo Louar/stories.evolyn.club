@@ -309,6 +309,7 @@ export const POST = (async ({ locals, request }) => {
 					foregroundType: part_raw.foregroundType,
 					foregroundConfiguration: JSON.stringify(part_raw.foregroundConfiguration),
 					isInitial: part_raw.isInitial,
+					terminationStrategy: part_raw.terminationStrategy,
 					videoId,
 					stillId,
 					announcementTemplateId,
@@ -405,7 +406,9 @@ export const POST = (async ({ locals, request }) => {
 
 			const draftedAttributeIds = (draft_raw.draftedAttributeIds ?? []).map((attributeId) => {
 				const attributeSlug = attributeSlugByImportedId.get(attributeId)!;
-				const draftedAttributeId = attributeIdByTaxonomyIdAndSlug.get(`${taxonomyId}:${attributeSlug}`);
+				const draftedAttributeId = attributeIdByTaxonomyIdAndSlug.get(
+					`${taxonomyId}:${attributeSlug}`
+				);
 				if (!draftedAttributeId) {
 					throw error(422, { message: 'A drafted attribute references a missing record' });
 				}

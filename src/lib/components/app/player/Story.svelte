@@ -6,6 +6,7 @@
 	} from '$lib/client/player-events.js';
 	import type { findOneStoryBySlug } from '$lib/db/repositories/2-story-module.js';
 	import { MediaCollection, type Media } from '$lib/db/schemas/0-utils.js';
+	import { PartTerminationStrategy } from '$lib/db/schemas/2-story-module.js';
 	import * as m from '$lib/paraglide/messages';
 	import { PLAYERS } from '$lib/states/players.svelte.js';
 	import { STORIES } from '$lib/states/stories.svelte.js';
@@ -48,6 +49,7 @@
 	let pid: string | undefined = $state();
 	let start: number | undefined = $state();
 	let isEnded = $state(false);
+	let isCompleted = $state(false);
 
 	onMount(() => {
 		initPlayerEvents(story.id);
@@ -61,6 +63,7 @@
 		if (fromPartId && toPartId) logTransitionEvent(story.id, fromPartId, toPartId);
 
 		isEnded = false;
+		isCompleted = false;
 		pid = story?.parts?.[0]?.id;
 		start = new Date().getTime();
 		const player = players.find((player) => player.id === pid);
@@ -77,11 +80,11 @@
 		const current = players.find((p) => p.id === pid);
 		if (!nextPartId || typeof nextPartId !== 'string') {
 			if (current) current.doPause = true;
-			return end();
+			return endForPart(pid);
 		}
 
 		const next = players.find((p) => p.id === nextPartId);
-		if (!current || !next) return end();
+		if (!current || !next) return endForPart(pid);
 		logTransitionEvent(story.id, current.id, next.id);
 
 		if (current.id === next.id) {
@@ -119,7 +122,12 @@
 		transition(rule?.nextPartId ?? logic.defaultNextPartId);
 	};
 
-	const end = () => {
+	const endForPart = (partId: string | undefined) => {
+		const part = story.parts.find((part) => part.id === partId);
+		end(part?.terminationStrategy !== PartTerminationStrategy.failStory);
+	};
+
+	const end = (completed = true) => {
 		const watchTime = Math.round(Object.values(PLAYERS.watchDurations)?.reduce((a, b) => a + b, 0));
 		const percentages = Object.values(PLAYERS.watchTimePercentages);
 		const watchTimePercentage = percentages.length
@@ -132,7 +140,7 @@
 		);
 		parent.postMessage(
 			{
-				isCompleted: true,
+				isCompleted: completed,
 				start,
 				end: new Date().getTime(),
 				watchTime,
@@ -141,8 +149,9 @@
 			},
 			'*'
 		);
+		isCompleted = completed;
 		isEnded = true;
-		if (onnext) onnext();
+		if (completed && onnext) onnext();
 	};
 
 	const executeLogic = (
@@ -247,6 +256,14 @@
 	});
 
 	$effect(() => {
+		if (!pid || isEnded) return;
+		const activePart = story.parts.find((part) => part.id === pid);
+		if (!activePart || activePart.terminationStrategy === PartTerminationStrategy.none) return;
+		if (activePart.backgroundType === 'video') return;
+		endForPart(activePart.id);
+	});
+
+	$effect(() => {
 		if (!isActiveStory) return;
 		if (PLAYERS.isAnyOverlayActive !== isActiveOverlay) {
 			PLAYERS.isAnyOverlayActive = isActiveOverlay;
@@ -289,18 +306,21 @@
 							: undefined}
 					></div>
 				{:else if part?.backgroundType === 'video' && player?.source}
-					{@const nextPlayers = [
-						player.next?.length
-							? new Map(players.map((p) => [p.id, p])).get(player.next)
-							: undefined,
-						...(part.foregroundType === 'quiz' && 'logic' in part.foreground
-							? (part.foreground?.logic?.rules?.map((rule) =>
-									'next' in rule && typeof rule.next === 'string'
-										? new Map(players.map((p) => [p.id, p])).get(rule.next)
-										: undefined
-								) ?? [])
-							: [])
-					].filter((p): p is (typeof players)[number] => p !== undefined)}
+					{@const nextPlayers =
+						part.terminationStrategy === PartTerminationStrategy.none
+							? [
+									player.next?.length
+										? new Map(players.map((p) => [p.id, p])).get(player.next)
+										: undefined,
+									...(part.foregroundType === 'quiz' && 'logic' in part.foreground
+										? (part.foreground?.logic?.rules?.map((rule) =>
+												'next' in rule && typeof rule.next === 'string'
+													? new Map(players.map((p) => [p.id, p])).get(rule.next)
+													: undefined
+											) ?? [])
+										: [])
+								].filter((p): p is (typeof players)[number] => p !== undefined)
+							: []}
 					<PlayerComponent
 						id={player.id}
 						title={story.name ?? undefined}
@@ -326,14 +346,20 @@
 						}}
 						playNext={() => {
 							player.doEnd = true;
-							const nextPlayer = players.find((p) => p.id === player.next);
+							const nextPlayer =
+								part.terminationStrategy === PartTerminationStrategy.none
+									? players.find((p) => p.id === player.next)
+									: undefined;
 							if (nextPlayer) {
 								logTransitionEvent(story.id, player.id, nextPlayer.id);
 								nextPlayer.doBuffer = true;
 								nextPlayer.doPlay = true;
 								pid = nextPlayer.id;
-							} else if (!nextPlayers?.length && !hasActiveForegroundInteraction(part, player)) {
-								end();
+							} else if (
+								part.terminationStrategy !== PartTerminationStrategy.none ||
+								(!nextPlayers?.length && !hasActiveForegroundInteraction(part, player))
+							) {
+								endForPart(part.id);
 							}
 						}}
 					/>
@@ -386,7 +412,7 @@
 				{/if}
 			</div>
 		{/each}
-		{#if isEnded}
+		{#if isEnded && isCompleted}
 			<div
 				class="absolute inset-0 z-20 bg-black/20 backdrop-blur-md"
 				in:fade={{ duration: 250 }}

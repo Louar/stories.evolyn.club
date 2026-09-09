@@ -3,6 +3,7 @@ import {
 	translatableMediaValidator,
 	translatableValidator
 } from '$lib/db/schemas/0-utils';
+import { PartTerminationStrategy } from '$lib/db/schemas/2-story-module';
 import z from 'zod/v4';
 
 const videoSchema = z.object({
@@ -119,6 +120,7 @@ const taxonomyDraftForPartSchema = z.object({
 const partSchema = z.object({
 	id: z.string().min(1).optional(),
 	isInitial: z.boolean(),
+	terminationStrategy: z.enum(PartTerminationStrategy).default(PartTerminationStrategy.none),
 	position: z.object({
 		x: z.number(),
 		y: z.number()

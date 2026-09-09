@@ -13,38 +13,38 @@ export const DEMO_TAXONOMIES = {
 };
 
 export const createDemoStories = async (clientId: string) => {
-	for (const [reference, fun] of Object.entries(DEMO_STORIES)) {
+	for (const [slug, fun] of Object.entries(DEMO_STORIES)) {
 		const existing = await db
 			.selectFrom('story')
-			.where('slug', '=', reference)
+			.where('slug', '=', slug)
 			.where('clientId', '=', clientId)
 			.select('id')
 			.executeTakeFirst();
 		if (!existing) {
 			try {
-				await fun(reference);
+				await fun(slug);
 			} catch (e) {
 				if (process.env.NODE_ENV !== 'production') {
-					console.warn(`Failed to create story ${reference}.`);
+					console.warn(`Failed to create story ${slug}.`);
 					console.debug(e);
 				}
 			}
 		}
 	}
 
-	for (const [reference, taxonomy] of Object.entries(DEMO_TAXONOMIES)) {
+	for (const [slug, taxonomy] of Object.entries(DEMO_TAXONOMIES)) {
 		const existing = await db
 			.selectFrom('taxonomy')
-			.where('slug', '=', reference)
+			.where('slug', '=', slug)
 			.where('clientId', '=', clientId)
 			.select('id')
 			.executeTakeFirst();
 		if (!existing) {
 			try {
-				await taxonomy.create(taxonomy.name);
+				await taxonomy.create(slug);
 			} catch (e) {
 				if (process.env.NODE_ENV !== 'production') {
-					console.warn(`Failed to create taxonomy ${reference}.`);
+					console.warn(`Failed to create taxonomy ${slug}.`);
 					console.debug(e);
 				}
 			}

@@ -7,6 +7,7 @@
 	import * as Field from '$lib/components/ui/field/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import * as Scrubbable from '$lib/components/ui/scrubbable/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
 	import Separator from '$lib/components/ui/separator/separator.svelte';
 	import type {
 		findOneQuizLogicById,
@@ -17,6 +18,7 @@
 		translateLocalizedMediaField,
 		type Media
 	} from '$lib/db/schemas/0-utils.js';
+	import { PartTerminationStrategy } from '$lib/db/schemas/2-story-module.js';
 	import { getVideoSourceType, getYouTubeAlignedValue } from '$lib/media/video.js';
 	import { EDITORS } from '$lib/states/editors.svelte.js';
 	import { UI } from '$lib/states/ui.svelte.js';
@@ -135,6 +137,28 @@
 			)
 		].sort((a, b) => a - b);
 	});
+	let terminationStrategyItems = [
+		{
+			value: PartTerminationStrategy.none,
+			label: 'None',
+			description: 'Continue through outgoing connections.'
+		},
+		{
+			value: PartTerminationStrategy.completeStory,
+			label: 'Complete story',
+			description: 'End successfully when this part finishes.'
+		},
+		{
+			value: PartTerminationStrategy.failStory,
+			label: 'Fail story',
+			description: 'End unsuccessfully when this part finishes.'
+		}
+	] as const;
+	let selectedTerminationStrategy = $derived(
+		terminationStrategyItems.find(
+			(item) => item.value === (draft.terminationStrategy ?? PartTerminationStrategy.none)
+		) ?? terminationStrategyItems[0]
+	);
 
 	const clonePart = (value: Part) => structuredClone($state.snapshot(value));
 	function mediaUrl(media?: Media | null) {
@@ -217,6 +241,14 @@
 				foregroundStartMax
 			)
 		);
+	}
+	function setTerminationStrategy(value: string) {
+		draft.terminationStrategy = Object.values(PartTerminationStrategy).includes(
+			value as Part['terminationStrategy']
+		)
+			? (value as Part['terminationStrategy'])
+			: PartTerminationStrategy.none;
+		scheduleAutosave();
 	}
 	function setBackgroundConfigurationValue(key: 'start' | 'end', value: number) {
 		const normalizedValue = normalizeVideoConfigurationValue(value);
@@ -456,6 +488,52 @@
 	oninput={scheduleAutosave}
 	onchange={scheduleAutosave}
 >
+	<HeaderBlank class="h-12 w-full bg-muted/50">
+		<div class="size-full">
+			<h1
+				class="flex items-center gap-2 truncate overflow-hidden text-sm font-medium whitespace-nowrap"
+			>
+				Outcome
+			</h1>
+		</div>
+	</HeaderBlank>
+	<Field.Set class="grid gap-4 p-4">
+		<Field.Field>
+			<Field.Label>Termination strategy</Field.Label>
+			<Select.Root
+				type="single"
+				value={draft.terminationStrategy ?? PartTerminationStrategy.none}
+				onValueChange={setTerminationStrategy}
+			>
+				<Select.Trigger class="w-full">
+					<div class="min-w-0 text-left">
+						<p class="truncate">{selectedTerminationStrategy.label}</p>
+						<p class="truncate text-xs text-muted-foreground">
+							{selectedTerminationStrategy.description}
+						</p>
+					</div>
+				</Select.Trigger>
+				<Select.Content>
+					<Select.Group>
+						{#each terminationStrategyItems as item (item.value)}
+							<Select.Item value={item.value}>
+								<div>
+									<p>{item.label}</p>
+									<p class="text-xs text-muted-foreground">{item.description}</p>
+								</div>
+							</Select.Item>
+						{/each}
+					</Select.Group>
+				</Select.Content>
+			</Select.Root>
+			<Field.Description>
+				Complete and fail outcomes make this part terminal and remove outgoing edges.
+			</Field.Description>
+		</Field.Field>
+	</Field.Set>
+
+	<Separator />
+
 	<HeaderBlank class="h-12 w-full bg-muted/50">
 		<div class="size-full">
 			<h1

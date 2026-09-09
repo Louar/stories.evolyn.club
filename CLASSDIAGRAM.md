@@ -196,6 +196,13 @@ classDiagram
       QUIZ
   }
 
+  class PartTerminationStrategy {
+      <<enumeration>>
+      NONE
+      FAIL_STORY
+      COMPLETE_STORY
+  }
+
   class Anthology {
       slug: string
       name: Translatable
@@ -246,6 +253,7 @@ classDiagram
       foregroundType: string?
       foregroundConfiguration: jsonb?
       isInitial: boolean
+      terminationStrategy: PartTerminationStrategy
       position: jsonb?
   }
 

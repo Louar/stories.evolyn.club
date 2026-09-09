@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { findOneStoryById } from '$lib/db/repositories/2-story-module';
+	import { PartTerminationStrategy } from '$lib/db/schemas/2-story-module.js';
 	import {
 		Background,
 		Controls,
@@ -53,6 +54,8 @@
 	$effect(() => {
 		const e: Edge[] = [];
 		for (const part of story?.parts ?? []) {
+			if (part.terminationStrategy !== PartTerminationStrategy.none) continue;
+
 			// Default edge from defaultNextPartId
 			if (part.defaultNextPartId) {
 				e.push({
@@ -130,6 +133,8 @@
 				sourceHandle = toHandle;
 				targetNode = fromNode;
 			}
+			const sourcePart = story?.parts.find((part) => part.id === sourceNode);
+			if (sourcePart?.terminationStrategy !== PartTerminationStrategy.none) return;
 
 			// Remove existing edge if source already has an outgoing edge on the same handle
 			edges = edges.filter(
@@ -152,6 +157,8 @@
 			if (!connectionState.fromHandle || !story?.id) return;
 			const { type: fromType, nodeId: fromNode, id: fromHandle } = connectionState.fromHandle;
 			if (fromType !== 'source') return;
+			const sourcePart = story.parts.find((part) => part.id === fromNode);
+			if (sourcePart?.terminationStrategy !== PartTerminationStrategy.none) return;
 			const { clientX, clientY } = 'changedTouches' in event ? event.changedTouches[0] : event;
 
 			const position = screenToFlowPosition({ x: clientX, y: clientY }, { snapToGrid: true });

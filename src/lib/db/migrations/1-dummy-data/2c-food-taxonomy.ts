@@ -109,6 +109,29 @@ export const DummyDataFoodTaxonomy = async (
 	clientId?: string
 ) => {
 	await db.transaction().execute(async (trx) => {
+		if (!clientId?.length)
+			clientId = (
+				await trx
+					.selectFrom('client')
+					.where('client.slug', '=', DEFAULT_CLIENT_SLUG)
+					.select('client.id')
+					.executeTakeFirstOrThrow()
+			).id;
+
+		const taxonomy = await trx
+			.insertInto('taxonomy')
+			.values({
+				clientId,
+				slug: taxonomySlug,
+				name: JSON.stringify({ en: taxonomyName } as Translatable),
+				description: JSON.stringify({
+					en: 'Demo taxonomy with foods and Schijf van Vijf classifications'
+				} as Translatable)
+			})
+			.returning('id')
+			.executeTakeFirstOrThrow();
+		const taxonomyId = taxonomy.id;
+
 		const attributeDefinitions = {
 			name: {
 				name: { en: 'Name', nl: 'Naam' },
@@ -1458,29 +1481,6 @@ export const DummyDataFoodTaxonomy = async (
 			}
 		] as const;
 
-		if (!clientId?.length)
-			clientId = (
-				await trx
-					.selectFrom('client')
-					.where('client.slug', '=', DEFAULT_CLIENT_SLUG)
-					.select('client.id')
-					.executeTakeFirstOrThrow()
-			).id;
-
-		const taxonomy = await trx
-			.insertInto('taxonomy')
-			.values({
-				clientId,
-				slug: taxonomySlug,
-				name: JSON.stringify({ en: taxonomyName } as Translatable),
-				description: JSON.stringify({
-					en: 'Demo taxonomy with foods and Schijf van Vijf classifications'
-				} as Translatable)
-			})
-			.returning('id')
-			.executeTakeFirstOrThrow();
-		const taxonomyId = taxonomy.id;
-
 		const categories = await trx
 			.insertInto('category')
 			.values(
@@ -1509,7 +1509,7 @@ export const DummyDataFoodTaxonomy = async (
 		for (const [slug, attribute] of Object.entries(attributeDefinitions)) {
 			const referencedCategoryReference =
 				'referencedCategoryReference' in attribute &&
-				typeof attribute.referencedCategoryReference === 'string'
+					typeof attribute.referencedCategoryReference === 'string'
 					? attribute.referencedCategoryReference
 					: null;
 

@@ -33,6 +33,14 @@ export const PartForegroundType = {
 } as const;
 export type PartForegroundType = (typeof PartForegroundType)[keyof typeof PartForegroundType];
 
+export const PartTerminationStrategy = {
+	none: 'NONE',
+	failStory: 'FAIL_STORY',
+	completeStory: 'COMPLETE_STORY'
+} as const;
+export type PartTerminationStrategy =
+	(typeof PartTerminationStrategy)[keyof typeof PartTerminationStrategy];
+
 export const AttributeType = {
 	integer: 'integer',
 	number: 'number',
@@ -172,6 +180,11 @@ type Part = {
 		[x: string]: unknown;
 	}> | null;
 	isInitial: ColumnType<boolean, boolean | null, boolean>;
+	terminationStrategy: ColumnType<
+		PartTerminationStrategy,
+		PartTerminationStrategy | null | undefined,
+		PartTerminationStrategy | null | undefined
+	>;
 	defaultNextPartId: string | null;
 	stillId: string | null;
 	videoId: string | null;
