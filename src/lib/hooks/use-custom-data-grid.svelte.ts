@@ -1650,6 +1650,14 @@ export function useDataGrid<TData extends RowData>(
 
 		// Focus the cell element - use multiple attempts to handle virtualization
 		const attemptFocus = (attempts = 0) => {
+			const activeEditingCell = editingCell;
+			if (
+				activeEditingCell?.columnId === columnId &&
+				(activeEditingCell.rowId
+					? activeEditingCell.rowId === position.rowId
+					: activeEditingCell.rowIndex === rowIndex)
+			)
+				return;
 			const cellElement = cellMapRef.get(cellKey);
 			if (cellElement) {
 				cellElement.scrollIntoView({ block: 'nearest', inline: 'nearest' });

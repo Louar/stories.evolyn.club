@@ -329,6 +329,17 @@ describe('data grid mutations', () => {
 		expect(identities.isTemporary('new-1')).toBe(true);
 	});
 
+	it('preserves temporary identity when the table clones a draft', () => {
+		const identities = createRowIdentityRegistry<object>();
+		const draft = { name: 'draft' };
+		identities.registerTemporary(draft, 'new-1');
+
+		const clone = { ...draft };
+
+		expect(identities.getTemporaryId(clone)).toBe('new-1');
+		expect(JSON.stringify(clone)).toBe('{"name":"draft"}');
+	});
+
 	it('does not infer temporary status from a persisted new-prefixed ID', () => {
 		const identities = createRowIdentityRegistry<object>();
 		expect(identities.isTemporary('new-persisted')).toBe(false);

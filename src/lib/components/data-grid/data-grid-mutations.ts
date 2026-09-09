@@ -23,6 +23,8 @@ export function createKeyedSequencer() {
 	return Object.assign(sequence, { sequenceKeys });
 }
 
+const temporaryRowId = Symbol('data-grid-temporary-row-id');
+
 export function createRowIdentityRegistry<T extends object>() {
 	const generatedIds = new WeakMap<T, string>();
 	const temporaryIds = new WeakMap<T, string>();
@@ -34,17 +36,24 @@ export function createRowIdentityRegistry<T extends object>() {
 	return {
 		getGeneratedId: (row: T) => generatedIds.get(row),
 		setGeneratedId: (row: T, rowId: string) => generatedIds.set(row, rowId),
-		getTemporaryId: (row: T) => temporaryIds.get(row),
+		getTemporaryId: (row: T) =>
+			temporaryIds.get(row) ?? (row as T & { [temporaryRowId]?: string })[temporaryRowId],
 		registerTemporary: (row: T, rowId: string) => {
 			temporaryIds.set(row, rowId);
+			(row as T & { [temporaryRowId]?: string })[temporaryRowId] = rowId;
 			activeTemporaryIds.add(rowId);
 			sequenceKeys.set(rowId, `temporary:${++sequenceKey}`);
 		},
 		carry: (previous: T, next: T) => {
 			const generatedId = generatedIds.get(previous);
 			if (generatedId) generatedIds.set(next, generatedId);
-			const temporaryId = temporaryIds.get(previous);
-			if (temporaryId) temporaryIds.set(next, temporaryId);
+			const temporaryId =
+				temporaryIds.get(previous) ??
+				(previous as T & { [temporaryRowId]?: string })[temporaryRowId];
+			if (temporaryId) {
+				temporaryIds.set(next, temporaryId);
+				(next as T & { [temporaryRowId]?: string })[temporaryRowId] = temporaryId;
+			}
 		},
 		isTemporary: (rowId: string) => activeTemporaryIds.has(rowId),
 		resolve: (rowId: string) => canonicalIds.get(rowId) ?? rowId,
