@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import { getCellKey, getLineCount } from '$lib/components/data-grid/types/data-grid.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
@@ -79,7 +80,7 @@
 			value: newValues
 		});
 		searchValue = '';
-		queueMicrotask(() => inputRef?.focus());
+		queueMicrotask(() => inputRef?.focus({ preventScroll: true }));
 	}
 
 	function removeValue(valueToRemove: string, event?: MouseEvent) {
@@ -95,14 +96,14 @@
 			columnId,
 			value: newValues
 		});
-		setTimeout(() => inputRef?.focus(), 0);
+		setTimeout(() => inputRef?.focus({ preventScroll: true }), 0);
 	}
 
 	function clearAll() {
 		if (readOnly) return;
 		localEditValues = [];
 		table.options.meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value: [] });
-		queueMicrotask(() => inputRef?.focus());
+		queueMicrotask(() => inputRef?.focus({ preventScroll: true }));
 	}
 
 	function handleOpenChange(isOpen: boolean) {
@@ -117,7 +118,7 @@
 
 	function handleOpenAutoFocus(event: Event) {
 		event.preventDefault();
-		inputRef?.focus();
+		inputRef?.focus({ preventScroll: true });
 	}
 
 	function handleWrapperKeyDown(event: KeyboardEvent) {

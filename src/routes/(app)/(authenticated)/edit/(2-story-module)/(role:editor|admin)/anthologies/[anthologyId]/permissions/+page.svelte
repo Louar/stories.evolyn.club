@@ -17,7 +17,7 @@
 	import { AnthologyPermissionRole } from '$lib/db/schemas/2-story-module';
 	import { useDataGrid } from '$lib/hooks/use-custom-data-grid.svelte';
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
-	import type { ColumnDef } from '@tanstack/table-core';
+	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
 
 	let { data } = $props();
 	const anthology = $derived(data.anthology);
@@ -112,7 +112,7 @@
 		initialState: {
 			sorting: [{ id: 'id', desc: false }],
 			columnVisibility: { id: false },
-			columnPinning: { left: ['select-row'] }
+			columnPinning: { start: ['select-row'], end: [] }
 		}
 	} as const);
 

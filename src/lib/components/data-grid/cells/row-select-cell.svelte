@@ -1,7 +1,7 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
 	import { getCellKey } from '$lib/components/data-grid/types/data-grid.js';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
-	import type { Row, Table } from '@tanstack/table-core';
+	import type { Row, RowData, Table } from '$lib/components/data-grid/data-grid-table.js';
 
 	interface Props {
 		row: Row<TData>;
@@ -14,14 +14,14 @@
 
 	// Read rowSelection from table state to create reactive dependency
 	// This ensures the component re-renders when selection changes
-	const rowSelection = $derived(table.getState().rowSelection);
+	const rowSelection = $derived(table.atoms.rowSelection.get());
 	const isSelected = $derived(rowSelection[row.id] ?? false);
 	const meta = $derived(table.options.meta);
 	const columnIndex = $derived.by(() => {
 		const orderedColumns = [
-			...table.getLeftVisibleLeafColumns(),
+			...table.getStartVisibleLeafColumns(),
 			...table.getCenterVisibleLeafColumns(),
-			...table.getRightVisibleLeafColumns()
+			...table.getEndVisibleLeafColumns()
 		];
 		return orderedColumns.findIndex((column) => column.id === columnId) + 1;
 	});

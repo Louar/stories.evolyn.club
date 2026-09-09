@@ -1,4 +1,4 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import {
@@ -17,7 +17,7 @@
 		SelectTrigger
 	} from '$lib/components/ui/select/index.js';
 	import { cn } from '$lib/utils.js';
-	import type { ColumnSort, SortingState, Table } from '@tanstack/table-core';
+	import type { ColumnSort, RowData, SortingState, Table } from '$lib/components/data-grid/data-grid-table.js';
 	import { dragHandle, dragHandleZone, SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
 	// Icons
 	import ArrowDownUp from '@lucide/svelte/icons/arrow-down-up';
@@ -44,7 +44,7 @@
 
 	let open = $state(false);
 
-	const sorting = $derived(table.getState().sorting);
+	const sorting = $derived(table.atoms.sorting.get());
 
 	// Create a mutable copy for DnD
 	let sortingItems = $derived<ColumnSort[]>([]);

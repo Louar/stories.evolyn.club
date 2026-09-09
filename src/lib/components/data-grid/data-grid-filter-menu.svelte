@@ -1,4 +1,4 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
 	import {
 		getDefaultOperator,
 		getOperatorsForVariant
@@ -30,7 +30,7 @@
 	} from '$lib/components/ui/select/index.js';
 	import { cn } from '$lib/utils.js';
 	import { type DateValue, parseDate } from '@internationalized/date';
-	import type { ColumnFilter, Table } from '@tanstack/table-core';
+	import type { ColumnFilter, RowData, Table } from '$lib/components/data-grid/data-grid-table.js';
 	import { dragHandle, dragHandleZone, SHADOW_ITEM_MARKER_PROPERTY_NAME } from 'svelte-dnd-action';
 	// Icons
 	import CalendarIcon from '@lucide/svelte/icons/calendar';
@@ -54,12 +54,10 @@
 
 	let open = $state(false);
 
-	const columnFilters = $derived(table.getState().columnFilters);
+	const columnFilters = $derived(table.atoms.columnFilters.get());
 	const filteredRowCount = $derived.by(() => {
 		// Ensure this recomputes when table filters change.
-		// table.getState().columnFilters;
-		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-		table.getState().globalFilter;
+		table.atoms.columnFilters.get();
 		return table.getFilteredRowModel().rows.length;
 	});
 

@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import { AvatarMedia } from '$lib/components/ui/avatar-media/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';

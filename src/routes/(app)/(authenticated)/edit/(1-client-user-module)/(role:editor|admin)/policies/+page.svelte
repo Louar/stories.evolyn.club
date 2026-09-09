@@ -13,7 +13,7 @@
 	import BreadcrumbMenu from '$lib/components/ui/breadcrumb-menu/breadcrumb-menu.svelte';
 	import { renderComponent } from '$lib/components/ui/table-tanstack/index.js';
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
-	import type { ColumnDef } from '@tanstack/table-core';
+	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
 
 	let { data } = $props();
 
@@ -108,7 +108,7 @@
 		initialState: {
 			sorting: [{ id: 'updatedAt', desc: true }],
 			columnVisibility: { id: false },
-			columnPinning: { left: ['select-row'] }
+			columnPinning: { start: ['select-row'], end: [] }
 		}
 	} as const);
 

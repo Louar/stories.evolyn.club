@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import AppIcon from '$lib/components/app/icon/app-icon.svelte';
 	import { Icon } from '$lib/components/app/icon/app-icon';
 	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
@@ -53,7 +54,7 @@
 
 	function handleOpenAutoFocus(event: Event) {
 		event.preventDefault();
-		inputRef?.focus();
+		inputRef?.focus({ preventScroll: true });
 	}
 
 	function handleOpenChange(open: boolean) {

@@ -18,7 +18,7 @@
 	import { UserRole } from '$lib/db/schemas/1-client-user-module.js';
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
 	import MailIcon from '@lucide/svelte/icons/mail';
-	import type { ColumnDef } from '@tanstack/table-core';
+	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
 	import { toast } from 'svelte-sonner';
 
 	let { data } = $props();
@@ -280,7 +280,7 @@
 		initialState: {
 			// sorting: [{ id: 'id', desc: false }],
 			columnVisibility: { clientId: false },
-			columnPinning: { left: ['select-row'] }
+			columnPinning: { start: ['select-row'], end: [] }
 		}
 	} as const);
 

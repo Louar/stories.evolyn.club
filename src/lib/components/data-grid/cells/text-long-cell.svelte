@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import { PopoverContent } from '$lib/components/ui/popover/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';

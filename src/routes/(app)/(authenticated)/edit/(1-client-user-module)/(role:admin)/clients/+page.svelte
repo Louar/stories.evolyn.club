@@ -18,7 +18,7 @@
 	import { Language, LanguageReverse, MediaCollection } from '$lib/db/schemas/0-utils.js';
 	import { ClientAuthenticationMethod } from '$lib/db/schemas/1-client-user-module.js';
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
-	import type { ColumnDef } from '@tanstack/table-core';
+	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
 
 	let { data } = $props();
 
@@ -247,7 +247,7 @@
 		initialState: {
 			sorting: [{ id: 'id', desc: false }],
 			columnVisibility: { id: false },
-			columnPinning: { left: ['select-row'] }
+			columnPinning: { start: ['select-row'], end: [] }
 		}
 	} as const);
 

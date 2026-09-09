@@ -7,7 +7,8 @@ import {
 	ROW_LINE_COUNTS,
 	type DataGridRowHeight
 } from '$lib/components/data-grid/config/data-grid.js';
-import type { Cell, Column, RowData, Table } from '@tanstack/table-core';
+import type { Cell, Column, RowData, Table } from '$lib/components/data-grid/data-grid-table.js';
+import type { TableFeatures } from '@tanstack/svelte-table';
 import type { Component, Snippet } from 'svelte';
 import type { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
@@ -233,7 +234,7 @@ export interface SearchState extends SearchStateData {
 // Cell Variant Props
 // ============================================
 
-export interface CellVariantProps<TData> {
+export interface CellVariantProps<TData extends RowData> {
 	cell: Cell<TData, unknown>;
 	table: Table<TData>;
 	rowIndex: number;
@@ -333,7 +334,7 @@ export interface FilterValue {
 
 declare module '@tanstack/table-core' {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	interface ColumnMeta<TData extends RowData, TValue> {
+	interface ColumnMeta<TFeatures extends TableFeatures, TData extends RowData, TValue> {
 		label?: string;
 		cell?: CellOpts<TData>;
 		readOnly?: boolean;
@@ -353,7 +354,8 @@ declare module '@tanstack/table-core' {
 		};
 	}
 
-	interface TableMeta<TData extends RowData> {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	interface TableMeta<TFeatures extends TableFeatures, TData extends RowData> {
 		dataGridRef?: HTMLElement | null;
 		cellMapRef?: Map<string, HTMLDivElement>;
 		focusedCell?: CellPosition | null;
@@ -508,7 +510,7 @@ export function getLineCount(rowHeight: RowHeightValue): number {
 /**
  * Gets common pinning styles for a column (port of TableCN's getCommonPinningStyles)
  */
-export function getCommonPinningStyles<TData>(params: {
+export function getCommonPinningStyles<TData extends RowData>(params: {
 	column?: Column<TData, unknown>;
 	withBorder?: boolean;
 }): Record<string, string | number | undefined> {
@@ -526,19 +528,19 @@ export function getCommonPinningStyles<TData>(params: {
 	// Wrap in try-catch to handle SSR edge cases where TanStack internal state may not be ready
 	try {
 		const isPinned = column.getIsPinned();
-		const isLastLeftPinnedColumn = isPinned === 'left' && column.getIsLastColumn('left');
-		const isFirstRightPinnedColumn = isPinned === 'right' && column.getIsFirstColumn('right');
+		const isLastStartPinnedColumn = isPinned === 'start' && column.getIsLastColumn('start');
+		const isFirstEndPinnedColumn = isPinned === 'end' && column.getIsFirstColumn('end');
 
 		return {
 			boxShadow: withBorder
-				? isLastLeftPinnedColumn
+				? isLastStartPinnedColumn
 					? '-4px 0 4px -4px var(--border) inset'
-					: isFirstRightPinnedColumn
+					: isFirstEndPinnedColumn
 						? '4px 0 4px -4px var(--border) inset'
 						: undefined
 				: undefined,
-			left: isPinned === 'left' ? `${column.getStart('left')}px` : undefined,
-			right: isPinned === 'right' ? `${column.getAfter('right')}px` : undefined,
+			insetInlineStart: isPinned === 'start' ? `${column.getStart('start')}px` : undefined,
+			insetInlineEnd: isPinned === 'end' ? `${column.getAfter('end')}px` : undefined,
 			opacity: isPinned ? 0.97 : 1,
 			position: isPinned ? 'sticky' : 'relative',
 			background: isPinned ? 'var(--background)' : 'var(--background)',

@@ -1,9 +1,9 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
 	import { getCellKey } from '$lib/components/data-grid/types/data-grid.js';
-	import type { Cell, Table } from '@tanstack/table-core';
+	import type { Cell, RowData, Table } from '$lib/components/data-grid/data-grid-table.js';
 	import type { SvelteSet } from 'svelte/reactivity';
 	// Cell variant imports
-	import FlexRender from '../ui/data-table/flex-render.svelte';
+	import { FlexRender } from '@tanstack/svelte-table';
 	import ActionsCell from './cells/actions-cell.svelte';
 	import BadgeItemCell from './cells/badge-item-cell.svelte';
 	import CheckboxCell from './cells/checkbox-cell.svelte';
@@ -123,9 +123,9 @@
 	const variant = $derived(cellOpts?.variant ?? null);
 	const columnIndex = $derived.by(() => {
 		const orderedColumns = [
-			...table.getLeftVisibleLeafColumns(),
+			...table.getStartVisibleLeafColumns(),
 			...table.getCenterVisibleLeafColumns(),
-			...table.getRightVisibleLeafColumns()
+			...table.getEndVisibleLeafColumns()
 		];
 		return orderedColumns.findIndex((column) => column.id === columnId) + 1;
 	});
@@ -392,6 +392,6 @@
 		aria-selected={isSelected}
 		class={isSelected ? 'highlight' : ''}
 	>
-		<FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+		<FlexRender {cell} />
 	</div>
 {/if}

@@ -1,4 +1,4 @@
-import type { Row, RowSelectionState } from '@tanstack/table-core';
+import type { Row, RowData, RowSelectionState } from '$lib/components/data-grid/data-grid-table.js';
 import { areEditValuesEqual } from './data-grid-mutations.js';
 import {
 	deduplicateDeletableMedia,
@@ -32,7 +32,7 @@ export function hasFileUploadHandler(handler: unknown): handler is (...args: nev
 	return typeof handler === 'function';
 }
 
-export function getSelectedRows<TData>(
+export function getSelectedRows<TData extends RowData>(
 	rows: Row<TData>[],
 	rowSelection: RowSelectionState
 ): Array<{ row: Row<TData>; rowIndex: number }> {
@@ -83,8 +83,8 @@ export async function clearCellMedia<TContext>(
 				return (
 					cell &&
 					result?.status === 'fulfilled' &&
-					result.value.success
-					// && isAcknowledgedClearCurrent(cell, result.value.generation)
+					result.value.success &&
+					isAcknowledgedClearCurrent(cell, result.value.generation)
 				);
 			});
 		if (areDependentsCurrent) {

@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import DataGridCellWrapper from '../data-grid-cell-wrapper.svelte';
 	import { cn } from '$lib/utils.js';
@@ -46,7 +47,7 @@
 	// Focus cell when entering edit mode
 	$effect(() => {
 		if (isEditing && cellRef) {
-			cellRef.focus();
+			cellRef.focus({ preventScroll: true });
 
 			if (!cellRef.textContent && initialValue) {
 				cellRef.textContent = initialValue;

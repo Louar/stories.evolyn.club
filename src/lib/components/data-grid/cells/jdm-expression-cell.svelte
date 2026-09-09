@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import { browser } from '$app/environment';
 	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import '$lib/components/jdm-expression/jdm-expression.css';

@@ -1,15 +1,15 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
 	/* eslint-disable @typescript-eslint/no-unused-vars */
 	import type {
 		CellPosition,
 		DataGridProps,
 		RowHeightValue
 	} from '$lib/components/data-grid/types/data-grid.js';
-	import { FlexRender } from '$lib/components/ui/table-tanstack';
+	import { FlexRender } from '@tanstack/svelte-table';
 	import { TooltipProvider } from '$lib/components/ui/tooltip/index.js';
 	import { cn } from '$lib/utils.js';
 	import Plus from '@lucide/svelte/icons/plus';
-	import type { Column, RowSelectionState } from '@tanstack/table-core';
+	import type { Column, RowData, RowSelectionState } from '$lib/components/data-grid/data-grid-table.js';
 	import { setContext } from 'svelte';
 	import DataGridColumnHeader from './data-grid-column-header.svelte';
 	import DataGridContextMenu from './data-grid-context-menu.svelte';
@@ -55,7 +55,7 @@
 	// Visibility key for {#key} block - forces re-render when visibility changes
 	// This is computed locally from table state
 	const visibilityKey = $derived.by(() => {
-		const visibility = table.getState().columnVisibility;
+		const visibility = table.atoms.columnVisibility.get();
 		return Object.entries(visibility)
 			.filter(([_, visible]) => visible === false)
 			.map(([id]) => id)
@@ -95,17 +95,16 @@
 	const rowHeight = $derived<RowHeightValue>(meta?.rowHeight ?? 'short');
 	const focusedCell = $derived<CellPosition | null>(meta?.focusedCell ?? null);
 	// Get table state reactively for pinning/visibility/sizing
-	const tableState = $derived(table.getState());
-	const columnPinning = $derived(tableState.columnPinning);
-	const columnVisibility = $derived(tableState.columnVisibility);
-	const columnSizing = $derived(tableState.columnSizing);
-	const columnSizingInfo = $derived(tableState.columnSizingInfo);
+	const columnPinning = $derived(table.atoms.columnPinning.get());
+	const columnVisibility = $derived(table.atoms.columnVisibility.get());
+	const columnSizing = $derived(table.atoms.columnSizing.get());
+	const columnResizing = $derived(table.atoms.columnResizing.get());
 
 	// Get visible headers reactively
 	const visibleLeafColumns = $derived(table.getVisibleLeafColumns());
 	const headerGroups = $derived(table.getHeaderGroups());
 	const headerRowCount = $derived(headerGroups.length);
-	const hasActiveFilters = $derived(tableState.columnFilters.length > 0);
+	const hasActiveFilters = $derived(table.atoms.columnFilters.get().length > 0);
 	const hasUnfilteredRows = $derived(table.getPreFilteredRowModel().rows.length > 0);
 	const isFilteredEmpty = $derived(
 		!loading && !error && rows.length === 0 && hasActiveFilters && hasUnfilteredRows
@@ -140,7 +139,7 @@
 	const totalVisibleWidth = $derived.by(() => {
 		// Read column sizing to create reactive dependency
 		const _ = columnSizing;
-		const __ = columnSizingInfo;
+		const __ = columnResizing;
 		const ___ = columnVisibility;
 
 		let total = 0;
@@ -159,17 +158,17 @@
 
 		try {
 			const isPinned = column.getIsPinned();
-			const isLastLeftPinnedColumn = isPinned === 'left' && column.getIsLastColumn('left');
-			const isFirstRightPinnedColumn = isPinned === 'right' && column.getIsFirstColumn('right');
+			const isLastStartPinnedColumn = isPinned === 'start' && column.getIsLastColumn('start');
+			const isFirstEndPinnedColumn = isPinned === 'end' && column.getIsFirstColumn('end');
 
 			return {
-				boxShadow: isLastLeftPinnedColumn
+				boxShadow: isLastStartPinnedColumn
 					? '-4px 0 4px -4px var(--border) inset'
-					: isFirstRightPinnedColumn
+					: isFirstEndPinnedColumn
 						? '4px 0 4px -4px var(--border) inset'
 						: undefined,
-				left: isPinned === 'left' ? `${column.getStart('left')}px` : undefined,
-				right: isPinned === 'right' ? `${column.getAfter('right')}px` : undefined,
+				insetInlineStart: isPinned === 'start' ? `${column.getStart('start')}px` : undefined,
+				insetInlineEnd: isPinned === 'end' ? `${column.getAfter('end')}px` : undefined,
 				opacity: isPinned ? 0.97 : 1,
 				position: isPinned ? 'sticky' : 'relative',
 				background: 'var(--background)',
@@ -205,12 +204,12 @@
 	}
 
 	// Compute column size CSS variables reactively from table state
-	// We read both columnSizing and columnSizingInfo to create reactive dependencies
-	// columnSizingInfo updates during resize drag, columnSizing updates on release
+	// We read both columnSizing and columnResizing to create reactive dependencies
+	// columnResizing updates during resize drag, columnSizing updates on release
 	const columnSizeStyle = $derived.by(() => {
 		// Read both states to ensure reactivity when columns are resized
 		const _ = columnSizing;
-		const __ = columnSizingInfo;
+		const __ = columnResizing;
 
 		const vars: string[] = [];
 		try {
@@ -297,7 +296,7 @@
 						{#each headerGroup.headers as header (header.id)}
 							{@const visibleSpan = getVisibleHeaderSpan(header)}
 							{#if visibleSpan > 0}
-								{@const sorting = tableState.sorting}
+								{@const sorting = table.atoms.sorting.get()}
 								{@const currentSort = sorting.find((sort) => sort.id === header.column.id)}
 								{@const isSortable = header.column.getCanSort()}
 								{@const pinningStyles = getPinningStyles(header.column)}
@@ -316,17 +315,14 @@
 									data-slot="grid-header-cell"
 									tabindex={-1}
 									class={cn('group relative border-r last-of-type:border-0')}
-									style="position: {pinningStyles.position}; left: {pinningStyles.left}; right: {pinningStyles.right}; background: {pinningStyles.background}; z-index: {pinningStyles.zIndex}; width: calc(var(--header-{header.id}-size) * 1px);"
+									style="position: {pinningStyles.position}; inset-inline-start: {pinningStyles.insetInlineStart}; inset-inline-end: {pinningStyles.insetInlineEnd}; background: {pinningStyles.background}; z-index: {pinningStyles.zIndex}; width: calc(var(--header-{header.id}-size) * 1px);"
 								>
 									{#if header.isPlaceholder}
 										<!-- Empty -->
 									{:else if typeof header.column.columnDef.header === 'function'}
 										<div class="size-full px-3 py-1.5">
 											{#key rowModelKey}
-												<FlexRender
-													content={header.column.columnDef.header}
-													context={header.getContext()}
-												/>
+												<FlexRender {header} />
 											{/key}
 										</div>
 									{:else}

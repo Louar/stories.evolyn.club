@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import * as Command from '$lib/components/ui/command/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
@@ -58,7 +59,7 @@
 
 	function handleOpenAutoFocus(event: Event) {
 		event.preventDefault();
-		inputRef?.focus();
+		inputRef?.focus({ preventScroll: true });
 	}
 
 	function handleOpenChange(open: boolean) {

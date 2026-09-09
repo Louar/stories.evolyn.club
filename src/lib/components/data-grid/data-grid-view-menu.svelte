@@ -1,4 +1,4 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
 	import { Button } from '$lib/components/ui/button/index.js';
 	import {
 		Command,
@@ -12,7 +12,7 @@
 	import { cn } from '$lib/utils.js';
 	import Check from '@lucide/svelte/icons/check';
 	import Settings2 from '@lucide/svelte/icons/settings-2';
-	import type { Table } from '@tanstack/table-core';
+	import type { RowData, Table } from '$lib/components/data-grid/data-grid-table.js';
 	import { SvelteMap } from 'svelte/reactivity';
 
 	interface Props {
@@ -42,7 +42,7 @@
 	});
 
 	// Get visibility state reactively
-	const columnVisibility = $derived(table.getState().columnVisibility);
+	const columnVisibility = $derived(table.atoms.columnVisibility.get());
 	const preferences = $derived(table.options.meta?.preferences);
 
 	// Helper to check if column is visible - reads from reactive state

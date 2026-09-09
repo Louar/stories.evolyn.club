@@ -277,6 +277,15 @@ describe('data grid mutations', () => {
 		});
 	});
 
+	it('preserves default translations when merging a localized draft for creation', () => {
+		const defaults = { name: { default: 'Fallback' } };
+		const draft = { name: { nl: 'Naam' } };
+
+		expect(mergePatchData({ ...defaults }, draft)).toEqual({
+			name: { default: 'Fallback', nl: 'Naam' }
+		});
+	});
+
 	it('clones and compares supported edit snapshot values without sharing mutable data', () => {
 		const value = { list: [{ at: new Date('2026-08-21T00:00:00Z') }], enabled: true };
 		const snapshot = cloneEditValue(value);

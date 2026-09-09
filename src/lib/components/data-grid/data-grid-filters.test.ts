@@ -1,4 +1,4 @@
-import type { Row } from '@tanstack/table-core';
+import type { Row } from '$lib/components/data-grid/data-grid-table.js';
 import { describe, expect, it } from 'vitest';
 import { getFilterFn } from './data-grid-filters.js';
 
@@ -6,8 +6,8 @@ function matches(value: unknown, filter: unknown, variant = 'text-short'): boole
 	const row = {
 		getValue: () => value,
 		getAllCells: () => [{ column: { id: 'value', columnDef: { meta: { cell: { variant } } } } }]
-	} as unknown as Row<unknown>;
-	return getFilterFn<unknown>()(row, 'value', filter, () => {});
+	} as unknown as Row<Record<string, unknown>>;
+	return getFilterFn<Record<string, unknown>>()(row, 'value', filter, () => {});
 }
 
 describe('data grid filters', () => {

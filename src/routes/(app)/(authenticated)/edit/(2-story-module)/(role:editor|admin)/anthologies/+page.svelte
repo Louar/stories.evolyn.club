@@ -24,7 +24,7 @@
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
 	import LoaderCircleIcon from '@lucide/svelte/icons/loader-circle';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
-	import type { ColumnDef } from '@tanstack/table-core';
+	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
 
 	let { data } = $props();
 	const endpoint = '/api/anthologies';
@@ -237,7 +237,7 @@
 				createdBy: false,
 				configuration: false
 			},
-			columnPinning: { left: ['select-row'] }
+			columnPinning: { start: ['select-row'], end: [] }
 		}
 	} as const);
 

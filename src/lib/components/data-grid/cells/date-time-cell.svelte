@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import { Calendar } from '$lib/components/ui/calendar/index.js';
 	import TimePicker from '$lib/components/ui/date-time-picker/time-picker.svelte';
 	import { PopoverContent } from '$lib/components/ui/popover/index.js';
@@ -161,7 +162,7 @@
 				popover.querySelector<HTMLElement>('[data-calendar-day][data-selected]') ??
 				popover.querySelector<HTMLElement>('[data-calendar-day][data-today]') ??
 				popover.querySelector<HTMLElement>('[data-calendar-day]');
-			target?.focus();
+			target?.focus({ preventScroll: true });
 		}, 0);
 	}
 </script>

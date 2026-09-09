@@ -15,7 +15,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
 	import Plus from '@lucide/svelte/icons/plus';
-	import type { ColumnDef } from '@tanstack/table-core';
+	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { toast } from 'svelte-sonner';
 	import type { PageProps } from './$types';

@@ -1,4 +1,4 @@
-<script lang="ts" generics="TData, TValue">
+<script lang="ts" generics="TData extends RowData, TValue">
 	import type { CellOpts } from '$lib/components/data-grid/types/data-grid.js';
 	import {
 		DropdownMenu,
@@ -13,10 +13,11 @@
 	import type {
 		ColumnSort,
 		Header,
+		RowData,
 		SortDirection,
 		SortingState,
 		Table
-	} from '@tanstack/table-core';
+	} from '$lib/components/data-grid/data-grid-table.js';
 	import type { Component } from 'svelte';
 	// Icons
 	import ArrowDown from '@lucide/svelte/icons/arrow-down';
@@ -68,26 +69,26 @@
 	});
 
 	const isAnyColumnResizing = $derived(
-		table.getState().columnSizingInfo?.isResizingColumn ?? false
+		table.atoms.columnResizing.get().isResizingColumn ?? false
 	);
 
 	const cellVariant = $derived(column.columnDef.meta?.cell);
 	const columnVariant = $derived.by(() => getColumnVariant(cellVariant?.variant));
 
 	// Get pinning state reactively from table state
-	const columnPinning = $derived(table.getState().columnPinning);
+	const columnPinning = $derived(table.atoms.columnPinning.get());
 	const pinnedPosition = $derived.by(() => {
 		// Read columnPinning to create dependency, then call column method
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const _ = columnPinning;
 		return column.getIsPinned();
 	});
-	const isPinnedLeft = $derived(pinnedPosition === 'left');
-	const isPinnedRight = $derived(pinnedPosition === 'right');
+	const isPinnedLeft = $derived(pinnedPosition === 'start');
+	const isPinnedRight = $derived(pinnedPosition === 'end');
 
 	// Get current sort state for this column
 	const currentSort = $derived.by(() => {
-		const sortState = table.getState().sorting;
+		const sortState = table.atoms.sorting.get();
 		return sortState.find((sort) => sort.id === column.id);
 	});
 	const isSorted = $derived(!!currentSort);
@@ -95,7 +96,7 @@
 
 	// Check if this column has an active filter
 	const hasActiveFilter = $derived.by(() => {
-		const filters = table.getState().columnFilters;
+		const filters = table.atoms.columnFilters.get();
 		return filters.some((f) => f.id === column.id);
 	});
 
@@ -199,11 +200,11 @@
 	}
 
 	function onLeftPin() {
-		column.pin('left');
+		column.pin('start');
 	}
 
 	function onRightPin() {
-		column.pin('right');
+		column.pin('end');
 	}
 
 	function onUnpin() {

@@ -1,5 +1,5 @@
-<script lang="ts" generics="TData">
-	import type { Table } from '@tanstack/table-core';
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData, Table } from '$lib/components/data-grid/data-grid-table.js';
 	import { cn } from '$lib/utils.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import {

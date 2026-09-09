@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import highlighter from '$lib/client/shiki';
 	import { getCellKey, type CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import { Button } from '$lib/components/ui/button/index.js';
@@ -114,9 +115,9 @@
 	}
 
 	function handleOpenChange(isOpen: boolean) {
-		if (isOpen && !readOnly) {
+		if (isOpen) {
 			previousValue = nextValue;
-			meta?.onCellEditingStart?.(rowIndex, columnId);
+			if (!readOnly) meta?.onCellEditingStart?.(rowIndex, columnId);
 			return;
 		}
 		saveAndClose();
@@ -276,6 +277,7 @@
 				<textarea
 					bind:this={textareaRef}
 					placeholder="Enter YAML..."
+					readonly={readOnly}
 					spellcheck="false"
 					wrap="soft"
 					class="relative z-10 h-full w-full resize-none overflow-auto border-0 bg-transparent p-2 font-mono text-sm leading-5 tracking-normal wrap-break-word whitespace-pre-wrap text-transparent caret-foreground shadow-none muted-scrollbar [scrollbar-gutter:stable] [tab-size:2] focus-visible:outline-none"

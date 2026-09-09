@@ -17,7 +17,7 @@
 	import { useDataGrid } from '$lib/hooks/use-custom-data-grid.svelte';
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
 	import { UI } from '$lib/states/ui.svelte';
-	import type { ColumnDef } from '@tanstack/table-core';
+	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
 
 	let { data } = $props();
 	// svelte-ignore state_referenced_locally
@@ -95,7 +95,7 @@
 		enablePaste: true,
 		initialState: {
 			columnVisibility: { id: false, taxonomyId: false },
-			columnPinning: { left: ['select-row'] }
+			columnPinning: { start: ['select-row'], end: [] }
 		}
 	} as const);
 

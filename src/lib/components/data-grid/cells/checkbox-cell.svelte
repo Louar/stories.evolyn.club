@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import DataGridCellWrapper from '../data-grid-cell-wrapper.svelte';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';

@@ -13,18 +13,8 @@
  *
  * ## Reactivity Pattern
  *
- * TanStack Table's `@tanstack/table-core` is framework-agnostic and doesn't have
- * built-in Svelte reactivity. To make it reactive, we use `createSubscriber` from
- * `svelte/reactivity`:
- *
- * 1. `subscribeToTable()` - Called in table method getters to register effects as subscribers
- * 2. `notifyTableUpdate()` - Called after `table.setOptions()` to trigger re-renders
- *
- * This pattern is essential for async data sources (like database queries) where
- * data arrives after the initial render. Without it, `$derived(table.getRowModel().rows)`
- * would not update when data loads.
- *
- * @see https://svelte.dev/docs/svelte/svelte-reactivity#createSubscriber
+ * TanStack Table v9's Svelte adapter is rune-aware. Reactive options are exposed
+ * through getters and narrow state reads use the table's atom-backed APIs.
  */
 
 import {
@@ -90,6 +80,21 @@ import {
 } from '$lib/components/data-grid/data-grid-preferences.js';
 import type { PatchErrorToastItem } from '$lib/components/data-grid/patch-error-toast.svelte';
 import PatchErrorToast from '$lib/components/data-grid/patch-error-toast.svelte';
+import {
+	dataGridFeatures,
+	type ColumnDef,
+	type ColumnFiltersState,
+	type ColumnOrderState,
+	type ColumnPinningState,
+	type ColumnResizingState,
+	type ColumnSizingState,
+	type RowData,
+	type RowSelectionState,
+	type SortingState,
+	type Table,
+	type TableOptions,
+	type VisibilityState
+} from '$lib/components/data-grid/data-grid-table.js';
 import type {
 	CellPosition,
 	CellSaveState,
@@ -121,25 +126,7 @@ import {
 	type Translatable
 } from '$lib/db/schemas/0-utils';
 import { UI } from '$lib/states/ui.svelte';
-import {
-	createTable,
-	getCoreRowModel,
-	getFilteredRowModel,
-	getSortedRowModel,
-	type ColumnDef,
-	type ColumnFiltersState,
-	type ColumnOrderState,
-	type ColumnPinningState,
-	type ColumnSizingInfoState,
-	type ColumnSizingState,
-	type RowData,
-	type RowSelectionState,
-	type SortingState,
-	type Table,
-	type TableOptions,
-	type TableOptionsResolved,
-	type VisibilityState
-} from '@tanstack/table-core';
+import { createTable } from '@tanstack/svelte-table';
 import {
 	Virtualizer,
 	elementScroll,
@@ -149,7 +136,7 @@ import {
 } from '@tanstack/virtual-core';
 import { tick, untrack } from 'svelte';
 import { toast } from 'svelte-sonner';
-import { SvelteMap, SvelteSet, createSubscriber } from 'svelte/reactivity';
+import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
 // ============================================
 // Types
@@ -482,6 +469,9 @@ export function useDataGrid<TData extends RowData>(
 	let overrideBase: TData[] | null = null;
 	let searchRevision = $state(0);
 	const getData = () => dataOverride ?? getSourceData();
+	const tableData = $derived.by(() => {
+		return { language: UI.language, rows: [...getData()] };
+	});
 	const replaceData = (nextRows: TData[]) => {
 		overrideBase = getSourceData();
 		dataOverride = nextRows;
@@ -660,7 +650,7 @@ export function useDataGrid<TData extends RowData>(
 		);
 		if (temporaryId in rowSelection) {
 			const nextRowSelection = { ...rowSelection };
-			nextRowSelection[canonicalId] = nextRowSelection[temporaryId] ?? false;
+			if (nextRowSelection[temporaryId]) nextRowSelection[canonicalId] = true;
 			delete nextRowSelection[temporaryId];
 			rowSelection = nextRowSelection;
 		}
@@ -909,9 +899,14 @@ export function useDataGrid<TData extends RowData>(
 													rows: latestRows
 												}) ?? {})
 												: (defaultRow ?? {});
-										const created = await dataAdapter.create!({
-											row: { ...resolvedDefaultRow, ...latestRow }
-										});
+										const createRow = mergePatchData(
+											mergePatchData(
+												{ ...resolvedDefaultRow },
+												latestRow as Record<string, unknown>
+											),
+											patchData
+										);
+										const created = await dataAdapter.create!({ row: createRow as TData });
 										const canonicalId = getRowIdValue(created, latestIndex);
 										rowIdentities.recordCanonical(rowId, canonicalId);
 										canonicalCreatedRows.set(canonicalId, created);
@@ -1219,8 +1214,8 @@ export function useDataGrid<TData extends RowData>(
 		columnFilters: [...(initialState?.columnFilters ?? [])],
 		columnVisibility: { ...(initialState?.columnVisibility ?? {}) },
 		columnPinning: {
-			left: [...(initialState?.columnPinning?.left ?? [])],
-			right: [...(initialState?.columnPinning?.right ?? [])]
+			start: [...(initialState?.columnPinning?.start ?? [])],
+			end: [...(initialState?.columnPinning?.end ?? [])]
 		},
 		columnSizing: { ...defaultColumnSizing, ...(initialState?.columnSizing ?? {}) },
 		columnOrder: [...(initialState?.columnOrder ?? currentColumnIds)],
@@ -1234,7 +1229,7 @@ export function useDataGrid<TData extends RowData>(
 	let columnVisibility = $state<VisibilityState>({ ...codeDefaults.columnVisibility });
 	let columnSizing = $state<ColumnSizingState>({ ...codeDefaults.columnSizing });
 	let columnOrder = $state<ColumnOrderState>([...codeDefaults.columnOrder]);
-	let columnSizingInfo = $state<ColumnSizingInfoState>({
+	let columnResizing = $state<ColumnResizingState>({
 		startOffset: null,
 		startSize: null,
 		deltaOffset: null,
@@ -1288,8 +1283,8 @@ export function useDataGrid<TData extends RowData>(
 			};
 		if (persistenceSlices.pinning)
 			columnPinning = {
-				left: [...(reconciled.columnPinning?.left ?? codeDefaults.columnPinning.left)],
-				right: [...(reconciled.columnPinning?.right ?? codeDefaults.columnPinning.right)]
+				start: [...(reconciled.columnPinning?.start ?? codeDefaults.columnPinning.start)],
+				end: [...(reconciled.columnPinning?.end ?? codeDefaults.columnPinning.end)]
 			};
 		if (persistenceSlices.sizing)
 			columnSizing = { ...codeDefaults.columnSizing, ...(reconciled.columnSizing ?? {}) };
@@ -1322,8 +1317,8 @@ export function useDataGrid<TData extends RowData>(
 		columnFilters = [...codeDefaults.columnFilters];
 		columnVisibility = { ...codeDefaults.columnVisibility };
 		columnPinning = {
-			left: [...codeDefaults.columnPinning.left],
-			right: [...codeDefaults.columnPinning.right]
+			start: [...codeDefaults.columnPinning.start],
+			end: [...codeDefaults.columnPinning.end]
 		};
 		columnSizing = { ...codeDefaults.columnSizing };
 		columnOrder = [...codeDefaults.columnOrder];
@@ -1746,9 +1741,16 @@ export function useDataGrid<TData extends RowData>(
 	// ========================================
 
 	function startEditing(rowIndex: number, columnId: string) {
-		if (getIsCellReadOnly(rowIndex, columnId)) return;
+		const isReadOnlyCell = getIsCellReadOnly(rowIndex, columnId);
+		if (isReadOnlyCell && table.getColumn(columnId)?.columnDef.meta?.cell?.variant !== 'json-yaml') {
+			return;
+		}
 		const position = getCellPosition(rowIndex, columnId);
 		if (!position.rowId) return;
+		if (isReadOnlyCell) {
+			editingCell = position;
+			return;
+		}
 		const key = encodeCellKey(position.rowId, columnId);
 		const row = table.getRowModel().rows[rowIndex];
 		const value = cellValueMap.has(key) ? cellValueMap.get(key) : row?.getValue(columnId);
@@ -3052,15 +3054,15 @@ export function useDataGrid<TData extends RowData>(
 				for (let i = startIndex; i <= endIndex; i++) {
 					const row = rows[i];
 					if (row) {
-						newRowSelection[row.id] = selected;
+						if (selected) newRowSelection[row.id] = true;
+						else delete newRowSelection[row.id];
 					}
 				}
 			} else {
 				// Regular click
-				newRowSelection = {
-					...rowSelection,
-					[currentRow.id]: selected
-				};
+				newRowSelection = { ...rowSelection };
+				if (selected) newRowSelection[currentRow.id] = true;
+				else delete newRowSelection[currentRow.id];
 			}
 
 			// Update rowSelection state
@@ -3136,19 +3138,38 @@ export function useDataGrid<TData extends RowData>(
 	};
 
 	// Create the base table options
-	const baseTableOptions: TableOptionsResolved<TData> = {
-		data: getData(),
+	const baseTableOptions: TableOptions<TData> = {
+		features: dataGridFeatures,
+		get data() {
+			return tableData.rows;
+		},
 		columns: normalizedColumns,
 		getRowId: getRowIdValue,
 		state: {
-			sorting,
-			columnFilters,
-			rowSelection,
-			columnPinning,
-			columnVisibility,
-			columnSizing,
-			columnOrder,
-			columnSizingInfo
+			get sorting() {
+				return sorting;
+			},
+			get columnFilters() {
+				return columnFilters;
+			},
+			get rowSelection() {
+				return rowSelection;
+			},
+			get columnPinning() {
+				return columnPinning;
+			},
+			get columnVisibility() {
+				return columnVisibility;
+			},
+			get columnSizing() {
+				return columnSizing;
+			},
+			get columnOrder() {
+				return columnOrder;
+			},
+			get columnResizing() {
+				return columnResizing;
+			}
 		},
 		onColumnOrderChange: (updater) => {
 			columnOrder = typeof updater === 'function' ? updater(columnOrder) : updater;
@@ -3157,8 +3178,8 @@ export function useDataGrid<TData extends RowData>(
 		onColumnSizingChange: (updater) => {
 			columnSizing = typeof updater === 'function' ? updater(columnSizing) : updater;
 		},
-		onColumnSizingInfoChange: (updater) => {
-			columnSizingInfo = typeof updater === 'function' ? updater(columnSizingInfo) : updater;
+		onColumnResizingChange: (updater) => {
+			columnResizing = typeof updater === 'function' ? updater(columnResizing) : updater;
 		},
 		onColumnPinningChange: (updater) => {
 			columnPinning = typeof updater === 'function' ? updater(columnPinning) : updater;
@@ -3208,9 +3229,6 @@ export function useDataGrid<TData extends RowData>(
 			focusedCell = null;
 			editingCell = null;
 		},
-		getCoreRowModel: getCoreRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-		getFilteredRowModel: getFilteredRowModel(),
 		columnResizeMode: 'onChange',
 		enableColumnResizing: true,
 		defaultColumn: {
@@ -3223,27 +3241,10 @@ export function useDataGrid<TData extends RowData>(
 		enableColumnFilters: true,
 		enableFilters: true,
 		renderFallbackValue: null,
-		onStateChange: () => { },
-		mergeOptions: (
-			defaultOptions: TableOptions<TData>,
-			newOptions: Partial<TableOptions<TData>>
-		) => {
-			return { ...defaultOptions, ...newOptions };
-		},
 		meta
 	};
 
 	const table = createTable(baseTableOptions);
-
-	// Create a subscriber to notify effects when table data changes
-	// This is the key to making TanStack Table reactive in Svelte 5
-	// When data comes from async sources (like database queries), the table needs
-	// to notify consuming components that data has changed so they can re-render
-	let notifyTableUpdate: () => void;
-	const subscribeToTable = createSubscriber((update) => {
-		notifyTableUpdate = update;
-		return () => { };
-	});
 
 	// Track previous state to detect changes that require cache clearing
 	let prevSorting = $state<SortingState>([]);
@@ -3253,20 +3254,8 @@ export function useDataGrid<TData extends RowData>(
 	let prevColumnVisibility = $state<VisibilityState>({});
 	let prevLanguage = $state(UI.language);
 
-	// This is the key to reactivity: update table options in $effect.pre
-	// whenever any of the state values change
+	// Keep local cell and search caches aligned with source and table state changes.
 	$effect.pre(() => {
-		// Read all reactive state to create dependencies
-		const currentState = {
-			sorting,
-			columnFilters,
-			rowSelection,
-			columnPinning,
-			columnVisibility,
-			columnSizing,
-			columnOrder,
-			columnSizingInfo
-		};
 		const sourceData = getSourceData();
 		if (dataOverride && overrideBase && sourceData !== overrideBase) {
 			dataOverride = null;
@@ -3297,22 +3286,6 @@ export function useDataGrid<TData extends RowData>(
 			prevLanguage = UI.language;
 			searchRevision++;
 		}
-
-		// Update table with current state
-		table.setOptions((prev) => ({
-			...prev,
-			// A new array identity forces TanStack to rebuild translated filter values.
-			data: languageChanged ? [...currentData] : currentData,
-			state: {
-				...prev.state,
-				...currentState
-			},
-			meta
-		}));
-
-		// Notify any subscribers that table data has changed
-		// This triggers re-runs of effects/derived that called subscribeToTable()
-		notifyTableUpdate?.();
 	});
 
 	$effect(() => {
@@ -3330,12 +3303,12 @@ export function useDataGrid<TData extends RowData>(
 	// Compute columnSizeVars (now that table exists)
 	// ========================================
 
-	// Compute column sizes based on columnSizing and columnSizingInfo state
+	// Compute column sizes based on columnSizing and columnResizing state
 	function getColumnSizeVars(): Record<string, number> {
-		// Read both columnSizing and columnSizingInfo to create reactive dependencies
-		// columnSizingInfo updates during resize drag, columnSizing updates on release
+		// Read both columnSizing and columnResizing to create reactive dependencies
+		// columnResizing updates during resize drag, columnSizing updates on release
 		const _ = columnSizing;
-		const __ = columnSizingInfo;
+		const __ = columnResizing;
 
 		const vars: Record<string, number> = {};
 		try {
@@ -3582,93 +3555,6 @@ export function useDataGrid<TData extends RowData>(
 	// Return
 	// ========================================
 
-	// Create a reactive table wrapper that exposes state-dependent getters
-	// This is key to making the table reactive in Svelte 5
-	// We use subscribeToTable() to register effects as subscribers, so they
-	// re-run when notifyTableUpdate() is called after data changes
-	const reactiveTable = {
-		// Expose all original table methods and properties
-		...table,
-		// Override methods that depend on state to create reactive dependencies
-		getRowModel: () => {
-			subscribeToTable();
-			return table.getRowModel();
-		},
-		getHeaderGroups: () => {
-			subscribeToTable();
-			return table.getHeaderGroups();
-		},
-		getAllColumns: () => {
-			subscribeToTable();
-			return table.getAllColumns();
-		},
-		getVisibleLeafColumns: () => {
-			subscribeToTable();
-			return table.getVisibleLeafColumns();
-		},
-		getState: () => {
-			subscribeToTable();
-			return table.getState();
-		},
-		getColumn: (columnId: string) => {
-			subscribeToTable();
-			return table.getColumn(columnId);
-		},
-		// Forward all other methods to the original table
-		setColumnFilters: table.setColumnFilters.bind(table),
-		setSorting: table.setSorting.bind(table),
-		setColumnPinning: table.setColumnPinning.bind(table),
-		setColumnVisibility: table.setColumnVisibility.bind(table),
-		setRowSelection: table.setRowSelection.bind(table),
-		setColumnSizing: table.setColumnSizing.bind(table),
-		setOptions: table.setOptions.bind(table),
-		getFlatHeaders: () => {
-			subscribeToTable();
-			return table.getFlatHeaders();
-		},
-		getTotalSize: () => {
-			subscribeToTable();
-			return table.getTotalSize();
-		},
-		getLeftLeafColumns: () => {
-			subscribeToTable();
-			return table.getLeftLeafColumns();
-		},
-		getRightLeafColumns: () => {
-			subscribeToTable();
-			return table.getRightLeafColumns();
-		},
-		getCenterLeafColumns: () => {
-			subscribeToTable();
-			return table.getCenterLeafColumns();
-		},
-		getIsAllRowsSelected: () => {
-			subscribeToTable();
-			return table.getIsAllRowsSelected();
-		},
-		getIsSomeRowsSelected: () => {
-			subscribeToTable();
-			return table.getIsSomeRowsSelected();
-		},
-		getIsAllPageRowsSelected: () => {
-			subscribeToTable();
-			return table.getIsAllPageRowsSelected();
-		},
-		getIsSomePageRowsSelected: () => {
-			subscribeToTable();
-			return table.getIsSomePageRowsSelected();
-		},
-		toggleAllRowsSelected: table.toggleAllRowsSelected.bind(table),
-		toggleAllPageRowsSelected: table.toggleAllPageRowsSelected.bind(table),
-		// Keep table slug for any other property access
-		_getDefaultColumnDef: table._getDefaultColumnDef.bind(table),
-		get options() {
-			subscribeToTable();
-			return table.options;
-		},
-		initialState: table.initialState
-	} as unknown as Table<TData>;
-
 	// Search callbacks - these are stable slugs
 	function handleSearchOpenChange(open: boolean) {
 		searchOpen = open;
@@ -3695,7 +3581,7 @@ export function useDataGrid<TData extends RowData>(
 		get footerRef() {
 			return footerRef;
 		},
-		table: reactiveTable,
+		table,
 		rowVirtualizer,
 		// Selection state is exposed through the reactive SvelteSet.
 		selectedCellsSet,

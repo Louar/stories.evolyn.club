@@ -1,4 +1,4 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
 	/* eslint-disable @typescript-eslint/no-unused-vars */
 	import type { CellPosition, RowHeightValue } from '$lib/components/data-grid/types/data-grid.js';
 	import { getRowHeightValue } from '$lib/components/data-grid/types/data-grid.js';
@@ -7,9 +7,10 @@
 		ColumnPinningState,
 		ColumnSizingState,
 		Row,
+		RowData,
 		Table,
 		VisibilityState
-	} from '@tanstack/table-core';
+	} from '$lib/components/data-grid/data-grid-table.js';
 	import { SvelteMap, type SvelteSet } from 'svelte/reactivity';
 	import DataGridCell from './data-grid-cell.svelte';
 
@@ -80,17 +81,17 @@
 		// Helper to check if column is visible
 		const isColumnVisible = (colId: string) => columnVisibility[colId] !== false;
 
-		// Get columns in correct order: left pinned, center (unpinned), right pinned
+		// Get columns in correct order: start pinned, center (unpinned), end pinned
 		// Filter by visibility
-		const leftCols = table.getLeftLeafColumns().filter((c) => isColumnVisible(c.id));
+		const startCols = table.getStartLeafColumns().filter((c) => isColumnVisible(c.id));
 		const centerCols = table.getCenterLeafColumns().filter((c) => isColumnVisible(c.id));
-		const rightCols = table.getRightLeafColumns().filter((c) => isColumnVisible(c.id));
+		const endCols = table.getEndLeafColumns().filter((c) => isColumnVisible(c.id));
 
 		// Combine in order
 		const orderedColumnIds = [
-			...leftCols.map((c) => c.id),
+			...startCols.map((c) => c.id),
 			...centerCols.map((c) => c.id),
-			...rightCols.map((c) => c.id)
+			...endCols.map((c) => c.id)
 		];
 
 		// Get all cells and create a lookup map
@@ -114,17 +115,17 @@
 			const column = cell.column;
 			try {
 				const isPinned = column.getIsPinned();
-				const isLastLeftPinnedColumn = isPinned === 'left' && column.getIsLastColumn('left');
-				const isFirstRightPinnedColumn = isPinned === 'right' && column.getIsFirstColumn('right');
+				const isLastStartPinnedColumn = isPinned === 'start' && column.getIsLastColumn('start');
+				const isFirstEndPinnedColumn = isPinned === 'end' && column.getIsFirstColumn('end');
 
 				stylesMap.set(column.id, {
-					boxShadow: isLastLeftPinnedColumn
+					boxShadow: isLastStartPinnedColumn
 						? '-4px 0 4px -4px var(--border) inset'
-						: isFirstRightPinnedColumn
+						: isFirstEndPinnedColumn
 							? '4px 0 4px -4px var(--border) inset'
 							: undefined,
-					left: isPinned === 'left' ? `${column.getStart('left')}px` : undefined,
-					right: isPinned === 'right' ? `${column.getAfter('right')}px` : undefined,
+					insetInlineStart: isPinned === 'start' ? `${column.getStart('start')}px` : undefined,
+					insetInlineEnd: isPinned === 'end' ? `${column.getAfter('end')}px` : undefined,
 					opacity: isPinned ? 0.97 : 1,
 					position: isPinned ? 'sticky' : 'relative',
 					background: 'var(--background)',
@@ -193,7 +194,7 @@
 			data-highlighted={isCellFocused ? '' : undefined}
 			data-slot="grid-cell"
 			class="border-r last-of-type:border-0"
-			style="position: {pinningStyles.position}; left: {pinningStyles.left}; right: {pinningStyles.right}; background: {pinningStyles.background}; z-index: {pinningStyles.zIndex}; width: calc(var(--col-{cell
+			style="position: {pinningStyles.position}; inset-inline-start: {pinningStyles.insetInlineStart}; inset-inline-end: {pinningStyles.insetInlineEnd}; background: {pinningStyles.background}; z-index: {pinningStyles.zIndex}; width: calc(var(--col-{cell
 				.column.id}-size) * 1px);"
 		>
 			<!-- Use DataGridCell for variant-based rendering (handles all cell types via meta.cell.variant) -->

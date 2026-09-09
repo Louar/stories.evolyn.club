@@ -5,10 +5,10 @@ import type {
 	ColumnSizingState,
 	SortingState,
 	VisibilityState
-} from '@tanstack/table-core';
+} from '$lib/components/data-grid/data-grid-table.js';
 import { ROW_HEIGHTS, type DataGridRowHeight } from './config/data-grid.js';
 
-export const DATA_GRID_PREFERENCES_VERSION = 2;
+export const DATA_GRID_PREFERENCES_VERSION = 3;
 
 export interface DataGridPersistenceSlices {
 	sorting?: boolean;
@@ -100,6 +100,17 @@ export function decodeDataGridPreferences(value: string | null): DataGridPrefere
 		// Migrations are intentionally sequential so each historical version has one upgrade step.
 		let migrated = parsed;
 		if (migrated.version === 1) migrated = { ...migrated, version: 2, updatedAt: 0 };
+		if (migrated.version === 2) {
+			const pinning = isRecord(migrated.columnPinning) ? migrated.columnPinning : {};
+			migrated = {
+				...migrated,
+				version: 3,
+				columnPinning: {
+					start: Array.isArray(pinning.left) ? pinning.left : [],
+					end: Array.isArray(pinning.right) ? pinning.right : []
+				}
+			};
+		}
 		if (
 			migrated.version !== DATA_GRID_PREFERENCES_VERSION ||
 			typeof migrated.updatedAt !== 'number' ||
@@ -136,7 +147,7 @@ export function decodeDataGridPreferences(value: string | null): DataGridPrefere
 				(item) => item === undefined || (Array.isArray(item) && item.every(isColumnId))
 			)
 		)
-			preferences.columnPinning = migrated.columnPinning as ColumnPinningState;
+			preferences.columnPinning = migrated.columnPinning as unknown as ColumnPinningState;
 		if (
 			isRecord(migrated.columnSizing) &&
 			Object.values(migrated.columnSizing).every(
@@ -192,8 +203,8 @@ export function reconcileDataGridPreferences(
 		Object.fromEntries(Object.entries(record).filter(([id]) => current.has(id)));
 	const uniqueCurrent = (ids: string[] | undefined) =>
 		Array.from(new Set(ids?.filter((id) => current.has(id)) ?? []));
-	const left = uniqueCurrent(preferences.columnPinning?.left);
-	const leftIds = new Set(left);
+	const start = uniqueCurrent(preferences.columnPinning?.start);
+	const startIds = new Set(start);
 	const sizing = filterRecord(preferences.columnSizing ?? {});
 	for (const [id, size] of Object.entries(sizing)) {
 		const capability = capabilities.get(id);
@@ -224,8 +235,8 @@ export function reconcileDataGridPreferences(
 			})
 		),
 		columnPinning: {
-			left,
-			right: uniqueCurrent(preferences.columnPinning?.right).filter((id) => !leftIds.has(id))
+			start,
+			end: uniqueCurrent(preferences.columnPinning?.end).filter((id) => !startIds.has(id))
 		},
 		columnSizing: sizing,
 		columnOrder: uniqueCurrent(preferences.columnOrder)

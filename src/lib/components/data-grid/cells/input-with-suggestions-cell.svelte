@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import * as Button from '$lib/components/ui/button/index.js';
 	import * as Command from '$lib/components/ui/command/index.js';
@@ -44,7 +45,7 @@
 		previousEditing = isEditing;
 		if (isEditing) {
 			localEditValue = null;
-			queueMicrotask(() => inputRef?.focus());
+			queueMicrotask(() => inputRef?.focus({ preventScroll: true }));
 		} else {
 			localEditValue = null;
 			searchValue = '';
@@ -71,7 +72,7 @@
 		if (readOnly) return;
 		localEditValue = value;
 		isTemplateOpen = false;
-		queueMicrotask(() => inputRef?.focus());
+		queueMicrotask(() => inputRef?.focus({ preventScroll: true }));
 	}
 
 	function handleWrapperKeyDown(event: KeyboardEvent) {
@@ -96,7 +97,7 @@
 
 	function handleOpenAutoFocus(event: Event) {
 		event.preventDefault();
-		searchRef?.focus();
+		searchRef?.focus({ preventScroll: true });
 	}
 
 	function handleBlur(event: FocusEvent) {

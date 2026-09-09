@@ -27,7 +27,7 @@ describe('data grid actions', () => {
 
 	it('returns only checkbox-selected rows with their stable indices', () => {
 		const rows = [{ id: 'first' }, { id: 'second' }, { id: 'third' }];
-		expect(getSelectedRows(rows as never[], { first: false, second: true, third: true })).toEqual([
+		expect(getSelectedRows(rows as never[], { second: true, third: true })).toEqual([
 			{ row: rows[1], rowIndex: 1 },
 			{ row: rows[2], rowIndex: 2 }
 		]);

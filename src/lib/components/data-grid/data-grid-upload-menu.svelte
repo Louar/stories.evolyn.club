@@ -98,7 +98,7 @@
 		const submissionId = submission.start();
 		try {
 			const summaries: string[] = [];
-			let uploadedCount = 0;
+			let successfulUploads = 0;
 			for (let i = 0; i < validated.data.attachments.length; i++) {
 				const attachment = validated.data.attachments[i];
 
@@ -112,7 +112,9 @@
 					if (!res.ok) {
 						attachmentIssues.push(i);
 						attachmentErrors[i] = ['Upload failed'];
-					} else uploadedCount++;
+					} else {
+						successfulUploads++;
+					}
 					const summary = formatSummary(await res.json().catch(() => undefined));
 					if (summary) summaries.push(summary);
 				} catch {
@@ -120,9 +122,10 @@
 					attachmentErrors[i] = ['Attachment failed to parse'];
 				}
 			}
-			if (uploadedCount) await onSuccess?.();
 			if (!attachmentIssues?.length) {
 				attachments = [];
+				attachmentErrors = {};
+				attachmentFieldErrors = [];
 				isUploadPanelOpen = false;
 				toast.success('The attachments were uploaded successfully', {
 					description: summaries.join('\n\n') || undefined,
@@ -132,6 +135,7 @@
 			} else {
 				toast.error(`${attachmentIssues?.length} attachment(s) were not uploaded`);
 			}
+			if (successfulUploads > 0) await onSuccess?.();
 		} finally {
 			submission.finish(submissionId);
 		}
@@ -152,7 +156,11 @@
 		<FileUpIcon class="text-muted-foreground" />
 		Upload
 	</Popover.Trigger>
-	<Popover.Content class="w-80" {align}>
+	<Popover.Content
+		class="max-h-(--bits-popover-content-available-height) w-80 overflow-y-auto"
+		{align}
+		collisionPadding={16}
+	>
 		<div class="grid gap-4">
 			<div class="space-y-2">
 				<h4 class="leading-none font-medium">Upload</h4>

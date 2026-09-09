@@ -1,3 +1,6 @@
-export { default as FlexRender } from "./flex-render.svelte";
-export { renderComponent, renderSnippet } from "./render-helpers.js";
-export { createSvelteTable } from "./data-table.svelte.js";
+export {
+	createTable as createSvelteTable,
+	FlexRender,
+	renderComponent,
+	renderSnippet
+} from '@tanstack/svelte-table';

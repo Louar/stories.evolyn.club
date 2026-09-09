@@ -1,10 +1,13 @@
 <script lang="ts">
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
-	import type { RowSelectionState, Table } from '@tanstack/table-core';
+	import type { RowSelectionState } from '$lib/components/data-grid/data-grid-table.js';
 	import { getContext } from 'svelte';
 
 	interface Props {
-		table: Table<any>;
+		table: {
+			getRowModel: () => { rows: Array<{ id: string }> };
+			toggleAllPageRowsSelected: (selected?: boolean) => void;
+		};
 	}
 
 	let { table }: Props = $props();

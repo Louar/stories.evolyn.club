@@ -1,4 +1,4 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
 	import { parseCellKey } from '$lib/components/data-grid/types/data-grid.js';
 	import {
 		DropdownMenu,
@@ -12,7 +12,7 @@
 	import FileDownIcon from '@lucide/svelte/icons/file-down';
 	import Scissors from '@lucide/svelte/icons/scissors';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import type { Table } from '@tanstack/table-core';
+	import type { RowData, Table } from '$lib/components/data-grid/data-grid-table.js';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {

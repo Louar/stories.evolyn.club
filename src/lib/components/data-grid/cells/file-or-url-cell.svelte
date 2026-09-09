@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import {
 		hasFileUploadHandler,
 		isAcknowledgedCellValueCurrent
@@ -351,7 +352,7 @@
 		];
 		syncFiles(updatedFiles);
 		urlValue = '';
-		urlInputRef?.focus();
+		urlInputRef?.focus({ preventScroll: true });
 	}
 
 	async function addFiles(newFiles: File[]) {
@@ -646,7 +647,7 @@
 	function handleOpenAutoFocus(event: Event) {
 		event.preventDefault();
 		queueMicrotask(() => {
-			(dropzoneRef ?? urlInputRef)?.focus();
+			(dropzoneRef ?? urlInputRef)?.focus({ preventScroll: true });
 		});
 	}
 

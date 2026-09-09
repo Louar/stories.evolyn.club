@@ -12,7 +12,7 @@ import type {
 } from '$lib/components/data-grid/types/data-grid.js';
 import { Language, translateLocalizedField, type Translatable } from '$lib/db/schemas/0-utils';
 import { UI } from '$lib/states/ui.svelte';
-import type { FilterFn, Row } from '@tanstack/table-core';
+import type { FilterFn, Row, RowData } from '$lib/components/data-grid/data-grid-table.js';
 
 export const TEXT_FILTER_OPERATORS: ReadonlyArray<{
 	label: string;
@@ -115,7 +115,7 @@ export function getOperatorsForVariant(variant: string): ReadonlyArray<{
 	}
 }
 
-export function getFilterFn<TData>(): FilterFn<TData> {
+export function getFilterFn<TData extends RowData>(): FilterFn<TData> {
 	return (row: Row<TData>, columnId: string, filterValue: unknown): boolean => {
 		if (!filterValue || typeof filterValue !== 'object') {
 			return true;

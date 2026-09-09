@@ -16,7 +16,7 @@
 	import { renderComponent } from '$lib/components/ui/table-tanstack/index.js';
 	import { useDataGrid } from '$lib/hooks/use-custom-data-grid.svelte';
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
-	import type { ColumnDef } from '@tanstack/table-core';
+	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
 	import { toast } from 'svelte-sonner';
 	import type { AssetRow } from './+page.server.js';
 
@@ -193,12 +193,17 @@
 						row.id ? !wereRemoved.includes(row.id) : !rowIndices.includes(index)
 					);
 				}
+
+				return {
+					deletedRowIds: wereRemoved,
+					failedRowIds: toRemove.filter((id) => !wereRemoved.includes(id))
+				};
 			},
 			enableSearch: true,
 			initialState: {
 				sorting: [{ id: 'id', desc: false }],
 				columnVisibility: { id: false, type: false },
-				columnPinning: { left: ['select-row'] }
+				columnPinning: { start: ['select-row'], end: [] }
 			}
 		} as const);
 

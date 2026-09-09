@@ -33,7 +33,7 @@ describe('data grid preferences', () => {
 		],
 		columnFilters: [{ id: 'removed', value: 'x' }],
 		columnVisibility: { name: true, removed: false },
-		columnPinning: { left: ['name', 'removed'], right: [] },
+		columnPinning: { start: ['name', 'removed'], end: [] },
 		columnSizing: { name: 200, removed: 100 },
 		columnOrder: ['removed', 'name'],
 		rowHeight: 'medium'
@@ -41,7 +41,7 @@ describe('data grid preferences', () => {
 
 	it('rejects malformed and differently-versioned payloads', () => {
 		expect(parseDataGridPreferences('{')).toBeNull();
-		expect(parseDataGridPreferences(JSON.stringify({ ...persisted, version: 3 }))).toBeNull();
+		expect(parseDataGridPreferences(JSON.stringify({ ...persisted, version: 4 }))).toBeNull();
 		expect(parseDataGridPreferences(JSON.stringify({ ...persisted, rowHeight: 'huge' }))).toEqual({
 			...persisted,
 			rowHeight: undefined
@@ -49,11 +49,16 @@ describe('data grid preferences', () => {
 	});
 
 	it('migrates records sequentially and distinguishes future records', () => {
-		const legacy = { ...persisted, version: 1 };
-		delete (legacy as Partial<typeof persisted>).updatedAt;
+		const legacy = {
+			...persisted,
+			version: 1,
+			columnPinning: { left: ['name', 'removed'], right: [] }
+		};
+		delete (legacy as { updatedAt?: number }).updatedAt;
 		expect(parseDataGridPreferences(JSON.stringify(legacy))).toMatchObject({
 			version: DATA_GRID_PREFERENCES_VERSION,
-			updatedAt: 0
+			updatedAt: 0,
+			columnPinning: { start: ['name', 'removed'], end: [] }
 		});
 		expect(decodeDataGridPreferences(JSON.stringify({ ...persisted, version: 99 })).status).toBe(
 			'future'
@@ -111,7 +116,7 @@ describe('data grid preferences', () => {
 			sorting: [{ id: 'name', desc: false }],
 			columnFilters: [],
 			columnVisibility: { name: true },
-			columnPinning: { left: ['name'], right: [] },
+			columnPinning: { start: ['name'], end: [] },
 			columnSizing: { name: 200 },
 			columnOrder: ['name']
 		});

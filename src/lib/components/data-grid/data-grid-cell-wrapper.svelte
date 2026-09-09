@@ -1,7 +1,7 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
 	import { getCellKey, type RowHeightValue } from '$lib/components/data-grid/types/data-grid.js';
 	import { cn } from '$lib/utils.js';
-	import type { Cell, Table } from '@tanstack/table-core';
+	import type { Cell, RowData, Table } from '$lib/components/data-grid/data-grid-table.js';
 	import type { Snippet } from 'svelte';
 
 	interface Props {
@@ -75,9 +75,9 @@
 	const showSelectionHighlight = $derived((isSelected || isRowSelected) && !isEditing);
 	const columnIndex = $derived.by(() => {
 		const orderedColumns = [
-			...table.getLeftVisibleLeafColumns(),
+			...table.getStartVisibleLeafColumns(),
 			...table.getCenterVisibleLeafColumns(),
-			...table.getRightVisibleLeafColumns()
+			...table.getEndVisibleLeafColumns()
 		];
 		return orderedColumns.findIndex((column) => column.id === columnId) + 1;
 	});

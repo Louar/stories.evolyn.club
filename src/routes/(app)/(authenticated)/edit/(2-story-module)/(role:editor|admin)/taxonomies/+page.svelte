@@ -12,7 +12,7 @@
 	import { renderComponent } from '$lib/components/ui/table-tanstack/index.js';
 	import { useDataGrid } from '$lib/hooks/use-custom-data-grid.svelte';
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
-	import type { ColumnDef } from '@tanstack/table-core';
+	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
 
 	let { data } = $props();
 	const endpoint = `/api/taxonomies`;
@@ -117,7 +117,7 @@
 		enablePaste: true,
 		initialState: {
 			columnVisibility: { id: false, clientId: false },
-			columnPinning: { left: ['select-row'] }
+			columnPinning: { start: ['select-row'], end: [] }
 		}
 	} as const);
 

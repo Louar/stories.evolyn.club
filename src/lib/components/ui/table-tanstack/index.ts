@@ -1,79 +1,36 @@
-// TanStack Table integration for Svelte 5
-// Re-exports from data-table components
-
-// Core table creation
-export { createSvelteTable } from '$lib/components/ui/data-table/data-table.svelte.js';
-
-// FlexRender component
-export { default as FlexRender } from '$lib/components/ui/data-table/flex-render.svelte';
-
-// Render helpers
 export {
+	createTable as createSvelteTable,
+	FlexRender,
 	renderComponent,
 	renderSnippet,
-	RenderComponentConfig,
-	RenderSnippetConfig
-} from '$lib/components/ui/data-table/render-helpers.js';
+	tableOptions
+} from '@tanstack/svelte-table';
 
-// Type exports
-import type { TableOptions, RowData } from '@tanstack/table-core';
-import { RenderComponentConfig, RenderSnippetConfig } from '$lib/components/ui/data-table/render-helpers.js';
-
-export type FlexRenderContent<TProps extends Record<string, unknown>> =
-	| string
-	| ((props: TProps) => unknown);
-
-// Helper function to check if content is a component render config
-export function isComponentRender(content: unknown): boolean {
-	return content instanceof RenderComponentConfig;
-}
-
-// Helper function to check if content is a snippet render config
-export function isSnippetRender(content: unknown): boolean {
-	return content instanceof RenderSnippetConfig;
-}
-
-// Table options helper - utility for creating typed table options
-export function tableOptions<TData extends RowData>(
-	options: TableOptions<TData>
-): TableOptions<TData> {
-	return options;
-}
-
-// Re-export useful types from table-core
-export {
-	createColumnHelper,
-	getCoreRowModel,
-	getSortedRowModel,
-	getFilteredRowModel,
-	getPaginationRowModel,
-	getExpandedRowModel,
-	getGroupedRowModel,
-	getFacetedRowModel,
-	getFacetedUniqueValues,
-	getFacetedMinMaxValues,
-	type ColumnDef,
-	type ColumnHelper,
-	type Row,
-	type Cell,
-	type Header,
-	type HeaderGroup,
-	type Column,
-	type Table,
-	type TableState,
-	type SortingState,
-	type ColumnFiltersState,
-	type VisibilityState,
-	type RowSelectionState,
-	type PaginationState,
-	type ExpandedState,
-	type GroupingState,
-	type ColumnSizingState,
-	type ColumnPinningState,
-	type Updater,
-	type OnChangeFn,
-	type RowData,
-	type CellContext,
-	type HeaderContext,
-	type ColumnDefTemplate
-} from '@tanstack/table-core';
+export type {
+	Cell,
+	CellContext,
+	Column,
+	ColumnDef,
+	ColumnDefTemplate,
+	ColumnFiltersState,
+	ColumnHelper,
+	ColumnOrderState,
+	ColumnPinningState,
+	ColumnSizingState,
+	ColumnVisibilityState,
+	ExpandedState,
+	GroupingState,
+	Header,
+	HeaderContext,
+	HeaderGroup,
+	OnChangeFn,
+	PaginationState,
+	Row,
+	RowData,
+	RowSelectionState,
+	SortingState,
+	Table,
+	TableOptions,
+	TableState,
+	Updater
+} from '@tanstack/svelte-table';

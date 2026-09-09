@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import {
 		areTranslatablesEqual,
 		LanguageFlag,
@@ -69,7 +70,7 @@
 			if (isEditing) {
 				previousValue = { ...nextValue };
 				cellRef.textContent = nextValue?.[UI.language] ?? '';
-				cellRef.focus();
+				cellRef.focus({ preventScroll: true });
 				moveCursorToEnd(cellRef);
 			} else {
 				cellRef.textContent = translateLocalizedField(nextValue, UI.language) ?? '';
