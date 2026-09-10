@@ -7,7 +7,7 @@ const userRoleOrder = Object.values(UserRole).reduce(
 		acc[role] = index;
 		return acc;
 	},
-	{} as Record<UserRole, number>,
+	{} as Record<UserRole, number>
 );
 
 const userSchema = z.object({
@@ -28,20 +28,23 @@ const userSchema = z.object({
 		.enum(UserRole)
 		.array()
 		.min(1)
-		.transform((roles) =>
-			[...roles].sort(
-				(a, b) => userRoleOrder[b] - userRoleOrder[a],
-			),
-		),
+		.transform((roles) => [...roles].sort((a, b) => userRoleOrder[b] - userRoleOrder[a])),
 	language: z.enum(Language).nullable(),
 	pronouns: z.string().nullable(),
-	address: z.unknown().transform((val) => formObjectPreprocessor(val) ?? null).transform((val) => JSON.stringify(val ?? null)),
+	address: z
+		.unknown()
+		.transform((val) => formObjectPreprocessor(val) ?? null)
+		.transform((val) => JSON.stringify(val ?? null)),
 	dateOfBirth: z.coerce.date().nullable(),
 	emailConfirmed: z.boolean(),
 	emailConfirmCode: z.string().nullable(),
 	phoneConfirmed: z.boolean(),
 	passwordResetCode: z.string().nullable(),
 	passwordResetExpiresAt: z.coerce.date().nullable(),
+	authCode: z.preprocess(
+		(val) => (typeof val === 'string' && val.trim() === '' ? null : val),
+		z.string().trim().min(1).nullable()
+	),
 	isActive: z.boolean(),
 	reasonForDeactivation: z.string().nullable()
 });
@@ -63,6 +66,7 @@ export const userCreateSchema = userSchema.extend({
 	phoneConfirmed: userSchema.shape.phoneConfirmed.optional(),
 	passwordResetCode: userSchema.shape.passwordResetCode.optional(),
 	passwordResetExpiresAt: userSchema.shape.passwordResetExpiresAt.optional(),
+	authCode: userSchema.shape.authCode.optional(),
 	isActive: userSchema.shape.isActive.optional(),
 	reasonForDeactivation: userSchema.shape.reasonForDeactivation.optional()
 });

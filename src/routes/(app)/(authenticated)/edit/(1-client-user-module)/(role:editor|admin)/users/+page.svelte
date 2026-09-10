@@ -136,7 +136,7 @@
 		{
 			accessorKey: 'authCodeLastUsed',
 			header: 'Auth code last used',
-			meta: { cell: { variant: 'date-time' } },
+			meta: { cell: { variant: 'date-time' }, readOnly: true },
 			filterFn
 		},
 		{

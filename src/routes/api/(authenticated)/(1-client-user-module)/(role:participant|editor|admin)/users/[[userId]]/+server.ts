@@ -15,6 +15,7 @@ import { userCreateSchema as createSchema, userPatchSchema as patchSchema } from
 const findOneUserById = async (clientId: string, userId: string) => {
 	const row = await db
 		.selectFrom('user')
+		.leftJoin('authCode', 'authCode.userId', 'user.id')
 		.where('user.id', '=', userId)
 		.where('user.clientId', '=', clientId)
 		.select((eb) => [
@@ -42,6 +43,8 @@ const findOneUserById = async (clientId: string, userId: string) => {
 			'user.phoneConfirmed',
 			'user.passwordResetCode',
 			'user.passwordResetExpiresAt',
+			'authCode.value as authCode',
+			'authCode.usedAt as authCodeLastUsed',
 			'user.isActive',
 			'user.reasonForDeactivation',
 			'user.createdAt',
@@ -152,18 +155,34 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 		const hash = await bcrypt.hash(parsed.data.password, salt);
 		parsed.data.password = `{bcrypt}${hash}`;
 	}
+	const { authCode, ...userData } = parsed.data;
 
 	try {
-		const inserted = await db
-			.insertInto('user')
-			.values({
-				clientId,
-				...parsed.data,
-				createdBy: authUserId,
-				updatedBy: authUserId
-			})
-			.returning('user.id')
-			.executeTakeFirstOrThrow();
+		const inserted = await db.transaction().execute(async (trx) => {
+			const inserted = await trx
+				.insertInto('user')
+				.values({
+					clientId,
+					...userData,
+					createdBy: authUserId,
+					updatedBy: authUserId
+				})
+				.returning('user.id')
+				.executeTakeFirstOrThrow();
+
+			if (authCode) {
+				await trx
+					.insertInto('authCode')
+					.values({
+						clientId,
+						userId: inserted.id,
+						value: authCode
+					})
+					.executeTakeFirstOrThrow();
+			}
+
+			return inserted;
+		});
 
 		const row = await findOneUserById(clientId, inserted.id);
 		return json(row, { status: 201 });
@@ -173,6 +192,9 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 				{ errors: { email: ['A user with this email already exists'] } },
 				{ status: 422 }
 			);
+		}
+		if (authCode && isUniqueViolation(e)) {
+			return json({ errors: { authCode: ['This auth code is already in use'] } }, { status: 422 });
 		}
 		throw e;
 	}
@@ -200,19 +222,51 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 		const hash = await bcrypt.hash(parsed.data.password, salt);
 		parsed.data.password = `{bcrypt}${hash}`;
 	}
+	const { authCode, ...userData } = parsed.data;
 
 	try {
-		const updated = await db
-			.updateTable('user')
-			.where('user.id', '=', userId)
-			.where('user.clientId', '=', clientId)
-			.set({
-				...parsed.data,
-				updatedAt: new Date(),
-				updatedBy: authUserId
-			})
-			.returning('user.id')
-			.executeTakeFirst();
+		const updated = await db.transaction().execute(async (trx) => {
+			const updated = await trx
+				.updateTable('user')
+				.where('user.id', '=', userId)
+				.where('user.clientId', '=', clientId)
+				.set({
+					...userData,
+					updatedAt: new Date(),
+					updatedBy: authUserId
+				})
+				.returning('user.id')
+				.executeTakeFirst();
+
+			if (!updated) return updated;
+
+			if (authCode !== undefined) {
+				if (authCode === null) {
+					await trx
+						.deleteFrom('authCode')
+						.where('authCode.clientId', '=', clientId)
+						.where('authCode.userId', '=', userId)
+						.execute();
+				} else {
+					await trx
+						.insertInto('authCode')
+						.values({
+							clientId,
+							userId,
+							value: authCode
+						})
+						.onConflict((oc) =>
+							oc.columns(['clientId', 'userId']).doUpdateSet({
+								value: authCode,
+								usedAt: null
+							})
+						)
+						.executeTakeFirstOrThrow();
+				}
+			}
+
+			return updated;
+		});
 
 		if (!updated) throw error(404, 'The user does not exist');
 
@@ -224,6 +278,9 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 				{ errors: { email: ['A user with this email already exists'] } },
 				{ status: 422 }
 			);
+		}
+		if (authCode && isUniqueViolation(e)) {
+			return json({ errors: { authCode: ['This auth code is already in use'] } }, { status: 422 });
 		}
 		throw e;
 	}
