@@ -150,6 +150,17 @@
 			filterFn
 		},
 		{
+			id: 'analytics',
+			accessorFn: () => 'View',
+			header: 'Analytics',
+			size: 100,
+			meta: {
+				cell: { variant: 'relation-follow', url: '/edit/stories/{row}/analytics' },
+				readOnly: true
+			},
+			filterFn
+		},
+		{
 			id: 'url',
 			accessorFn: (row) => `/s/${row.slug}`,
 			header: 'Story URL',
