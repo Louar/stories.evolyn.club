@@ -7,6 +7,7 @@
 		SelectItem,
 		SelectTrigger
 	} from '$lib/components/ui/select/index.js';
+	import { cn } from '$lib/utils.js';
 	import type { Component } from 'svelte';
 
 	// Icons
@@ -31,10 +32,11 @@
 	interface Props {
 		table: Table<TData>;
 		align?: 'start' | 'center' | 'end';
+		showLabel?: boolean;
 		class?: string;
 	}
 
-	let { table, align = 'start', class: className }: Props = $props();
+	let { table, align = 'start', showLabel = false, class: className }: Props = $props();
 
 	const rowHeight = $derived(table.options.meta?.rowHeight ?? 'short');
 	const onRowHeightChange = $derived(table.options.meta?.onRowHeightChange);
@@ -49,12 +51,20 @@
 </script>
 
 <Select type="single" value={rowHeight} onValueChange={handleValueChange}>
-	<SelectTrigger size="sm" class="[&_svg:nth-child(2)]:hidden {className}">
-		<span data-slot="select-value" class="flex items-center gap-2">
+	<SelectTrigger size="sm" class={cn('[&_svg:nth-child(2)]:hidden', className)}>
+		<span
+			data-slot="select-value"
+			class={cn('flex items-center gap-2', showLabel && 'flex-col items-start gap-0')}
+		>
+			{#if showLabel}
+				<span class="text-muted-foreground text-xs font-medium">Row height</span>
+			{/if}
 			{#if selectedRowHeight}
 				{@const Icon = selectedRowHeight.icon}
-				<Icon class="size-4" />
-				{selectedRowHeight.label}
+				<span class="flex items-center gap-2">
+					<Icon class="size-4" />
+					{selectedRowHeight.label}
+				</span>
 			{:else}
 				Row height
 			{/if}

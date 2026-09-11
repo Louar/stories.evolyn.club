@@ -1,4 +1,5 @@
 <script lang="ts" generics="TData extends RowData">
+	import type { RowData, Table } from '$lib/components/data-grid/data-grid-table.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import {
 		Command,
@@ -9,11 +10,13 @@
 		CommandList
 	} from '$lib/components/ui/command/index.js';
 	import { Popover, PopoverContent, PopoverTrigger } from '$lib/components/ui/popover/index.js';
+	import { Separator } from '$lib/components/ui/separator/index.js';
 	import { cn } from '$lib/utils.js';
 	import Check from '@lucide/svelte/icons/check';
+	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import Settings2 from '@lucide/svelte/icons/settings-2';
-	import type { RowData, Table } from '$lib/components/data-grid/data-grid-table.js';
 	import { SvelteMap } from 'svelte/reactivity';
+	import DataGridRowHeightMenu from './data-grid-row-height-menu.svelte';
 
 	interface Props {
 		table: Table<TData>;
@@ -57,7 +60,7 @@
 		{#snippet child({ props })}
 			<Button
 				{...props}
-				aria-label="View settings"
+				aria-label="Table settings"
 				role="combobox"
 				variant="outline"
 				size="sm"
@@ -65,11 +68,28 @@
 				disabled={preferences?.enabled && !preferences.ready}
 			>
 				<Settings2 class="text-muted-foreground" />
-				View
+				Settings
 			</Button>
 		{/snippet}
 	</PopoverTrigger>
-	<PopoverContent {align} class="w-44 p-0">
+	<PopoverContent {align} class="w-56 p-0">
+			<Button
+				variant="ghost"
+				size="sm"
+				class="h-10 w-full p-4 rounded-none justify-start font-normal"
+				disabled={!preferences?.enabled || !preferences.ready || !preferences.hasPreferences}
+				onclick={() => preferences?.reset()}
+			>
+				<RotateCcw class="text-muted-foreground" />
+				Reset
+			</Button>
+		<Separator />
+			<DataGridRowHeightMenu
+				{table}
+				showLabel
+				class="h-16! w-full justify-start rounded-none border-transparent p-2 font-normal shadow-none hover:bg-accent hover:text-accent-foreground"
+			/>
+		<Separator />
 		<Command>
 			<CommandInput placeholder="Search columns..." />
 			<CommandList>

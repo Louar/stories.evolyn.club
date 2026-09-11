@@ -2,11 +2,9 @@
 	import type { RowData, Table } from '$lib/components/data-grid/data-grid-table.js';
 	import type { Snippet } from 'svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import FileDown from '@lucide/svelte/icons/file-down';
 	import DataGridFilterMenu from './data-grid-filter-menu.svelte';
 	import DataGridKeyboardShortcuts from './data-grid-keyboard-shortcuts.svelte';
-	import DataGridRowHeightMenu from './data-grid-row-height-menu.svelte';
 	import DataGridSortMenu from './data-grid-sort-menu.svelte';
 	import DataGridViewMenu from './data-grid-view-menu.svelte';
 
@@ -17,7 +15,6 @@
 	}
 
 	let { table, enableSearch = false, actions }: Props = $props();
-	const preferences = $derived(table.options.meta?.preferences);
 	const onDownload = $derived(table.options.meta?.onDownload);
 	const selectedRowCount = $derived(table.options.meta?.getSelectedRowCount?.() ?? 0);
 	const isDownloading = $derived(table.options.meta?.getIsDownloading?.() ?? false);
@@ -32,18 +29,7 @@
 	<div class="flex w-full items-center gap-1">
 		<DataGridFilterMenu {table} />
 		<DataGridSortMenu {table} />
-		<DataGridRowHeightMenu {table} />
 		<DataGridViewMenu {table} />
-		<Button
-			variant="outline"
-			size="sm"
-			class="h-8 font-normal"
-			disabled={!preferences?.enabled || !preferences.ready || !preferences.hasPreferences}
-			onclick={() => preferences?.reset()}
-		>
-			<RotateCcw class="text-muted-foreground" />
-			Reset
-		</Button>
 		{#if onDownload}
 			<Button
 				variant="outline"
