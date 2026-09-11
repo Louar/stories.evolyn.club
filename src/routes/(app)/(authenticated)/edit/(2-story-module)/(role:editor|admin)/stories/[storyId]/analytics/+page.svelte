@@ -80,7 +80,10 @@
 					</Button>
 				{/snippet}
 			</Popover.Trigger>
-			<Popover.Content align="end" class="w-[min(32rem,calc(100vw-2rem))] space-y-4 p-4">
+			<Popover.Content
+				align="end"
+				class="max-h-[calc(100svh-2rem)] w-[min(32rem,calc(100vw-2rem))] space-y-4 overflow-y-auto p-4"
+			>
 				<div>
 					<h2 class="font-medium">Date range</h2>
 					<p class="text-sm text-muted-foreground">Both selected dates are included.</p>
@@ -88,11 +91,11 @@
 				<div class="grid gap-4 sm:grid-cols-2">
 					<div class="space-y-2">
 						<p class="text-sm font-medium">Start date</p>
-						<Calendar type="single" bind:value={start} maxValue={end} />
+						<Calendar type="single" bind:value={start} maxValue={end} preventDeselect />
 					</div>
 					<div class="space-y-2">
 						<p class="text-sm font-medium">End date</p>
-						<Calendar type="single" bind:value={end} minValue={start} />
+						<Calendar type="single" bind:value={end} minValue={start} preventDeselect />
 					</div>
 				</div>
 				<div class="flex justify-end">
@@ -110,7 +113,7 @@
 				{translateLocalizedField(data.story.name)} analytics
 			</h1>
 			<p class="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
-				<CalendarIcon class="size-4" />{data.range.start} to {data.range.end}
+				<CalendarIcon class="size-4" />{data.range.start} to {data.range.end} (UTC)
 			</p>
 		</div>
 		<p class="text-xs text-muted-foreground">
@@ -151,7 +154,9 @@
 		</Card.Root>
 	</div>
 
-	<section class="min-h-[32rem] flex-1 overflow-hidden rounded-xl border bg-muted/20">
+	<section
+		class="h-[calc(100svh-18rem)] min-h-[32rem] overflow-hidden rounded-xl border bg-muted/20"
+	>
 		<SvelteFlowProvider>
 			<AnalyticsFlow
 				story={data.story}

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { findOneStoryById } from '$lib/db/repositories/2-story-module';
+	import { formatDuration, translateLocalizedField } from '$lib/db/schemas/0-utils.js';
 	import { Background, Controls, SvelteFlow, type Edge, type Node } from '@xyflow/svelte';
 	import { mode } from 'mode-watcher';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -37,11 +38,15 @@
 		return counts;
 	});
 
-	const quizById = $derived(new SvelteMap(story.quizzes.map((quiz) => [quiz.id, quiz])));
-
 	let nodes: Node[] = $derived.by(() =>
 		story.parts.map((part, index) => {
-			const quiz = part.quizTemplateId ? quizById.get(part.quizTemplateId) : undefined;
+			const video = story.videos.find((item) => item.id === part.videoId);
+			const still = story.stills.find((item) => item.id === part.stillId);
+			const announcement = story.announcements.find(
+				(item) => item.id === part.announcementTemplateId
+			);
+			const quiz = story.quizzes.find((item) => item.id === part.quizTemplateId);
+			const taxonomy = story.taxonomies.find((item) => item.id === part.taxonomyId);
 			const questions = (quiz?.questions ?? [])
 				.map((question) => {
 					const questionInteractions = interactions.filter(
@@ -78,7 +83,35 @@
 				position: part.position ?? { x: index * 400, y: 0 },
 				data: {
 					part,
-					label: quiz?.name ?? `Part ${index + 1}`,
+					label: `Part ${index + 1}`,
+					backgroundLabel:
+						part.backgroundType === 'video'
+							? (video?.name ?? 'Unselected video')
+							: part.backgroundType === 'still'
+								? (still?.image?.filename ?? still?.color ?? 'Unselected still')
+								: 'No background',
+					backgroundDetail:
+						part.backgroundType === 'video' && video
+							? formatDuration(video.duration)
+							: part.backgroundType
+								? undefined
+								: 'Transparent canvas',
+					foregroundLabel:
+						part.foregroundType === 'quiz'
+							? (quiz?.name ?? 'Unselected quiz')
+							: part.foregroundType === 'taxonomy'
+								? translateLocalizedField(taxonomy?.name) || 'Unselected taxonomy'
+								: part.foregroundType === 'announcement'
+									? (announcement?.name ?? 'Unselected announcement')
+									: 'No foreground',
+					foregroundDetail:
+						part.foregroundType === 'quiz'
+							? `${quiz?.questions.length ?? 0} questions`
+							: part.foregroundType === 'taxonomy'
+								? 'Taxonomy game'
+								: part.foregroundType
+									? undefined
+									: 'No overlay',
 					arrivals: incoming.get(part.id) ?? 0,
 					departures: outgoing.get(part.id) ?? 0,
 					questions
@@ -108,8 +141,8 @@
 <SvelteFlow
 	nodeTypes={{ analytics: AnalyticsNode }}
 	edgeTypes={{ analytics: AnalyticsEdge }}
-	{nodes}
-	{edges}
+	bind:nodes
+	bind:edges
 	fitView
 	maxZoom={1.25}
 	minZoom={0.2}
@@ -121,5 +154,5 @@
 	colorMode={mode.current}
 >
 	<Background patternColor="#6a7282" gap={50} />
-	<Controls />
+	<Controls showLock={false} />
 </SvelteFlow>
