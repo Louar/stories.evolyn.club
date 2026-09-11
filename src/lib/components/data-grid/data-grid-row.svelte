@@ -115,15 +115,10 @@
 			const column = cell.column;
 			try {
 				const isPinned = column.getIsPinned();
-				const isLastStartPinnedColumn = isPinned === 'start' && column.getIsLastColumn('start');
 				const isFirstEndPinnedColumn = isPinned === 'end' && column.getIsFirstColumn('end');
 
 				stylesMap.set(column.id, {
-					boxShadow: isLastStartPinnedColumn
-						? '-4px 0 4px -4px var(--border) inset'
-						: isFirstEndPinnedColumn
-							? '4px 0 4px -4px var(--border) inset'
-							: undefined,
+					borderInlineStart: isFirstEndPinnedColumn ? '1px solid var(--border)' : undefined,
 					insetInlineStart: isPinned === 'start' ? `${column.getStart('start')}px` : undefined,
 					insetInlineEnd: isPinned === 'end' ? `${column.getAfter('end')}px` : undefined,
 					opacity: isPinned ? 0.97 : 1,
@@ -194,7 +189,7 @@
 			data-highlighted={isCellFocused ? '' : undefined}
 			data-slot="grid-cell"
 			class="border-r last-of-type:border-0"
-			style="position: {pinningStyles.position}; inset-inline-start: {pinningStyles.insetInlineStart}; inset-inline-end: {pinningStyles.insetInlineEnd}; background: {pinningStyles.background}; z-index: {pinningStyles.zIndex}; width: calc(var(--col-{cell
+			style="position: {pinningStyles.position}; inset-inline-start: {pinningStyles.insetInlineStart}; inset-inline-end: {pinningStyles.insetInlineEnd}; background: {pinningStyles.background}; border-inline-start: {pinningStyles.borderInlineStart}; z-index: {pinningStyles.zIndex}; width: calc(var(--col-{cell
 				.column.id}-size) * 1px);"
 		>
 			<!-- Use DataGridCell for variant-based rendering (handles all cell types via meta.cell.variant) -->

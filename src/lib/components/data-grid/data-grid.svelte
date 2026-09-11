@@ -162,15 +162,10 @@
 
 		try {
 			const isPinned = column.getIsPinned();
-			const isLastStartPinnedColumn = isPinned === 'start' && column.getIsLastColumn('start');
 			const isFirstEndPinnedColumn = isPinned === 'end' && column.getIsFirstColumn('end');
 
 			return {
-				boxShadow: isLastStartPinnedColumn
-					? '-4px 0 4px -4px var(--border) inset'
-					: isFirstEndPinnedColumn
-						? '4px 0 4px -4px var(--border) inset'
-						: undefined,
+				borderInlineStart: isFirstEndPinnedColumn ? '1px solid var(--border)' : undefined,
 				insetInlineStart: isPinned === 'start' ? `${column.getStart('start')}px` : undefined,
 				insetInlineEnd: isPinned === 'end' ? `${column.getAfter('end')}px` : undefined,
 				opacity: isPinned ? 0.97 : 1,
@@ -220,8 +215,8 @@
 			const headers = table.getFlatHeaders();
 			for (const header of headers) {
 				const size = header.getSize();
-				vars.push(`--header-${header.id}-size: ${size - 5}`);
-				vars.push(`--col-${header.column.id}-size: ${size - 5}`);
+				vars.push(`--header-${header.id}-size: ${size}`);
+				vars.push(`--col-${header.column.id}-size: ${size}`);
 			}
 		} catch {
 			// Table not ready yet
@@ -329,7 +324,7 @@
 											data-slot="grid-header-cell"
 											tabindex={-1}
 											class={cn('group relative border-r last-of-type:border-0')}
-											style="position: {pinningStyles.position}; inset-inline-start: {pinningStyles.insetInlineStart}; inset-inline-end: {pinningStyles.insetInlineEnd}; background: {pinningStyles.background}; z-index: {pinningStyles.zIndex}; width: calc(var(--header-{header.id}-size) * 1px);"
+											style="position: {pinningStyles.position}; inset-inline-start: {pinningStyles.insetInlineStart}; inset-inline-end: {pinningStyles.insetInlineEnd}; background: {pinningStyles.background}; border-inline-start: {pinningStyles.borderInlineStart}; z-index: {pinningStyles.zIndex}; width: calc(var(--header-{header.id}-size) * 1px);"
 										>
 											{#if header.isPlaceholder}
 												<!-- Empty -->
