@@ -106,7 +106,7 @@
 	let videoScrubberStep = $derived(
 		selectedVideoSourceType === 'youtube' && selectedVideoDuration > 0
 			? 1 / selectedVideoDuration
-			: 0.01
+			: 0.0025
 	);
 	let videoScrubberKeyboardStep = $derived(
 		selectedVideoSourceType === 'youtube' && selectedVideoDuration > 0 ? videoScrubberStep : 0.001

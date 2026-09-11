@@ -254,7 +254,6 @@
 					accept="image/*"
 					preview="image"
 					placeholder="Thumbnail URL"
-					description="Drop an image, browse, or add an external thumbnail URL."
 					onValueChange={updateThumbnail}
 				/>
 				<Field.Error>
