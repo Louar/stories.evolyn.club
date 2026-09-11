@@ -92,7 +92,7 @@
 					</DropdownMenu.Item>
 					<DropdownMenu.Item>
 						{#snippet child({ props })}
-							<a href={resolve('/edit')} {...props}>
+							<a href={resolve('/edit/assistant')} {...props}>
 								<ShieldIcon />
 								<span>{m.menu_editor()}</span>
 								<ChevronRightIcon class="ml-auto" />
