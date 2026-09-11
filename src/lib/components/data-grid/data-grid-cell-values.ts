@@ -65,3 +65,14 @@ export function parseClipboardRows(text: string): string[][] {
 	const normalized = normalizeClipboardText(text);
 	return normalized.split('\n').map((line) => line.split('\t'));
 }
+
+export function getClipboardValueAtOffset(
+	rows: readonly (readonly string[])[],
+	rowOffset: number,
+	columnOffset: number
+): string {
+	if (rows.length === 0) return '';
+	const row = rows[rowOffset % rows.length];
+	if (!row || row.length === 0) return '';
+	return row[columnOffset % row.length] ?? '';
+}

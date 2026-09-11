@@ -219,6 +219,8 @@ export interface SearchStateData {
 	searchQuery: string;
 	searchMatches: SearchMatch[];
 	matchIndex: number;
+	searchFocusRequest: number;
+	searchFilterEnabled: boolean;
 }
 
 // Full search state with callbacks (used by components)
@@ -226,6 +228,7 @@ export interface SearchState extends SearchStateData {
 	onSearchOpenChange: (open: boolean) => void;
 	onSearchQueryChange: (query: string) => void;
 	onSearch: (query: string) => void;
+	onSearchFilterEnabledChange: (enabled: boolean) => void;
 	onNavigateToNextMatch: () => void;
 	onNavigateToPrevMatch: () => void;
 }
@@ -373,6 +376,8 @@ declare module '@tanstack/table-core' {
 		) => { generation: number; value: unknown } | undefined;
 		// SvelteSet for fine-grained cell selection reactivity
 		selectedCellsSet?: SvelteSet<string>;
+		// Cells copied to the clipboard, kept separate from paste-target selection.
+		copiedCellsSet?: SvelteSet<string>;
 		getIsSearchMatch?: (rowIndex: number, columnId: string) => boolean;
 		getIsActiveSearchMatch?: (rowIndex: number, columnId: string) => boolean;
 		// SvelteSet for fine-grained reactive error match lookups

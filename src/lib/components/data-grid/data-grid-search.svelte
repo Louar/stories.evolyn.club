@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { CellPosition } from '$lib/components/data-grid/types/data-grid.js';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import { Switch } from '$lib/components/ui/switch/index.js';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import ChevronUp from '@lucide/svelte/icons/chevron-up';
 	import X from '@lucide/svelte/icons/x';
@@ -12,9 +13,12 @@
 		searchQuery: string;
 		searchMatches: CellPosition[];
 		matchIndex: number;
+		searchFocusRequest: number;
+		searchFilterEnabled: boolean;
 		onSearchOpenChange: (open: boolean) => void;
 		onSearchQueryChange: (query: string) => void;
 		onSearch: (query: string) => void;
+		onSearchFilterEnabledChange: (enabled: boolean) => void;
 		onNavigateToNextMatch: () => void;
 		onNavigateToPrevMatch: () => void;
 	}
@@ -24,9 +28,12 @@
 		searchQuery,
 		searchMatches,
 		matchIndex,
+		searchFocusRequest,
+		searchFilterEnabled,
 		onSearchOpenChange,
 		onSearchQueryChange,
 		onSearch,
+		onSearchFilterEnabledChange,
 		onNavigateToNextMatch,
 		onNavigateToPrevMatch
 	}: Props = $props();
@@ -39,12 +46,20 @@
 	// Debounce timer
 	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
+	function focusSearchInput() {
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => {
+				inputRef?.focus({ preventScroll: true });
+				inputRef?.select();
+			});
+		});
+	}
+
 	// Focus input when opening
 	$effect(() => {
+		searchFocusRequest;
 		if (searchOpen && inputRef) {
-			requestAnimationFrame(() => {
-				inputRef?.focus();
-			});
+			focusSearchInput();
 		}
 	});
 
@@ -58,6 +73,14 @@
 	});
 
 	function handleWindowKeydown(event: KeyboardEvent) {
+		if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') {
+			if (searchOpen) {
+				event.preventDefault();
+				focusSearchInput();
+			}
+			return;
+		}
+
 		if (!searchOpen) return;
 
 		if (event.key === 'Escape') {
@@ -160,17 +183,25 @@
 			role="status"
 			aria-live="polite"
 			aria-atomic="true"
-			class="flex items-center gap-1 text-xs whitespace-nowrap text-muted-foreground"
+			class="flex items-center justify-between gap-3 text-xs whitespace-nowrap text-muted-foreground"
 		>
-			{#if searchMatches.length > 0}
-				<span>
+			<span>
+				{#if searchMatches.length > 0}
 					{matchIndex + 1} of {searchMatches.length}
-				</span>
-			{:else if searchQuery}
-				<span>No results</span>
-			{:else}
-				<span>Type to search</span>
-			{/if}
+				{:else if searchQuery}
+					No results
+				{:else}
+					Type to search
+				{/if}
+			</span>
+			<label class="flex items-center gap-2">
+				<span>Hide non-matches</span>
+				<Switch
+					aria-label="Hide rows without search matches"
+					checked={searchFilterEnabled}
+					onCheckedChange={(checked) => onSearchFilterEnabledChange(Boolean(checked))}
+				/>
+			</label>
 		</div>
 	</div>
 {/if}

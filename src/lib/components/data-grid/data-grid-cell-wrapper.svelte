@@ -32,6 +32,7 @@
 		isFocused,
 		isSelected,
 		class: className,
+		// eslint-disable-next-line no-useless-assignment -- reassigned to propagate the element through the bindable prop
 		wrapperRef = $bindable(null),
 		onclick: onClickProp,
 		onkeydown: onKeyDownProp,
@@ -73,6 +74,8 @@
 
 	const isRowSelected = $derived(cell.row.getIsSelected());
 	const showSelectionHighlight = $derived((isSelected || isRowSelected) && !isEditing);
+	const isCopied = $derived.by(() => table.options.meta?.copiedCellsSet?.has(cellKey) ?? false);
+	const showCopiedHighlight = $derived(isCopied && !showSelectionHighlight && !isEditing);
 	const columnIndex = $derived.by(() => {
 		const orderedColumns = [
 			...table.getStartVisibleLeafColumns(),
@@ -117,6 +120,8 @@
 			'relative size-full px-2 py-1.5 text-left text-sm outline-none has-data-[slot=checkbox]:pt-2.5',
 			{
 				highlight: showSelectionHighlight,
+				'bg-blue-100/80 ring-1 ring-blue-400 ring-inset dark:bg-blue-900/40 dark:ring-blue-500/70':
+					showCopiedHighlight,
 				'ring-1 ring-inset': isFocused,
 				'ring-1 ring-inset ring-rose-300 bg-rose-50 dark:ring-rose-500/50 dark:bg-rose-900/30':
 					hasError,
@@ -252,6 +257,7 @@
 	aria-describedby={errorDescriptionId}
 	data-slot="grid-cell-wrapper"
 	data-selected={showSelectionHighlight ? '' : undefined}
+	data-copied={showCopiedHighlight ? '' : undefined}
 	data-editing={isEditing ? '' : undefined}
 	data-focused={isFocused ? '' : undefined}
 	tabindex={isFocused && !isEditing ? 0 : -1}

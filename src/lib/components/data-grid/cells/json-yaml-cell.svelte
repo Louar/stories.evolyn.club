@@ -9,6 +9,11 @@
 	import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 	import DataGridCellWrapper from '../data-grid-cell-wrapper.svelte';
 
+	const PREVIEW_LINE_LIMIT = 6;
+	const PREVIEW_CHARACTER_LIMIT = 4_000;
+	const HIGHLIGHT_LINE_LIMIT = 100;
+	const HIGHLIGHT_CHARACTER_LIMIT = 20_000;
+
 	let {
 		cell,
 		table,
@@ -59,16 +64,50 @@
 		return typeof value === 'string' ? value : toYaml(value);
 	});
 
-	const previewHtml = $derived.by(() =>
-		highlighter.codeToHtml(yamlText ?? '', {
+	const previewText = $derived(limitPreview(yamlText));
+	const shouldHighlight = $derived(
+		yamlText.length <= HIGHLIGHT_CHARACTER_LIMIT &&
+			countLinesThroughLimit(yamlText, HIGHLIGHT_LINE_LIMIT) <= HIGHLIGHT_LINE_LIMIT
+	);
+	const previewHtml = $derived(shouldHighlight ? highlightYaml(previewText) : '');
+	const editorHtml = $derived(isEditing && shouldHighlight ? highlightYaml(yamlText) : '');
+
+	function highlightYaml(value: string) {
+		return highlighter.codeToHtml(value, {
 			lang: 'yaml',
 			themes: {
 				light: 'snazzy-light',
 				dark: 'aurora-x'
 			},
 			defaultColor: 'light-dark()'
-		})
-	);
+		});
+	}
+
+	function limitPreview(value: string) {
+		let lineCount = 1;
+		let end = Math.min(value.length, PREVIEW_CHARACTER_LIMIT);
+
+		for (let index = 0; index < end; index += 1) {
+			if (value[index] !== '\n') continue;
+			lineCount += 1;
+			if (lineCount > PREVIEW_LINE_LIMIT) {
+				end = index;
+				break;
+			}
+		}
+
+		return value.slice(0, end);
+	}
+
+	function countLinesThroughLimit(value: string, limit: number) {
+		let lineCount = 1;
+		for (let index = 0; index < value.length; index += 1) {
+			if (value[index] !== '\n') continue;
+			lineCount += 1;
+			if (lineCount > limit) break;
+		}
+		return lineCount;
+	}
 
 	function toYaml(value: unknown): string {
 		try {
@@ -227,8 +266,12 @@
 			}
 		)}
 	>
-		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-		{@html previewHtml}
+		{#if shouldHighlight}
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			{@html previewHtml}
+		{:else}
+			{previewText}
+		{/if}
 	</div>
 </DataGridCellWrapper>
 
@@ -263,16 +306,20 @@
 				</div>
 				{#if showSchemaPreview}
 					<pre
-						class="max-h-52 overflow-auto border-b bg-muted/60 p-2 font-mono text-xs whitespace-pre-wrap text-muted-foreground muted-scrollbar">{schemaPreview}</pre>
+						class="max-h-52 muted-scrollbar overflow-auto border-b bg-muted/60 p-2 font-mono text-xs whitespace-pre-wrap text-muted-foreground">{schemaPreview}</pre>
 				{/if}
 			{/if}
 			<div class="relative h-52 w-full rounded-none">
 				<div
 					bind:this={previewScrollRef}
-					class="pointer-events-none absolute inset-0 z-0 overflow-hidden p-2 font-mono text-sm leading-5 tracking-normal wrap-break-word whitespace-pre-wrap [scrollbar-gutter:stable] [tab-size:2] [&>pre]:m-0 [&>pre]:min-h-full [&>pre]:bg-transparent! [&>pre]:font-mono! [&>pre]:text-sm! [&>pre]:leading-5! [&>pre]:tracking-normal [&>pre]:wrap-break-word [&>pre]:whitespace-pre-wrap"
+					class="pointer-events-none absolute inset-0 z-0 scrollbar-gutter-stable overflow-hidden p-2 font-mono text-sm leading-5 tracking-normal wrap-break-word whitespace-pre-wrap tab-2 [&>pre]:m-0 [&>pre]:min-h-full [&>pre]:bg-transparent! [&>pre]:font-mono! [&>pre]:text-sm! [&>pre]:leading-5! [&>pre]:tracking-normal [&>pre]:wrap-break-word [&>pre]:whitespace-pre-wrap"
 				>
-					<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-					{@html previewHtml}
+					{#if shouldHighlight}
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html editorHtml}
+					{:else}
+						{yamlText}
+					{/if}
 				</div>
 				<textarea
 					bind:this={textareaRef}
@@ -280,7 +327,7 @@
 					readonly={readOnly}
 					spellcheck="false"
 					wrap="soft"
-					class="relative z-10 h-full w-full resize-none overflow-auto border-0 bg-transparent p-2 font-mono text-sm leading-5 tracking-normal wrap-break-word whitespace-pre-wrap text-transparent caret-foreground shadow-none muted-scrollbar [scrollbar-gutter:stable] [tab-size:2] focus-visible:outline-none"
+					class="relative z-10 h-full w-full resize-none muted-scrollbar scrollbar-gutter-stable overflow-auto border-0 bg-transparent p-2 font-mono text-sm leading-5 tracking-normal wrap-break-word whitespace-pre-wrap tab-2 text-transparent caret-foreground shadow-none focus-visible:outline-none"
 					value={yamlText}
 					onblur={handleBlur}
 					oninput={handleTextareaInput}
@@ -289,8 +336,7 @@
 						if (!previewScrollRef) return;
 						previewScrollRef.scrollTop = event.currentTarget.scrollTop;
 						previewScrollRef.scrollLeft = event.currentTarget.scrollLeft;
-					}}
-				></textarea>
+					}}></textarea>
 			</div>
 		</PopoverContent>
 	</PopoverPrimitive.Root>

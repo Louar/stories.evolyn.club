@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	getEmptyCellValue,
+	getClipboardValueAtOffset,
 	normalizeClipboardText,
 	parseCellValue,
 	parseClipboardRows,
@@ -37,5 +38,14 @@ describe('data grid cell values', () => {
 	it('serializes structured values without changing textual identifiers', () => {
 		expect(serializeCellValue(['001', '002'])).toBe('["001","002"]');
 		expect(serializeCellValue('001')).toBe('001');
+	});
+
+	it('repeats clipboard values across a larger highlighted range', () => {
+		const rows = parseClipboardRows('a\tb\nc\td');
+
+		expect(getClipboardValueAtOffset(rows, 0, 0)).toBe('a');
+		expect(getClipboardValueAtOffset(rows, 0, 2)).toBe('a');
+		expect(getClipboardValueAtOffset(rows, 2, 1)).toBe('b');
+		expect(getClipboardValueAtOffset(rows, 3, 3)).toBe('d');
 	});
 });
