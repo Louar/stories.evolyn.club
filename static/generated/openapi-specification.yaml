@@ -304,6 +304,17 @@ paths:
                       - type:
                           - "null"
                       - type: string
+                  authCode:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: string
+                  authCodeLastUsed:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: string
+                        format: date-time
                   createdBy:
                     oneOf:
                       - type:
@@ -397,6 +408,8 @@ paths:
                   - isActive
                   - reasonForDeactivation
                   - password
+                  - authCode
+                  - authCodeLastUsed
                   - createdBy
                   - updatedBy
         "401":
@@ -552,6 +565,9 @@ paths:
                 passwordResetExpiresAt:
                   type: object
                   additionalProperties: true
+                authCode:
+                  type: object
+                  additionalProperties: true
                 isActive:
                   type: boolean
                   enum:
@@ -700,6 +716,17 @@ paths:
                       - type:
                           - "null"
                       - type: string
+                  authCode:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: string
+                  authCodeLastUsed:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: string
+                        format: date-time
                   createdBy:
                     oneOf:
                       - type:
@@ -793,6 +820,8 @@ paths:
                   - isActive
                   - reasonForDeactivation
                   - password
+                  - authCode
+                  - authCodeLastUsed
                   - createdBy
                   - updatedBy
         "401":
@@ -824,8 +853,12 @@ paths:
                         type: array
                         items:
                           type: string
+                      authCode:
+                        type: array
+                        items:
+                          type: string
                     required:
-                      - email
+                      - authCode
                 required:
                   - errors
       parameters:
@@ -24837,6 +24870,9 @@ paths:
                 passwordResetExpiresAt:
                   type: object
                   additionalProperties: true
+                authCode:
+                  type: object
+                  additionalProperties: true
                 isActive:
                   type: boolean
                   enum:
@@ -24985,6 +25021,17 @@ paths:
                       - type:
                           - "null"
                       - type: string
+                  authCode:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: string
+                  authCodeLastUsed:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: string
+                        format: date-time
                   createdBy:
                     oneOf:
                       - type:
@@ -25078,6 +25125,8 @@ paths:
                   - isActive
                   - reasonForDeactivation
                   - password
+                  - authCode
+                  - authCodeLastUsed
                   - createdBy
                   - updatedBy
         "401":
@@ -25104,8 +25153,12 @@ paths:
                         type: array
                         items:
                           type: string
+                      authCode:
+                        type: array
+                        items:
+                          type: string
                     required:
-                      - email
+                      - authCode
                 required:
                   - errors
   /users/{userId}/policies:
