@@ -131,6 +131,7 @@
 			data: rows,
 			getRowId: (row) => row.id,
 			endpoint,
+			defaultRow: { type },
 			onDataChange: (nextRows) => {
 				if (type === 'still') stillRows = nextRows as Extract<AssetRow, { type: 'still' }>[];
 				else if (type === 'video') videoRows = nextRows as Extract<AssetRow, { type: 'video' }>[];
@@ -138,20 +139,7 @@
 					announcementRows = nextRows as Extract<AssetRow, { type: 'announcement' }>[];
 				else if (type === 'quiz') quizRows = nextRows as Extract<AssetRow, { type: 'quiz' }>[];
 			},
-			onRowAdd: () => {
-				let newrow = { type };
-				if (type === 'still')
-					stillRows = [...stillRows, newrow] as Extract<AssetRow, { type: 'still' }>[];
-				else if (type === 'video')
-					videoRows = [...videoRows, newrow] as Extract<AssetRow, { type: 'video' }>[];
-				else if (type === 'announcement')
-					announcementRows = [...announcementRows, newrow] as Extract<
-						AssetRow,
-						{ type: 'anouncement' }
-					>[];
-				else if (type === 'quiz')
-					quizRows = [...quizRows, newrow] as Extract<AssetRow, { type: 'quiz' }>[];
-			},
+			onRowAdd: true,
 
 			onRowsDelete: async (removedrows: AssetRow[], rowIndices: number[]) => {
 				const toRemove = Array.from(

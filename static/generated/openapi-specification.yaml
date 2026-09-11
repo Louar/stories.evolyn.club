@@ -16043,6 +16043,112 @@ paths:
                 items:
                   type: object
                   additionalProperties: true
+                  oneOf:
+                    - type: object
+                      properties:
+                        id:
+                          type: string
+                        type:
+                          type: string
+                          enum:
+                            - still
+                        asset:
+                          type: string
+                        color:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: string
+                        image:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: object
+                              properties:
+                                collection:
+                                  type: string
+                                  enum:
+                                    - externals
+                                    - internals
+                                    - clients
+                                    - users
+                                filename:
+                                  type: string
+                              required:
+                                - collection
+                                - filename
+                        style:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: string
+                      required:
+                        - id
+                        - type
+                        - asset
+                        - color
+                        - image
+                        - style
+                    - type: object
+                      properties:
+                        id:
+                          type: string
+                        type:
+                          type: string
+                          enum:
+                            - video
+                        asset:
+                          type: string
+                        name:
+                          type: string
+                        duration:
+                          type: number
+                      required:
+                        - id
+                        - type
+                        - asset
+                        - name
+                        - duration
+                    - type: object
+                      properties:
+                        id:
+                          type: string
+                        type:
+                          type: string
+                          enum:
+                            - announcement
+                        asset:
+                          type: string
+                        name:
+                          type: string
+                      required:
+                        - id
+                        - type
+                        - asset
+                        - name
+                    - type: object
+                      properties:
+                        id:
+                          type: string
+                        type:
+                          type: string
+                          enum:
+                            - quiz
+                        asset:
+                          type: string
+                        name:
+                          type: string
+                        questions:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: number
+                      required:
+                        - id
+                        - type
+                        - asset
+                        - name
+                        - questions
         "401":
           description: Unauthorized
           content:
@@ -16112,17 +16218,112 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    enum:
-                      - added
-                  id:
-                    type: string
-                required:
-                  - status
-                  - id
+                oneOf:
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                      type:
+                        type: string
+                        enum:
+                          - still
+                      asset:
+                        type: string
+                      color:
+                        oneOf:
+                          - type:
+                              - "null"
+                          - type: string
+                      image:
+                        oneOf:
+                          - type:
+                              - "null"
+                          - type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                      style:
+                        oneOf:
+                          - type:
+                              - "null"
+                          - type: string
+                    required:
+                      - id
+                      - type
+                      - asset
+                      - color
+                      - image
+                      - style
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                      type:
+                        type: string
+                        enum:
+                          - video
+                      asset:
+                        type: string
+                      name:
+                        type: string
+                      duration:
+                        type: number
+                    required:
+                      - id
+                      - type
+                      - asset
+                      - name
+                      - duration
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                      type:
+                        type: string
+                        enum:
+                          - announcement
+                      asset:
+                        type: string
+                      name:
+                        type: string
+                    required:
+                      - id
+                      - type
+                      - asset
+                      - name
+                  - type: object
+                    properties:
+                      id:
+                        type: string
+                      type:
+                        type: string
+                        enum:
+                          - quiz
+                      asset:
+                        type: string
+                      name:
+                        type: string
+                      questions:
+                        oneOf:
+                          - type:
+                              - "null"
+                          - type: number
+                    required:
+                      - id
+                      - type
+                      - asset
+                      - name
+                      - questions
         "401":
           description: Unauthorized
           content:
