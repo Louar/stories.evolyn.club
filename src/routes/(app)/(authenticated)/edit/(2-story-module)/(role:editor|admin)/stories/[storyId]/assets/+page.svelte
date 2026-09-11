@@ -211,7 +211,8 @@
 			[
 				{ label: 'Permissions', url: `/edit/stories/${page.params.storyId}/permissions` },
 				{ isTrigger: true, label: 'Assets', url: `/edit/stories/${page.params.storyId}/assets` },
-				{ label: 'Flow', url: `/edit/stories/${page.params.storyId}/flow` }
+				{ label: 'Flow', url: `/edit/stories/${page.params.storyId}/flow` },
+				{ label: 'Analytics', url: `/edit/stories/${page.params.storyId}/analytics` }
 			]
 		]}
 	/>

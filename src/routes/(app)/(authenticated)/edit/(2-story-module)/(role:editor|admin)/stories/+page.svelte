@@ -131,7 +131,7 @@
 			id: 'assets',
 			accessorFn: () => 'Open',
 			header: 'Assets',
-			size: 90,
+			size: 120,
 			meta: {
 				cell: { variant: 'relation-follow', url: '/edit/stories/{row}/assets' },
 				readOnly: true
@@ -142,7 +142,7 @@
 			id: 'flow',
 			accessorFn: () => 'Edit',
 			header: 'Flow',
-			size: 80,
+			size: 120,
 			meta: {
 				cell: { variant: 'relation-follow', url: '/edit/stories/{row}/flow' },
 				readOnly: true
@@ -153,7 +153,7 @@
 			id: 'analytics',
 			accessorFn: () => 'View',
 			header: 'Analytics',
-			size: 100,
+			size: 120,
 			meta: {
 				cell: { variant: 'relation-follow', url: '/edit/stories/{row}/analytics' },
 				readOnly: true

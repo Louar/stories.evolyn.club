@@ -109,7 +109,7 @@
 			: 0.0025
 	);
 	let videoScrubberKeyboardStep = $derived(
-		selectedVideoSourceType === 'youtube' && selectedVideoDuration > 0 ? videoScrubberStep : 0.001
+		selectedVideoSourceType === 'youtube' && selectedVideoDuration > 0 ? videoScrubberStep : 0.0005
 	);
 	let backgroundStart = $derived(configurationValue(draft, 'backgroundConfiguration', 'start', 0));
 	let backgroundEnd = $derived(configurationValue(draft, 'backgroundConfiguration', 'end', 1));
