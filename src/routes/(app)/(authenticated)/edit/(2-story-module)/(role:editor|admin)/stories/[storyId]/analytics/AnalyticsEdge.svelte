@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { BaseEdge, getBezierPath, Position, type EdgeProps } from '@xyflow/svelte';
 
-	type AnalyticsEdgeData = { count: number; width: number };
+	type AnalyticsEdgeData = { count: number; width: number; observed: boolean };
 
 	let {
 		target,
@@ -44,15 +44,20 @@
 <BaseEdge
 	{path}
 	{markerEnd}
-	style={`stroke-width: ${data?.width ?? 1.5}px`}
-	class="stroke-primary!"
+	style={`stroke-width: ${data?.width ?? 1.5}px; ${data?.observed ? '' : 'stroke-dasharray: 6 5; opacity: 0.45;'}`}
+	class={data?.observed ? 'stroke-primary/70!' : 'stroke-muted-foreground!'}
 />
-<text
-	x={labelX}
-	y={labelY}
-	text-anchor="middle"
-	dominant-baseline="central"
-	class="pointer-events-none fill-foreground text-[10px] font-semibold tabular-nums"
->
-	{data?.count ?? 0}
-</text>
+{#if data?.observed}
+	<text
+		x={labelX}
+		y={labelY}
+		text-anchor="middle"
+		dominant-baseline="central"
+		stroke-linejoin="round"
+		stroke-linecap="round"
+		class="pointer-events-none fill-foreground stroke-background stroke-4 text-sm font-semibold tabular-nums"
+		style="paint-order: stroke fill;"
+	>
+		{data.count}&times;
+	</text>
+{/if}

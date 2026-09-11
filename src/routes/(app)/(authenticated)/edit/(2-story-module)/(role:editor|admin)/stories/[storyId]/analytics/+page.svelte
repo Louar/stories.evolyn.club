@@ -13,7 +13,9 @@
 	import CalendarIcon from '@lucide/svelte/icons/calendar';
 	import FilterIcon from '@lucide/svelte/icons/list-filter';
 	import MousePointerClickIcon from '@lucide/svelte/icons/mouse-pointer-click';
+	import PencilRulerIcon from '@lucide/svelte/icons/pencil-ruler';
 	import RouteIcon from '@lucide/svelte/icons/route';
+	import TvMinimalPlayIcon from '@lucide/svelte/icons/tv-minimal-play';
 	import UsersIcon from '@lucide/svelte/icons/users';
 	import { SvelteFlowProvider } from '@xyflow/svelte';
 	import '@xyflow/svelte/dist/style.css';
@@ -71,11 +73,11 @@
 			]
 		]}
 	/>
-	<div class="ml-auto">
+	<div class="ml-auto flex items-center gap-2">
 		<Popover.Root bind:open={filterOpen}>
 			<Popover.Trigger>
 				{#snippet child({ props })}
-					<Button {...props} variant="outline" size="sm">
+					<Button {...props} variant="outline">
 						<FilterIcon />Analytics filters
 					</Button>
 				{/snippet}
@@ -103,6 +105,24 @@
 				</div>
 			</Popover.Content>
 		</Popover.Root>
+		<Button
+			href={resolve(`/edit/stories/${data.story.id}/flow`)}
+			target="_blank"
+			variant="outline"
+			size="icon"
+			aria-label="Edit story"
+		>
+			<PencilRulerIcon />
+		</Button>
+		<Button
+			href={resolve(`/s/${data.story.slug}` as '/s/[storySlug]/[...settings]')}
+			target="_blank"
+			variant="outline"
+			size="icon"
+			aria-label="Preview story"
+		>
+			<TvMinimalPlayIcon />
+		</Button>
 	</div>
 </Header>
 

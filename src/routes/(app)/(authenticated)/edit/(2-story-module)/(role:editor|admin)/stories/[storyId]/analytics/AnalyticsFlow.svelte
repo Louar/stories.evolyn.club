@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { findOneStoryById } from '$lib/db/repositories/2-story-module';
-	import { formatDuration, translateLocalizedField } from '$lib/db/schemas/0-utils.js';
+	import { translateLocalizedField } from '$lib/db/schemas/0-utils.js';
+	import { PartTerminationStrategy } from '$lib/db/schemas/2-story-module.js';
 	import { Background, Controls, SvelteFlow, type Edge, type Node } from '@xyflow/svelte';
 	import { mode } from 'mode-watcher';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -34,6 +35,13 @@
 				transition.fromPartId,
 				(counts.get(transition.fromPartId) ?? 0) + transition.count
 			);
+		}
+		return counts;
+	});
+	const transitionCounts = $derived.by(() => {
+		const counts = new SvelteMap<string, number>();
+		for (const transition of transitions) {
+			counts.set(`${transition.fromPartId}:${transition.toPartId}`, transition.count);
 		}
 		return counts;
 	});
@@ -90,12 +98,6 @@
 							: part.backgroundType === 'still'
 								? (still?.image?.filename ?? still?.color ?? 'Unselected still')
 								: 'No background',
-					backgroundDetail:
-						part.backgroundType === 'video' && video
-							? formatDuration(video.duration)
-							: part.backgroundType
-								? undefined
-								: 'Transparent canvas',
 					foregroundLabel:
 						part.foregroundType === 'quiz'
 							? (quiz?.name ?? 'Unselected quiz')
@@ -104,14 +106,6 @@
 								: part.foregroundType === 'announcement'
 									? (announcement?.name ?? 'Unselected announcement')
 									: 'No foreground',
-					foregroundDetail:
-						part.foregroundType === 'quiz'
-							? `${quiz?.questions.length ?? 0} questions`
-							: part.foregroundType === 'taxonomy'
-								? 'Taxonomy game'
-								: part.foregroundType
-									? undefined
-									: 'No overlay',
 					arrivals: incoming.get(part.id) ?? 0,
 					departures: outgoing.get(part.id) ?? 0,
 					questions
@@ -121,21 +115,94 @@
 	);
 
 	const maxTransitionCount = $derived(Math.max(0, ...transitions.map((item) => item.count)));
-	let edges: Edge[] = $derived.by(() =>
-		transitions.map((transition) => ({
-			id: `${transition.fromPartId}-${transition.toPartId}`,
+	const createEdge = (id: string, source: string, sourceHandle: string, target: string): Edge => {
+		const count = transitionCounts.get(`${source}:${target}`) ?? 0;
+		return {
+			id,
 			type: 'analytics',
-			source: transition.fromPartId,
-			target: transition.toPartId,
+			source,
+			sourceHandle,
+			target,
 			data: {
-				count: transition.count,
+				count,
+				observed: count > 0,
 				width:
-					maxTransitionCount <= 1
-						? 2
-						: 2 + (Math.log(transition.count) / Math.log(maxTransitionCount)) * 8
+					count === 0
+						? 1.5
+						: maxTransitionCount <= 1
+							? 2
+							: 2 + (Math.log(count) / Math.log(maxTransitionCount)) * 8
 			}
-		}))
-	);
+		};
+	};
+	let edges: Edge[] = $derived.by(() => {
+		const configuredEdges: Edge[] = [];
+		for (const part of story.parts) {
+			if (part.terminationStrategy !== PartTerminationStrategy.none) continue;
+
+			if (part.defaultNextPartId) {
+				configuredEdges.push(
+					createEdge(
+						`e-${part.id}-default-${part.defaultNextPartId}`,
+						part.id,
+						'default',
+						part.defaultNextPartId
+					)
+				);
+			}
+
+			if (part.quizLogicForPart) {
+				if (part.quizLogicForPart.defaultNextPartId) {
+					configuredEdges.push(
+						createEdge(
+							`e-${part.id}-default-after-quiz-${part.quizLogicForPart.defaultNextPartId}`,
+							part.id,
+							'default-after-quiz',
+							part.quizLogicForPart.defaultNextPartId
+						)
+					);
+				}
+				for (const rule of part.quizLogicForPart.rules) {
+					if (!rule.isRemoved && rule.nextPartId) {
+						configuredEdges.push(
+							createEdge(
+								`e-${part.id}-${rule.id}-${rule.nextPartId}`,
+								part.id,
+								rule.id,
+								rule.nextPartId
+							)
+						);
+					}
+				}
+			}
+
+			if (part.taxonomyDraftForPart) {
+				if (part.taxonomyDraftForPart.defaultNextPartId) {
+					configuredEdges.push(
+						createEdge(
+							`e-${part.id}-default-after-taxonomy-${part.taxonomyDraftForPart.defaultNextPartId}`,
+							part.id,
+							'default-after-taxonomy',
+							part.taxonomyDraftForPart.defaultNextPartId
+						)
+					);
+				}
+				for (const rule of part.taxonomyDraftForPart.rules) {
+					if (!rule.isRemoved && rule.nextPartId) {
+						configuredEdges.push(
+							createEdge(
+								`e-${part.id}-taxonomy-${rule.id}-${rule.nextPartId}`,
+								part.id,
+								`taxonomy-rule:${rule.id}`,
+								rule.nextPartId
+							)
+						);
+					}
+				}
+			}
+		}
+		return configuredEdges;
+	});
 </script>
 
 <SvelteFlow

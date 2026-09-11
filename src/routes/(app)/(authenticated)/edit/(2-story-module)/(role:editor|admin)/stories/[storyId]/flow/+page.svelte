@@ -17,6 +17,7 @@
 	} from '$lib/db/repositories/2-story-module.js';
 	import { translateLocalizedField } from '$lib/db/schemas/0-utils.js';
 	import { EDITORS } from '$lib/states/editors.svelte.js';
+	import ChartLineIcon from '@lucide/svelte/icons/chart-no-axes-combined';
 	import HouseIcon from '@lucide/svelte/icons/house';
 	import ImageIcon from '@lucide/svelte/icons/image';
 	import LayersIcon from '@lucide/svelte/icons/layers';
@@ -497,6 +498,15 @@
 			</h1>
 			<div class="ml-auto flex items-center gap-2">
 				<LanguageSelector />
+				<Button
+					href={resolve(`/edit/stories/${data.story.id}/analytics`)}
+					target="_blank"
+					variant="outline"
+					size="icon"
+					aria-label="Analyze story"
+				>
+					<ChartLineIcon />
+				</Button>
 				<Button
 					href={resolve(`/s/${story.slug}` as '/s/[storySlug]/[...settings]')}
 					target="_blank"

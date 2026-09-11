@@ -10,22 +10,16 @@
 	import ShapesIcon from '@lucide/svelte/icons/shapes';
 	import VideoIcon from '@lucide/svelte/icons/video';
 	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
+	import type { findOneStoryById } from '$lib/db/repositories/2-story-module.js';
 
+	type Part = Awaited<ReturnType<typeof findOneStoryById>>['parts'][number];
 	type Answer = { id: string; label: unknown; count: number; percentage: number };
 	type Question = { id: string; title: unknown; total: number; answers: Answer[] };
 	type AnalyticsNodeData = {
-		part: {
-			id: string;
-			isInitial: boolean;
-			terminationStrategy: PartTerminationStrategy;
-			backgroundType: string | null;
-			foregroundType: string | null;
-		};
+		part: Part;
 		label: string;
 		backgroundLabel: string;
-		backgroundDetail?: string;
 		foregroundLabel: string;
-		foregroundDetail?: string;
 		arrivals: number;
 		departures: number;
 		questions: Question[];
@@ -40,6 +34,7 @@
 				? 'Fails story'
 				: undefined
 	);
+	let isTerminal = $derived(part.terminationStrategy !== PartTerminationStrategy.none);
 </script>
 
 <div
@@ -69,61 +64,50 @@
 		isConnectable={false}
 		class="size-3! bg-primary!"
 	/>
-	<Handle
-		type="source"
-		position={Position.Right}
-		isConnectable={false}
-		class="size-3! bg-primary!"
-	/>
+	{#if !isTerminal}
+		<Handle
+			type="source"
+			position={Position.Right}
+			id="default"
+			isConnectable={false}
+			class="size-3! bg-primary!"
+		/>
+	{/if}
 
-	<div class="grid gap-2 p-2">
-		<div class="px-1 pt-1">
-			<p class="text-xs font-semibold">{data.label}</p>
-			<p class="truncate font-mono text-[0.6rem] text-muted-foreground">{part.id}</p>
-		</div>
-		<div class="flex items-center gap-2 rounded-lg border bg-background/60 p-2">
+	<div class="flex items-center gap-2 p-2">
+		<p class="shrink-0 pl-1 text-sm font-semibold">{data.label}</p>
+		<div class="ml-auto flex min-w-0 items-center gap-1.5">
 			<div
-				class="grid size-9 shrink-0 place-items-center rounded-md {part.backgroundType
+				class="flex min-w-0 items-center gap-1 rounded-md px-1.5 py-1 text-[0.65rem] {part.backgroundType
 					? 'bg-sky-500/10 text-sky-600 dark:text-sky-400'
 					: 'bg-muted text-muted-foreground'}"
+				title={data.backgroundLabel}
 			>
 				{#if !part.backgroundType}
-					<BanIcon class="size-4" />
+					<BanIcon class="size-3" />
 				{:else if part.backgroundType === 'video'}
-					<VideoIcon class="size-4" />
+					<VideoIcon class="size-3" />
 				{:else}
-					<ImageIcon class="size-4" />
+					<ImageIcon class="size-3" />
 				{/if}
+				<span class="max-w-20 truncate">{data.backgroundLabel}</span>
 			</div>
-			<div class="min-w-0 flex-1">
-				<p class="truncate text-sm font-medium">{data.backgroundLabel}</p>
-				{#if data.backgroundDetail}
-					<p class="text-xs text-muted-foreground">{data.backgroundDetail}</p>
-				{/if}
-			</div>
-		</div>
-
-		<div class="flex items-center gap-2 rounded-lg border bg-background/60 p-2">
 			<div
-				class="grid size-9 shrink-0 place-items-center rounded-md {part.foregroundType
+				class="flex min-w-0 items-center gap-1 rounded-md px-1.5 py-1 text-[0.65rem] {part.foregroundType
 					? 'bg-violet-500/10 text-violet-600 dark:text-violet-400'
 					: 'bg-muted text-muted-foreground'}"
+				title={data.foregroundLabel}
 			>
 				{#if !part.foregroundType}
-					<BanIcon class="size-4" />
+					<BanIcon class="size-3" />
 				{:else if part.foregroundType === 'quiz'}
-					<ShapesIcon class="size-4" />
+					<ShapesIcon class="size-3" />
 				{:else if part.foregroundType === 'taxonomy'}
-					<LayersIcon class="size-4" />
+					<LayersIcon class="size-3" />
 				{:else}
-					<MessageSquareIcon class="size-4" />
+					<MessageSquareIcon class="size-3" />
 				{/if}
-			</div>
-			<div class="min-w-0 flex-1">
-				<p class="truncate text-sm font-medium">{data.foregroundLabel}</p>
-				{#if data.foregroundDetail}
-					<p class="text-xs text-muted-foreground">{data.foregroundDetail}</p>
-				{/if}
+				<span class="max-w-20 truncate">{data.foregroundLabel}</span>
 			</div>
 		</div>
 	</div>
@@ -174,4 +158,64 @@
 			</div>
 		{/if}
 	</div>
+
+	{#if part.foregroundType === 'quiz' && !isTerminal}
+		<Separator />
+		<div class="grid gap-2 py-3">
+			{#each part.quizLogicForPart?.rules ?? [] as rule (rule.id)}
+				{#if !rule.isRemoved}
+					<div class="relative px-4 pr-7">
+						<p class="truncate text-xs">{rule.name || `Rule ${rule.order}`}</p>
+						<Handle
+							type="source"
+							position={Position.Right}
+							id={rule.id}
+							isConnectable={false}
+							class="size-3! bg-amber-300!"
+						/>
+					</div>
+				{/if}
+			{/each}
+			<div class="relative px-4 pr-7">
+				<p class="text-xs text-muted-foreground italic">Default after quiz</p>
+				<Handle
+					type="source"
+					position={Position.Right}
+					id="default-after-quiz"
+					isConnectable={false}
+					class="size-3! bg-amber-300!"
+				/>
+			</div>
+		</div>
+	{/if}
+
+	{#if part.foregroundType === 'taxonomy' && !isTerminal}
+		<Separator />
+		<div class="grid gap-2 py-3">
+			{#each part.taxonomyDraftForPart?.rules ?? [] as rule (rule.id)}
+				{#if !rule.isRemoved}
+					<div class="relative px-4 pr-7">
+						<p class="truncate text-xs">{rule.name || `Rule ${rule.order}`}</p>
+						<Handle
+							type="source"
+							position={Position.Right}
+							id={`taxonomy-rule:${rule.id}`}
+							isConnectable={false}
+							class="size-3! bg-emerald-300!"
+						/>
+					</div>
+				{/if}
+			{/each}
+			<div class="relative px-4 pr-7">
+				<p class="text-xs text-muted-foreground italic">Default after taxonomy draft</p>
+				<Handle
+					type="source"
+					position={Position.Right}
+					id="default-after-taxonomy"
+					isConnectable={false}
+					class="size-3! bg-emerald-300!"
+				/>
+			</div>
+		</div>
+	{/if}
 </div>
