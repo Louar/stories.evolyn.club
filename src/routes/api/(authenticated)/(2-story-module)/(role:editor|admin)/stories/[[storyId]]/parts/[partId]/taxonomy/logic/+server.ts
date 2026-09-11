@@ -205,6 +205,6 @@ export const POST = (async ({ locals, params, request }) => {
 		}
 	});
 
-	const part = await findOnePartById(partId);
+	const part = await findOnePartById(partId, locals.authusr?.language ?? undefined);
 	return json(part.taxonomyDraftForPart);
 }) satisfies RequestHandler;

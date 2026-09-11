@@ -8,7 +8,7 @@ import {
 import { LogicHitpolicy } from '$lib/db/schemas/2-story-module';
 import { loadTaxonomyGame } from '$lib/server/taxonomy-game';
 import { error } from '@sveltejs/kit';
-import type { NotNull } from 'kysely';
+import { sql, type NotNull } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import z from 'zod/v4';
 import { Language, selectLocalizedField, selectLocalizedMediaField } from '../schemas/0-utils';
@@ -63,7 +63,7 @@ export const findOneAnthologyBySlug = async (
 	return anthology;
 };
 
-export const findOneStoryById = async (clientId: string, storyId: string) => {
+export const findOneStoryById = async (clientId: string, storyId: string, language?: Language) => {
 	if (!clientId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i))
 		error(404, 'De client-ID is ongeldig.');
 
@@ -340,7 +340,31 @@ export const findOneStoryById = async (clientId: string, storyId: string) => {
 											.selectFrom('item')
 											.whereRef('item.taxonomyId', '=', 'taxonomyDraftForPart.taxonomyId')
 											.orderBy('item.id')
-											.select('item.id')
+											.select((eb) => [
+												'item.id',
+												sql<string | null>`(
+													select nullif(
+														string_agg(
+															coalesce(
+																name_attribute.value->>${language ?? 'default'},
+																name_attribute.value->>'default',
+																name_attribute.value->>'en'
+															),
+															' '
+															order by default_attribute.order nulls last, default_attribute.attribute_id
+														),
+														''
+													)
+													from item_of_category
+													inner join attribute_of_category as default_attribute
+														on default_attribute.category_id = item_of_category.category_id
+														and default_attribute.is_default = true
+													left join attribute_of_item as name_attribute
+														on name_attribute.item_id = ${eb.ref('item.id')}
+														and name_attribute.attribute_id = default_attribute.attribute_id
+													where item_of_category.item_id = ${eb.ref('item.id')}
+												)`.as('name')
+											])
 									).as('itemOptions'),
 									jsonArrayFrom(
 										eb
@@ -720,7 +744,7 @@ export const findOneStoryBySlug = async (
 	return story;
 };
 
-export const findOnePartById = async (partId: string) => {
+export const findOnePartById = async (partId: string, language?: Language) => {
 	const part = await db
 		.selectFrom('part')
 		.where('part.id', '=', partId)
@@ -846,7 +870,31 @@ export const findOnePartById = async (partId: string) => {
 								.selectFrom('item')
 								.whereRef('item.taxonomyId', '=', 'taxonomyDraftForPart.taxonomyId')
 								.orderBy('item.id')
-								.select('item.id')
+								.select((eb) => [
+									'item.id',
+									sql<string | null>`(
+										select nullif(
+											string_agg(
+												coalesce(
+													name_attribute.value->>${language ?? 'default'},
+													name_attribute.value->>'default',
+													name_attribute.value->>'en'
+												),
+												' '
+												order by default_attribute.order nulls last, default_attribute.attribute_id
+											),
+											''
+										)
+										from item_of_category
+										inner join attribute_of_category as default_attribute
+											on default_attribute.category_id = item_of_category.category_id
+											and default_attribute.is_default = true
+										left join attribute_of_item as name_attribute
+											on name_attribute.item_id = ${eb.ref('item.id')}
+											and name_attribute.attribute_id = default_attribute.attribute_id
+										where item_of_category.item_id = ${eb.ref('item.id')}
+									)`.as('name')
+								])
 						).as('itemOptions'),
 						jsonArrayFrom(
 							eb

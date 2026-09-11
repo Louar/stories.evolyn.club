@@ -64,7 +64,7 @@ export const load: PageServerLoad = (async ({ locals, params }) => {
     });
     if (!canModify) error(403, 'You are not allowed to view this story');
 
-    const story = await findOneStoryById(clientId, storyId);
+    const story = await findOneStoryById(clientId, storyId, locals.authusr?.language ?? undefined);
     return { story };
   }
 

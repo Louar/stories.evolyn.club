@@ -93,16 +93,6 @@
 				readOnly: true
 			},
 			filterFn
-		},
-		{
-			accessorKey: 'drafts',
-			header: 'Drafts',
-			size: 120,
-			meta: {
-				cell: { variant: 'relation-follow', url: `${page.url.pathname}/{row}/drafts` },
-				readOnly: true
-			},
-			filterFn
 		}
 	];
 

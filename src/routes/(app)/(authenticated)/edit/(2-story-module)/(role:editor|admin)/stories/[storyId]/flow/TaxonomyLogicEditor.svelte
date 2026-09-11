@@ -153,7 +153,7 @@
 	const itemScopeOptions = $derived(
 		draft.itemOptions.map((item) => ({
 			id: item.id,
-			label: item.id
+			label: item.name ?? item.id
 		}))
 	);
 
