@@ -10,9 +10,9 @@
 	import Copy from '@lucide/svelte/icons/copy';
 	import Eraser from '@lucide/svelte/icons/eraser';
 	import FileDownIcon from '@lucide/svelte/icons/file-down';
-	import Scissors from '@lucide/svelte/icons/scissors';
-	import Trash2 from '@lucide/svelte/icons/trash-2';
+// import Scissors from '@lucide/svelte/icons/scissors';
 	import type { RowData, Table } from '$lib/components/data-grid/data-grid-table.js';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { toast } from 'svelte-sonner';
 
 	interface Props {
@@ -29,7 +29,7 @@
 	const onRowsDelete = $derived(meta?.onRowsDelete);
 	const onDownload = $derived(meta?.onDownload);
 	const onCellsCopy = $derived(meta?.onCellsCopy);
-	const onCellsCut = $derived(meta?.onCellsCut);
+	// const onCellsCut = $derived(meta?.onCellsCut);
 	const onCellsClear = $derived(meta?.onCellsClear);
 	const readOnly = $derived(meta?.readOnly ?? false);
 
@@ -50,9 +50,9 @@
 		onCellsCopy?.();
 	}
 
-	async function onCut() {
-		await onCellsCut?.();
-	}
+	// async function onCut() {
+	// 	await onCellsCut?.();
+	// }
 
 	function resolveCellPosition(cellKey: string) {
 		const position = parseCellKey(cellKey);
@@ -113,10 +113,10 @@
 				<Copy class="mr-2 size-4" />
 				Copy
 			</DropdownMenuItem>
-			<DropdownMenuItem onSelect={onCut} disabled={readOnly}>
+			<!-- <DropdownMenuItem onSelect={onCut} disabled={readOnly}>
 				<Scissors class="mr-2 size-4" />
 				Cut
-			</DropdownMenuItem>
+			</DropdownMenuItem> -->
 			<DropdownMenuItem onSelect={onClear} disabled={readOnly}>
 				<Eraser class="mr-2 size-4" />
 				Clear
