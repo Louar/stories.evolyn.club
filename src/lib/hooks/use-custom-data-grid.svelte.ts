@@ -2567,12 +2567,12 @@ export function useDataGrid<TData extends RowData>(
 		}
 
 		// Cut
-		if (!editingCell && (event.ctrlKey || event.metaKey) && event.key === 'x') {
-			event.preventDefault();
-			event.stopPropagation();
-			void cutSelectedCells();
-			return;
-		}
+		// if (!editingCell && (event.ctrlKey || event.metaKey) && event.key === 'x') {
+		// 	event.preventDefault();
+		// 	event.stopPropagation();
+		// 	void cutSelectedCells();
+		// 	return;
+		// }
 
 		// Paste
 		if (!editingCell && (event.ctrlKey || event.metaKey) && event.key === 'v') {
