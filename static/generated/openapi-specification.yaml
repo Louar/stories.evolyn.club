@@ -6720,8 +6720,14 @@ paths:
                                     properties:
                                       id:
                                         type: string
+                                      name:
+                                        oneOf:
+                                          - type:
+                                              - "null"
+                                          - type: string
                                     required:
                                       - id
+                                      - name
                                 rules:
                                   type: array
                                   items:
@@ -8367,8 +8373,14 @@ paths:
                               properties:
                                 id:
                                   type: string
+                                name:
+                                  oneOf:
+                                    - type:
+                                        - "null"
+                                    - type: string
                               required:
                                 - id
+                                - name
                           rules:
                             type: array
                             items:
@@ -13177,8 +13189,14 @@ paths:
                           properties:
                             id:
                               type: string
+                            name:
+                              oneOf:
+                                - type:
+                                    - "null"
+                                - type: string
                           required:
                             - id
+                            - name
                       rules:
                         type: array
                         items:
