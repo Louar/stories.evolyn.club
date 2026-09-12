@@ -71,6 +71,7 @@
 	let dataGridRefSet = false;
 	let headerRefSet = false;
 	let footerRefSet = false;
+	let gridViewportWidth = $state(0);
 
 	$effect(() => {
 		if (dataGridRef && setDataGridRef && !dataGridRefSet) {
@@ -227,6 +228,7 @@
 	// Get virtual items - use getters for reactive access
 	const virtualItems = $derived(rowVirtualizer.virtualItems);
 	const totalSize = $derived(rowVirtualizer.totalSize);
+	const statusCellWidth = $derived(gridViewportWidth ? `${gridViewportWidth}px` : '100%');
 
 	// Handler for global mouseup - ends drag selection even when mouse leaves grid
 	function handleWindowMouseUp() {
@@ -277,6 +279,7 @@
 				aria-busy={loading || preferencesRestoring}
 				tabindex={focusedCell ? -1 : 0}
 				bind:this={dataGridRef}
+				bind:clientWidth={gridViewportWidth}
 				class="min-h-0 grid-scrollbar flex-1 overflow-auto overscroll-x-none focus:outline-none"
 				oncontextmenu={onGridContextMenu}
 				onmouseup={handleGridMouseUp}
@@ -356,13 +359,14 @@
 							<div
 								role="row"
 								aria-rowindex={headerRowCount + 1}
-								class="flex h-24 w-full items-center justify-center"
+								class="flex h-24 w-full items-center"
 							>
 								<div
 									role="gridcell"
 									aria-colindex="1"
 									aria-colspan={ariaColumnCount}
-									class="px-6 text-center text-sm text-muted-foreground"
+									class="sticky left-0 flex justify-center px-6 text-center text-sm text-muted-foreground"
+									style:width={statusCellWidth}
 								>
 									{#if loading}
 										<div role="status" aria-live="polite">
