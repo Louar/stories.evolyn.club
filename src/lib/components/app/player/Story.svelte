@@ -50,6 +50,7 @@
 	let start: number | undefined = $state();
 	let isEnded = $state(false);
 	let isCompleted = $state(false);
+	let visit = $state(0);
 
 	onMount(() => {
 		initPlayerEvents(story.id);
@@ -62,30 +63,54 @@
 		const toPartId = story?.parts?.[0]?.id;
 		if (fromPartId && toPartId) logTransitionEvent(story.id, fromPartId, toPartId);
 
+		const currentPlayer = players.find((player) => player.id === fromPartId);
+		const nextPlayer = players.find((player) => player.id === toPartId);
+		if (currentPlayer && currentPlayer !== nextPlayer) currentPlayer.doEnd = true;
+		if (nextPlayer) {
+			nextPlayer.doEnd = false;
+			nextPlayer.time = 0;
+		}
+
 		isEnded = false;
 		isCompleted = false;
-		pid = story?.parts?.[0]?.id;
+		visit += 1;
+		pid = toPartId;
 		start = new Date().getTime();
-		const player = players.find((player) => player.id === pid);
-		if (player && PLAYERS.didUserInteract) player.doRestart = true;
+		if (nextPlayer && PLAYERS.didUserInteract) nextPlayer.doRestart = true;
 	};
 
-	const submit = async (logic: Logic | undefined, input: InputFromLogic<Logic>) => {
-		if (!logic || !input) return;
+	const canNavigate = (partId: string, expectedVisit: number) =>
+		isActiveStory && !isEnded && pid === partId && visit === expectedVisit;
+
+	const submit = (
+		partId: string,
+		expectedVisit: number,
+		logic: Logic | undefined,
+		input: InputFromLogic<Logic>
+	) => {
+		if (!canNavigate(partId, expectedVisit)) return;
+		if (!logic || !input) return end(false);
 		const output = executeLogic(logic, input);
-		transition(output?.next);
+		if (!output || !('next' in output)) return end(false);
+		transition(partId, expectedVisit, output.next);
 	};
 
-	const transition = (nextPartId: unknown) => {
-		const current = players.find((p) => p.id === pid);
+	const transition = (partId: string, expectedVisit: number, nextPartId: unknown) => {
+		if (!canNavigate(partId, expectedVisit)) return;
+		const currentPart = story.parts.find((part) => part.id === partId);
+		const current = players.find((player) => player.id === partId);
+		if (!currentPart || !current) return end(false);
+
 		if (!nextPartId || typeof nextPartId !== 'string') {
-			if (current) current.doPause = true;
-			return endForPart(pid);
+			current.doPause = true;
+			return endForPart(partId);
 		}
 
 		const next = players.find((p) => p.id === nextPartId);
-		if (!current || !next) return endForPart(pid);
+		const nextPart = story.parts.find((part) => part.id === nextPartId);
+		if (!next || !nextPart) return end(false);
 		logTransitionEvent(story.id, current.id, next.id);
+		visit += 1;
 
 		if (current.id === next.id) {
 			next.doRestart = true;
@@ -108,7 +133,12 @@
 		}>;
 	};
 
-	const submitTaxonomy = (logic: TaxonomyLogic, performance: GamePerformance) => {
+	const submitTaxonomy = (
+		partId: string,
+		expectedVisit: number,
+		logic: TaxonomyLogic,
+		performance: GamePerformance
+	) => {
 		const matchesRange = (value: number, range: [number | null, number | null] | null) =>
 			range === null ||
 			((range[0] === null || value >= range[0]) && (range[1] === null || value <= range[1]));
@@ -119,15 +149,17 @@
 				matchesRange(performance.mistakes, candidate.mistakes) &&
 				matchesRange(performance.duration, candidate.duration)
 		);
-		transition(rule?.nextPartId ?? logic.defaultNextPartId);
+		transition(partId, expectedVisit, rule?.nextPartId ?? logic.defaultNextPartId);
 	};
 
 	const endForPart = (partId: string | undefined) => {
 		const part = story.parts.find((part) => part.id === partId);
-		end(part?.terminationStrategy !== PartTerminationStrategy.failStory);
+		if (!part) return end(false);
+		end(part.terminationStrategy !== PartTerminationStrategy.failStory);
 	};
 
 	const end = (completed = true) => {
+		if (isEnded || !isActiveStory) return;
 		const watchTime = Math.round(Object.values(PLAYERS.watchDurations)?.reduce((a, b) => a + b, 0));
 		const percentages = Object.values(PLAYERS.watchTimePercentages);
 		const watchTimePercentage = percentages.length
@@ -240,6 +272,21 @@
 	const hasActiveForegroundInteraction = (part: StoryPart, player: Player | undefined) =>
 		!isEnded && (Boolean(getTaxonomyGame(part)) || hasQuizInteraction(part, player));
 
+	const finishPart = (partId: string, expectedVisit: number) => {
+		if (!canNavigate(partId, expectedVisit)) return;
+		const part = story.parts.find((candidate) => candidate.id === partId);
+		const player = players.find((candidate) => candidate.id === partId);
+		if (!part || !player) return end(false);
+
+		player.doEnd = true;
+		if (hasActiveForegroundInteraction(part, player)) {
+			player.doPause = true;
+			return;
+		}
+		if (part.terminationStrategy !== PartTerminationStrategy.none) return endForPart(partId);
+		transition(partId, expectedVisit, player.next);
+	};
+
 	const mediaUrl = (media: Media | null | undefined) => {
 		if (!media) return undefined;
 		return media.collection === MediaCollection.externals
@@ -256,11 +303,11 @@
 	});
 
 	$effect(() => {
-		if (!pid || isEnded) return;
+		if (!pid || isEnded || !isActiveStory) return;
 		const activePart = story.parts.find((part) => part.id === pid);
 		if (!activePart || activePart.terminationStrategy === PartTerminationStrategy.none) return;
 		if (activePart.backgroundType === 'video') return;
-		endForPart(activePart.id);
+		finishPart(activePart.id, visit);
 	});
 
 	$effect(() => {
@@ -288,6 +335,7 @@
 		{#each story?.parts as part (part.id)}
 			{@const player = players.find((player) => player.id === part.id)}
 			{@const taxonomyForeground = getTaxonomyGame(part)}
+			{@const activeVisit = visit}
 
 			<div
 				class="absolute inset-0 {part.id === pid
@@ -345,27 +393,12 @@
 							}
 						}}
 						playNext={() => {
-							player.doEnd = true;
-							const nextPlayer =
-								part.terminationStrategy === PartTerminationStrategy.none
-									? players.find((p) => p.id === player.next)
-									: undefined;
-							if (nextPlayer) {
-								logTransitionEvent(story.id, player.id, nextPlayer.id);
-								nextPlayer.doBuffer = true;
-								nextPlayer.doPlay = true;
-								pid = nextPlayer.id;
-							} else if (
-								part.terminationStrategy !== PartTerminationStrategy.none ||
-								(!nextPlayers?.length && !hasActiveForegroundInteraction(part, player))
-							) {
-								endForPart(part.id);
-							}
+							finishPart(part.id, activeVisit);
 						}}
 					/>
 				{/if}
 
-				{#if !isEnded && hasOverlay(part, player)}
+				{#if !isEnded && part.id === pid && hasOverlay(part, player)}
 					{#if part.foregroundType === 'announcement' && 'title' in part.foreground && 'message' in part.foreground}
 						<AnnouncementOverlay
 							title={part.foreground?.title}
@@ -376,39 +409,44 @@
 						{@const questions = part.foreground?.doRandomize
 							? part.foreground?.questions?.sort(() => Math.random() - 0.5)
 							: part.foreground?.questions}
-						<InteractionOverlay
-							partId={part.id}
-							{questions}
-							logic={part.foreground?.logic}
-							{submit}
-							oninteraction={({
-								quizQuestionTemplate,
-								quizQuestionTemplateAnswerItemId,
-								value,
-								raw_value
-							}) => {
-								logInteractionEvent(story.id, {
-									partId: part.id,
+						{#key activeVisit}
+							<InteractionOverlay
+								partId={part.id}
+								{questions}
+								logic={part.foreground?.logic}
+								submit={(logic, input) => submit(part.id, activeVisit, logic, input)}
+								oninteraction={({
 									quizQuestionTemplate,
 									quizQuestionTemplateAnswerItemId,
 									value,
 									raw_value
-								});
-							}}
-						/>
+								}) => {
+									logInteractionEvent(story.id, {
+										partId: part.id,
+										quizQuestionTemplate,
+										quizQuestionTemplateAnswerItemId,
+										value,
+										raw_value
+									});
+								}}
+							/>
+						{/key}
 					{/if}
 				{/if}
 
 				{#if !isEnded && part.id === pid && taxonomyForeground}
 					<div class="absolute inset-0 z-20">
-						<TaxonomyGame
-							rounds={taxonomyForeground.rounds}
-							goal={taxonomyForeground.goal}
-							maxMistakes={taxonomyForeground.maxMistakes}
-							difficulty={taxonomyForeground.difficulty}
-							showHints={taxonomyForeground.showHints}
-							oncomplete={(performance) => submitTaxonomy(taxonomyForeground.logic, performance)}
-						/>
+						{#key activeVisit}
+							<TaxonomyGame
+								rounds={taxonomyForeground.rounds}
+								goal={taxonomyForeground.goal}
+								maxMistakes={taxonomyForeground.maxMistakes}
+								difficulty={taxonomyForeground.difficulty}
+								showHints={taxonomyForeground.showHints}
+								oncomplete={(performance) =>
+									submitTaxonomy(part.id, activeVisit, taxonomyForeground.logic, performance)}
+							/>
+						{/key}
 					</div>
 				{/if}
 			</div>
