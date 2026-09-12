@@ -2,21 +2,30 @@
 	import { Button } from '$lib/components/ui/button';
 	import { AttributeType } from '$lib/db/schemas/2-story-module';
 	import * as m from '$lib/paraglide/messages';
+	import { getLocale } from '$lib/paraglide/runtime';
 	import * as turf from '@turf/turf';
 	import { onMount, untrack } from 'svelte';
 	import { quartOut } from 'svelte/easing';
 	import { fly, scale } from 'svelte/transition';
 	import Map from './Map.svelte';
+	import NumericSlider from './NumericSlider.svelte';
 	import RoundFeedback from './RoundFeedback.svelte';
 	import SortableBoard from './SortableBoard.svelte';
 	import { createPlayableMap } from './map';
 	import type { CategoryMap, GuessResult, MapItem, ShapeArcs, TopoGeometry } from './map-types';
+	import {
+		createNumericSliderSettings,
+		formatSliderValue,
+		getNumericSliderDirection,
+		isNumericSliderAnswerCorrect
+	} from './numeric-slider';
 	import { formatTime } from './time';
 	import type { GamePerformance, SortableRoundItem, TaxonomyRound } from './types';
 
 	type SortableRound = NonNullable<ReturnType<typeof toSortableRound>>;
 	type MapRound = NonNullable<ReturnType<typeof toMapRound>>;
-	type GameRound = SortableRound | MapRound;
+	type NumericSliderRound = NonNullable<ReturnType<typeof toNumericSliderRound>>;
+	type GameRound = SortableRound | MapRound | NumericSliderRound;
 	type Feedback = {
 		correct: boolean;
 		correctPositions?: boolean[] | null;
@@ -28,19 +37,21 @@
 		rounds,
 		goal,
 		maxMistakes,
+		difficulty,
 		showHints = false,
 		oncomplete
 	}: {
 		rounds: TaxonomyRound[];
 		goal: number;
 		maxMistakes: number | null;
+		difficulty: number | null;
 		showHints?: boolean;
 		oncomplete: (performance: GamePerformance) => void;
 	} = $props();
 
-	const playableRounds = untrack(() => rounds)
-		.map(toGameRound)
-		.filter(isGameRound);
+	const playableRounds = untrack(() =>
+		rounds.map((round) => toGameRound(round, difficulty))
+	).filter(isGameRound);
 	let currentRoundIndex = $state(0);
 	let items = $state<SortableRoundItem[]>(
 		playableRounds[0]?.kind === 'sortable' ? [...playableRounds[0].items] : []
@@ -52,6 +63,10 @@
 	let mapHeight = $state(1);
 	let foundFeatures = $state<TopoGeometry[]>([]);
 	let arrowRotation = $state<number | undefined>();
+	let sliderValue = $state(
+		playableRounds[0]?.kind === 'numeric-slider' ? playableRounds[0].settings.initialValue : 0
+	);
+	let sliderChanged = $state(false);
 	let timeMs = $state(0);
 	let startedAt = 0;
 	let intervalId: ReturnType<typeof setInterval> | undefined;
@@ -133,6 +148,25 @@
 		};
 	}
 
+	function toNumericSliderRound(round: TaxonomyRound, difficulty: number | null) {
+		if (round.attribute.type !== AttributeType.number || round.items.length !== 1) return null;
+		const item = round.items[0];
+		const targetValue = numericValue(item?.value);
+		if (!item || targetValue === null || typeof item.name !== 'string') return null;
+		const settings =
+			createNumericSliderSettings(targetValue, difficulty, round.attribute.schema) ??
+			createNumericSliderSettings(targetValue, difficulty, null);
+		if (!settings) return null;
+
+		return {
+			kind: 'numeric-slider' as const,
+			category: round.category,
+			attribute: round.attribute,
+			target: { id: item.id, name: item.name, value: targetValue },
+			settings
+		};
+	}
+
 	function toMapRound(round: TaxonomyRound) {
 		if (round.attribute.type === AttributeType.number) return null;
 		const mapItems = round.mapItems.map(toMapItem).filter(isMapItem);
@@ -208,8 +242,8 @@
 		);
 	}
 
-	function toGameRound(round: TaxonomyRound) {
-		return toSortableRound(round) ?? toMapRound(round);
+	function toGameRound(round: TaxonomyRound, difficulty: number | null) {
+		return toNumericSliderRound(round, difficulty) ?? toSortableRound(round) ?? toMapRound(round);
 	}
 
 	function isGameRound(round: ReturnType<typeof toGameRound>): round is GameRound {
@@ -225,6 +259,33 @@
 		else mistakes += 1;
 	}
 
+	function submitSliderValue() {
+		if (!currentRound || currentRound.kind !== 'numeric-slider' || feedback?.correct) return;
+		const correct = isNumericSliderAnswerCorrect(
+			sliderValue,
+			currentRound.target.value,
+			currentRound.settings
+		);
+		const direction = getNumericSliderDirection(sliderValue, currentRound.target.value);
+		arrowRotation = correct ? undefined : direction === 'right' ? 90 : 270;
+		showFeedback({
+			correct,
+			title: correct ? m.taxonomy_slider_correct_title() : m.taxonomy_slider_wrong_title(),
+			description: correct
+				? m.taxonomy_slider_correct_description({
+						targetName: currentRound.target.name,
+						value: formatSliderValue(
+							currentRound.target.value,
+							currentRound.settings.precision,
+							getLocale()
+						)
+					})
+				: m.taxonomy_slider_wrong_description()
+		});
+		if (correct) completed += 1;
+		else mistakes += 1;
+	}
+
 	function nextRound() {
 		clearFeedbackTimeout();
 		currentRoundIndex += 1;
@@ -233,6 +294,8 @@
 		arrowRotation = undefined;
 		const next = playableRounds[currentRoundIndex];
 		items = next?.kind === 'sortable' ? [...next.items] : [];
+		sliderValue = next?.kind === 'numeric-slider' ? next.settings.initialValue : 0;
+		sliderChanged = false;
 		if (currentRoundIndex >= playableRounds.length) completeGame();
 	}
 
@@ -366,6 +429,16 @@
 					{countryFocusedHandler}
 				/>
 			</div>
+		{:else if currentRound.kind === 'numeric-slider'}
+			<NumericSlider
+				bind:value={sliderValue}
+				settings={currentRound.settings}
+				label={m.taxonomy_slider_prompt({
+					attribute: currentRound.attribute.name ?? m.taxonomy_value()
+				})}
+				disabled={feedback?.correct ?? false}
+				onchange={() => (sliderChanged = true)}
+			/>
 		{:else}
 			<section
 				class="absolute inset-0 z-1 m-auto h-fit max-h-dvh w-full max-w-md scrollbar-none overflow-y-auto overscroll-contain mask-[linear-gradient(to_bottom,transparent,black_8rem,black_calc(100%-2rem),transparent)] px-4 pt-44 pb-8 sm:max-w-lg sm:px-5"
@@ -395,8 +468,8 @@
 						})}
 						class="rounded-md px-1.5 py-0.5 font-extrabold"
 					>
-						{m.taxonomy_round()} {#key currentRoundIndex}<span in:scale={{ start: 1.5 }}
-								>{currentRoundIndex + 1}</span
+						{m.taxonomy_round()}
+						{#key currentRoundIndex}<span in:scale={{ start: 1.5 }}>{currentRoundIndex + 1}</span
 							>{/key} / {playableRounds.length}
 					</span>
 				{/if}
@@ -404,13 +477,15 @@
 					aria-label={m.taxonomy_score_progress({ completed, total: goal })}
 					class="rounded-md px-1.5 py-0.5 font-extrabold"
 				>
-					{m.taxonomy_score()} {#key completed}<span in:scale={{ start: 1.5 }}>{completed}</span>{/key} / {goal}
+					{m.taxonomy_score()}
+					{#key completed}<span in:scale={{ start: 1.5 }}>{completed}</span>{/key} / {goal}
 				</span>
 				<span
 					class="rounded-md px-1.5 py-0.5 font-extrabold text-game-danger"
 					aria-label={m.taxonomy_mistakes_aria({ count: mistakes })}
 				>
-					{m.taxonomy_mistakes()} {#key mistakes}<span in:scale={{ start: 1.5 }}>{mistakes}</span
+					{m.taxonomy_mistakes()}
+					{#key mistakes}<span in:scale={{ start: 1.5 }}>{mistakes}</span
 						>{/key}{#if maxMistakes !== null}
 						/ {maxMistakes}{/if}
 				</span>
@@ -427,12 +502,20 @@
 						class="flex items-center justify-center rounded-md border border-game-border bg-game-inverse px-4 py-2 text-center text-game-inverse-text shadow-panel"
 					>
 						<div>
-							{#if currentRound.kind !== 'sortable'}<p class="mt-1 text-sm">
-									{m.taxonomy_map_prompt({ attribute: currentRound.attribute.name ?? m.taxonomy_location() })}
+							{#if currentRound.kind === 'map'}<p class="mt-1 text-sm">
+									{m.taxonomy_map_prompt({
+										attribute: currentRound.attribute.name ?? m.taxonomy_location()
+									})}
+								</p>{:else if currentRound.kind === 'numeric-slider'}<p class="mt-1 text-sm">
+									{m.taxonomy_slider_prompt({
+										attribute: currentRound.attribute.name ?? m.taxonomy_value()
+									})}
 								</p>{/if}
 							<h1 class="font-serif text-[clamp(1.7rem,3.6vw,3.5rem)] leading-none font-black">
 								{currentRound.kind === 'sortable'
-									? m.taxonomy_sort_by({ attribute: currentRound.attribute.name ?? m.taxonomy_value() })
+									? m.taxonomy_sort_by({
+											attribute: currentRound.attribute.name ?? m.taxonomy_value()
+										})
 									: currentRound.target.name}
 							</h1>
 						</div>
@@ -446,6 +529,20 @@
 				>
 					<Button type="button" size="lg" class="w-full text-lg font-black" onclick={submitOrder}
 						>{m.taxonomy_submit_order()}</Button
+					>
+				</div>
+			{/if}
+			{#if currentRound.kind === 'numeric-slider' && !feedback?.correct}
+				<div
+					class="pointer-events-auto flex w-[min(100%,24rem)] justify-center"
+					in:fly={{ y: -18, duration: 220, delay: 100 }}
+				>
+					<Button
+						type="button"
+						size="lg"
+						class="w-full text-lg font-black"
+						disabled={!sliderChanged}
+						onclick={submitSliderValue}>{m.taxonomy_submit_value()}</Button
 					>
 				</div>
 			{/if}

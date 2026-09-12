@@ -10,6 +10,7 @@ export type TaxonomyRound = {
 		name: string | null;
 		referencedCategoryId: string | null;
 		type: AttributeType;
+		schema: Record<string, unknown> | null;
 	};
 	items: Array<{
 		id: string;

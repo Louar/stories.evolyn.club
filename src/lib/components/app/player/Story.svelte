@@ -405,6 +405,7 @@
 							rounds={taxonomyForeground.rounds}
 							goal={taxonomyForeground.goal}
 							maxMistakes={taxonomyForeground.maxMistakes}
+							difficulty={taxonomyForeground.difficulty}
 							showHints={taxonomyForeground.showHints}
 							oncomplete={(performance) => submitTaxonomy(taxonomyForeground.logic, performance)}
 						/>

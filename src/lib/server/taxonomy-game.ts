@@ -157,6 +157,7 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 				'targetAttribute.id as attributeId',
 				selectLocalizedField(eb, 'targetAttribute.name', language).as('attributeName'),
 				'targetAttribute.type as attributeType',
+				'targetAttribute.schema',
 				'targetAttribute.referencedCategoryId'
 			])
 			.groupBy(['category.id', 'category.taxonomyId', 'targetAttribute.id'])
@@ -192,6 +193,7 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 						name: string | null;
 						referencedCategoryId: string | null;
 						type: AttributeTypeValue;
+						schema: Record<string, unknown> | null;
 					}[];
 				}
 			>
@@ -206,7 +208,8 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 				id: combination.attributeId,
 				name: combination.attributeName,
 				referencedCategoryId: combination.referencedCategoryId,
-				type: combination.attributeType
+				type: combination.attributeType,
+				schema: combination.schema
 			});
 			return categories;
 		}, {})
@@ -434,7 +437,8 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 					id: attribute.id,
 					name: attribute.name,
 					referencedCategoryId: attribute.referencedCategoryId,
-					type: attribute.type
+					type: attribute.type,
+					schema: attribute.schema
 				},
 				items,
 				map: mapCategory?.map ?? null,
@@ -447,6 +451,7 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 		rounds: rounds.filter((round): round is TaxonomyRound => round !== null),
 		goal,
 		maxMistakes,
+		difficulty,
 		showHints: false as const,
 		logic: {
 			defaultNextPartId: draft.defaultNextPartId,
