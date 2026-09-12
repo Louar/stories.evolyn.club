@@ -237,17 +237,28 @@
 		);
 	};
 
-	const hasOverlay = (
-		part: (typeof story.parts)[number],
-		player: (typeof players)[number] | undefined
-	) => {
+	const cueTolerance = 0.02;
+
+	const getOverlayStart = (part: StoryPart, player: Player | undefined) => {
+		if (part.backgroundType !== 'video') return undefined;
+		if (!part.background || !('duration' in part.background)) return undefined;
+		if (!part.foreground) return undefined;
+
+		const clipStart = player?.start ?? 0;
+		const clipEnd = Math.min(player?.end ?? part.background.duration, part.background.duration);
+		const cue = (part.foreground.start ?? 0) * part.background.duration - clipStart;
+
+		return Math.min(Math.max(cue, 0), Math.max(0, clipEnd - clipStart));
+	};
+
+	const hasOverlay = (part: StoryPart, player: Player | undefined) => {
 		if (part.backgroundType === 'still') return Boolean(part.foreground);
-		if (!part.background || !('duration' in part.background)) return false;
+		const overlayStart = getOverlayStart(part, player);
 		return (
 			PLAYERS.didUserInteract &&
-			part.foreground &&
-			(player?.start ?? 0) + (player?.time ?? 0) >=
-				(part.foreground?.start ?? 0) * part.background?.duration
+			Boolean(part.foreground) &&
+			typeof overlayStart === 'number' &&
+			(player?.time ?? 0) >= overlayStart - cueTolerance
 		);
 	};
 
@@ -272,12 +283,38 @@
 	const hasActiveForegroundInteraction = (part: StoryPart, player: Player | undefined) =>
 		!isEnded && (Boolean(getTaxonomyGame(part)) || hasQuizInteraction(part, player));
 
+	const shouldPauseAtOverlay = (part: StoryPart) =>
+		Boolean(getTaxonomyGame(part)) ||
+		(part.foregroundType === 'quiz' &&
+			part.foreground &&
+			'questions' in part.foreground &&
+			'logic' in part.foreground);
+
+	const handleOverlayStart = (
+		part: StoryPart,
+		player: Player | undefined,
+		expectedVisit: number
+	) => {
+		if (!player || !canNavigate(part.id, expectedVisit)) return;
+		const overlayStart = getOverlayStart(part, player);
+		if (typeof overlayStart === 'number') player.time = Math.max(player.time ?? 0, overlayStart);
+	};
+
+	const updatePlayerTimeToPartEnd = (part: StoryPart, player: Player) => {
+		if (part.backgroundType !== 'video') return;
+		if (!part.background || !('duration' in part.background)) return;
+
+		const partEnd = Math.min(player.end ?? part.background.duration, part.background.duration);
+		player.time = Math.max(player.time ?? 0, partEnd - (player.start ?? 0));
+	};
+
 	const finishPart = (partId: string, expectedVisit: number) => {
 		if (!canNavigate(partId, expectedVisit)) return;
 		const part = story.parts.find((candidate) => candidate.id === partId);
 		const player = players.find((candidate) => candidate.id === partId);
 		if (!part || !player) return end(false);
 
+		updatePlayerTimeToPartEnd(part, player);
 		player.doEnd = true;
 		if (hasActiveForegroundInteraction(part, player)) {
 			player.doPause = true;
@@ -335,6 +372,7 @@
 		{#each story?.parts as part (part.id)}
 			{@const player = players.find((player) => player.id === part.id)}
 			{@const taxonomyForeground = getTaxonomyGame(part)}
+			{@const overlayStart = getOverlayStart(part, player)}
 			{@const activeVisit = visit}
 
 			<div
@@ -387,11 +425,14 @@
 						bind:doEnd={player.doEnd}
 						bind:time={player.time}
 						isOverlaid={hasOverlay(part, player)}
+						overlayStart={overlayStart}
+						pauseAtOverlay={shouldPauseAtOverlay(part)}
 						bufferNext={() => {
 							if (nextPlayers?.length) {
 								nextPlayers.forEach((nextPlayer) => (nextPlayer.doBuffer = true));
 							}
 						}}
+						onoverlaystart={() => handleOverlayStart(part, player, activeVisit)}
 						playNext={() => {
 							finishPart(part.id, activeVisit);
 						}}
@@ -434,7 +475,7 @@
 					{/if}
 				{/if}
 
-				{#if !isEnded && part.id === pid && taxonomyForeground}
+				{#if !isEnded && part.id === pid && taxonomyForeground && hasOverlay(part, player)}
 					<div class="absolute inset-0 z-20">
 						{#key activeVisit}
 							<TaxonomyGame

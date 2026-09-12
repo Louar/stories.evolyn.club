@@ -31,10 +31,10 @@
 				<Sidebar.MenuItem class="px-2">
 					<Sidebar.MenuButton
 						onclick={() => sidebar?.setOpenMobile(false)}
-						isActive={page.url.pathname === '/edit'}
+						isActive={page.url.pathname === '/edit/assistant'}
 					>
 						{#snippet child({ props })}
-							<a href={resolve('/edit')} {...props}>Assistant</a>
+							<a href={resolve('/edit/assistant')} {...props}>Assistant</a>
 						{/snippet}
 					</Sidebar.MenuButton>
 				</Sidebar.MenuItem>

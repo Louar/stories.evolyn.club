@@ -204,7 +204,6 @@
 					accept="image/*"
 					preview="image"
 					placeholder="https://..."
-					description="Drop an image, browse, or add an external image URL."
 					onValueChange={scheduleAutosave}
 				/>
 				<Field.Error>{formatFormError(error, 'image.filename')}</Field.Error>

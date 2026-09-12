@@ -38,9 +38,12 @@
 		doEnd: boolean;
 		time: number;
 		isOverlaid: boolean;
+		overlayStart?: number | undefined;
+		pauseAtOverlay?: boolean | undefined;
 
 		bufferNext: () => void;
 		playNext: () => void;
+		onoverlaystart?: (() => void) | undefined;
 
 		class?: ClassValue | null | undefined;
 	};
@@ -63,9 +66,12 @@
 		doEnd = $bindable(false),
 		time = $bindable(0),
 		isOverlaid = $bindable(false),
+		overlayStart,
+		pauseAtOverlay = false,
 
 		bufferNext,
 		playNext,
+		onoverlaystart,
 
 		class: className
 	}: Props = $props();
@@ -91,6 +97,8 @@
 	let hls: Hls | undefined;
 	let watchTimer: ReturnType<typeof setInterval> | undefined;
 	let progressTimer: ReturnType<typeof setInterval> | undefined;
+	let overlayTimer: ReturnType<typeof setTimeout> | undefined;
+	let clipEndTimer: ReturnType<typeof setTimeout> | undefined;
 	let ambientTimer: ReturnType<typeof setTimeout> | undefined;
 	let youtubeReadyTimer: ReturnType<typeof setInterval> | undefined;
 
@@ -101,6 +109,7 @@
 	let almostEnded = $state(false);
 	let isEnded = $state(false);
 	let didHandleEnd = $state(false);
+	let didHandleOverlay = $state(false);
 	let mediaDuration = $state(0);
 
 	const clipDuration = $derived(
@@ -109,6 +118,10 @@
 	const progressPercentage = $derived(
 		clipDuration > 0 ? Math.min(100, Math.max(0, (time / clipDuration) * 100)) : 0
 	);
+	const hasOverlayCue = $derived(
+		typeof overlayStart === 'number' && Number.isFinite(overlayStart)
+	);
+	const cueTolerance = 0.02;
 
 	const getCurrentTime = () =>
 		sourceType === 'youtube'
@@ -168,13 +181,68 @@
 		time = absoluteTime - clipStart;
 	};
 
+	const pauseAtClipEnd = () => {
+		seekTo(clipDuration);
+		pauseMedia();
+	};
+
+	const stopOverlayTimer = () => {
+		if (overlayTimer) clearTimeout(overlayTimer);
+		overlayTimer = undefined;
+	};
+
+	const stopClipEndTimer = () => {
+		if (clipEndTimer) clearTimeout(clipEndTimer);
+		clipEndTimer = undefined;
+	};
+
+	const handleOverlayCue = () => {
+		if (!hasOverlayCue || didHandleOverlay || !isActive) return false;
+
+		didHandleOverlay = true;
+		if (pauseAtOverlay) {
+			if (clipDuration > 0 && time >= clipDuration - cueTolerance) pauseAtClipEnd();
+			else pauseMedia();
+		}
+		onoverlaystart?.();
+		return pauseAtOverlay;
+	};
+
+	const startOverlayTimer = () => {
+		stopOverlayTimer();
+		if (!hasOverlayCue || didHandleOverlay || !canPlay || !isPlaying) return;
+
+		const delay = Math.max(0, ((overlayStart ?? 0) - time - cueTolerance) / (playbackRate ?? 1));
+		overlayTimer = setTimeout(() => {
+			overlayTimer = undefined;
+			updateProgress();
+		}, delay * 1000);
+	};
+
+	const startClipEndTimer = () => {
+		stopClipEndTimer();
+		if (!canPlay || !isPlaying || clipDuration <= 0) return;
+
+		const delay = Math.max(0, (clipDuration - time - cueTolerance) / (playbackRate ?? 1));
+		clipEndTimer = setTimeout(() => {
+			clipEndTimer = undefined;
+			updateProgress();
+		}, delay * 1000);
+	};
+
 	const updateProgress = () => {
 		if (!canPlay) return;
 
 		time = Math.max(0, getCurrentTime() - clipStart);
+		if (hasOverlayCue && time >= (overlayStart ?? 0) - cueTolerance && handleOverlayCue()) return;
+		if (didHandleOverlay && pauseAtOverlay) {
+			if (clipDuration > 0 && time >= clipDuration - cueTolerance) pauseAtClipEnd();
+			return;
+		}
+
 		const timeLeft = clipDuration - time;
 		if (!almostEnded && timeLeft <= 30) almostEnded = true;
-		if (!isEnded && clipDuration > 0 && time >= clipDuration - 0.05) handleEnded();
+		if (!isEnded && clipDuration > 0 && time >= clipDuration - cueTolerance) handleEnded();
 	};
 
 	const startProgressTimer = () => {
@@ -197,6 +265,8 @@
 		hasStarted = true;
 		PLAYERS.isAnyPartPlaying = true;
 		startProgressTimer();
+		startOverlayTimer();
+		startClipEndTimer();
 		startAmbientVideo();
 		if (watchTimer) return;
 		watchTimer = setInterval(
@@ -211,6 +281,8 @@
 		stopAmbientVideo();
 		paintAmbientVideo();
 		stopProgressTimer();
+		stopOverlayTimer();
+		stopClipEndTimer();
 		if (watchTimer) clearInterval(watchTimer);
 		watchTimer = undefined;
 		updateProgress();
@@ -225,9 +297,15 @@
 
 	const handleEnded = () => {
 		if (isEnded) return;
-		isEnded = true;
 		time = clipDuration;
-		pauseMedia();
+		if (hasOverlayCue && time >= (overlayStart ?? 0) - cueTolerance && handleOverlayCue()) return;
+		if (didHandleOverlay && pauseAtOverlay) {
+			pauseAtClipEnd();
+			return;
+		}
+
+		isEnded = true;
+		pauseAtClipEnd();
 		endWatching();
 	};
 
@@ -332,6 +410,7 @@
 		almostEnded = false;
 		isEnded = false;
 		doEnd = false;
+		didHandleOverlay = false;
 		didHandleEnd = false;
 		void playMedia();
 	};
@@ -395,6 +474,8 @@
 	onDestroy(() => {
 		if (watchTimer) clearInterval(watchTimer);
 		if (progressTimer) clearInterval(progressTimer);
+		if (overlayTimer) clearTimeout(overlayTimer);
+		if (clipEndTimer) clearTimeout(clipEndTimer);
 		if (ambientTimer) clearTimeout(ambientTimer);
 		if (youtubeReadyTimer) clearInterval(youtubeReadyTimer);
 		hls?.destroy();
