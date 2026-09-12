@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import type { findOneStoryById } from '$lib/db/repositories/2-story-module';
-	import { formatDuration } from '$lib/db/schemas/0-utils';
+	import { formatDuration, translateLocalizedField } from '$lib/db/schemas/0-utils';
 	import { PartTerminationStrategy } from '$lib/db/schemas/2-story-module.js';
 	import { EDITORS } from '$lib/states/editors.svelte';
+	import { UI } from '$lib/states/ui.svelte';
 	import BanIcon from '@lucide/svelte/icons/ban';
 	import CirclePlayIcon from '@lucide/svelte/icons/circle-play';
 	import ImageIcon from '@lucide/svelte/icons/image';
@@ -37,7 +38,7 @@
 		part.foregroundType === 'quiz'
 			? (quiz?.name ?? 'Unselected quiz')
 			: part.foregroundType === 'taxonomy'
-				? (taxonomy?.name ?? 'Unselected taxonomy')
+				? (translateLocalizedField(taxonomy?.name, UI.language) ?? 'Unselected taxonomy')
 				: part.foregroundType === 'announcement'
 					? (announcement?.name ?? 'Unselected announcement')
 					: 'No foreground'
