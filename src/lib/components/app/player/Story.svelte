@@ -252,7 +252,7 @@
 	};
 
 	const hasOverlay = (part: StoryPart, player: Player | undefined) => {
-		if (part.backgroundType === 'still') return Boolean(part.foreground);
+		if (part.backgroundType !== 'video') return Boolean(part.foreground);
 		const overlayStart = getOverlayStart(part, player);
 		return (
 			PLAYERS.didUserInteract &&
