@@ -46,7 +46,13 @@ const findOneAnthologyById = async (clientId: string, anthologyId: string) => {
 					.whereRef('user.id', '=', 'anthology.createdBy')
 					.select((eb) => [
 						'user.id',
-						eb.fn<string>('concat', ['user.firstName', eb.val(' '), 'user.lastName']).as('label'),
+						eb
+							.fn<string>('concat', [
+								'user.firstName',
+								eb.cast<string>(eb.val(' '), 'text'),
+								'user.lastName'
+							])
+							.as('label'),
 						'user.picture as image'
 					])
 			).as('createdBy'),
@@ -56,7 +62,13 @@ const findOneAnthologyById = async (clientId: string, anthologyId: string) => {
 					.whereRef('user.id', '=', 'anthology.updatedBy')
 					.select((eb) => [
 						'user.id',
-						eb.fn<string>('concat', ['user.firstName', eb.val(' '), 'user.lastName']).as('label'),
+						eb
+							.fn<string>('concat', [
+								'user.firstName',
+								eb.cast<string>(eb.val(' '), 'text'),
+								'user.lastName'
+							])
+							.as('label'),
 						'user.picture as image'
 					])
 			).as('updatedBy'),
