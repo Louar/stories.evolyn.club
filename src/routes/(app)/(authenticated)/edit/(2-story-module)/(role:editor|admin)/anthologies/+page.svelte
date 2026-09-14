@@ -26,6 +26,7 @@
 	import LoaderCircleIcon from '@lucide/svelte/icons/loader-circle';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
+	import { page } from '$app/state';
 
 	let { data } = $props();
 	const endpoint = '/api/anthologies';
@@ -188,10 +189,10 @@
 		},
 		{
 			id: 'url',
-			accessorFn: (row) => `/a/${row.slug}`,
+			accessorFn: (row) => `${page.url.host}/${row.slug}`,
 			header: 'Anthology URL',
 			size: 220,
-			meta: { cell: { variant: 'relation-follow', url: '/a/{slug}' }, readOnly: true },
+			meta: { cell: { variant: 'relation-follow', url: `/{slug}` }, readOnly: true },
 			filterFn
 		},
 		{
