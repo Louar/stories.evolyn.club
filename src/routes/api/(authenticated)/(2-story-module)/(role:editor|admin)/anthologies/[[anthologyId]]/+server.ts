@@ -29,6 +29,7 @@ const findOneAnthologyById = async (clientId: string, anthologyId: string) => {
 			'anthology.slug',
 			'anthology.name',
 			'anthology.name as nameRaw',
+			'anthology.visualization',
 			'anthology.configuration',
 			'anthology.isPublished',
 			'anthology.isPublic',

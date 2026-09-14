@@ -23,6 +23,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			'anthology.slug',
 			'anthology.name',
 			'anthology.name as nameRaw',
+			'anthology.visualization',
 			'anthology.configuration',
 			'anthology.isPublic',
 			'anthology.isPublished',

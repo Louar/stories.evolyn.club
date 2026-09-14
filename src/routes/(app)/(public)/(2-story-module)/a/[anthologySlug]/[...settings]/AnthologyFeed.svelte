@@ -10,8 +10,9 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { Confetti } from 'svelte-confetti';
 	import { fade } from 'svelte/transition';
+	import type { PageData } from './$types';
 
-	let { data } = $props();
+	let { data }: { data: PageData } = $props();
 	let anthology = $derived(data.anthology);
 	let progressStorage = $derived(
 		anthology?.slug?.length ? `anthology-progress:${anthology.slug}` : undefined

@@ -1,5 +1,6 @@
 import {
 	AnthologyPermissionRole,
+	AnthologyVisualization,
 	AttributeType,
 	LogicHitpolicy,
 	PartTerminationStrategy,
@@ -19,6 +20,11 @@ export const InitStoryModule: Migration = {
 		await db.schema
 			.createType('anthology_permission_role')
 			.asEnum(Object.values(AnthologyPermissionRole))
+			.execute();
+		await db.schema.dropType('anthology_visualization').ifExists().execute();
+		await db.schema
+			.createType('anthology_visualization')
+			.asEnum(Object.values(AnthologyVisualization))
 			.execute();
 		await db.schema.dropType('story_permission_role').ifExists().execute();
 		await db.schema
@@ -414,6 +420,9 @@ export const InitStoryModule: Migration = {
 			)
 			.addColumn('slug', 'text', (col) => col.notNull())
 			.addColumn('name', 'jsonb', (col) => col.notNull())
+			.addColumn('visualization', sql`anthology_visualization`, (col) =>
+				col.defaultTo(AnthologyVisualization.grid).notNull()
+			)
 			.addColumn('configuration', 'jsonb')
 			.addColumn('is_published', 'boolean', (col) => col.defaultTo(false).notNull())
 			.addColumn('is_public', 'boolean', (col) => col.defaultTo(false).notNull())
@@ -805,6 +814,7 @@ export const InitStoryModule: Migration = {
 
 		await db.schema.dropType('logic_hitpolicy').ifExists().execute();
 		await db.schema.dropType('anthology_permission_role').ifExists().execute();
+		await db.schema.dropType('anthology_visualization').ifExists().execute();
 		await db.schema.dropType('story_permission_role').ifExists().execute();
 		await db.schema.dropType('attribute_type').ifExists().execute();
 		await db.schema.dropType('part_termination_strategy').ifExists().execute();

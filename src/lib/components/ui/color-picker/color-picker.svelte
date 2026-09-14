@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { cn } from '$lib/utils';
 	import { Button } from '$lib/components/ui/button';
-	import { ChevronDown } from '@lucide/svelte';
-	import * as Popover from '$lib/components/ui/popover';
-	import * as Command from '$lib/components/ui/command';
 	import * as ButtonGroup from '$lib/components/ui/button-group';
+	import * as Command from '$lib/components/ui/command';
 	import { Input } from '$lib/components/ui/input';
+	import * as Popover from '$lib/components/ui/popover';
+	import { cn } from '$lib/utils';
+	import { ChevronDown } from '@lucide/svelte';
 
 	type ColorFormat = 'hex' | 'rgb' | 'hsl' | 'oklch';
 
@@ -27,6 +27,7 @@
 	let s = $state(0);
 	let v = $state(0);
 	let a = $state(1);
+	// svelte-ignore state_referenced_locally
 	let activeFormat = $state<ColorFormat>(defaultFormat);
 	let isDragging = $state(false);
 
@@ -355,12 +356,10 @@
 	}
 </script>
 
-<div
-	class={cn('flex w-[350px] flex-col gap-3 p-3 border rounded-lg shadow-sm bg-popover', className)}
->
+<div class={cn('flex w-87.5 flex-col gap-3 rounded-lg border bg-popover p-3 shadow-sm', className)}>
 	<div
 		bind:this={sbRef}
-		class="relative h-56 w-full cursor-crosshair rounded-md shadow-sm overflow-hidden touch-none select-none"
+		class="relative h-56 w-full cursor-crosshair touch-none overflow-hidden rounded-md shadow-sm select-none"
 		style:background-color={`hsl(${h}, 100%, 50%)`}
 		role="slider"
 		aria-label="Saturation and Brightness"
@@ -369,27 +368,30 @@
 		onmousedown={(e) => handleDragStart(e, handleSbChange)}
 		ontouchstart={(e) => handleDragStart(e, handleSbChange)}
 	>
-		<div class="absolute inset-0 bg-gradient-to-r from-white to-transparent pointer-events-none" />
-		<div class="absolute inset-0 bg-gradient-to-t from-black to-transparent pointer-events-none" />
 		<div
-			class="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-sm ring-1 ring-black/20 pointer-events-none"
+			class="pointer-events-none absolute inset-0 bg-linear-to-r from-white to-transparent"
+		></div>
+		<div
+			class="pointer-events-none absolute inset-0 bg-linear-to-t from-black to-transparent"
+		></div>
+		<div
+			class="pointer-events-none absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-sm ring-1 ring-black/20"
 			style:left={`${s}%`}
 			style:top={`${100 - v}%`}
-		/>
+		></div>
 	</div>
 
-	<div class="flex gap-3 items-center">
+	<div class="flex items-center gap-3">
 		<div
-			class="h-8 w-8 shrink-0 rounded-md border shadow-sm relative overflow-hidden mt-1 bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGBZIA/nYDCgBDAm9BGDWAAJyRCgLaBCAAgXwixzAS0pgAAAABJRU5ErkJggg==')]"
+			class="relative mt-1 h-8 w-8 shrink-0 overflow-hidden rounded-md border bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGBZIA/nYDCgBDAm9BGDWAAJyRCgLaBCAAgXwixzAS0pgAAAABJRU5ErkJggg==')] shadow-sm"
 		>
-			<div class="absolute inset-0" style:background-color={hsvToHex(h, s, v, a)} />
+			<div class="absolute inset-0" style:background-color={hsvToHex(h, s, v, a)}></div>
 		</div>
 
-		<div class="flex flex-1 flex-col gap-3 justify-center">
+		<div class="flex flex-1 flex-col justify-center gap-3">
 			<div
 				bind:this={hueRef}
-				class="relative h-3 w-full cursor-pointer rounded-full shadow-sm ring-1 ring-black/5 touch-none select-none"
-				style:background={'linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)'}
+				class="relative h-3 w-full cursor-pointer touch-none rounded-full bg-[linear-gradient(to_right,#f00_0%,#ff0_17%,#0f0_33%,#0ff_50%,#00f_67%,#f0f_83%,#f00_100%)] shadow-sm ring-1 ring-black/5 select-none"
 				role="slider"
 				aria-valuenow={h}
 				tabindex="0"
@@ -397,15 +399,15 @@
 				ontouchstart={(e) => handleDragStart(e, handleHueChange)}
 			>
 				<div
-					class="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white pointer-events-none"
+					class="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white"
 					style:left={`${(h / 360) * 100}%`}
-				/>
+				></div>
 			</div>
 
 			{#if allowOpacity}
 				<div
 					bind:this={alphaRef}
-					class="relative h-3 w-full cursor-pointer rounded-full shadow-sm ring-1 ring-black/5 touch-none select-none bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGBZIA/nYDCgBDAm9BGDWAAJyRCgLaBCAAgXwixzAS0pgAAAABJRU5ErkJggg==')]"
+					class="relative h-3 w-full cursor-pointer touch-none rounded-full bg-[url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGBZIA/nYDCgBDAm9BGDWAAJyRCgLaBCAAgXwixzAS0pgAAAABJRU5ErkJggg==')] shadow-sm ring-1 ring-black/5 select-none"
 					role="slider"
 					aria-valuenow={a}
 					tabindex="0"
@@ -415,11 +417,11 @@
 					<div
 						class="absolute inset-0 rounded-full"
 						style:background={`linear-gradient(to right, transparent, ${hsvToHex(h, s, v, 1)})`}
-					/>
+					></div>
 					<div
-						class="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white pointer-events-none"
+						class="pointer-events-none absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white"
 						style:left={`${a * 100}%`}
-					/>
+					></div>
 				</div>
 			{/if}
 		</div>
@@ -433,22 +435,22 @@
 						<Button
 							{...props}
 							variant="outline"
-							class="max-w-[5rem] px-2 text-[10px] justify-between h-9"
+							class="h-9 max-w-20 justify-between px-2 text-[10px]"
 						>
 							{activeFormat.toUpperCase()}
 							<ChevronDown class="h-3 w-3 opacity-50" />
 						</Button>
 					{/snippet}
 				</Popover.Trigger>
-				<Popover.Content class="w-[4.5rem] p-0" align="start">
+				<Popover.Content class="w-18 p-0" align="start">
 					<Command.Root>
 						<Command.List>
 							<Command.Group>
-								{#each ['hex', 'rgb', 'hsl', 'oklch'] as fmt}
+								{#each ['hex', 'rgb', 'hsl', 'oklch'] as fmt (fmt)}
 									<Command.Item
 										value={fmt}
 										onSelect={() => setFormat(fmt as ColorFormat)}
-										class="text-[10px] h-7 flex justify-center"
+										class="flex h-7 justify-center text-[10px]"
 									>
 										{fmt.toUpperCase()}
 									</Command.Item>
@@ -459,12 +461,12 @@
 				</Popover.Content>
 			</Popover.Root>
 		{:else}
-			<Button variant="outline" class="max-w-[5rem] px-2 text-[10px] justify-between h-9">
+			<Button variant="outline" class="h-9 max-w-20 justify-between px-2 text-[10px]">
 				{activeFormat.toUpperCase()}
 			</Button>
 		{/if}
 		<Input
-			class="h-9 font-mono text-[10px] uppercase flex-1"
+			class="h-9 flex-1 font-mono text-[10px] uppercase"
 			{value}
 			oninput={(e) => {
 				const parsed = parseColor(e.currentTarget.value);
@@ -480,7 +482,7 @@
 
 		{#if allowOpacity}
 			<Input
-				class="h-9 font-mono text-[10px] text-right max-w-[4.2rem]"
+				class="h-9 max-w-[4.2rem] text-right font-mono text-[10px]"
 				value={Math.round(a * 100) + '%'}
 				oninput={handleAlphaInput}
 				maxlength={3}

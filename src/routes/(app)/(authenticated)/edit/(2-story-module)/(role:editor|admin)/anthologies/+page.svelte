@@ -22,6 +22,7 @@
 	import { MEGABYTE } from '$lib/components/ui/file-drop-zone';
 	import { renderComponent } from '$lib/components/ui/table-tanstack/index.js';
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
+	import { AnthologyVisualization } from '$lib/db/schemas/2-story-module';
 	import LoaderCircleIcon from '@lucide/svelte/icons/loader-circle';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
@@ -40,6 +41,10 @@
 	let isDeleting = $state(false);
 	let pendingDelete = $state.raw<PendingDelete | null>(null);
 	const filterFn = getFilterFn<Row>();
+	const visualizationOptions = () => [
+		{ title: 'Grid', value: AnthologyVisualization.grid },
+		{ title: 'Feed', value: AnthologyVisualization.feed }
+	];
 	const windowSize = useWindowSize({ defaultHeight: 800 });
 	const gridHeight = $derived(Math.max(250, windowSize.height - 150));
 
@@ -137,6 +142,12 @@
 			filterFn
 		},
 		{
+			accessorKey: 'visualization',
+			header: 'Visualization',
+			meta: { cell: { variant: 'select-single', options: visualizationOptions() } },
+			filterFn
+		},
+		{
 			accessorKey: 'configuration',
 			header: 'Configuration',
 			meta: { cell: { variant: 'json-yaml' } },
@@ -177,10 +188,10 @@
 		},
 		{
 			id: 'url',
-			accessorFn: (row) => `/a/${row.slug}/grid`,
+			accessorFn: (row) => `/a/${row.slug}`,
 			header: 'Anthology URL',
 			size: 220,
-			meta: { cell: { variant: 'relation-follow', url: '/a/{slug}/grid' }, readOnly: true },
+			meta: { cell: { variant: 'relation-follow', url: '/a/{slug}' }, readOnly: true },
 			filterFn
 		},
 		{
@@ -218,6 +229,7 @@
 		defaultRow: () => ({
 			slug: crypto.randomUUID().slice(0, 8),
 			nameRaw: { en: 'New anthology' },
+			visualization: AnthologyVisualization.grid,
 			configuration: null,
 			isPublished: false,
 			isPublic: true,

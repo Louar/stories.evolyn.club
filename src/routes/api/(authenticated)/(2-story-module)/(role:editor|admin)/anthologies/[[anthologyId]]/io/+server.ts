@@ -45,6 +45,7 @@ const findOneAnthologyById = async (clientId: string, anthologyId: string) =>
 			'anthology.id',
 			'anthology.slug',
 			'anthology.name',
+			'anthology.visualization',
 			'anthology.configuration',
 			'anthology.isPublished',
 			'anthology.isPublic',
@@ -185,6 +186,7 @@ export const POST = (async ({ locals, request, fetch }) => {
 				clientId,
 				slug: anthologySlug,
 				name: JSON.stringify(anthologyRaw.name),
+				visualization: anthologyRaw.visualization,
 				configuration: anthologyRaw.configuration
 					? JSON.stringify(anthologyRaw.configuration)
 					: null,

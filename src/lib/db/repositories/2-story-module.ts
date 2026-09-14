@@ -41,6 +41,7 @@ export const findOneAnthologyBySlug = async (
 		.select((eb) => [
 			'anthology.id',
 			'anthology.slug',
+			'anthology.visualization',
 			selectLocalizedField(eb, 'anthology.name', language).as('name'),
 			jsonArrayFrom(
 				eb

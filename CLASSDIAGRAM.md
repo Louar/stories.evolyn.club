@@ -184,6 +184,12 @@ classDiagram
       OWNER
   }
 
+  class AnthologyVisualization {
+      <<enumeration>>
+      GRID
+      FEED
+  }
+
   class PartBackgroundType {
       <<enumeration>>
       STILL
@@ -206,6 +212,7 @@ classDiagram
   class Anthology {
       slug: string
       name: Translatable
+      visualization: AnthologyVisualization
       configuration: jsonb?
       isPublished: boolean
       isPublic: boolean

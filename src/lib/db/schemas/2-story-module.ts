@@ -14,6 +14,13 @@ export const AnthologyPermissionRole = {
 export type AnthologyPermissionRole =
 	(typeof AnthologyPermissionRole)[keyof typeof AnthologyPermissionRole];
 
+export const AnthologyVisualization = {
+	grid: 'GRID',
+	feed: 'FEED'
+} as const;
+export type AnthologyVisualization =
+	(typeof AnthologyVisualization)[keyof typeof AnthologyVisualization];
+
 export const StoryPermissionRole = {
 	viewer: 'viewer',
 	editor: 'editor',
@@ -98,6 +105,11 @@ type Anthology = {
 	clientId: string;
 	slug: string;
 	name: TranslatableColumn;
+	visualization: ColumnType<
+		AnthologyVisualization,
+		AnthologyVisualization | null | undefined,
+		AnthologyVisualization | null | undefined
+	>;
 	configuration: JSONColumnType<AnthologyConfiguration> | null;
 	isPublished: ColumnType<boolean, boolean | null, boolean>;
 	isPublic: ColumnType<boolean, boolean | null, boolean>;
