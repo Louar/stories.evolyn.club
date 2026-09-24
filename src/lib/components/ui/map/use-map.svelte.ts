@@ -1,0 +1,33 @@
+import { Map } from "maplibre-gl";
+import { getContext } from "svelte";
+
+type MapContext = {
+	getMap: () => Map | null;
+	isLoaded: () => boolean;
+	isStyleReady: () => boolean;
+	resolvedTheme?: () => "light" | "dark";
+};
+
+export function useMap() {
+	const mapCtx = getContext<MapContext>("map");
+
+	const map = $derived.by(() => mapCtx?.getMap() ?? null);
+	const isLoaded = $derived.by(() => mapCtx?.isLoaded() ?? false);
+	const isStyleReady = $derived.by(() => mapCtx?.isStyleReady() ?? false);
+	const resolvedTheme = $derived.by(() => mapCtx?.resolvedTheme?.() ?? "light");
+
+	return {
+		get map() {
+			return map;
+		},
+		get isLoaded() {
+			return isLoaded;
+		},
+		get isStyleReady() {
+			return isStyleReady;
+		},
+		get resolvedTheme() {
+			return resolvedTheme;
+		},
+	};
+}

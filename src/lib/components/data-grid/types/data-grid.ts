@@ -2,14 +2,13 @@
 // Exact port of TableCN React types for Svelte 5
 
 import type { MediaCollection } from '$lib/db/schemas/0-utils';
-import type {
-	Cell,
-	Column,
-	ColumnDef,
-	Row,
-	RowData,
-	Table
-} from '@tanstack/table-core';
+import {
+	ROW_HEIGHTS,
+	ROW_LINE_COUNTS,
+	type DataGridRowHeight
+} from '$lib/components/data-grid/config/data-grid.js';
+import type { Cell, Column, RowData, Table } from '$lib/components/data-grid/data-grid-table.js';
+import type { TableFeatures } from '@tanstack/svelte-table';
 import type { Component, Snippet } from 'svelte';
 import type { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
@@ -22,7 +21,7 @@ export interface Option {
 	value: string;
 }
 
-export type RowHeightValue = 'short' | 'medium' | 'tall' | 'extra-tall';
+export type RowHeightValue = DataGridRowHeight;
 
 export interface CellSelectOption {
 	title: string;
@@ -36,16 +35,35 @@ export interface CellSelectOption {
 // Cell Types
 // ============================================
 
-export type CellOpts =
+export interface DataGridCellAction<TData> {
+	label: string;
+	icon?: Component;
+	disabled?: boolean | ((row: TData) => boolean);
+	onSelect: (row: TData) => void | Promise<void>;
+}
+
+export type CellOpts<TData = unknown> =
 	| { variant: 'text-short' }
 	| { variant: 'text-translated-short' }
 	| { variant: 'text-long' }
 	| { variant: 'text-translated-long'; markdown?: boolean }
-	| { variant: 'json-yaml' }
+	| { variant: 'json-yaml'; schemaPreview?: string | ((row: unknown) => unknown) }
+	| {
+			variant: 'jdm-expression';
+			expressionType?: 'standard' | 'unary' | 'template';
+			placeholder?: string;
+			strict?: boolean;
+			lint?: boolean;
+			maxRows?: number;
+			variableType?: unknown;
+			expectedVariableType?: unknown;
+	  }
 	| { variant: 'badge-item'; url?: string }
-	| { variant: 'relation-follow'; url?: string }
+	| { variant: 'relation-follow'; url?: string; icon?: Component }
 	| { variant: 'relation-select-single'; options: CellSelectOption[] }
+	| { variant: 'input-with-suggestions'; options: CellSelectOption[] }
 	| { variant: 'number'; min?: number; max?: number; step?: number }
+	| { variant: 'select-icon' }
 	| { variant: 'select-single'; options: CellSelectOption[] }
 	| { variant: 'select-multiple'; options: CellSelectOption[] }
 	| { variant: 'checkbox' }
@@ -54,15 +72,21 @@ export type CellOpts =
 	| { variant: 'url' }
 	| { variant: 'row-select' }
 	| {
-		variant: 'file';
-		maxFileSize?: number;
-		maxFiles?: number;
-		accept?: string;
-		multiple?: boolean;
-	};
+			variant: 'actions';
+			actions: DataGridCellAction<TData>[] | ((row: TData) => DataGridCellAction<TData>[]);
+	  }
+	| {
+			variant: 'file' | 'file-or-url';
+			maxFileSize?: number;
+			maxFiles?: number;
+			accept?: string;
+			multiple?: boolean;
+	  };
 
 export interface UpdateCell {
 	rowIndex: number;
+	/** Stable TanStack row id. Display indexes are never authoritative for mutations. */
+	rowId: string;
 	columnId: string;
 	value: unknown;
 }
@@ -73,6 +97,8 @@ export interface UpdateCell {
 
 export interface CellPosition {
 	rowIndex: number;
+	/** Stable TanStack row id when the position is retained beyond immediate navigation. */
+	rowId?: string;
 	columnId: string;
 }
 
@@ -85,6 +111,82 @@ export interface SelectionState {
 	selectedCells: Set<string>;
 	selectionRange: CellRange | null;
 	isSelecting: boolean;
+}
+
+export type CellSaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+
+export interface CellSaveState {
+	status: CellSaveStatus;
+	error?: string;
+}
+
+export interface DataGridMutationContext<TData> {
+	row: TData;
+	rowId: string;
+}
+
+export interface DataGridDuplicateContext<TData> extends DataGridMutationContext<TData> {
+	targetId?: string;
+}
+
+export interface DataGridDuplicateTarget {
+	id: string;
+	label: string;
+	description?: string;
+	group?: { id: string; label: string; slug?: string };
+	appendToCurrentGrid?: boolean;
+}
+
+export interface DataGridDataAdapter<TData> {
+	create?: (params: { row: Partial<TData> }) => Promise<TData>;
+	/** Duplicates one persisted row, including any owned child relations. */
+	duplicate?: (params: DataGridDuplicateContext<TData>) => Promise<TData>;
+	update?: (params: DataGridMutationContext<TData> & { changes: Partial<TData> }) => Promise<TData>;
+	delete?: (params: DataGridMutationContext<TData>) => Promise<boolean>;
+	download?: (params: { rows: TData[]; rowIds: string[] }) => Promise<void>;
+}
+
+export interface DataGridCreateResult<TData> {
+	rows: TData[];
+	rowIds: string[];
+	failedCount: number;
+}
+
+export interface DataGridDeleteResult {
+	deletedRowIds: string[];
+	failedRowIds: string[];
+}
+
+export interface DataGridDeleteDialogState {
+	open: boolean;
+	rowCount: number;
+	isDeleting: boolean;
+}
+
+export interface DataGridPreferencesController {
+	readonly enabled: boolean;
+	readonly ready: boolean;
+	readonly hasPreferences: boolean;
+	reset: () => void;
+	readonly rowHeightRemeasureVersion: number;
+}
+
+export interface DataGridStatusSnippetContext {
+	message: string;
+	error?: unknown;
+}
+
+export interface DataGridStatusProps {
+	loading?: boolean;
+	error?: unknown;
+	loadingMessage?: string;
+	errorMessage?: string;
+	emptyMessage?: string;
+	filteredEmptyMessage?: string;
+	loadingState?: Snippet<[DataGridStatusSnippetContext]>;
+	errorState?: Snippet<[DataGridStatusSnippetContext]>;
+	emptyState?: Snippet<[DataGridStatusSnippetContext]>;
+	filteredEmptyState?: Snippet<[DataGridStatusSnippetContext]>;
 }
 
 // ============================================
@@ -137,6 +239,8 @@ export interface SearchStateData {
 	searchQuery: string;
 	searchMatches: SearchMatch[];
 	matchIndex: number;
+	searchFocusRequest: number;
+	searchFilterEnabled: boolean;
 }
 
 // Full search state with callbacks (used by components)
@@ -144,6 +248,7 @@ export interface SearchState extends SearchStateData {
 	onSearchOpenChange: (open: boolean) => void;
 	onSearchQueryChange: (query: string) => void;
 	onSearch: (query: string) => void;
+	onSearchFilterEnabledChange: (enabled: boolean) => void;
 	onNavigateToNextMatch: () => void;
 	onNavigateToPrevMatch: () => void;
 }
@@ -152,7 +257,7 @@ export interface SearchState extends SearchStateData {
 // Cell Variant Props
 // ============================================
 
-export interface CellVariantProps<TData> {
+export interface CellVariantProps<TData extends RowData> {
 	cell: Cell<TData, unknown>;
 	table: Table<TData>;
 	rowIndex: number;
@@ -172,8 +277,24 @@ export interface CellVariantProps<TData> {
 
 export interface FileCellData {
 	id: string;
-	collection: MediaCollection,
+	collection: MediaCollection;
 	filename: string;
+}
+
+export interface DataGridClearResult {
+	clearedCellCount: number;
+	failedCellCount: number;
+	deletedMediaCount: number;
+	retainedMediaCount: number;
+	failedMediaCount: number;
+}
+
+export interface DataGridMutationResult {
+	rowId: string;
+	columnId: string;
+	generation: number;
+	success: boolean;
+	superseded: boolean;
 }
 
 // ============================================
@@ -213,12 +334,7 @@ export type DateFilterOperator =
 	| 'isNotEmpty';
 
 export type SelectFilterOperator =
-	| 'is'
-	| 'isNot'
-	| 'isAnyOf'
-	| 'isNoneOf'
-	| 'isEmpty'
-	| 'isNotEmpty';
+	'is' | 'isNot' | 'isAnyOf' | 'isNoneOf' | 'isEmpty' | 'isNotEmpty';
 
 export type BooleanFilterOperator = 'isTrue' | 'isFalse';
 
@@ -241,13 +357,30 @@ export interface FilterValue {
 
 declare module '@tanstack/table-core' {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	interface ColumnMeta<TData extends RowData, TValue> {
+	interface ColumnMeta<TFeatures extends TableFeatures, TData extends RowData, TValue> {
 		label?: string;
-		cell?: CellOpts;
+		/** Markdown-formatted explanation shown at the top of the column menu. */
+		description?: string;
+		cell?: CellOpts<TData>;
 		readOnly?: boolean;
+		navigable?: boolean;
+		/** Property path used for immutable writes when the accessor is nested. */
+		valuePath?: string | readonly string[];
+		/** Immutable write override for computed or otherwise non-addressable accessors. */
+		setValue?: (row: TData, value: unknown) => TData;
+		/** PATCH payload override required when setValue cannot be represented by valuePath. */
+		serializePatch?: (row: TData, value: unknown) => Partial<TData>;
+		/** Columns whose validation state is settled when this column saves successfully. */
+		validationDependencies?: string[];
+		clipboard?: {
+			parse?: (text: string, row: TData) => unknown;
+			serialize?: (value: unknown, row: TData) => string;
+			emptyValue?: unknown | ((row: TData) => unknown);
+		};
 	}
 
-	interface TableMeta<TData extends RowData> {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	interface TableMeta<TFeatures extends TableFeatures, TData extends RowData> {
 		dataGridRef?: HTMLElement | null;
 		cellMapRef?: Map<string, HTMLDivElement>;
 		focusedCell?: CellPosition | null;
@@ -258,10 +391,15 @@ declare module '@tanstack/table-core' {
 		getIsCellSelected?: (rowIndex: number, columnId: string) => boolean;
 		// SvelteMap for fine-grained cell value reactivity - cells access map.get(key) in $derived
 		cellValueMap?: SvelteMap<string, unknown>;
+		cellSaveStateMap?: SvelteMap<string, CellSaveState>;
+		getCellMutationSnapshot?: (
+			rowId: string,
+			columnId: string
+		) => { generation: number; value: unknown } | undefined;
 		// SvelteSet for fine-grained cell selection reactivity
 		selectedCellsSet?: SvelteSet<string>;
-		// Version counter to force cell re-renders when selection changes
-		selectionVersion?: number;
+		// Cells copied to the clipboard, kept separate from paste-target selection.
+		copiedCellsSet?: SvelteSet<string>;
 		getIsSearchMatch?: (rowIndex: number, columnId: string) => boolean;
 		getIsActiveSearchMatch?: (rowIndex: number, columnId: string) => boolean;
 		// SvelteSet for fine-grained reactive error match lookups
@@ -270,10 +408,25 @@ declare module '@tanstack/table-core' {
 		searchMatchSet?: SvelteSet<string>;
 		activeSearchMatch?: CellPosition | null;
 		rowHeight?: RowHeightValue;
+		rowHeightRemeasureVersion?: number;
+		preferences?: DataGridPreferencesController;
 		onRowHeightChange?: (value: RowHeightValue) => void;
 		onRowSelect?: (rowIndex: number, checked: boolean, shiftKey: boolean) => void;
-		onDataUpdate?: (params: UpdateCell | UpdateCell[]) => void;
-		onRowsDelete?: (rowIndices: number[]) => void | Promise<void>;
+		onDataUpdate?: (params: UpdateCell | UpdateCell[]) => Promise<DataGridMutationResult[]>;
+		onDataUpdateAwaited?: (
+			params: UpdateCell | UpdateCell[],
+			expectedSnapshots?: ReadonlyMap<string, { generation: number; value: unknown }>
+		) => Promise<DataGridMutationResult[]>;
+		deleteDialog?: DataGridDeleteDialogState;
+		onRowsDeleteRequest?: (rowIndices: number[]) => void;
+		onDeleteDialogOpenChange?: (open: boolean) => void;
+		onRowsDeleteConfirm?: () => Promise<void>;
+		onRowsDuplicate?: (targetId?: string) => Promise<DataGridCreateResult<TData> | void>;
+		getRowDuplicateTargets?: () => readonly DataGridDuplicateTarget[];
+		onDownload?: () => void | Promise<void>;
+		getSelectedRowCount?: () => number;
+		getIsDuplicating?: () => boolean;
+		getIsDownloading?: () => boolean;
 		onColumnClick?: (columnId: string) => void;
 		onCellClick?: (rowIndex: number, columnId: string, event?: MouseEvent) => void;
 		onCellDoubleClick?: (rowIndex: number, columnId: string) => void;
@@ -286,17 +439,26 @@ declare module '@tanstack/table-core' {
 			direction?: NavigationDirection;
 			moveToNextRow?: boolean;
 		}) => void;
+		onCellEditingCancel?: () => void;
+		canNavigateToCell?: (
+			rowIndex: number,
+			columnId: string,
+			direction: 'left' | 'right'
+		) => boolean;
 		onCellsCopy?: () => void;
-		onCellsCut?: () => void;
+		onCellsCut?: () => void | Promise<void>;
+		onCellsClear?: () => Promise<DataGridClearResult>;
 		onFilesUpload?: (params: {
 			files: File[];
 			rowIndex: number;
+			rowId: string;
 			columnId: string;
 			row: TData;
 		}) => Promise<FileCellData[]>;
 		onFilesDelete?: (params: {
 			fileIds: string[];
 			rowIndex: number;
+			rowId: string;
 			columnId: string;
 			row: TData;
 		}) => void | Promise<void>;
@@ -313,86 +475,53 @@ declare module '@tanstack/table-core' {
 // Row Height Constants
 // ============================================
 
-export const ROW_HEIGHT_VALUES: Record<RowHeightValue, number> = {
-	short: 36,
-	medium: 56,
-	tall: 76,
-	'extra-tall': 96
-};
-
-export const ROW_LINE_COUNTS: Record<RowHeightValue, number> = {
-	short: 1,
-	medium: 2,
-	tall: 3,
-	'extra-tall': 4
-};
+export const ROW_HEIGHT_VALUES: Record<RowHeightValue, number> = ROW_HEIGHTS;
 
 // ============================================
 // Component Props Types
 // ============================================
 
-export interface DataGridProps<TData> {
-	data: TData[];
-	columns: ColumnDef<TData, unknown>[];
-	readOnly?: boolean;
-	height?: number;
-	rowHeight?: RowHeightValue;
-	autoFocus?: boolean | { rowIndex?: number; columnId?: string };
-	enableColumnSelection?: boolean;
-	enableSearch?: boolean;
-	enablePaste?: boolean;
-	overscan?: number;
-	class?: string;
-
-	// Callbacks
-	onDataChange?: (data: TData[]) => void;
-	onRowAdd?: (event?: MouseEvent) => Partial<CellPosition> | void | Promise<Partial<CellPosition> | void>;
-	onRowsAdd?: (count: number) => void | Promise<void>;
-	onRowsDelete?: (rows: TData[], rowIndices: number[]) => void | Promise<void>;
-	onPaste?: (updates: UpdateCell[]) => void | Promise<void>;
-	onFilesUpload?: (params: {
-		files: File[];
-		rowIndex: number;
-		columnId: string;
-		row: TData;
-	}) => Promise<FileCellData[]>;
-	onFilesDelete?: (params: {
-		fileIds: string[];
-		rowIndex: number;
-		columnId: string;
-		row: TData;
-	}) => void | Promise<void>;
-
-	// Snippets for customization
-	header?: Snippet<[{ column: Column<TData, unknown> }]>;
-	cell?: Snippet<[{ cell: Cell<TData, unknown>; row: Row<TData> }]>;
-	empty?: Snippet;
-	footer?: Snippet;
-}
+export type DataGridProps<TData extends RowData> =
+	import('$lib/hooks/use-custom-data-grid.svelte.js').UseDataGridReturn<TData> &
+		DataGridStatusProps & {
+			height?: number;
+			class?: string;
+		};
 
 // ============================================
 // Utility Functions
 // ============================================
 
 /**
- * Creates a unique cell key from row index and column id
+ * Creates a collision-safe cell key from a stable row id and column id.
+ * Numeric row indices remain accepted temporarily for component migration.
  */
-export function getCellKey(rowIndex: number, columnId: string): string {
-	return `${rowIndex}:${columnId}`;
+export function getCellKey(rowId: string | number, columnId: string): string {
+	return JSON.stringify([String(rowId), columnId]);
 }
 
 /**
- * Parses a cell key back into row index and column id
+ * Parses a cell key into its stable row id and column id. `rowIndex` is only
+ * populated for legacy numeric identities and must not be used for data access.
  */
 export function parseCellKey(cellKey: string): CellPosition {
-	const parts = cellKey.split(':');
-	const rowIndexStr = parts[0];
-	const columnId = parts[1];
-	if (rowIndexStr && columnId) {
-		const rowIndex = parseInt(rowIndexStr, 10);
-		if (!Number.isNaN(rowIndex)) {
-			return { rowIndex, columnId };
+	try {
+		const parsed = JSON.parse(cellKey) as unknown;
+		if (
+			Array.isArray(parsed) &&
+			parsed.length === 2 &&
+			typeof parsed[0] === 'string' &&
+			typeof parsed[1] === 'string'
+		) {
+			const rowIndex = Number(parsed[0]);
+			return {
+				rowId: parsed[0],
+				rowIndex: Number.isInteger(rowIndex) && rowIndex >= 0 ? rowIndex : 0,
+				columnId: parsed[1]
+			};
 		}
+	} catch {
+		// Invalid or legacy keys are intentionally not guessed.
 	}
 	return { rowIndex: 0, columnId: '' };
 }
@@ -414,7 +543,7 @@ export function getLineCount(rowHeight: RowHeightValue): number {
 /**
  * Gets common pinning styles for a column (port of TableCN's getCommonPinningStyles)
  */
-export function getCommonPinningStyles<TData>(params: {
+export function getCommonPinningStyles<TData extends RowData>(params: {
 	column?: Column<TData, unknown>;
 	withBorder?: boolean;
 }): Record<string, string | number | undefined> {
@@ -432,19 +561,19 @@ export function getCommonPinningStyles<TData>(params: {
 	// Wrap in try-catch to handle SSR edge cases where TanStack internal state may not be ready
 	try {
 		const isPinned = column.getIsPinned();
-		const isLastLeftPinnedColumn = isPinned === 'left' && column.getIsLastColumn('left');
-		const isFirstRightPinnedColumn = isPinned === 'right' && column.getIsFirstColumn('right');
+		const isLastStartPinnedColumn = isPinned === 'start' && column.getIsLastColumn('start');
+		const isFirstEndPinnedColumn = isPinned === 'end' && column.getIsFirstColumn('end');
 
 		return {
 			boxShadow: withBorder
-				? isLastLeftPinnedColumn
+				? isLastStartPinnedColumn
 					? '-4px 0 4px -4px var(--border) inset'
-					: isFirstRightPinnedColumn
+					: isFirstEndPinnedColumn
 						? '4px 0 4px -4px var(--border) inset'
 						: undefined
 				: undefined,
-			left: isPinned === 'left' ? `${column.getStart('left')}px` : undefined,
-			right: isPinned === 'right' ? `${column.getAfter('right')}px` : undefined,
+			insetInlineStart: isPinned === 'start' ? `${column.getStart('start')}px` : undefined,
+			insetInlineEnd: isPinned === 'end' ? `${column.getAfter('end')}px` : undefined,
 			opacity: isPinned ? 0.97 : 1,
 			position: isPinned ? 'sticky' : 'relative',
 			background: isPinned ? 'var(--background)' : 'var(--background)',

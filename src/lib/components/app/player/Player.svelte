@@ -1,22 +1,35 @@
 <script lang="ts">
+	import { MediaFile } from '$lib/components/ui/media-file';
+	import { MediaCollection, type Media } from '$lib/db/schemas/0-utils';
+	import {
+		createYouTubePlayer,
+		getYouTubeVideoId,
+		getVideoSourceType,
+		isYouTubeShort,
+		warmYouTubeConnections,
+		type YouTubePlayer,
+		type YouTubePlayerState
+	} from '$lib/media/video';
+	import * as m from '$lib/paraglide/messages';
 	import { PLAYERS } from '$lib/states/players.svelte';
 	import { cn } from '$lib/utils';
 	import LoaderIcon from '@lucide/svelte/icons/loader-circle';
 	import PlayIcon from '@lucide/svelte/icons/play';
 	import type { ClassValue } from 'clsx';
-	import { onMount } from 'svelte';
-	import 'vidstack/bundle';
-	import type { MediaPlayerElement } from 'vidstack/elements';
+	import Hls from 'hls.js';
+	import { onDestroy } from 'svelte';
 
 	type Props = {
 		id: string;
 		title?: string | undefined;
-		src: string;
-		poster?: string | null | undefined;
+		src: Media;
+		poster?: Media | null | undefined;
 		start?: number | undefined;
 		end?: number | undefined;
 		playbackRate?: number | undefined;
+		defaultBackgroundColor?: string | null | undefined;
 		isInitialPart: boolean;
+		isActive: boolean;
 
 		doBuffer: boolean;
 		doPlay: boolean;
@@ -25,9 +38,12 @@
 		doEnd: boolean;
 		time: number;
 		isOverlaid: boolean;
+		overlayStart?: number | undefined;
+		pauseAtOverlay?: boolean | undefined;
 
 		bufferNext: () => void;
 		playNext: () => void;
+		onoverlaystart?: (() => void) | undefined;
 
 		class?: ClassValue | null | undefined;
 	};
@@ -39,7 +55,9 @@
 		start,
 		end,
 		playbackRate,
+		defaultBackgroundColor,
 		isInitialPart,
+		isActive,
 
 		doBuffer = $bindable(false),
 		doPlay = $bindable(false),
@@ -48,78 +66,365 @@
 		doEnd = $bindable(false),
 		time = $bindable(0),
 		isOverlaid = $bindable(false),
+		overlayStart,
+		pauseAtOverlay = false,
 
 		bufferNext,
 		playNext,
+		onoverlaystart,
 
 		class: className
 	}: Props = $props();
 
-	let player: MediaPlayerElement;
-	let timeLeft = $state(Infinity);
+	const mediaUrl = (media: Media) =>
+		media.collection === MediaCollection.externals
+			? media.filename
+			: `/api/media/${media.collection}/${media.filename}`;
+
+	const source = $derived(mediaUrl(src));
+	const sourceType = $derived(getVideoSourceType(source));
+	const youtubeThumbnailUrl = $derived.by(() => {
+		if (sourceType !== 'youtube' || !isInitialPart || poster) return undefined;
+		const videoId = getYouTubeVideoId(source);
+		return videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : undefined;
+	});
+	const isShort = $derived(sourceType === 'youtube' && isYouTubeShort(source));
+	const clipStart = $derived(start ?? 0);
+
+	let video: HTMLVideoElement = $state()!;
+	let ambientCanvas: HTMLCanvasElement = $state()!;
+	let playerContainer: HTMLDivElement = $state()!;
+	let youtubeContainer: HTMLDivElement = $state()!;
+	let youtube: YouTubePlayer | undefined;
+	let hls: Hls | undefined;
+	let watchTimer: ReturnType<typeof setInterval> | undefined;
+	let progressTimer: ReturnType<typeof setInterval> | undefined;
+	let overlayTimer: ReturnType<typeof setTimeout> | undefined;
+	let clipEndTimer: ReturnType<typeof setTimeout> | undefined;
+	let ambientTimer: ReturnType<typeof setTimeout> | undefined;
+	let youtubeReadyTimer: ReturnType<typeof setInterval> | undefined;
+
+	let isLoaded = $state(false);
 	let canPlay = $state(false);
+	let isPlaying = $state(false);
+	let hasStarted = $state(false);
 	let almostEnded = $state(false);
 	let isEnded = $state(false);
 	let didHandleEnd = $state(false);
-	let isPlaying = $state(false);
+	let didHandleOverlay = $state(false);
+	let mediaDuration = $state(0);
 
-	let timer = $state<ReturnType<typeof setInterval> | null>(null);
+	const clipDuration = $derived(
+		Math.max(0, Math.min(end ?? mediaDuration, mediaDuration) - clipStart)
+	);
+	const progressPercentage = $derived(
+		clipDuration > 0 ? Math.min(100, Math.max(0, (time / clipDuration) * 100)) : 0
+	);
+	const hasOverlayCue = $derived(typeof overlayStart === 'number' && Number.isFinite(overlayStart));
+	const cueTolerance = 0.02;
 
-	onMount(() => {
-		player?.subscribe(({ canPlay: canplay }) => {
-			canPlay = canplay;
-		});
-		player?.subscribe(({ playing, paused }) => {
-			isPlaying = playing && !paused;
-		});
-		player?.subscribe(({ currentTime }) => {
-			if (player?.duration) {
-				timeLeft = player.duration - currentTime;
-				time = currentTime;
-				if (!almostEnded && (timeLeft ?? Infinity) <= 30) almostEnded = true;
+	const getCurrentTime = () =>
+		sourceType === 'youtube'
+			? (youtube?.getCurrentTime() ?? clipStart)
+			: (video?.currentTime ?? clipStart);
+
+	const setAmbientCanvasSize = () => {
+		if (!ambientCanvas || !playerContainer) return;
+
+		const ratio = window.devicePixelRatio || 1;
+		const width = Math.max(1, Math.round(playerContainer.offsetWidth * ratio));
+		const height = Math.max(1, Math.round(playerContainer.offsetHeight * ratio));
+		if (ambientCanvas.width === width && ambientCanvas.height === height) return;
+
+		ambientCanvas.width = width;
+		ambientCanvas.height = height;
+	};
+
+	const paintAmbientVideo = () => {
+		if (!ambientCanvas || !video || sourceType === 'youtube') return;
+
+		setAmbientCanvasSize();
+		const context = ambientCanvas.getContext('2d');
+		if (!context || video.readyState < 2) return;
+
+		try {
+			context.drawImage(video, 0, 0, ambientCanvas.width, ambientCanvas.height);
+		} catch {
+			// Some external videos can block drawing to canvas; playback should continue normally.
+		}
+	};
+
+	const startAmbientVideo = () => {
+		if (sourceType === 'youtube' || ambientTimer) return;
+
+		const loop = () => {
+			paintAmbientVideo();
+			if (isPlaying && !video?.paused && !video?.ended) {
+				ambientTimer = setTimeout(loop, 1000 / 30);
+			} else {
+				ambientTimer = undefined;
 			}
-		});
-		player?.subscribe(({ ended }) => {
-			isEnded = ended;
-		});
-	});
+		};
+
+		loop();
+	};
+
+	const stopAmbientVideo = () => {
+		if (ambientTimer) clearTimeout(ambientTimer);
+		ambientTimer = undefined;
+	};
+
+	const seekTo = (clipTime: number) => {
+		const absoluteTime = clipStart + Math.min(Math.max(clipTime, 0), clipDuration);
+		if (sourceType === 'youtube') youtube?.seekTo(absoluteTime, true);
+		else if (video) video.currentTime = absoluteTime;
+		time = absoluteTime - clipStart;
+	};
+
+	const pauseAtClipEnd = () => {
+		seekTo(clipDuration);
+		pauseMedia();
+	};
+
+	const stopOverlayTimer = () => {
+		if (overlayTimer) clearTimeout(overlayTimer);
+		overlayTimer = undefined;
+	};
+
+	const stopClipEndTimer = () => {
+		if (clipEndTimer) clearTimeout(clipEndTimer);
+		clipEndTimer = undefined;
+	};
+
+	const handleOverlayCue = () => {
+		if (!hasOverlayCue || didHandleOverlay || !isActive) return false;
+
+		didHandleOverlay = true;
+		if (pauseAtOverlay) {
+			if (clipDuration > 0 && time >= clipDuration - cueTolerance) pauseAtClipEnd();
+			else pauseMedia();
+		}
+		onoverlaystart?.();
+		return pauseAtOverlay;
+	};
+
+	const startOverlayTimer = () => {
+		stopOverlayTimer();
+		if (!hasOverlayCue || didHandleOverlay || !canPlay || !isPlaying) return;
+
+		const delay = Math.max(0, ((overlayStart ?? 0) - time - cueTolerance) / (playbackRate ?? 1));
+		overlayTimer = setTimeout(() => {
+			overlayTimer = undefined;
+			updateProgress();
+		}, delay * 1000);
+	};
+
+	const startClipEndTimer = () => {
+		stopClipEndTimer();
+		if (!canPlay || !isPlaying || clipDuration <= 0) return;
+
+		const delay = Math.max(0, (clipDuration - time - cueTolerance) / (playbackRate ?? 1));
+		clipEndTimer = setTimeout(() => {
+			clipEndTimer = undefined;
+			updateProgress();
+		}, delay * 1000);
+	};
+
+	const updateProgress = () => {
+		if (!canPlay) return;
+
+		time = Math.max(0, getCurrentTime() - clipStart);
+		if (hasOverlayCue && time >= (overlayStart ?? 0) - cueTolerance && handleOverlayCue()) return;
+		if (didHandleOverlay && pauseAtOverlay) {
+			if (clipDuration > 0 && time >= clipDuration - cueTolerance) pauseAtClipEnd();
+			return;
+		}
+
+		const timeLeft = clipDuration - time;
+		if (!almostEnded && timeLeft <= 30) almostEnded = true;
+		if (!isEnded && clipDuration > 0 && time >= clipDuration - cueTolerance) handleEnded();
+	};
+
+	const startProgressTimer = () => {
+		if (progressTimer) return;
+		progressTimer = setInterval(updateProgress, 100);
+	};
+
+	const stopProgressTimer = () => {
+		if (progressTimer) clearInterval(progressTimer);
+		progressTimer = undefined;
+	};
 
 	const startWatching = () => {
+		if (!isActive) {
+			pauseMedia();
+			return;
+		}
+
+		isPlaying = true;
+		hasStarted = true;
 		PLAYERS.isAnyPartPlaying = true;
-		if (timer) clearInterval(timer);
-		timer = setInterval(
+		startProgressTimer();
+		startOverlayTimer();
+		startClipEndTimer();
+		startAmbientVideo();
+		if (watchTimer) return;
+		watchTimer = setInterval(
 			() => (PLAYERS.watchDurations[id] = (PLAYERS.watchDurations[id] ?? 0) + 0.1),
 			100
 		);
 	};
+
 	const pauseWatching = () => {
+		isPlaying = false;
 		PLAYERS.isAnyPartPlaying = false;
-		if (timer) {
-			clearInterval(timer);
-			timer = null;
+		stopAmbientVideo();
+		paintAmbientVideo();
+		stopProgressTimer();
+		stopOverlayTimer();
+		stopClipEndTimer();
+		if (watchTimer) clearInterval(watchTimer);
+		watchTimer = undefined;
+		updateProgress();
+	};
+
+	const endWatching = () => {
+		pauseWatching();
+		if ((PLAYERS.watchDurations[id] ?? 0) > 0 && clipDuration > 0) {
+			PLAYERS.watchTimePercentages[id] = (PLAYERS.watchDurations[id] / clipDuration) * 100;
 		}
 	};
-	$effect(() => {
-		if (doEnd) stopAndEndWatching();
-	});
-	const stopAndEndWatching = async () => {
-		await player.pause();
+
+	const handleEnded = () => {
+		if (isEnded) return;
+		time = clipDuration;
+		if (hasOverlayCue && time >= (overlayStart ?? 0) - cueTolerance && handleOverlayCue()) return;
+		if (didHandleOverlay && pauseAtOverlay) {
+			pauseAtClipEnd();
+			return;
+		}
+
+		isEnded = true;
+		pauseAtClipEnd();
+		endWatching();
+	};
+
+	const handleYouTubeState = (state: YouTubePlayerState) => {
+		if (state === 1 && !isActive) pauseMedia();
+		else if (state === 1) startWatching();
+		else if (state === 0) handleEnded();
+		else if (state === 2 || state === 3) pauseWatching();
+	};
+
+	const initializeNativeVideo = () => {
+		if (sourceType === 'hls' && Hls.isSupported()) {
+			hls = new Hls();
+			hls.loadSource(source);
+			hls.attachMedia(video);
+			return;
+		}
+
+		video.src = source;
+		video.load();
+	};
+
+	const initializeYouTube = async () => {
+		try {
+			youtube = await createYouTubePlayer(youtubeContainer, source, {
+				start: clipStart,
+				end,
+				onReady: (player) => {
+					youtube = player;
+					const iframe = player.getIframe();
+					iframe.title = title ?? m.player_youtube_video_player();
+					iframe.classList.add('vds-youtube');
+					iframe.dataset.noControls = 'true';
+					iframe.dataset.aspect = isShort ? 'shorts' : 'video';
+					iframe.style.width = isShort ? '1000%' : '100%';
+					iframe.style.height = isShort ? '100%' : '1000%';
+					iframe.style.left = isShort ? '-450%' : '0';
+					iframe.style.top = isShort ? '0' : '-450%';
+					if (!isActive) player.pauseVideo();
+					const markReady = () => {
+						const duration = player.getDuration();
+						if (duration <= 0) return;
+
+						mediaDuration = duration;
+						player.setPlaybackRate(playbackRate ?? 1);
+						canPlay = true;
+						if (youtubeReadyTimer) clearInterval(youtubeReadyTimer);
+						youtubeReadyTimer = undefined;
+					};
+					youtubeReadyTimer = setInterval(markReady, 250);
+					markReady();
+				},
+				onStateChange: handleYouTubeState,
+				onError: () => {
+					if (youtubeReadyTimer) clearInterval(youtubeReadyTimer);
+					youtubeReadyTimer = undefined;
+					canPlay = false;
+				}
+			});
+		} catch {
+			canPlay = false;
+		}
+	};
+
+	const load = () => {
+		if (isLoaded) return;
+		if (sourceType === 'youtube') warmYouTubeConnections();
+		isLoaded = true;
+		if (sourceType === 'youtube') void initializeYouTube();
+		else if (sourceType !== 'unsupported') initializeNativeVideo();
+	};
+
+	const pauseMedia = () => {
+		if (sourceType === 'youtube') youtube?.pauseVideo();
+		else video?.pause();
+	};
+
+	const playMedia = async () => {
+		if (!isActive) return;
+
+		if (sourceType === 'youtube') {
+			youtube?.playVideo();
+			return;
+		}
+
+		try {
+			await video?.play();
+		} catch {
+			// Playback can still be rejected when the browser has not registered a user gesture.
+		}
+	};
+
+	const restart = () => {
+		if (!canPlay || !isActive) return;
+		time = 0;
+		seekTo(0);
+		PLAYERS.watchDurations[id] = 0;
+		PLAYERS.watchTimePercentages[id] = 0;
+		doPlay = false;
+		doPause = false;
+		doRestart = false;
+		almostEnded = false;
+		isEnded = false;
+		doEnd = false;
+		didHandleOverlay = false;
+		didHandleEnd = false;
+		void playMedia();
+	};
+
+	const stopAndEndWatching = () => {
+		pauseMedia();
 		endWatching();
 		if (isEnded) didHandleEnd = true;
 	};
-	const endWatching = () => {
-		pauseWatching();
-
-		if (PLAYERS.watchDurations[id] > 0) {
-			const watchTimePercentage = (PLAYERS.watchDurations[id] / player.duration) * 100;
-			PLAYERS.watchTimePercentages[id] = watchTimePercentage;
-		}
-	};
 
 	$effect(() => {
-		if (doBuffer) load();
+		if (!doBuffer) return;
+		load();
 	});
-	const load = () => player.startLoading();
 
 	$effect(() => {
 		if (PLAYERS.didUserInteract && almostEnded) bufferNext();
@@ -134,150 +439,196 @@
 	});
 
 	$effect(() => {
-		if (!doPlay || !PLAYERS.didUserInteract) return;
+		if (doEnd) stopAndEndWatching();
+	});
 
+	$effect(() => {
+		if (!doPlay || !PLAYERS.didUserInteract || !isActive) return;
+		load();
 		if (canPlay && !isPlaying) restart();
-
-		const interval = setInterval(() => {
-			if (canPlay && !isPlaying) {
-				clearInterval(interval);
-				restart();
-			}
-		}, 100);
-
-		const timeout = setTimeout(() => {
-			clearInterval(interval);
-		}, 5000);
-
-		return () => {
-			clearInterval(interval);
-			clearTimeout(timeout);
-		};
 	});
-	$effect(() => {
-		if (doRestart) restart();
-	});
-	const restart = async () => {
-		time = 0;
-		player.currentTime = 0;
-		PLAYERS.watchDurations[id] = 0;
-		PLAYERS.watchTimePercentages[id] = 0;
-		await player.play();
-		doPlay = false;
-		doPause = false;
-		doRestart = false;
-		almostEnded = false;
-		isEnded = false;
-		doEnd = false;
-		didHandleEnd = false;
-	};
 
 	$effect(() => {
-		if (doPause && isPlaying) pause();
+		if (!doRestart || !isActive) return;
+		load();
+		if (canPlay) restart();
 	});
-	const pause = async () => {
-		await player.pause();
-		doPause = false;
+
+	$effect(() => {
+		if (doPause && isPlaying) {
+			pauseMedia();
+			doPause = false;
+		}
+	});
+
+	$effect(() => {
+		if (!isActive) pauseMedia();
+	});
+
+	const resizeAmbient = () => {
+		setAmbientCanvasSize();
+		paintAmbientVideo();
 	};
+
+	onDestroy(() => {
+		if (watchTimer) clearInterval(watchTimer);
+		if (progressTimer) clearInterval(progressTimer);
+		if (overlayTimer) clearTimeout(overlayTimer);
+		if (clipEndTimer) clearTimeout(clipEndTimer);
+		if (ambientTimer) clearTimeout(ambientTimer);
+		if (youtubeReadyTimer) clearInterval(youtubeReadyTimer);
+		hls?.destroy();
+		youtube?.destroy();
+	});
 </script>
 
-<div
-	class="pointer-events-none absolute inset-0 -z-10 grid place-items-center text-white opacity-50"
->
-	<LoaderIcon class="size-14 animate-spin" />
-</div>
-<media-player
-	bind:this={player}
-	class={cn('group relative size-full overflow-hidden', className)}
-	{src}
-	{title}
-	load="custom"
-	playsinline
-	clipStartTime={start ?? 0}
-	clipEndTime={end}
-	playbackRate={playbackRate ?? 1}
-	onplay={startWatching}
-	onplaying={startWatching}
-	onpause={pauseWatching}
-	onwaiting={pauseWatching}
-	onseeking={pauseWatching}
-	onseeked={startWatching}
-	onended={endWatching}
->
-	<media-provider>
-		{#if poster && isInitialPart}
-			<media-poster
-				class="absolute inset-0 opacity-0 transition-opacity data-visible:opacity-100"
-				src={poster}
-			>
-			</media-poster>
-		{/if}
-	</media-provider>
+<svelte:window onresize={resizeAmbient} />
 
-	<media-controls
-		class="pointer-events-none absolute inset-0 z-20 flex size-full flex-col bg-linear-to-t from-black/10 to-transparent opacity-0 transition-opacity data-visible:opacity-100"
+<div bind:this={playerContainer} class={cn('group relative size-full overflow-hidden', className)}>
+	{#if poster && isInitialPart && !hasStarted}
+		<MediaFile
+			src={poster}
+			class="pointer-events-none absolute inset-0 z-0 size-full scale-125 object-cover opacity-60 blur-3xl"
+		/>
+	{:else if sourceType !== 'youtube'}
+		<canvas
+			bind:this={ambientCanvas}
+			class="pointer-events-none absolute inset-0 z-0 size-full scale-125 opacity-60 blur-3xl"
+			aria-hidden="true"
+		></canvas>
+	{/if}
+
+	{#if isLoaded && !canPlay}
+		<div
+			class="pointer-events-none absolute inset-0 z-10 grid place-items-center text-white opacity-50"
+		>
+			<LoaderIcon class="size-14 animate-spin" />
+		</div>
+	{/if}
+
+	{#if sourceType === 'youtube'}
+		<div
+			bind:this={youtubeContainer}
+			class="youtube-frame pointer-events-none absolute inset-0 z-10 size-full overflow-hidden bg-background"
+			style:background-color={defaultBackgroundColor ?? undefined}
+		></div>
+	{:else}
+		<video
+			bind:this={video}
+			class="absolute inset-0 z-10 size-full object-contain"
+			aria-label={title}
+			preload="none"
+			playsinline
+			onloadedmetadata={() => {
+				mediaDuration = video.duration;
+				video.playbackRate = playbackRate ?? 1;
+				seekTo(0);
+				paintAmbientVideo();
+			}}
+			oncanplay={() => (canPlay = true)}
+			onplay={startWatching}
+			onplaying={startWatching}
+			onpause={pauseWatching}
+			onwaiting={pauseWatching}
+			onseeking={pauseWatching}
+			onseeked={() => {
+				updateProgress();
+				if (!video.paused) startWatching();
+			}}
+			onended={handleEnded}
+		></video>
+	{/if}
+
+	{#if poster && isInitialPart && !hasStarted}
+		<MediaFile
+			src={poster}
+			class="pointer-events-none absolute inset-0 z-10 size-full object-contain"
+		/>
+	{:else if youtubeThumbnailUrl && !hasStarted}
+		<img
+			src={youtubeThumbnailUrl}
+			alt=""
+			class="pointer-events-none absolute inset-0 z-10 size-full object-cover"
+			loading="eager"
+			fetchpriority="high"
+			referrerpolicy="origin"
+		/>
+	{/if}
+
+	<div
+		class={cn(
+			'pointer-events-none absolute inset-0 z-20 flex size-full flex-col bg-linear-to-t from-black/10 to-transparent transition-opacity group-focus-within:opacity-100 group-hover:opacity-100',
+			!isPlaying && !isOverlaid ? 'opacity-100' : 'opacity-0'
+		)}
 	>
-		<media-controls-group class="pointer-events-auto grid h-full w-full place-items-center">
+		<div class="pointer-events-auto grid h-full w-full place-items-center">
 			<button
 				type="button"
-				aria-label="Play"
-				class="group grid size-full place-items-center px-2 pt-10 outline-none"
+				aria-label={isPlaying ? m.player_pause() : m.player_play()}
+				disabled={sourceType === 'youtube' && !canPlay}
+				class="group/control grid size-full place-items-center px-2 pt-10 outline-none"
 				onclick={() => {
+					if (!isActive) return;
 					PLAYERS.didUserInteract = true;
-					if (isPlaying) player?.pause();
-					else player?.play();
+					load();
+					if (isPlaying) pauseMedia();
+					else void playMedia();
 				}}
 			>
 				{#if !isOverlaid && !isPlaying}
 					<div
-						class="grid size-24 cursor-pointer place-items-center rounded-full bg-black/50 text-white ring-black backdrop-blur-md transition-colors outline-none group-hover:bg-black/30 group-data-focus:ring-4"
+						class="grid size-24 cursor-pointer place-items-center rounded-full bg-black/50 text-white ring-black backdrop-blur-md transition-colors outline-none group-hover/control:bg-black/30 group-focus/control:ring-4"
 					>
-						<PlayIcon class="size-12 opacity-80 transition-colors group-hover:opacity-100" />
+						<PlayIcon
+							class="size-12 opacity-80 transition-opacity group-hover/control:opacity-100"
+						/>
 					</div>
 				{/if}
 			</button>
-		</media-controls-group>
-		<div class="flex-1"></div>
-		<media-controls-group class="pointer-events-auto flex w-full items-center px-2">
-			<media-time-slider
-				class="group relative mx-2 inline-flex h-10 w-full cursor-pointer touch-none items-center outline-none select-none aria-hidden:hidden"
+		</div>
+		<div class="pointer-events-auto flex w-full items-center px-4 pb-2">
+			<div
+				class="relative h-10 w-full cursor-pointer touch-none outline-none"
+				style={`--slider-fill: ${progressPercentage}%`}
 			>
 				<div
-					class="relative z-0 h-2 w-full overflow-hidden rounded-sm bg-white/20 ring-black backdrop-blur-md group-data-focus:ring-2"
+					class="absolute top-1/2 h-2 w-full -translate-y-1/2 overflow-hidden rounded-sm bg-white/20 backdrop-blur-md"
 				>
-					<div
-						class="absolute z-10 h-full w-(--slider-progress) rounded-sm bg-white/20 will-change-[width]"
-					></div>
-					<div
-						class="absolute z-20 h-full w-(--slider-fill) rounded-sm bg-white will-change-[width]"
-					></div>
+					<div class="h-full w-(--slider-fill) rounded-sm bg-white"></div>
 				</div>
-			</media-time-slider>
-		</media-controls-group>
-	</media-controls>
-</media-player>
+				<input
+					type="range"
+					aria-label={m.player_video_progress()}
+					class="absolute inset-0 size-full cursor-pointer opacity-0"
+					min="0"
+					max={clipDuration || 0}
+					step="0.01"
+					value={time}
+					disabled={!canPlay}
+					oninput={(event) => seekTo(event.currentTarget.valueAsNumber)}
+				/>
+			</div>
+		</div>
+	</div>
+</div>
 
 <style lang="postcss">
 	@reference 'tailwindcss';
 
-	media-player {
-		&.portrait,
-		&.default {
-			@apply aspect-9/16;
-		}
-		&.landscape {
-			@apply aspect-video;
-		}
-		&.square {
-			@apply aspect-square;
-		}
+	.youtube-frame :global(iframe[src*='youtube-nocookie.com']) {
+		@apply size-full;
+		position: absolute;
+		inset: 0;
+		border: 0;
 	}
 
-	:global(media-player[data-started]:not([data-user-initiated]) .controls) {
-		@apply pointer-events-none opacity-0;
+	.youtube-frame :global(iframe.vds-youtube[data-no-controls][data-aspect='video']) {
+		height: 1000% !important;
+		top: -450% !important;
 	}
 
-	:global(media-player media-poster :where(img)) {
-		@apply size-full object-contain;
+	.youtube-frame :global(iframe.vds-youtube[data-no-controls][data-aspect='shorts']) {
+		width: 1000% !important;
+		left: -450% !important;
 	}
 </style>

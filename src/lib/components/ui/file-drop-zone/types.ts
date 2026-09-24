@@ -28,7 +28,7 @@ export type FileDropZonePropsWithoutHTML = WithChildren<{
 	// just for extra documentation
 	/** Takes a comma separated list of one or more file types.
 	 *
-	 *  [MDN Reference](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/accept)
+	 *  [MDN Slug](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/accept)
 	 *
 	 * ### Usage
 	 * ```svelte

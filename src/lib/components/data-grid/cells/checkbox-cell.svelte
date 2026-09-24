@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import DataGridCellWrapper from '../data-grid-cell-wrapper.svelte';
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
@@ -8,26 +9,17 @@
 		table,
 		rowIndex,
 		columnId,
-		isEditing: _isEditing,
 		isFocused,
 		isSelected,
 		readOnly = false,
 		cellValue
 	}: CellVariantProps<TData> = $props();
 
-	// Use centralized cellValue prop - fine-grained reactivity is handled by DataGridCell
-	const initialValue = $derived(cellValue as boolean);
-	
-	// Track local edits separately
-	let localEditValue = $state<boolean | null>(null);
-	
-	// Value for display - use localEditValue if set, otherwise initialValue
-	const value = $derived(localEditValue ?? Boolean(initialValue));
+	const value = $derived(Boolean(cellValue));
 
 	function handleCheckedChange(newValue: boolean) {
 		if (readOnly) return;
-		localEditValue = newValue;
-		table.options.meta?.onDataUpdate?.({ rowIndex, columnId, value: newValue });
+		table.options.meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value: newValue });
 	}
 
 	function handleWrapperKeyDown(event: KeyboardEvent) {
@@ -36,6 +28,14 @@
 			event.stopPropagation();
 			handleCheckedChange(!value);
 		} else if (isFocused && event.key === 'Tab') {
+			if (
+				!table.options.meta?.canNavigateToCell?.(
+					rowIndex,
+					columnId,
+					event.shiftKey ? 'left' : 'right'
+				)
+			)
+				return;
 			event.preventDefault();
 			table.options.meta?.onCellEditingStop?.({
 				direction: event.shiftKey ? 'left' : 'right'
@@ -47,12 +47,12 @@
 	function handleWrapperClick(event: MouseEvent) {
 		event.preventDefault();
 		event.stopPropagation();
-		
+
 		// Focus the cell if not already focused
 		if (!isFocused) {
 			table.options.meta?.onCellClick?.(rowIndex, columnId, event);
 		}
-		
+
 		// Toggle checkbox on single click
 		if (!readOnly) {
 			handleCheckedChange(!value);
@@ -72,9 +72,5 @@
 	onkeydown={handleWrapperKeyDown}
 	onclick={handleWrapperClick}
 >
-	<Checkbox
-		checked={value}
-		disabled={readOnly}
-		class="border-primary pointer-events-none"
-	/>
+	<Checkbox checked={value} disabled={readOnly} class="pointer-events-none border-primary" />
 </DataGridCellWrapper>

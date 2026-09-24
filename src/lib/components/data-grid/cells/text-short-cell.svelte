@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import DataGridCellWrapper from '../data-grid-cell-wrapper.svelte';
 	import { cn } from '$lib/utils.js';
@@ -18,13 +19,13 @@
 	// Use centralized cellValue prop - fine-grained reactivity is handled by DataGridCell
 	const initialValue = $derived((cellValue as string) ?? '');
 	let cellRef = $state<HTMLDivElement | null>(null);
-	
+
 	// Track local edits separately - this only matters during editing
 	let localEditValue = $state<string | null>(null);
-	
+
 	// The display value is either the local edit (during editing) or the initial value
 	const displayValue = $derived(!isEditing ? (initialValue ?? '') : '');
-	
+
 	// Value for tracking edits - use localEditValue if set, otherwise initialValue
 	const value = $derived(localEditValue ?? initialValue ?? '');
 
@@ -34,7 +35,7 @@
 			localEditValue = null;
 		}
 	});
-	
+
 	// Update DOM when initialValue changes (for non-editing state)
 	$effect(() => {
 		const iv = initialValue ?? '';
@@ -46,7 +47,7 @@
 	// Focus cell when entering edit mode
 	$effect(() => {
 		if (isEditing && cellRef) {
-			cellRef.focus();
+			cellRef.focus({ preventScroll: true });
 
 			if (!cellRef.textContent && initialValue) {
 				cellRef.textContent = initialValue;
@@ -68,7 +69,7 @@
 		const currentValue = cellRef?.textContent ?? '';
 		const meta = table.options.meta;
 		if (!readOnly && currentValue !== initialValue) {
-			meta?.onDataUpdate?.({ rowIndex, columnId, value: currentValue });
+			meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value: currentValue });
 		}
 		meta?.onCellEditingStop?.();
 	}
@@ -85,17 +86,32 @@
 				event.preventDefault();
 				const currentValue = cellRef?.textContent ?? '';
 				if (currentValue !== initialValue) {
-					meta?.onDataUpdate?.({ rowIndex, columnId, value: currentValue });
+					meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value: currentValue });
 				}
 				meta?.onCellEditingStop?.({ moveToNextRow: true });
 			} else if (event.key === 'Tab') {
+				const direction = event.shiftKey ? 'left' : 'right';
+				const canNavigate = meta?.canNavigateToCell?.(rowIndex, columnId, direction) ?? false;
+				if (!canNavigate) {
+					const currentValue = cellRef?.textContent ?? '';
+					if (currentValue !== initialValue) {
+						meta?.onDataUpdate?.({
+							rowIndex,
+							rowId: cell.row.id,
+							columnId,
+							value: currentValue
+						});
+					}
+					meta?.onCellEditingStop?.();
+					return;
+				}
 				event.preventDefault();
 				const currentValue = cellRef?.textContent ?? '';
 				if (currentValue !== initialValue) {
-					meta?.onDataUpdate?.({ rowIndex, columnId, value: currentValue });
+					meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value: currentValue });
 				}
 				meta?.onCellEditingStop?.({
-					direction: event.shiftKey ? 'left' : 'right'
+					direction
 				});
 			} else if (event.key === 'Escape') {
 				event.preventDefault();
@@ -103,7 +119,7 @@
 				if (cellRef) {
 					cellRef.textContent = initialValue ?? '';
 				}
-				cellRef?.blur();
+				meta?.onCellEditingCancel?.();
 			}
 		} else if (isFocused && event.key.length === 1 && !event.ctrlKey && !event.metaKey) {
 			// Pre-fill value when typing starts

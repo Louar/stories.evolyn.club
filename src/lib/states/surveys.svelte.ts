@@ -1,6 +1,6 @@
 import { z } from 'zod/v4';
 
-export const AnswerTemplateReference = {
+export const AnswerTemplateSlug = {
   textShort: 'textShort',
   textLong: 'textLong',
   numberInput: 'numberInput',
@@ -8,7 +8,7 @@ export const AnswerTemplateReference = {
   selectSingle: 'selectSingle',
   selectMultiple: 'selectMultiple',
 } as const;
-export type AnswerTemplateReference = (typeof AnswerTemplateReference)[keyof typeof AnswerTemplateReference];
+export type AnswerTemplateSlug = (typeof AnswerTemplateSlug)[keyof typeof AnswerTemplateSlug];
 
 const textSettings = z.object({
   default: z.string().optional(),
@@ -26,42 +26,42 @@ const numberSettings = z.object({
 
 export const ANSWER_TEMPLATES = [
   {
-    reference: AnswerTemplateReference.textShort,
+    slug: AnswerTemplateSlug.textShort,
     name: 'Text short',
     description: `Input short text.`,
     schema: z.string(),
     settings: textSettings,
   },
   {
-    reference: AnswerTemplateReference.textLong,
+    slug: AnswerTemplateSlug.textLong,
     name: 'Text long',
     description: `Input long text.`,
     schema: z.string(),
     settings: textSettings.extend({ rows: z.number().int().default(4).optional() }),
   },
   {
-    reference: AnswerTemplateReference.numberInput,
+    slug: AnswerTemplateSlug.numberInput,
     name: 'Number input',
     description: `Input number via keyboard.`,
     schema: z.number().int(),
     settings: numberSettings,
   },
   {
-    reference: AnswerTemplateReference.numberRange,
+    slug: AnswerTemplateSlug.numberRange,
     name: 'Number range',
     description: `Input number via range slider.`,
     schema: z.number().int(),
     settings: numberSettings,
   },
   {
-    reference: AnswerTemplateReference.selectSingle,
+    slug: AnswerTemplateSlug.selectSingle,
     name: 'Select single',
     description: `Select a single option from a list.`,
     schema: z.number().int(),
     settings: z.object({ default: z.number().int().optional() }),
   },
   {
-    reference: AnswerTemplateReference.selectMultiple,
+    slug: AnswerTemplateSlug.selectMultiple,
     name: 'Select multiple',
     description: `Select multiple options from a list.`,
     schema: z.number().int().array(),

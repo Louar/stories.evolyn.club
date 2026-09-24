@@ -1,4 +1,4 @@
-import { env } from '$env/dynamic/private';
+import { POSTGRES_DB, POSTGRES_HOST, POSTGRES_MAX, POSTGRES_PASSWORD, POSTGRES_PORT, POSTGRES_USER } from '$app/env/private';
 import { CamelCasePlugin, HandleEmptyInListsPlugin, Kysely, PostgresDialect, replaceWithNoncontingentExpression } from 'kysely';
 import pg from 'pg';
 import { migrate } from './migrator';
@@ -13,12 +13,12 @@ pg.types.setTypeParser(20, (val) => {
 
 const dialect = new PostgresDialect({
   pool: new Pool({
-    database: env.SECRET_POSTGRES_DATABASE,
-    host: env.SECRET_POSTGRES_HOST,
-    user: env.SECRET_POSTGRES_USER,
-    password: env.SECRET_POSTGRES_PASSWORD,
-    port: Number(env.SECRET_POSTGRES_PORT),
-    max: Number(env.SECRET_POSTGRES_MAX),
+    database: POSTGRES_DB,
+    host: POSTGRES_HOST,
+    user: POSTGRES_USER,
+    password: POSTGRES_PASSWORD,
+    port: POSTGRES_PORT,
+    max: POSTGRES_MAX,
   })
 })
 

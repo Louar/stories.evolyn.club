@@ -1,7 +1,7 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
 	import { getCellKey, type RowHeightValue } from '$lib/components/data-grid/types/data-grid.js';
 	import { cn } from '$lib/utils.js';
-	import type { Cell, Table } from '@tanstack/table-core';
+	import type { Cell, RowData, Table } from '$lib/components/data-grid/data-grid-table.js';
 	import type { Snippet } from 'svelte';
 
 	interface Props {
@@ -24,6 +24,7 @@
 	}
 
 	let {
+		cell,
 		table,
 		rowIndex,
 		columnId,
@@ -31,6 +32,7 @@
 		isFocused,
 		isSelected,
 		class: className,
+		// eslint-disable-next-line no-useless-assignment -- reassigned to propagate the element through the bindable prop
 		wrapperRef = $bindable(null),
 		onclick: onClickProp,
 		onkeydown: onKeyDownProp,
@@ -40,6 +42,8 @@
 		ondrop: onDropProp,
 		children
 	}: Props = $props();
+	const uid = $props.id();
+	const rowId = $derived(cell.row.id);
 
 	let internalRef = $state<HTMLDivElement | null>(null);
 	// Track if cell was focused BEFORE mousedown (to prevent single-click opening edit)
@@ -56,7 +60,7 @@
 	$effect(() => {
 		const meta = table.options.meta;
 		if (internalRef && meta?.cellMapRef) {
-			const cellKey = getCellKey(rowIndex, columnId);
+			const cellKey = getCellKey(rowId, columnId);
 			meta.cellMapRef.set(cellKey, internalRef);
 
 			return () => {
@@ -66,23 +70,19 @@
 	});
 
 	// Compute cellKey reactively for virtualization
-	const cellKey = $derived(getCellKey(rowIndex, columnId));
+	const cellKey = $derived(getCellKey(rowId, columnId));
 
-	// Direct DOM update for selection state - bypasses Svelte reactivity issues
-	// This runs whenever isSelected, isFocused, isEditing props change OR when the element mounts
-	$effect(() => {
-		const el = internalRef; // Read internalRef to create dependency
-		if (el) {
-			// Only show selection highlight when not focused and not editing
-			const showHighlight = isSelected && !isFocused && !isEditing;
-			if (showHighlight) {
-				el.setAttribute('data-selected', '');
-				el.classList.add('highlight');
-			} else {
-				el.removeAttribute('data-selected');
-				el.classList.remove('highlight');
-			}
-		}
+	const isRowSelected = $derived(cell.row.getIsSelected());
+	const showSelectionHighlight = $derived((isSelected || isRowSelected) && !isEditing);
+	const isCopied = $derived.by(() => table.options.meta?.copiedCellsSet?.has(cellKey) ?? false);
+	const showCopiedHighlight = $derived(isCopied && !showSelectionHighlight && !isEditing);
+	const columnIndex = $derived.by(() => {
+		const orderedColumns = [
+			...table.getStartVisibleLeafColumns(),
+			...table.getCenterVisibleLeafColumns(),
+			...table.getEndVisibleLeafColumns()
+		];
+		return orderedColumns.findIndex((column) => column.id === columnId) + 1;
 	});
 
 	const hasError = $derived.by(() => {
@@ -98,18 +98,30 @@
 	const isActiveSearchMatch = $derived.by(() => {
 		const meta = table.options.meta;
 		const active = meta?.activeSearchMatch;
-		return active?.rowIndex === rowIndex && active?.columnId === columnId;
+		return (
+			(active?.rowId ? active.rowId === rowId : active?.rowIndex === rowIndex) &&
+			active?.columnId === columnId
+		);
 	});
+	const saveState = $derived.by(() => {
+		const map = table.options.meta?.cellSaveStateMap;
+		return map?.get(cellKey) ?? { status: 'idle' as const };
+	});
+	const isInvalid = $derived(hasError || saveState.status === 'error');
+	const errorDescriptionId = $derived(isInvalid ? `${uid}-error` : undefined);
 	const rowHeight = $derived.by<RowHeightValue>(() => {
 		const meta = table.options.meta;
 		return meta?.rowHeight ?? 'short';
 	});
 
-	// Compute cell classes - selection highlight is handled via $effect DOM manipulation
+	// Compute cell classes declaratively so Svelte owns the rendered state.
 	const cellClasses = $derived(
 		cn(
-			'size-full px-2 py-1.5 text-left text-sm outline-none has-data-[slot=checkbox]:pt-2.5',
+			'relative size-full px-2 py-1.5 text-left text-sm outline-none has-data-[slot=checkbox]:pt-2.5',
 			{
+				highlight: showSelectionHighlight,
+				'bg-blue-100/80 ring-1 ring-blue-400 ring-inset dark:bg-blue-900/40 dark:ring-blue-500/70':
+					showCopiedHighlight,
 				'ring-1 ring-inset': isFocused,
 				'ring-1 ring-inset ring-rose-300 bg-rose-50 dark:ring-rose-500/50 dark:bg-rose-900/30':
 					hasError,
@@ -127,6 +139,7 @@
 
 	function handleClick(event: MouseEvent) {
 		if (!isEditing) {
+			if (isInteractiveTarget(event)) return;
 			event.preventDefault();
 			onClickProp?.(event);
 			const meta = table.options.meta;
@@ -146,10 +159,20 @@
 
 	function handleMouseDown(event: MouseEvent) {
 		if (!isEditing) {
+			if (isInteractiveTarget(event)) return;
 			// Capture focus state BEFORE mousedown changes it
 			wasFocusedOnMouseDown = isFocused;
 			table.options.meta?.onCellMouseDown?.(rowIndex, columnId, event);
 		}
+	}
+
+	function isInteractiveTarget(event: MouseEvent): boolean {
+		const target = event.target;
+		return (
+			target instanceof Element &&
+			target !== event.currentTarget &&
+			Boolean(target.closest('button, a, input, select, textarea, [role="button"], [role="link"]'))
+		);
 	}
 
 	function handleMouseEnter(event: MouseEvent) {
@@ -227,8 +250,14 @@
 
 <div
 	bind:this={internalRef}
-	role="button"
+	role="gridcell"
+	aria-colindex={columnIndex}
+	aria-selected={isSelected}
+	aria-invalid={isInvalid ? 'true' : undefined}
+	aria-describedby={errorDescriptionId}
 	data-slot="grid-cell-wrapper"
+	data-selected={showSelectionHighlight ? '' : undefined}
+	data-copied={showCopiedHighlight ? '' : undefined}
 	data-editing={isEditing ? '' : undefined}
 	data-focused={isFocused ? '' : undefined}
 	tabindex={isFocused && !isEditing ? 0 : -1}
@@ -246,4 +275,34 @@
 	ondrop={onDropProp}
 >
 	{@render children?.()}
+	{#if saveState.status === 'saving'}
+		<span
+			class="pointer-events-none absolute top-1 right-1 size-2 animate-pulse rounded-full bg-muted-foreground/60"
+			title="Saving"
+			aria-label="Saving"
+		></span>
+		<span class="sr-only" role="status">Saving cell</span>
+	{:else if saveState.status === 'saved'}
+		<span
+			class="pointer-events-none absolute top-1 right-1 size-2 rounded-full bg-emerald-500"
+			title="Saved"
+			aria-label="Saved"
+		></span>
+		<span class="sr-only" role="status">Cell saved</span>
+		<!-- {:else if saveState.status === 'error'}
+		<span
+			class="text-destructive-foreground pointer-events-none absolute top-1 right-1 flex size-3 items-center justify-center rounded-full bg-destructive text-[9px] font-bold"
+			title={saveState.error ?? 'The cell could not be saved'}
+			aria-hidden="true"
+		>
+			!
+		</span> -->
+	{/if}
+	{#if isInvalid}
+		<span id={errorDescriptionId} class="sr-only">
+			{saveState.status === 'error'
+				? (saveState.error ?? 'The cell could not be saved')
+				: 'The cell contains an invalid value'}
+		</span>
+	{/if}
 </div>

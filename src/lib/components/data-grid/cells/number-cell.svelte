@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import DataGridCellWrapper from '../data-grid-cell-wrapper.svelte';
 
@@ -24,10 +25,10 @@
 
 	// Track local edits separately - this only matters during editing
 	let localEditValue = $state<string | null>(null);
-	
+
 	// Display value directly from initialValue (no effect delay)
 	const displayValue = $derived(String(initialValue ?? ''));
-	
+
 	// Value for editing - use localEditValue if set, otherwise displayValue
 	const value = $derived(localEditValue ?? displayValue);
 
@@ -41,7 +42,7 @@
 	// Focus input when entering edit mode
 	$effect(() => {
 		if (isEditing && inputRef) {
-			inputRef.focus();
+			inputRef.focus({ preventScroll: true });
 			inputRef.select();
 		}
 	});
@@ -50,7 +51,7 @@
 		const numValue = value === '' ? null : Number(value);
 		const meta = table.options.meta;
 		if (!readOnly && numValue !== initialValue) {
-			meta?.onDataUpdate?.({ rowIndex, columnId, value: numValue });
+			meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value: numValue });
 		}
 		meta?.onCellEditingStop?.();
 	}
@@ -67,22 +68,37 @@
 				event.preventDefault();
 				const numValue = value === '' ? null : Number(value);
 				if (numValue !== initialValue) {
-					meta?.onDataUpdate?.({ rowIndex, columnId, value: numValue });
+					meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value: numValue });
 				}
 				meta?.onCellEditingStop?.({ moveToNextRow: true });
 			} else if (event.key === 'Tab') {
+				const direction = event.shiftKey ? 'left' : 'right';
+				const canNavigate = meta?.canNavigateToCell?.(rowIndex, columnId, direction) ?? false;
+				if (!canNavigate) {
+					const numValue = value === '' ? null : Number(value);
+					if (numValue !== initialValue) {
+						meta?.onDataUpdate?.({
+							rowIndex,
+							rowId: cell.row.id,
+							columnId,
+							value: numValue
+						});
+					}
+					meta?.onCellEditingStop?.();
+					return;
+				}
 				event.preventDefault();
 				const numValue = value === '' ? null : Number(value);
 				if (numValue !== initialValue) {
-					meta?.onDataUpdate?.({ rowIndex, columnId, value: numValue });
+					meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value: numValue });
 				}
 				meta?.onCellEditingStop?.({
-					direction: event.shiftKey ? 'left' : 'right'
+					direction
 				});
 			} else if (event.key === 'Escape') {
 				event.preventDefault();
 				localEditValue = null;
-				inputRef?.blur();
+				meta?.onCellEditingCancel?.();
 			}
 		} else if (isFocused) {
 			// Handle Backspace to start editing with empty value

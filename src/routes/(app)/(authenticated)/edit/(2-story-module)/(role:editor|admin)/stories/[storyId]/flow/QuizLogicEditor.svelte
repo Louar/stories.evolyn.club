@@ -1,0 +1,388 @@
+<script lang="ts">
+	import HeaderBlank from '$lib/components/app/header/app-header-blank.svelte';
+	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
+	import * as Collapsible from '$lib/components/ui/collapsible/index.js';
+	import * as Field from '$lib/components/ui/field/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
+	import Separator from '$lib/components/ui/separator/separator.svelte';
+	import type { findOneQuizLogicById, findOneStoryById } from '$lib/db/repositories/2-story-module';
+	import { formatFormError, translateLocalizedField } from '$lib/db/schemas/0-utils';
+	import { UI } from '$lib/states/ui.svelte';
+	import { moveArrayItem } from '$lib/utils';
+	import { DragDropProvider } from '@dnd-kit-svelte/svelte';
+	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
+	import ChevronsRightIcon from '@lucide/svelte/icons/chevrons-right';
+	import ChevronsUpDownIcon from '@lucide/svelte/icons/chevrons-up-down';
+	import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical';
+	import TrashIcon from '@lucide/svelte/icons/trash-2';
+	import { onDestroy } from 'svelte';
+	import { toast } from 'svelte-sonner';
+	import type { $ZodIssue } from 'zod/v4/core';
+
+	type DragEndEvent = {
+		operation: { source: { sortable: { index: number; initialIndex: number } | null } | null };
+	};
+
+	type Props = {
+		storyId: string;
+		partId: string;
+		rules: NonNullable<
+			Awaited<ReturnType<typeof findOneStoryById>>['parts'][number]['quizLogicForPart']
+		>['rules'];
+		quiz: Awaited<ReturnType<typeof findOneStoryById>>['quizzes'][number];
+		close: (output: {
+			action: 'persist' | 'delete';
+			id?: string;
+			logic?: Awaited<ReturnType<typeof findOneQuizLogicById>>;
+		}) => void;
+	};
+	let { storyId, partId, rules, quiz, close }: Props = $props();
+
+	let error = $state<$ZodIssue[] | null>(null);
+	let saveState = $state<'idle' | 'dirty' | 'saving' | 'saved' | 'error'>('idle');
+	let autosaveTimer: ReturnType<typeof setTimeout> | undefined;
+	let saveVersion = 0;
+
+	const scheduleAutosave = () => {
+		saveVersion += 1;
+		saveState = 'dirty';
+		clearTimeout(autosaveTimer);
+		autosaveTimer = setTimeout(() => persist(undefined, true), 700);
+	};
+	onDestroy(() => {
+		clearTimeout(autosaveTimer);
+		if (saveState === 'dirty') void persist(undefined, true);
+	});
+
+	const mergeSavedIds = (saved: NonNullable<Awaited<ReturnType<typeof findOneQuizLogicById>>>) => {
+		const activeRules = rules.filter((rule) => !rule.isRemoved);
+		const savedRules = [...saved.rules].sort((a, b) => a.order - b.order);
+
+		for (const [ruleIndex, rule] of activeRules.entries()) {
+			const savedRule = savedRules[ruleIndex];
+			if (!savedRule) continue;
+
+			rule.id = savedRule.id;
+			const activeInputs = rule.inputs.filter((input) => !input.isRemoved);
+			const savedInputs = [...savedRule.inputs];
+			for (const [inputIndex, input] of activeInputs.entries()) {
+				const savedInput = savedInputs[inputIndex];
+				if (savedInput) input.id = savedInput.id;
+			}
+		}
+	};
+
+	const addRule = () => {
+		rules?.push({
+			id: `new-${crypto.randomUUID().toString().slice(0, 8)}`,
+			order: (rules?.length ?? 0) + 1,
+			name: '',
+			nextPartId: null,
+			inputs: [],
+			isRemoved: false // Front-end purposes
+		});
+		scheduleAutosave();
+	};
+
+	const addRuleInput = (rule: (typeof rules)[number]) => {
+		rule.inputs.push({
+			id: `new-${crypto.randomUUID().toString().slice(0, 8)}`,
+			quizQuestionTemplateId: 'none',
+			value: null,
+			quizQuestionTemplateAnswerItemId: null,
+			isRemoved: false // Front-end purposes
+		});
+		scheduleAutosave();
+	};
+
+	const handleRuleDrag = (event: DragEndEvent) => {
+		const sortable = event.operation.source?.sortable;
+		if (!sortable) return;
+		rules = moveArrayItem(rules, sortable.initialIndex, sortable.index);
+		rules.filter((rule) => !rule.isRemoved).forEach((rule, index) => (rule.order = index + 1));
+		scheduleAutosave();
+	};
+
+	const persist = async (event?: Event, autosave = false) => {
+		event?.preventDefault();
+		clearTimeout(autosaveTimer);
+		const version = ++saveVersion;
+		saveState = 'saving';
+
+		const request = (async () => {
+			const result = await fetch(
+				`/api/stories/${storyId}/parts/${partId}/quizzes/${quiz.id}/logic`,
+				{
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body: JSON.stringify({ rules })
+				}
+			);
+			if (!result.ok) {
+				if (result.status === 422) error = await result.json();
+				throw new Error(result.statusText ?? 'Saving quiz logic failed');
+			}
+			return (await result.json()) as NonNullable<Awaited<ReturnType<typeof findOneQuizLogicById>>>;
+		})();
+		toast.promise(request, {
+			loading: 'Saving quiz rules...',
+			success: 'Quiz rules saved',
+			error: 'Could not save quiz rules'
+		});
+
+		try {
+			const saved = await request;
+			if (version !== saveVersion) {
+				mergeSavedIds(saved);
+				close({ action: 'persist', logic: saved });
+				return;
+			}
+			error = null;
+			saveState = 'saved';
+			if (autosave) mergeSavedIds(saved);
+			else rules = saved.rules;
+			close({ action: 'persist', logic: saved });
+		} catch {
+			if (version === saveVersion) saveState = 'error';
+		}
+	};
+</script>
+
+<div>
+	<HeaderBlank class="h-12 w-full bg-muted/50">
+		<div>
+			<h1 class="flex items-center gap-2 truncate overflow-hidden text-sm whitespace-nowrap">
+				Foreground
+				<ChevronsRightIcon class="size-4 text-muted-foreground" />
+				<span class="font-medium">Quiz rules</span>
+			</h1>
+		</div>
+		<p class="ml-auto self-center text-xs text-muted-foreground" aria-live="polite">
+			{saveState === 'saving'
+				? 'Saving...'
+				: saveState === 'saved'
+					? 'Saved'
+					: saveState === 'error'
+						? 'Save failed'
+						: saveState === 'dirty'
+							? 'Unsaved changes'
+							: 'No changes'}
+		</p>
+	</HeaderBlank>
+
+	<form class="p-4" onsubmit={persist} oninput={scheduleAutosave} onchange={scheduleAutosave}>
+		<DragDropProvider onDragEnd={(event) => handleRuleDrag(event as DragEndEvent)}>
+			<div class="grid gap-4">
+				{#each rules as rule, r (rule.id)}
+					{@const { ref, handleRef } = useSortable({
+						id: rule.id,
+						index: r
+					})}
+					<Field.Set
+						class="grid gap-0 rounded-lg border bg-card/50 backdrop-blur-md {rule.isRemoved
+							? 'hidden'
+							: ''}"
+						{@attach ref}
+					>
+						<Collapsible.Root open={true}>
+							<div class="grid gap-4 p-4">
+								<div class="flex items-center gap-2">
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon"
+										class="cursor-move"
+										{@attach handleRef}
+									>
+										<GripVerticalIcon />
+									</Button>
+									<Field.Label>Rule {rule.order}</Field.Label>
+								</div>
+								<div class="flex justify-between gap-2">
+									<!-- <span class="text-sm text-muted-foreground">{q + 1}.</span> -->
+									<div class="w-full space-y-1">
+										<Field.Field>
+											<Input bind:value={rule.name} placeholder="Rule name" />
+										</Field.Field>
+										<Field.Error>
+											{formatFormError(error, `rules.${r}.name`)}
+										</Field.Error>
+									</div>
+
+									<Button
+										type="button"
+										variant="ghost"
+										size="icon"
+										class="text-destructive hover:bg-destructive/10 hover:text-destructive"
+										onclick={() => {
+											rule.isRemoved = true;
+											rules?.filter((r) => !r.isRemoved)?.forEach((r, i) => (r.order = i + 1));
+											scheduleAutosave();
+										}}
+									>
+										<TrashIcon class="size-4" />
+									</Button>
+									<Collapsible.Trigger class={buttonVariants({ variant: 'ghost', size: 'icon' })}>
+										<ChevronsUpDownIcon />
+									</Collapsible.Trigger>
+								</div>
+							</div>
+
+							<Collapsible.Content>
+								<Separator />
+
+								<Field.Field class="p-4">
+									<div class="flex items-center justify-between">
+										<div>
+											<Field.Label>Inputs</Field.Label>
+											<Field.Error>
+												{formatFormError(error, `rules.${r}.inputs`)}
+											</Field.Error>
+										</div>
+									</div>
+
+									<div class="space-y-3">
+										{#each rule.inputs as input, i (input.id)}
+											{@const question = quiz.questions.find(
+												(q) => q.id === input.quizQuestionTemplateId
+											)}
+											<div
+												class="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] gap-2 rounded-md border bg-card/50 p-3 transition-colors"
+												class:hidden={input.isRemoved}
+											>
+												<Field.Field class="w-full">
+													<Field.Label for="question">Question</Field.Label>
+													<Select.Root
+														type="single"
+														name="quizQuestionTemplateId"
+														bind:value={input.quizQuestionTemplateId}
+													>
+														<Select.Trigger
+															class="w-full {question ? '' : 'text-muted-foreground'}"
+														>
+															{#if !question}
+																Select a question...
+															{:else}
+																<p class="truncate">
+																	<span class="mr-1 text-muted-foreground">{question.order}.</span
+																	>{translateLocalizedField(question.title, UI.language)}
+																</p>
+															{/if}
+														</Select.Trigger>
+														<Select.Content>
+															<Select.Group>
+																<ol class="list-inside list-decimal marker:text-muted-foreground">
+																	{#each quiz.questions as question (question.id)}
+																		<Select.Item value={question.id}>
+																			<li>
+																				{translateLocalizedField(question.title, UI.language)}
+																			</li>
+																		</Select.Item>
+																	{/each}
+																</ol>
+															</Select.Group>
+														</Select.Content>
+													</Select.Root>
+													<Field.Error>
+														{error?.find(
+															(e) =>
+																e.path?.join('.') ===
+																['rules', r, 'inputs', i, 'quizQuestionTemplateId'].join('.')
+														)?.message}
+													</Field.Error>
+												</Field.Field>
+												<Field.Field class="w-full">
+													<Field.Label for="value">Answer</Field.Label>
+													<Select.Root
+														type="single"
+														name="quizQuestionTemplateId"
+														value={input.quizQuestionTemplateAnswerItemId ?? 'none'}
+														disabled={!question}
+														onValueChange={(value) => {
+															input.quizQuestionTemplateAnswerItemId =
+																value === 'none' ? null : value;
+															scheduleAutosave();
+														}}
+													>
+														{@const answer = question?.answerOptions?.find(
+															(o) => o.id === input.quizQuestionTemplateAnswerItemId
+														)}
+														<Select.Trigger class="w-full {answer ? '' : 'text-muted-foreground'}">
+															{#if !answer}
+																Select an answer option...
+															{:else}
+																<p class="truncate">
+																	<span class="mr-1 text-muted-foreground">{answer.order}.</span
+																	>{translateLocalizedField(answer.label, UI.language)}
+																</p>
+															{/if}
+														</Select.Trigger>
+														<Select.Content>
+															{#if question?.answerOptions?.length}
+																<Select.Group>
+																	<ol class="list-inside list-decimal marker:text-muted-foreground">
+																		{#each question.answerOptions as option (option.id)}
+																			<Select.Item value={option.id}>
+																				<li>
+																					{translateLocalizedField(option.label, UI.language)}
+																				</li>
+																			</Select.Item>
+																		{/each}
+																	</ol>
+																</Select.Group>
+															{/if}
+														</Select.Content>
+													</Select.Root>
+													<Field.Error>
+														{error?.find(
+															(e) =>
+																e.path?.join('.') ===
+																['rules', r, 'inputs', i, 'quizQuestionTemplateAnswerItemId'].join(
+																	'.'
+																)
+														)?.message}
+													</Field.Error>
+												</Field.Field>
+
+												<Button
+													type="button"
+													variant="ghost"
+													size="icon"
+													class="text-destructive hover:bg-destructive/10 hover:text-destructive"
+													onclick={() => {
+														input.isRemoved = true;
+														scheduleAutosave();
+													}}
+												>
+													<TrashIcon class="size-4" />
+												</Button>
+											</div>
+										{/each}
+										<Button
+											type="button"
+											variant="outline"
+											size="sm"
+											onclick={() => addRuleInput(rule)}
+										>
+											Add input
+										</Button>
+									</div>
+								</Field.Field>
+							</Collapsible.Content>
+						</Collapsible.Root>
+					</Field.Set>
+				{/each}
+
+				<Button type="button" variant="outline" size="sm" onclick={addRule}>Add rule</Button>
+				<Field.Error>
+					{formatFormError(error, `rules`)}
+				</Field.Error>
+			</div>
+		</DragDropProvider>
+		<!-- <Dialog.Footer>
+			<Dialog.Close class={buttonVariants({ variant: 'outline' })}>Cancel</Dialog.Close>
+			<Button type="submit" onclick={submit}>Save logic</Button>
+		</Dialog.Footer> -->
+	</form>
+</div>

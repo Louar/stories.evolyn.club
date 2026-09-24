@@ -1,13 +1,18 @@
 // Cell variant components
+export { default as ActionsCell } from './actions-cell.svelte';
 export { default as CheckboxCell } from './checkbox-cell.svelte';
 export { default as DateCell } from './date-cell.svelte';
 export { default as DateTimeCell } from './date-time-cell.svelte';
+export { default as InputWithSuggestionsCell } from './input-with-suggestions-cell.svelte';
 export { default as FileCell } from './file-cell.svelte';
+export { default as FileOrUrlCell } from './file-or-url-cell.svelte';
+export { default as JdmExpressionCell } from './jdm-expression-cell.svelte';
 export { default as JsonYamlCell } from './json-yaml-cell.svelte';
 export { default as NumberCell } from './number-cell.svelte';
 export { default as RelationFollowCell } from './relation-follow-cell.svelte';
 export { default as RelationSelectSingleCell } from './relation-select-single-cell.svelte';
 export { default as SelectMultipleCell } from './select-multiple-cell.svelte';
+export { default as SelectIconCell } from './select-icon-cell.svelte';
 export { default as SelectSingleCell } from './select-single-cell.svelte';
 export { default as TextLongCell } from './text-long-cell.svelte';
 export { default as TextShortCell } from './text-short-cell.svelte';

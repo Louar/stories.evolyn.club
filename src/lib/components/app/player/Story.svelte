@@ -4,8 +4,10 @@
 		logInteractionEvent,
 		logTransitionEvent
 	} from '$lib/client/player-events.js';
-	import type { findOneStoryByReference } from '$lib/db/repositories/2-stories-module.js';
-	import { Orientation } from '$lib/db/schemas/0-utils.js';
+	import type { findOneStoryBySlug } from '$lib/db/repositories/2-story-module.js';
+	import { MediaCollection, type Media } from '$lib/db/schemas/0-utils.js';
+	import { PartTerminationStrategy } from '$lib/db/schemas/2-story-module.js';
+	import * as m from '$lib/paraglide/messages';
 	import { PLAYERS } from '$lib/states/players.svelte.js';
 	import { STORIES } from '$lib/states/stories.svelte.js';
 	import { cn } from '$lib/utils.js';
@@ -17,11 +19,12 @@
 	import AnnouncementOverlay from './AnnouncementOverlay.svelte';
 	import InteractionOverlay from './InteractionOverlay.svelte';
 	import PlayerComponent from './Player.svelte';
+	import TaxonomyGame from './taxonomy/Game.svelte';
+	import type { GamePerformance } from './taxonomy/types';
 	import type { InputFromLogic, Logic, OutputFromLogic, Player, Rule } from './types.js';
 
 	type Props = {
-		story: NonNullable<Awaited<ReturnType<typeof findOneStoryByReference>>>;
-		orientation: Orientation | undefined;
+		story: NonNullable<Awaited<ReturnType<typeof findOneStoryBySlug>>>;
 		players: Player[];
 		isActiveStory?: boolean;
 		doRestart?: boolean;
@@ -29,11 +32,15 @@
 
 		class?: ClassValue | null | undefined;
 	};
+	type StoryPart = Props['story']['parts'][number];
+	type TaxonomyGameForeground = Extract<
+		NonNullable<StoryPart['foreground']>,
+		{ rounds: unknown; logic: unknown }
+	>;
 	let {
 		story = $bindable(),
-		orientation = $bindable(),
 		players = $bindable(),
-		isActiveStory = false,
+		isActiveStory = true,
 		doRestart = $bindable(false),
 		onnext,
 		class: className
@@ -42,6 +49,8 @@
 	let pid: string | undefined = $state();
 	let start: number | undefined = $state();
 	let isEnded = $state(false);
+	let isCompleted = $state(false);
+	let visit = $state(0);
 
 	onMount(() => {
 		initPlayerEvents(story.id);
@@ -54,42 +63,108 @@
 		const toPartId = story?.parts?.[0]?.id;
 		if (fromPartId && toPartId) logTransitionEvent(story.id, fromPartId, toPartId);
 
-		isEnded = false;
-		pid = story?.parts?.[0]?.id;
-		start = new Date().getTime();
-		const player = players.find((player) => player.id === pid);
-		if (player && PLAYERS.didUserInteract) player.doRestart = true;
-	};
-
-	const submit = async (logic: Logic | undefined, input: InputFromLogic<Logic>) => {
-		if (!logic || !input) return;
-		const output = executeLogic(logic, input);
-		const current = players.find((p) => p.id === pid);
-		if (!output?.next || typeof output.next !== 'string') {
-			if (current) current.doPause = true;
-			return end();
+		const currentPlayer = players.find((player) => player.id === fromPartId);
+		const nextPlayer = players.find((player) => player.id === toPartId);
+		if (currentPlayer && currentPlayer !== nextPlayer) currentPlayer.doEnd = true;
+		if (nextPlayer) {
+			nextPlayer.doEnd = false;
+			nextPlayer.time = 0;
 		}
 
-		const next = players.find((p) => p.id === output.next);
-		if (!current || !next) return end();
+		isEnded = false;
+		isCompleted = false;
+		visit += 1;
+		pid = toPartId;
+		start = new Date().getTime();
+		if (nextPlayer && PLAYERS.didUserInteract) nextPlayer.doRestart = true;
+	};
+
+	const canNavigate = (partId: string, expectedVisit: number) =>
+		isActiveStory && !isEnded && pid === partId && visit === expectedVisit;
+
+	const submit = (
+		partId: string,
+		expectedVisit: number,
+		logic: Logic | undefined,
+		input: InputFromLogic<Logic>
+	) => {
+		if (!canNavigate(partId, expectedVisit)) return;
+		if (!logic || !input) return end(false);
+		const output = executeLogic(logic, input);
+		if (!output || !('next' in output)) return end(false);
+		transition(partId, expectedVisit, output.next);
+	};
+
+	const transition = (partId: string, expectedVisit: number, nextPartId: unknown) => {
+		if (!canNavigate(partId, expectedVisit)) return;
+		const currentPart = story.parts.find((part) => part.id === partId);
+		const current = players.find((player) => player.id === partId);
+		if (!currentPart || !current) return end(false);
+
+		if (!nextPartId || typeof nextPartId !== 'string') {
+			current.doPause = true;
+			return endForPart(partId);
+		}
+
+		const next = players.find((p) => p.id === nextPartId);
+		const nextPart = story.parts.find((part) => part.id === nextPartId);
+		if (!next || !nextPart) return end(false);
 		logTransitionEvent(story.id, current.id, next.id);
+		visit += 1;
 
 		if (current.id === next.id) {
 			next.doRestart = true;
 		} else {
 			current.doEnd = true;
-			pid = output.next;
+			pid = nextPartId;
 			next.doBuffer = true;
 			next.doPlay = true;
 		}
 	};
 
-	const end = () => {
+	type TaxonomyLogic = {
+		defaultNextPartId: string | null;
+		rules: Array<{
+			nextPartId: string | null;
+			nrOfRounds: [number | null, number | null] | null;
+			score: [number | null, number | null] | null;
+			mistakes: [number | null, number | null] | null;
+			duration: [number | null, number | null] | null;
+		}>;
+	};
+
+	const submitTaxonomy = (
+		partId: string,
+		expectedVisit: number,
+		logic: TaxonomyLogic,
+		performance: GamePerformance
+	) => {
+		const matchesRange = (value: number, range: [number | null, number | null] | null) =>
+			range === null ||
+			((range[0] === null || value >= range[0]) && (range[1] === null || value <= range[1]));
+		const rule = logic.rules.find(
+			(candidate) =>
+				matchesRange(performance.nrOfRounds, candidate.nrOfRounds) &&
+				matchesRange(performance.score, candidate.score) &&
+				matchesRange(performance.mistakes, candidate.mistakes) &&
+				matchesRange(performance.duration, candidate.duration)
+		);
+		transition(partId, expectedVisit, rule?.nextPartId ?? logic.defaultNextPartId);
+	};
+
+	const endForPart = (partId: string | undefined) => {
+		const part = story.parts.find((part) => part.id === partId);
+		if (!part) return end(false);
+		end(part.terminationStrategy !== PartTerminationStrategy.failStory);
+	};
+
+	const end = (completed = true) => {
+		if (isEnded || !isActiveStory) return;
 		const watchTime = Math.round(Object.values(PLAYERS.watchDurations)?.reduce((a, b) => a + b, 0));
 		const percentages = Object.values(PLAYERS.watchTimePercentages);
-		const watchTimePercentage = Math.round(
-			percentages?.reduce((a, b) => a + b, 0) / percentages.length
-		);
+		const watchTimePercentage = percentages.length
+			? Math.round(percentages.reduce((a, b) => a + b, 0) / percentages.length)
+			: 0;
 		const events = JSON.stringify(STORIES.events[story.id] ?? []);
 		STORIES.averageWatchTimePercentages[story.id] = Math.max(
 			STORIES.averageWatchTimePercentages[story.id] ?? 0,
@@ -97,7 +172,7 @@
 		);
 		parent.postMessage(
 			{
-				isCompleted: true,
+				isCompleted: completed,
 				start,
 				end: new Date().getTime(),
 				watchTime,
@@ -106,8 +181,9 @@
 			},
 			'*'
 		);
+		isCompleted = completed;
 		isEnded = true;
-		if (onnext) onnext();
+		if (completed && onnext) onnext();
 	};
 
 	const executeLogic = (
@@ -161,30 +237,121 @@
 		);
 	};
 
-	const hasOverlay = (
-		part: (typeof story.parts)[number],
-		player: (typeof players)[number] | undefined
-	) => {
+	const cueTolerance = 0.02;
+
+	const getOverlayStart = (part: StoryPart, player: Player | undefined) => {
+		if (part.backgroundType !== 'video') return undefined;
+		if (!part.background || !('duration' in part.background)) return undefined;
+		if (!part.foreground) return undefined;
+
+		const clipStart = player?.start ?? 0;
+		const clipEnd = Math.min(player?.end ?? part.background.duration, part.background.duration);
+		const cue = (part.foreground.start ?? 0) * part.background.duration - clipStart;
+
+		return Math.min(Math.max(cue, 0), Math.max(0, clipEnd - clipStart));
+	};
+
+	const hasOverlay = (part: StoryPart, player: Player | undefined) => {
+		if (part.backgroundType !== 'video') return Boolean(part.foreground);
+		const overlayStart = getOverlayStart(part, player);
 		return (
 			PLAYERS.didUserInteract &&
-			part.foreground &&
-			(player?.start ?? 0) + (player?.time ?? 0) >=
-				(part.foreground?.start ?? 0) * part.background?.duration
+			Boolean(part.foreground) &&
+			typeof overlayStart === 'number' &&
+			(player?.time ?? 0) >= overlayStart - cueTolerance
 		);
 	};
 
-	const isActiveOverlay = () => {
+	const getTaxonomyGame = (part: StoryPart): TaxonomyGameForeground | undefined => {
+		if (
+			part.foregroundType === 'taxonomy' &&
+			part.foreground &&
+			'rounds' in part.foreground &&
+			'logic' in part.foreground
+		) {
+			return part.foreground as TaxonomyGameForeground;
+		}
+	};
+
+	const hasQuizInteraction = (part: StoryPart, player: Player | undefined) =>
+		part.foregroundType === 'quiz' &&
+		part.foreground &&
+		'questions' in part.foreground &&
+		'logic' in part.foreground &&
+		hasOverlay(part, player);
+
+	const hasActiveForegroundInteraction = (part: StoryPart, player: Player | undefined) =>
+		!isEnded && (Boolean(getTaxonomyGame(part)) || hasQuizInteraction(part, player));
+
+	const shouldPauseAtOverlay = (part: StoryPart) =>
+		Boolean(getTaxonomyGame(part)) ||
+		(part.foregroundType === 'quiz' &&
+			part.foreground &&
+			'questions' in part.foreground &&
+			'logic' in part.foreground);
+
+	const handleOverlayStart = (
+		part: StoryPart,
+		player: Player | undefined,
+		expectedVisit: number
+	) => {
+		if (!player || !canNavigate(part.id, expectedVisit)) return;
+		const overlayStart = getOverlayStart(part, player);
+		if (typeof overlayStart === 'number') player.time = Math.max(player.time ?? 0, overlayStart);
+	};
+
+	const updatePlayerTimeToPartEnd = (part: StoryPart, player: Player) => {
+		if (part.backgroundType !== 'video') return;
+		if (!part.background || !('duration' in part.background)) return;
+
+		const partEnd = Math.min(player.end ?? part.background.duration, part.background.duration);
+		player.time = Math.max(player.time ?? 0, partEnd - (player.start ?? 0));
+	};
+
+	const finishPart = (partId: string, expectedVisit: number) => {
+		if (!canNavigate(partId, expectedVisit)) return;
+		const part = story.parts.find((candidate) => candidate.id === partId);
+		const player = players.find((candidate) => candidate.id === partId);
+		if (!part || !player) return end(false);
+
+		updatePlayerTimeToPartEnd(part, player);
+		player.doEnd = true;
+		if (hasActiveForegroundInteraction(part, player)) {
+			player.doPause = true;
+			return;
+		}
+		if (part.terminationStrategy !== PartTerminationStrategy.none) return endForPart(partId);
+		transition(partId, expectedVisit, player.next);
+	};
+
+	const mediaUrl = (media: Media | null | undefined) => {
+		if (!media) return undefined;
+		return media.collection === MediaCollection.externals
+			? media.filename
+			: `/api/media/${media.collection}/${media.filename}`;
+	};
+
+	let isActiveOverlay = $derived.by(() => {
 		if (!pid || isEnded) return false;
 		const activePart = story.parts.find((part) => part.id === pid);
 		if (!activePart) return false;
 		const activePlayer = players.find((player) => player.id === pid);
 		return hasOverlay(activePart, activePlayer);
-	};
+	});
+
+	$effect(() => {
+		if (!pid || isEnded || !isActiveStory) return;
+		const activePart = story.parts.find((part) => part.id === pid);
+		if (!activePart || activePart.terminationStrategy === PartTerminationStrategy.none) return;
+		if (activePart.backgroundType === 'video') return;
+		finishPart(activePart.id, visit);
+	});
 
 	$effect(() => {
 		if (!isActiveStory) return;
-		const next = isActiveOverlay();
-		if (PLAYERS.isAnyOverlayActive !== next) PLAYERS.isAnyOverlayActive = next;
+		if (PLAYERS.isAnyOverlayActive !== isActiveOverlay) {
+			PLAYERS.isAnyOverlayActive = isActiveOverlay;
+		}
 	});
 
 	$effect(() => {
@@ -195,39 +362,62 @@
 </script>
 
 <div
-	class={cn('relative mx-auto max-h-dvh max-w-dvw overflow-hidden', className)}
-	class:aspect-portrait={!orientation || orientation === Orientation.portrait}
-	class:aspect-video={orientation === Orientation.landscape}
-	class:aspect-square={orientation === Orientation.square}
+	class={cn(
+		'relative mx-auto h-dvh max-h-dvh w-dvw max-w-dvw overflow-hidden bg-background',
+		className
+	)}
+	style:background-color={story.defaultBackgroundColor ?? undefined}
 >
 	{#if story?.parts?.length}
 		{#each story?.parts as part (part.id)}
 			{@const player = players.find((player) => player.id === part.id)}
+			{@const taxonomyForeground = getTaxonomyGame(part)}
+			{@const overlayStart = getOverlayStart(part, player)}
+			{@const activeVisit = visit}
 
-			<div class="absolute inset-0 {part.id === pid ? 'opacity-100' : 'opacity-0'}">
-				{#if part?.backgroundType === 'video' && player}
-					{@const nextPlayers = [
-						player.next?.length
-							? new Map(players.map((p) => [p.id, p])).get(player.next)
-							: undefined,
-						...('logic' in part.foreground
-							? (part.foreground?.logic?.rules?.map((rule) =>
-									typeof rule.next === 'string'
-										? new Map(players.map((p) => [p.id, p])).get(rule.next)
-										: undefined
-								) ?? [])
-							: [])
-					].filter((p): p is (typeof players)[number] => p !== undefined)}
+			<div
+				class="absolute inset-0 {part.id === pid
+					? 'z-10 opacity-100'
+					: 'pointer-events-none opacity-0'}"
+				inert={part.id !== pid}
+			>
+				{#if part?.backgroundType === 'still'}
+					{@const background =
+						part.background && 'style' in part.background ? part.background : undefined}
+					<div
+						class={cn('absolute inset-0 bg-center', background?.style)}
+						style:background-color={background?.color ?? undefined}
+						style:background-image={background?.image
+							? `url("${mediaUrl(background.image)}")`
+							: undefined}
+					></div>
+				{:else if part?.backgroundType === 'video' && player?.source}
+					{@const nextPlayers =
+						part.terminationStrategy === PartTerminationStrategy.none
+							? [
+									player.next?.length
+										? new Map(players.map((p) => [p.id, p])).get(player.next)
+										: undefined,
+									...(part.foregroundType === 'quiz' && 'logic' in part.foreground
+										? (part.foreground?.logic?.rules?.map((rule) =>
+												'next' in rule && typeof rule.next === 'string'
+													? new Map(players.map((p) => [p.id, p])).get(rule.next)
+													: undefined
+											) ?? [])
+										: [])
+								].filter((p): p is (typeof players)[number] => p !== undefined)
+							: []}
 					<PlayerComponent
 						id={player.id}
 						title={story.name ?? undefined}
-						class={orientation ?? Orientation.portrait}
 						src={player.source}
 						poster={player?.thumbnail}
 						start={player?.start ?? undefined}
 						end={player?.end ?? undefined}
 						playbackRate={player?.playbackRate ?? undefined}
+						defaultBackgroundColor={story.defaultBackgroundColor}
 						isInitialPart={player?.isInitialPart}
+						isActive={isActiveStory && part.id === pid && !isEnded}
 						bind:doBuffer={player.doBuffer}
 						bind:doPlay={player.doPlay}
 						bind:doPause={player.doPause}
@@ -235,27 +425,21 @@
 						bind:doEnd={player.doEnd}
 						bind:time={player.time}
 						isOverlaid={hasOverlay(part, player)}
+						overlayStart={overlayStart}
+						pauseAtOverlay={shouldPauseAtOverlay(part)}
 						bufferNext={() => {
 							if (nextPlayers?.length) {
 								nextPlayers.forEach((nextPlayer) => (nextPlayer.doBuffer = true));
 							}
 						}}
+						onoverlaystart={() => handleOverlayStart(part, player, activeVisit)}
 						playNext={() => {
-							player.doEnd = true;
-							const nextPlayer = players.find((p) => p.id === player.next);
-							if (nextPlayer) {
-								logTransitionEvent(story.id, player.id, nextPlayer.id);
-								nextPlayer.doBuffer = true;
-								nextPlayer.doPlay = true;
-								pid = nextPlayer.id;
-							} else if (!nextPlayers?.length) {
-								end();
-							}
+							finishPart(part.id, activeVisit);
 						}}
 					/>
 				{/if}
 
-				{#if !isEnded && hasOverlay(part, player)}
+				{#if !isEnded && part.id === pid && hasOverlay(part, player)}
 					{#if part.foregroundType === 'announcement' && 'title' in part.foreground && 'message' in part.foreground}
 						<AnnouncementOverlay
 							title={part.foreground?.title}
@@ -266,27 +450,45 @@
 						{@const questions = part.foreground?.doRandomize
 							? part.foreground?.questions?.sort(() => Math.random() - 0.5)
 							: part.foreground?.questions}
-						<InteractionOverlay
-							partId={part.id}
-							{questions}
-							logic={part.foreground?.logic}
-							{submit}
-							oninteraction={({
-								quizQuestionTemplate,
-								quizQuestionTemplateAnswerItemId,
-								value,
-								raw_value
-							}) => {
-								logInteractionEvent(story.id, {
-									partId: part.id,
+						{#key activeVisit}
+							<InteractionOverlay
+								partId={part.id}
+								{questions}
+								logic={part.foreground?.logic}
+								submit={(logic, input) => submit(part.id, activeVisit, logic, input)}
+								oninteraction={({
 									quizQuestionTemplate,
 									quizQuestionTemplateAnswerItemId,
 									value,
 									raw_value
-								});
-							}}
-						/>
+								}) => {
+									logInteractionEvent(story.id, {
+										partId: part.id,
+										quizQuestionTemplate,
+										quizQuestionTemplateAnswerItemId,
+										value,
+										raw_value
+									});
+								}}
+							/>
+						{/key}
 					{/if}
+				{/if}
+
+				{#if !isEnded && part.id === pid && taxonomyForeground && hasOverlay(part, player)}
+					<div class="absolute inset-0 z-20">
+						{#key activeVisit}
+							<TaxonomyGame
+								rounds={taxonomyForeground.rounds}
+								goal={taxonomyForeground.goal}
+								maxMistakes={taxonomyForeground.maxMistakes}
+								difficulty={taxonomyForeground.difficulty}
+								showHints={taxonomyForeground.showHints}
+								oncomplete={(performance) =>
+									submitTaxonomy(part.id, activeVisit, taxonomyForeground.logic, performance)}
+							/>
+						{/key}
+					</div>
 				{/if}
 			</div>
 		{/each}
@@ -299,17 +501,20 @@
 				class="absolute inset-0 z-30 grid place-items-center"
 				in:fade={{ delay: 500, duration: 250 }}
 			>
-				<Confetti
-					noGravity
-					x={[-1.5, 1.5]}
-					y={[-1.5, 1.5]}
-					size={25}
-					delay={[0, 150]}
-					duration={750}
-					iterationCount={2}
-				/>
+				{#if isCompleted}
+					<Confetti
+						noGravity
+						x={[-1.5, 1.5]}
+						y={[-1.5, 1.5]}
+						size={25}
+						delay={[0, 150]}
+						duration={750}
+						iterationCount={2}
+					/>
+				{/if}
 				<div class="absolute inset-0 z-30 grid place-items-center">
 					<button
+						aria-label={m.player_restart()}
 						onclick={restart}
 						out:fade
 						class="group grid size-24 cursor-pointer place-items-center rounded-full bg-black/50 text-white ring-black backdrop-blur-md transition-colors outline-none group-hover:bg-black/30 group-data-focus:ring-4"

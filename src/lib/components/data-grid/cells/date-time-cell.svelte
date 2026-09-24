@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import { Calendar } from '$lib/components/ui/calendar/index.js';
 	import TimePicker from '$lib/components/ui/date-time-picker/time-picker.svelte';
 	import { PopoverContent } from '$lib/components/ui/popover/index.js';
@@ -25,16 +26,12 @@
 		cellValue
 	}: CellVariantProps<TData> = $props();
 
-	// Use centralized cellValue prop - fine-grained reactivity is handled by DataGridCell
-	const initialValue = $derived((cellValue as string) ?? '');
+	const incomingValue = $derived((cellValue as string) ?? '');
 	let containerRef = $state<HTMLDivElement | null>(null);
-
-	// Track local edits separately
-	let localEditValue = $state<string | null>(null);
-	let editStartValue = $state((cellValue as string) ?? '');
-
-	// Value for display - use localEditValue if set, otherwise initialValue
-	const value = $derived(localEditValue ?? initialValue ?? '');
+	let localEditValue = $state('');
+	let editStartValue = $state('');
+	let editingSessionActive = false;
+	const value = $derived(isEditing ? localEditValue : incomingValue);
 
 	// Parse value to DateValue for calendar
 	const selectedDate = $derived.by((): DateValue | undefined => {
@@ -47,14 +44,14 @@
 		}
 	});
 
-	const initialTime = $derived.by(() => {
-		if (!value) return new Time(0, 0, 0);
-		const parsed = new Date(value);
+	function timeFromValue(dateTime: string) {
+		if (!dateTime) return new Time(0, 0, 0);
+		const parsed = new Date(dateTime);
 		if (Number.isNaN(parsed.getTime())) return new Time(0, 0, 0);
 		return new Time(parsed.getHours(), parsed.getMinutes(), parsed.getSeconds());
-	});
+	}
 
-	let time = $state(initialTime);
+	let time = $state(new Time(0, 0, 0));
 
 	// Default month for calendar (selected date or today)
 	const defaultMonth = $derived(selectedDate ?? today(getLocalTimeZone()));
@@ -68,7 +65,7 @@
 				month: 'numeric',
 				day: 'numeric',
 				hour: '2-digit',
-				minute: '2-digit',
+				minute: '2-digit'
 			});
 		} catch {
 			return dateStr;
@@ -90,22 +87,13 @@
 
 	function applyDateTime(nextDate: DateValue | undefined, nextTime: Time) {
 		if (!nextDate || readOnly) return;
-
-		const formattedDateTime = formatDateTime(nextDate, nextTime);
-		localEditValue = formattedDateTime;
-		const meta = table.options.meta;
-		meta?.onDataUpdate?.({ rowIndex, columnId, value: formattedDateTime });
-	}
-
-	function syncTimeFromValue() {
-		time = initialTime;
+		localEditValue = formatDateTime(nextDate, nextTime);
 	}
 
 	function handleDateSelect(date: DateValue | undefined) {
 		if (!date || readOnly) return;
 
-		syncTimeFromValue();
-		applyDateTime(date, initialTime);
+		applyDateTime(date, time);
 	}
 
 	function handleTimeChange(nextTime: Time) {
@@ -117,9 +105,16 @@
 	function handleOpenChange(isOpen: boolean) {
 		const meta = table.options.meta;
 		if (isOpen && !readOnly) {
-			time = initialTime;
 			meta?.onCellEditingStart?.(rowIndex, columnId);
 		} else {
+			if (!readOnly && localEditValue !== editStartValue) {
+				meta?.onDataUpdate?.({
+					rowIndex,
+					rowId: cell.row.id,
+					columnId,
+					value: localEditValue
+				});
+			}
 			meta?.onCellEditingStop?.();
 		}
 	}
@@ -129,16 +124,31 @@
 		if (isEditing && event.key === 'Escape') {
 			event.preventDefault();
 			localEditValue = editStartValue;
-			time = initialTime;
-			meta?.onDataUpdate?.({ rowIndex, columnId, value: editStartValue });
-			meta?.onCellEditingStop?.();
+			time = timeFromValue(editStartValue);
+			meta?.onCellEditingCancel?.();
 		} else if (!isEditing && isFocused && event.key === 'Tab') {
+			if (!meta?.canNavigateToCell?.(rowIndex, columnId, event.shiftKey ? 'left' : 'right')) return;
 			event.preventDefault();
 			meta?.onCellEditingStop?.({
 				direction: event.shiftKey ? 'left' : 'right'
 			});
 		}
 	}
+
+	$effect(() => {
+		const current = incomingValue;
+		if (isEditing && !editingSessionActive) {
+			editingSessionActive = true;
+			editStartValue = current;
+			localEditValue = current;
+			time = timeFromValue(current);
+		} else if (!isEditing) {
+			editingSessionActive = false;
+			editStartValue = current;
+			localEditValue = current;
+			time = timeFromValue(current);
+		}
+	});
 
 	function handleOpenAutoFocus(e: Event) {
 		e.preventDefault();
@@ -152,7 +162,7 @@
 				popover.querySelector<HTMLElement>('[data-calendar-day][data-selected]') ??
 				popover.querySelector<HTMLElement>('[data-calendar-day][data-today]') ??
 				popover.querySelector<HTMLElement>('[data-calendar-day]');
-			target?.focus();
+			target?.focus({ preventScroll: true });
 		}, 0);
 	}
 </script>
@@ -195,7 +205,7 @@
 					view="dotted"
 					bind:time
 					setTime={(nextTime) => {
-						nextTime && handleTimeChange(nextTime);
+						if (nextTime) handleTimeChange(nextTime);
 					}}
 				/>
 			</div>

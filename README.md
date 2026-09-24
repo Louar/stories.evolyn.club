@@ -109,7 +109,7 @@ Before you can fully build parts, you usually need to define story-wide assets i
 ### Story Settings
 
 - story name
-- story reference
+- story slug
 - publication status
 
 ### Videos
@@ -132,16 +132,6 @@ This means _the same quiz can be reused in multiple parts_, and each part can se
 To edit the branching rules for the quiz in the current part, click the cog icon (⚙️) next to the selected quiz name.
 
 ## Advanced editor concepts
-
-### Display orientation
-
-A Story may support multiple display orientations. Allowed orientations are: portrait (aspect ratio of 16:9; this is usually the default in mobile-first designs), landscape (aspect ratio of 9:16), and square (aspect ratio of 1:1).
-
-When adding videos (or thumbnails), you see an Orientation selector next to the URL field. You choose Default, Portrait, Landscape, or Square, and then paste the URL for that orientation.
-
-The value default is the fallback when a specific orientation is not provided. For orientations, the system looks for the requested orientation first, then falls back to default, then to portrait. This ensures a video still plays even if you only set a single source.
-
-In practical terms: if you only fill in default, that value will be used everywhere until you add specific orientation variants.
 
 ### Translations
 

@@ -12,7 +12,7 @@ export type MediaCollection = (typeof MediaCollection)[keyof typeof MediaCollect
 
 export const mediaValidator = z.object({
   collection: z.enum(MediaCollection),
-  filename: z.string().min(1),
+  filename: z.string().trim().min(1),
 });
 export type Media = z.infer<typeof mediaValidator>;
 export type MediaColumn = JSONColumnType<Media>;
@@ -44,18 +44,6 @@ export const formObjectPreprocessor = (val: unknown) => {
   return val;
 }
 
-export const DaysOfWeek = {
-  Monday: 1,
-  Tuesday: 2,
-  Wednesday: 3,
-  Thursday: 4,
-  Friday: 5,
-  Saturday: 6,
-  Sunday: 0,
-} as const;
-export type DaysOfWeek = (typeof DaysOfWeek)[keyof typeof DaysOfWeek];
-
-
 // Adapted from https://gist.github.com/eilonmore/77f9fc3ddfd939f1513d7a8ed2641321
 export enum Language {
   'English' = 'en',
@@ -79,7 +67,7 @@ export enum LanguageFlag {
   'default' = '🌐',
   'en' = '🇺🇸',
   'bg' = '🇧🇬',
-  'ca' = '🏴󠁥󠁳󠁣󠁴󠁿',
+  'ca' = '🏴',
   'da' = '🇩🇰',
   'de' = '🇩🇪',
   'es' = '🇪🇸',
@@ -94,7 +82,7 @@ export enum LanguageFlag {
 export const translatableValidator = z
   .partialRecord(
     z.enum(Language).or(z.enum(['default'])),
-    z.string().min(1)
+    z.string().trim().min(1)
   ).refine(
     (data) => data.default || data[Language.English], { message: `Translation must include at least 'default' or 'en'` }
   );
@@ -110,6 +98,32 @@ export const selectLocalizedField = <DB, TB extends keyof DB & string>(eb: Expre
 export const translateLocalizedField = (obj?: Translatable | null, language?: Language | 'default' | null) => {
   return obj?.[language ?? 'default'] ?? obj?.default ?? obj?.[Language.English];
 }
+
+export const translatableMediaValidator = z
+  .partialRecord(z.enum(Language).or(z.enum(['default'])), mediaValidator)
+  .refine((data) => data.default || data[Language.English], {
+    message: `TranslatedMedia must include at least 'default' or 'en'`
+  });
+export type TranslatableMedia = z.infer<typeof translatableMediaValidator>;
+export type TranslatableMediaColumn = JSONColumnType<TranslatableMedia>;
+export const selectLocalizedMediaField = <DB, TB extends keyof DB & string>(
+  eb: ExpressionBuilder<DB, TB>,
+  column: StringReference<DB, TB>,
+  language?: Language | null
+) => {
+  return sql<Media | null>`coalesce(
+    ${eb.ref(column)}->${language ?? Language.English},
+    ${eb.ref(column)}->'default',
+    ${eb.ref(column)}->${Language.English}
+  )`;
+};
+export const translateLocalizedMediaField = (
+  obj?: TranslatableMedia | null,
+  language?: Language | 'default' | null
+) => {
+  return obj?.[language ?? 'default'] ?? obj?.default ?? obj?.[Language.English];
+};
+
 export const areTranslatablesEqual = (a?: Translatable | null, b?: Translatable | null) => {
   if (a == null && b == null) return true; // both null/undefined
   if (a == null || b == null) return false;
@@ -126,36 +140,6 @@ export const areTranslatablesEqual = (a?: Translatable | null, b?: Translatable 
     return true;
   });
 };
-
-
-export const expressionValidator = z.object({
-  expression: z.record(z.string(), z.unknown()),
-  constants: z.record(z.string(), z.union([z.string(), z.number()])).optional(),
-}).strict();
-export type Expression = z.infer<typeof expressionValidator>;
-
-
-export const Orientation = {
-  portrait: 'portrait',
-  landscape: 'landscape',
-  square: 'square',
-} as const;
-export type Orientation = (typeof Orientation)[keyof typeof Orientation];
-export const orientationableUrlValidator = z.record(z.union([z.enum(['default']), z.enum(Orientation)]), z.url().min(1).optional()).refine(
-  (data) => data.default || data[Orientation.portrait], { message: `Must include at least 'default' or 'portrait'` }
-);
-export type Orientationable = Partial<z.infer<typeof orientationableUrlValidator>>; // Record<'default' | Orientation, string>;
-export type OrientationableColumn = JSONColumnType<Orientationable>;
-export const selectByOrientation = <DB, TB extends keyof DB & string>(eb: ExpressionBuilder<DB, TB>, column: StringReference<DB, TB>, orientation?: Orientation | null) => {
-  return eb.fn.coalesce(
-    sql<string | null>`${eb.ref(column)}->>${orientation ?? Orientation.portrait}`,
-    sql<string | null>`${eb.ref(column)}->>'default'`,
-    sql<string | null>`${eb.ref(column)}->>${Orientation.portrait}`,
-  );
-}
-export const orientateOrientationableField = (obj?: Orientationable | null, orientation?: Orientation | null) => {
-  return obj?.[orientation ?? 'default'] ?? obj?.default ?? obj?.[Orientation.portrait];
-}
 
 export const formatDuration = (duration: number, percentage: number = 1) => {
   const seconds = duration * percentage;

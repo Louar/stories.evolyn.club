@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import { getCellKey, getLineCount } from '$lib/components/data-grid/types/data-grid.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
@@ -33,7 +34,7 @@
 
 	// Use centralized cellValue prop - fine-grained reactivity is handled by DataGridCell
 	const initialCellValue = $derived((cellValue as string[]) ?? []);
-	const cellKey = $derived(getCellKey(rowIndex, columnId));
+	const cellKey = $derived(getCellKey(cell.row.id, columnId));
 	let prevCellKey = $state('');
 
 	// Track local edits separately
@@ -72,9 +73,14 @@
 			: [...currentValues, value];
 
 		localEditValues = newValues;
-		table.options.meta?.onDataUpdate?.({ rowIndex, columnId, value: newValues });
+		table.options.meta?.onDataUpdate?.({
+			rowIndex,
+			rowId: cell.row.id,
+			columnId,
+			value: newValues
+		});
 		searchValue = '';
-		queueMicrotask(() => inputRef?.focus());
+		queueMicrotask(() => inputRef?.focus({ preventScroll: true }));
 	}
 
 	function removeValue(valueToRemove: string, event?: MouseEvent) {
@@ -84,15 +90,20 @@
 		const currentValues = localEditValues ?? initialCellValue;
 		const newValues = currentValues.filter((v) => v !== valueToRemove);
 		localEditValues = newValues;
-		table.options.meta?.onDataUpdate?.({ rowIndex, columnId, value: newValues });
-		setTimeout(() => inputRef?.focus(), 0);
+		table.options.meta?.onDataUpdate?.({
+			rowIndex,
+			rowId: cell.row.id,
+			columnId,
+			value: newValues
+		});
+		setTimeout(() => inputRef?.focus({ preventScroll: true }), 0);
 	}
 
 	function clearAll() {
 		if (readOnly) return;
 		localEditValues = [];
-		table.options.meta?.onDataUpdate?.({ rowIndex, columnId, value: [] });
-		queueMicrotask(() => inputRef?.focus());
+		table.options.meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value: [] });
+		queueMicrotask(() => inputRef?.focus({ preventScroll: true }));
 	}
 
 	function handleOpenChange(isOpen: boolean) {
@@ -107,7 +118,7 @@
 
 	function handleOpenAutoFocus(event: Event) {
 		event.preventDefault();
-		inputRef?.focus();
+		inputRef?.focus({ preventScroll: true });
 	}
 
 	function handleWrapperKeyDown(event: KeyboardEvent) {
@@ -116,8 +127,9 @@
 			event.preventDefault();
 			localEditValues = null;
 			searchValue = '';
-			meta?.onCellEditingStop?.();
+			meta?.onCellEditingCancel?.();
 		} else if (!isEditing && isFocused && event.key === 'Tab') {
+			if (!meta?.canNavigateToCell?.(rowIndex, columnId, event.shiftKey ? 'left' : 'right')) return;
 			event.preventDefault();
 			searchValue = '';
 			meta?.onCellEditingStop?.({
@@ -135,9 +147,12 @@
 				removeValue(lastValue);
 			}
 		}
-		// Prevent escape from propagating to close the popover immediately
 		if (event.key === 'Escape') {
+			event.preventDefault();
 			event.stopPropagation();
+			localEditValues = null;
+			searchValue = '';
+			table.options.meta?.onCellEditingCancel?.();
 		}
 	}
 
@@ -186,6 +201,7 @@
 				{sideOffset}
 				class="w-75 rounded-none p-0"
 				onOpenAutoFocus={handleOpenAutoFocus}
+				onkeydown={handleWrapperKeyDown}
 				customAnchor={containerRef}
 			>
 				<Command

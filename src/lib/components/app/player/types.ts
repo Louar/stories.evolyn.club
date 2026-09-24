@@ -1,4 +1,5 @@
-import type { LogicHitpolicy } from "$lib/db/schemas/2-story-module";
+import type { Media } from '$lib/db/schemas/0-utils';
+import type { LogicHitpolicy } from '$lib/db/schemas/2-story-module';
 
 type LogicInput = {
   id: string;
@@ -29,13 +30,17 @@ export type Logic<
   rules: Rule[];
 };
 
-export type InputFromLogic<L extends Logic> = Partial<Record<L['inputs'][number]['field'], unknown>>;
-export type OutputFromLogic<L extends Logic> = Partial<Record<L['outputs'][number]['field'], unknown>>;
+export type InputFromLogic<L extends Logic> = Partial<
+  Record<L['inputs'][number]['field'], unknown>
+>;
+export type OutputFromLogic<L extends Logic> = Partial<
+  Record<L['outputs'][number]['field'], unknown>
+>;
 
 export type Player = {
   id: string;
-  source: string;
-  thumbnail: string | undefined;
+  source: Media | undefined;
+  thumbnail: Media | undefined;
   captions: string | undefined;
   start: number | undefined;
   end: number | undefined;

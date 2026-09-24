@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import DataGridCellWrapper from '../data-grid-cell-wrapper.svelte';
 	import { cn } from '$lib/utils.js';
@@ -19,13 +20,13 @@
 	// Use centralized cellValue prop - fine-grained reactivity is handled by DataGridCell
 	const initialValue = $derived((cellValue as string) ?? '');
 	let cellRef = $state<HTMLDivElement | null>(null);
-	
+
 	// Track local edits separately - this only matters during editing
 	let localEditValue = $state<string | null>(null);
-	
+
 	// The display value directly from initialValue (no effect delay)
 	const displayValue = $derived(!isEditing ? (initialValue ?? '') : '');
-	
+
 	// Value for tracking edits - use localEditValue if set, otherwise initialValue
 	const value = $derived(localEditValue ?? initialValue ?? '');
 
@@ -35,7 +36,7 @@
 			localEditValue = null;
 		}
 	});
-	
+
 	// Update DOM when initialValue changes (for non-editing state)
 	$effect(() => {
 		const iv = initialValue ?? '';
@@ -47,7 +48,7 @@
 	// Focus cell when entering edit mode
 	$effect(() => {
 		if (isEditing && cellRef) {
-			cellRef.focus();
+			cellRef.focus({ preventScroll: true });
 
 			if (!cellRef.textContent && initialValue) {
 				cellRef.textContent = initialValue;
@@ -64,7 +65,7 @@
 		}
 	});
 
-	function getUrlHref(urlString: string): string {
+	function getUrlSlug(urlString: string): string {
 		if (!urlString || urlString.trim() === '') return '';
 
 		const trimmed = urlString.trim();
@@ -90,6 +91,7 @@
 		if (!readOnly && currentValue !== initialValue) {
 			meta?.onDataUpdate?.({
 				rowIndex,
+				rowId: cell.row.id,
 				columnId,
 				value: currentValue || null
 			});
@@ -111,23 +113,40 @@
 				if (!readOnly && currentValue !== initialValue) {
 					meta?.onDataUpdate?.({
 						rowIndex,
+						rowId: cell.row.id,
 						columnId,
 						value: currentValue || null
 					});
 				}
 				meta?.onCellEditingStop?.({ moveToNextRow: true });
 			} else if (event.key === 'Tab') {
+				const direction = event.shiftKey ? 'left' : 'right';
+				const canNavigate = meta?.canNavigateToCell?.(rowIndex, columnId, direction) ?? false;
+				if (!canNavigate) {
+					const currentValue = cellRef?.textContent?.trim() ?? '';
+					if (!readOnly && currentValue !== initialValue) {
+						meta?.onDataUpdate?.({
+							rowIndex,
+							rowId: cell.row.id,
+							columnId,
+							value: currentValue || null
+						});
+					}
+					meta?.onCellEditingStop?.();
+					return;
+				}
 				event.preventDefault();
 				const currentValue = cellRef?.textContent?.trim() ?? '';
 				if (!readOnly && currentValue !== initialValue) {
 					meta?.onDataUpdate?.({
 						rowIndex,
+						rowId: cell.row.id,
 						columnId,
 						value: currentValue || null
 					});
 				}
 				meta?.onCellEditingStop?.({
-					direction: event.shiftKey ? 'left' : 'right'
+					direction
 				});
 			} else if (event.key === 'Escape') {
 				event.preventDefault();
@@ -135,9 +154,15 @@
 				if (cellRef) {
 					cellRef.textContent = initialValue ?? '';
 				}
-				cellRef?.blur();
+				meta?.onCellEditingCancel?.();
 			}
-		} else if (isFocused && !readOnly && event.key.length === 1 && !event.ctrlKey && !event.metaKey) {
+		} else if (
+			isFocused &&
+			!readOnly &&
+			event.key.length === 1 &&
+			!event.ctrlKey &&
+			!event.metaKey
+		) {
 			// Handle typing to pre-fill the value when editing starts
 			localEditValue = event.key;
 
@@ -162,8 +187,8 @@
 		}
 
 		// Check if URL was rejected due to dangerous protocol
-		const href = getUrlHref(value);
-		if (!href) {
+		const slug = getUrlSlug(value);
+		if (!slug) {
 			event.preventDefault();
 			toast.error('Invalid URL', {
 				description: 'URL contains a dangerous protocol (javascript:, data:, vbscript:, or file:)'
@@ -175,8 +200,8 @@
 		event.stopPropagation();
 	}
 
-	const urlHref = $derived(displayValue ? getUrlHref(displayValue) : '');
-	const isDangerousUrl = $derived(displayValue && !urlHref);
+	const urlSlug = $derived(displayValue ? getUrlSlug(displayValue) : '');
+	const isDangerousUrl = $derived(displayValue && !urlSlug);
 </script>
 
 <DataGridCellWrapper
@@ -194,10 +219,10 @@
 			<a
 				data-focused={isFocused && !isDangerousUrl ? '' : undefined}
 				data-invalid={isDangerousUrl ? '' : undefined}
-				href={urlHref}
+				href={urlSlug}
 				target="_blank"
 				rel="noopener noreferrer"
-				class="truncate text-primary underline decoration-primary/30 underline-offset-2 hover:decoration-primary/60 data-[invalid]:cursor-not-allowed data-[focused]:text-foreground data-[invalid]:text-destructive data-[focused]:decoration-foreground/50 data-[invalid]:decoration-destructive/50 data-[focused]:hover:decoration-foreground/70 data-[invalid]:hover:decoration-destructive/70"
+				class="truncate text-primary underline decoration-primary/30 underline-offset-2 hover:decoration-primary/60 data-[focused]:text-foreground data-[focused]:decoration-foreground/50 data-[focused]:hover:decoration-foreground/70 data-[invalid]:cursor-not-allowed data-[invalid]:text-destructive data-[invalid]:decoration-destructive/50 data-[invalid]:hover:decoration-destructive/70"
 				onclick={handleLinkClick}
 			>
 				{displayValue}

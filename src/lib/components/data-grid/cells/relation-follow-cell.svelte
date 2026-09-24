@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
 	import ArrowRightIcon from '@lucide/svelte/icons/arrow-right';
 	import DataGridCellWrapper from '../data-grid-cell-wrapper.svelte';
@@ -24,6 +25,7 @@
 			  >
 			| undefined
 	);
+	const Icon = $derived(meta?.icon);
 	const url = $derived.by(() => {
 		const template = meta?.url;
 		if (!template?.length) return '';
@@ -63,7 +65,12 @@
 				if (url?.length) event.stopPropagation();
 			}}
 		>
-			<span class="grow truncate">{label}</span>
+			{#if Icon}
+				<Icon class="size-4 grow" aria-hidden="true" />
+				<span class="sr-only">{label}</span>
+			{:else}
+				<span class="grow truncate">{label}</span>
+			{/if}
 			{#if url?.length && !url.includes('{')}
 				<ArrowRightIcon
 					class="size-4 shrink-0 text-muted-foreground transition-colors {url?.length

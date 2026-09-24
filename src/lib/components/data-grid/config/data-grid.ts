@@ -6,7 +6,7 @@ export const VIEWPORT_OFFSET = 1;
 
 // Column sizing
 export const MIN_COLUMN_SIZE = 60;
-export const MAX_COLUMN_SIZE = 800;
+export const MAX_COLUMN_SIZE = 1000;
 export const DEFAULT_COLUMN_SIZE = 150;
 
 // Row heights in pixels
@@ -16,6 +16,9 @@ export const ROW_HEIGHTS = {
 	tall: 76,
 	'extra-tall': 96
 } as const;
+
+export type DataGridRowHeight = keyof typeof ROW_HEIGHTS;
+export const DEFAULT_ROW_HEIGHT: DataGridRowHeight = 'short';
 
 // Line counts for text wrapping
 export const ROW_LINE_COUNTS = {
@@ -42,7 +45,7 @@ export const KEYBOARD_SHORTCUTS = {
 
 	// Actions
 	DELETE: 'Delete',
-	BACKSPACE: 'Backspace',
+	BACKSPACE: 'Backspace'
 
 	// With modifiers (handled separately)
 	// Ctrl+A - Select all
@@ -66,6 +69,7 @@ export const ANIMATION_DURATION = {
 
 // Debounce delays (ms)
 export const DEBOUNCE_DELAY = {
+	preferences: 250,
 	search: 300,
 	resize: 100,
 	scroll: 16
@@ -79,12 +83,16 @@ export const CELL_VARIANTS = [
 	'text-translated-long',
 	'number',
 	'checkbox',
+	'input-with-suggestions',
+	'select-icon',
 	'select-single',
 	'select-multiple',
 	'date',
 	'date-time',
 	'url',
-	'file'
+	'actions',
+	'file',
+	'file-or-url'
 ] as const;
 
 // Default cell variant

@@ -1,13 +1,16 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import {
 		areTranslatablesEqual,
-		Language,
 		LanguageFlag,
 		translateLocalizedField,
 		type Translatable
 	} from '$lib/db/schemas/0-utils';
 	import { UI } from '$lib/states/ui.svelte';
-	import type { CellVariantProps, RowHeightValue } from '$lib/components/data-grid/types/data-grid.js';
+	import type {
+		CellVariantProps,
+		RowHeightValue
+	} from '$lib/components/data-grid/types/data-grid.js';
 	import { cn } from '$lib/utils.js';
 	import DataGridCellWrapper from '../data-grid-cell-wrapper.svelte';
 
@@ -47,7 +50,7 @@
 		else nextValue[UI.language] = undefined;
 
 		if (!areTranslatablesEqual(previousValue, nextValue)) {
-			meta?.onDataUpdate?.({ rowIndex, columnId, value: nextValue });
+			meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value: nextValue });
 			previousValue = { ...nextValue };
 		}
 	}
@@ -67,7 +70,7 @@
 			if (isEditing) {
 				previousValue = { ...nextValue };
 				cellRef.textContent = nextValue?.[UI.language] ?? '';
-				cellRef.focus();
+				cellRef.focus({ preventScroll: true });
 				moveCursorToEnd(cellRef);
 			} else {
 				cellRef.textContent = translateLocalizedField(nextValue, UI.language) ?? '';
@@ -92,6 +95,11 @@
 		}
 
 		if (event.key === 'Tab') {
+			if (!meta?.canNavigateToCell?.(rowIndex, columnId, event.shiftKey ? 'left' : 'right')) {
+				commit();
+				meta?.onCellEditingStop?.();
+				return;
+			}
 			event.preventDefault();
 			commit();
 			meta?.onCellEditingStop?.({
@@ -101,23 +109,14 @@
 		}
 
 		if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-			event.preventDefault();
 			commit();
-			const getNextLanguage = (selected?: Language | 'default' | null): Language | 'default' => {
-				const languages = ['default', ...Object.values(Language)] as const;
-				const currentIndex = selected ? languages.indexOf(selected) : -1;
-				return languages[(currentIndex + 1) % languages.length];
-			};
-			UI.language = getNextLanguage(UI.language);
 			return;
 		}
 
-		// if (event.key === 'Escape') {
-		// 	event.preventDefault();
-		// 	nextValue = previousValue;
-		// 	if (cellRef) cellRef.textContent = nextValue?.[UI.language] ?? '';
-		// 	meta?.onCellEditingStop?.();
-		// }
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			meta?.onCellEditingCancel?.();
+		}
 	}
 </script>
 

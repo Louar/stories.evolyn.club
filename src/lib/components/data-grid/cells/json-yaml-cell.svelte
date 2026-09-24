@@ -1,11 +1,18 @@
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
+	import type { RowData } from '../data-grid-table.js';
 	import highlighter from '$lib/client/shiki';
-	import type { CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
+	import { getCellKey, type CellVariantProps } from '$lib/components/data-grid/types/data-grid.js';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { PopoverContent } from '$lib/components/ui/popover/index.js';
 	import { cn } from '$lib/utils.js';
 	import { Popover as PopoverPrimitive } from 'bits-ui';
 	import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
 	import DataGridCellWrapper from '../data-grid-cell-wrapper.svelte';
+
+	const PREVIEW_LINE_LIMIT = 6;
+	const PREVIEW_CHARACTER_LIMIT = 4_000;
+	const HIGHLIGHT_LINE_LIMIT = 100;
+	const HIGHLIGHT_CHARACTER_LIMIT = 20_000;
 
 	let {
 		cell,
@@ -27,25 +34,80 @@
 	const meta = $derived(table.options.meta);
 
 	// svelte-ignore state_referenced_locally
-	let initialValue = $state(cellValue ?? null);
-	// svelte-ignore state_referenced_locally
 	let previousValue = $state(cellValue ?? null);
 	// svelte-ignore state_referenced_locally
 	let nextValue = $state(cellValue ?? null);
 	let yamlText = $state('');
 	let parseError = $state<string | null>(null);
+	let showSchemaPreview = $state(false);
 	let saveTimeoutId: ReturnType<typeof setTimeout> | null = null;
+	let editingSessionActive = false;
+	const cellOptions = $derived(cell.column.columnDef.meta?.cell);
+	const currentRow = $derived.by(() => {
+		const row = { ...(cell.row.original as Record<string, unknown>) };
+		const map = meta?.cellValueMap;
+		if (!map) return row;
 
-	const previewHtml = $derived.by(() =>
-		highlighter.codeToHtml(yamlText ?? '', {
+		for (const column of table.getAllLeafColumns()) {
+			const key = getCellKey(cell.row.id, column.id);
+			if (map.has(key)) row[column.id] = map.get(key);
+		}
+
+		return row;
+	});
+	const schemaPreview = $derived.by(() => {
+		if (cellOptions?.variant !== 'json-yaml') return null;
+		const preview = cellOptions.schemaPreview;
+		if (!preview) return null;
+		const value = typeof preview === 'function' ? preview(currentRow) : preview;
+		if (value == null) return null;
+		return typeof value === 'string' ? value : toYaml(value);
+	});
+
+	const previewText = $derived(limitPreview(yamlText));
+	const shouldHighlight = $derived(
+		yamlText.length <= HIGHLIGHT_CHARACTER_LIMIT &&
+			countLinesThroughLimit(yamlText, HIGHLIGHT_LINE_LIMIT) <= HIGHLIGHT_LINE_LIMIT
+	);
+	const previewHtml = $derived(shouldHighlight ? highlightYaml(previewText) : '');
+	const editorHtml = $derived(isEditing && shouldHighlight ? highlightYaml(yamlText) : '');
+
+	function highlightYaml(value: string) {
+		return highlighter.codeToHtml(value, {
 			lang: 'yaml',
 			themes: {
 				light: 'snazzy-light',
 				dark: 'aurora-x'
 			},
 			defaultColor: 'light-dark()'
-		})
-	);
+		});
+	}
+
+	function limitPreview(value: string) {
+		let lineCount = 1;
+		let end = Math.min(value.length, PREVIEW_CHARACTER_LIMIT);
+
+		for (let index = 0; index < end; index += 1) {
+			if (value[index] !== '\n') continue;
+			lineCount += 1;
+			if (lineCount > PREVIEW_LINE_LIMIT) {
+				end = index;
+				break;
+			}
+		}
+
+		return value.slice(0, end);
+	}
+
+	function countLinesThroughLimit(value: string, limit: number) {
+		let lineCount = 1;
+		for (let index = 0; index < value.length; index += 1) {
+			if (value[index] !== '\n') continue;
+			lineCount += 1;
+			if (lineCount > limit) break;
+		}
+		return lineCount;
+	}
 
 	function toYaml(value: unknown): string {
 		try {
@@ -72,7 +134,7 @@
 		if (readOnly) return;
 		if (parseError) return;
 		if (stringifyYaml(previousValue) !== stringifyYaml(nextValue)) {
-			meta?.onDataUpdate?.({ rowIndex, columnId, value: nextValue });
+			meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value: nextValue });
 			previousValue = nextValue;
 		}
 	}
@@ -88,14 +150,13 @@
 	function saveAndClose() {
 		clearDebounce();
 		commit();
-		initialValue = nextValue;
 		meta?.onCellEditingStop?.();
 	}
 
 	function handleOpenChange(isOpen: boolean) {
-		if (isOpen && !readOnly) {
+		if (isOpen) {
 			previousValue = nextValue;
-			meta?.onCellEditingStart?.(rowIndex, columnId);
+			if (!readOnly) meta?.onCellEditingStart?.(rowIndex, columnId);
 			return;
 		}
 		saveAndClose();
@@ -104,7 +165,7 @@
 	function handleOpenAutoFocus(event: Event) {
 		event.preventDefault();
 		if (!textareaRef) return;
-		textareaRef.focus();
+		textareaRef.focus({ preventScroll: true });
 		const length = textareaRef.value.length;
 		textareaRef.setSelectionRange(length, length);
 	}
@@ -132,13 +193,7 @@
 		if (event.key === 'Escape') {
 			event.preventDefault();
 			clearDebounce();
-			if (previousValue !== nextValue) {
-				meta?.onDataUpdate?.({ rowIndex, columnId, value: previousValue });
-				nextValue = previousValue;
-				yamlText = toYaml(previousValue);
-				parseError = null;
-			}
-			meta?.onCellEditingStop?.();
+			meta?.onCellEditingCancel?.();
 			return;
 		}
 
@@ -149,33 +204,46 @@
 		}
 
 		if (event.key === 'Tab') {
+			const direction = event.shiftKey ? 'left' : 'right';
+			const canNavigate = meta?.canNavigateToCell?.(rowIndex, columnId, direction) ?? false;
+			if (!canNavigate) {
+				saveAndClose();
+				return;
+			}
 			event.preventDefault();
 			clearDebounce();
 			commit();
-			meta?.onCellEditingStop?.({ direction: event.shiftKey ? 'left' : 'right' });
+			meta?.onCellEditingStop?.({ direction });
 			return;
 		}
 
 		event.stopPropagation();
 	}
 
+	function toggleSchemaPreview(event: MouseEvent) {
+		event.preventDefault();
+		showSchemaPreview = !showSchemaPreview;
+	}
+
 	$effect(() => {
 		const current = cellValue ?? null;
-		if (isEditing) {
-			initialValue = current;
+		if (isEditing && !editingSessionActive) {
+			editingSessionActive = true;
 			previousValue = current;
 			nextValue = current;
 			yamlText = toYaml(current);
 			parseError = null;
 			return;
 		}
+		if (isEditing) return;
 
+		editingSessionActive = false;
 		clearDebounce();
-		initialValue = current;
 		previousValue = current;
 		nextValue = current;
 		yamlText = toYaml(current);
 		parseError = null;
+		return clearDebounce;
 	});
 </script>
 
@@ -198,7 +266,12 @@
 			}
 		)}
 	>
-		{@html previewHtml}
+		{#if shouldHighlight}
+			<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+			{@html previewHtml}
+		{:else}
+			{previewText}
+		{/if}
 	</div>
 </DataGridCellWrapper>
 
@@ -219,18 +292,42 @@
 					<p class="text-sm text-destructive">{parseError}</p>
 				</div>
 			{/if}
-			<div class="relative h-52 w-full rounded-none font-mono text-sm">
+			{#if schemaPreview}
+				<div class="flex items-center justify-between gap-2 border-b bg-muted p-2">
+					<p class="text-sm font-medium">Configuration example</p>
+					<Button
+						variant="outline"
+						size="sm"
+						onpointerdown={(event) => event.preventDefault()}
+						onclick={toggleSchemaPreview}
+					>
+						{showSchemaPreview ? 'Hide example' : 'Show example'}
+					</Button>
+				</div>
+				{#if showSchemaPreview}
+					<pre
+						class="max-h-52 muted-scrollbar overflow-auto border-b bg-muted/60 p-2 font-mono text-xs whitespace-pre-wrap text-muted-foreground">{schemaPreview}</pre>
+				{/if}
+			{/if}
+			<div class="relative h-52 w-full rounded-none">
 				<div
 					bind:this={previewScrollRef}
-					class="absolute inset-0 -z-10 overflow-hidden rounded-none p-2 [&>pre]:h-full [&>pre]:font-mono! [&>pre]:text-sm! [&>pre]:wrap-break-word [&>pre]:whitespace-pre-wrap"
+					class="pointer-events-none absolute inset-0 z-0 scrollbar-gutter-stable overflow-hidden p-2 font-mono text-sm leading-5 tracking-normal wrap-break-word whitespace-pre-wrap tab-2 [&>pre]:m-0 [&>pre]:min-h-full [&>pre]:bg-transparent! [&>pre]:font-mono! [&>pre]:text-sm! [&>pre]:leading-5! [&>pre]:tracking-normal [&>pre]:wrap-break-word [&>pre]:whitespace-pre-wrap"
 				>
-					{@html previewHtml}
+					{#if shouldHighlight}
+						<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+						{@html editorHtml}
+					{:else}
+						{yamlText}
+					{/if}
 				</div>
 				<textarea
 					bind:this={textareaRef}
 					placeholder="Enter YAML..."
+					readonly={readOnly}
 					spellcheck="false"
-					class="relative z-10 h-52 w-full resize-none overscroll-none rounded-none border-0 bg-transparent p-2 font-mono text-sm text-transparent caret-foreground shadow-none focus-visible:outline-none"
+					wrap="soft"
+					class="relative z-10 h-full w-full resize-none muted-scrollbar scrollbar-gutter-stable overflow-auto border-0 bg-transparent p-2 font-mono text-sm leading-5 tracking-normal wrap-break-word whitespace-pre-wrap tab-2 text-transparent caret-foreground shadow-none focus-visible:outline-none"
 					value={yamlText}
 					onblur={handleBlur}
 					oninput={handleTextareaInput}
@@ -239,8 +336,7 @@
 						if (!previewScrollRef) return;
 						previewScrollRef.scrollTop = event.currentTarget.scrollTop;
 						previewScrollRef.scrollLeft = event.currentTarget.scrollLeft;
-					}}
-				></textarea>
+					}}></textarea>
 			</div>
 		</PopoverContent>
 	</PopoverPrimitive.Root>

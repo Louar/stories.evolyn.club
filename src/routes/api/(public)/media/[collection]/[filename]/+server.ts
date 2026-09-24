@@ -1,11 +1,21 @@
-import { env as private_env } from '$env/dynamic/private';
+import { ASSETS_DIR } from '$app/env/private';
 import { db } from '$lib/db/database';
 import { MediaCollection, type Media } from '$lib/db/schemas/0-utils';
+import { UserRole } from '$lib/db/schemas/1-client-user-module';
+import { isMediaReferenced } from '$lib/server/utils.server';
 import { error } from '@sveltejs/kit';
 import fs from 'fs';
+import { Uuid25 } from 'uuid25';
+import { uuidv7obj } from 'uuidv7';
 import type { RequestHandler } from './$types';
 
 
+/**
+ * @openapi
+ * summary: Get media file
+ * tags:
+ *  - Media
+ */
 export const GET = (async ({ locals, params }) => {
 
   const cid = locals.client.id;
@@ -14,8 +24,8 @@ export const GET = (async ({ locals, params }) => {
   if (Object.values(MediaCollection).includes(collectionRaw as MediaCollection)) collection = collectionRaw as MediaCollection;
   if (!collection || !filename) error(404, `File not found`);
 
-  let path = `${private_env.SECRET_ASSETS_DIR}/clients/${cid}/${collection}/${filename}`;
-  if (collection === MediaCollection.internals) path = `${private_env.SECRET_ASSETS_DIR}/${collection}/${filename}`;
+  let path = `${ASSETS_DIR}/clients/${cid}/${collection}/${filename}`;
+  if (collection === MediaCollection.internals) path = `${ASSETS_DIR}/${collection}/${filename}`;
 
   let file: Buffer<ArrayBuffer> | null = null;
   try {
@@ -47,19 +57,29 @@ export const GET = (async ({ locals, params }) => {
   return new Response(file, { status: 200, headers });
 }) satisfies RequestHandler;
 
-export const POST = (async ({ params, request, locals, fetch }) => {
+/**
+ * @openapi
+ * summary: Create a media file
+ * tags:
+ *  - Media
+ */
+export const POST = (async ({ locals, params, request, fetch }) => {
   const clientId = locals.client.id;
   const userId = locals.authusr?.id;
   if (!userId) error(401, 'Unauthorized');
 
   const { collection: collectionRaw, filename } = params;
-  const [name, extension] = filename?.split('.') || [undefined, undefined];
-  if (!name || !extension) error(422, `New file name and extension could not be parsed.`);
+  const [name, ...extensionParts] = filename?.split('.') || [undefined];
+  const extension = extensionParts.at(-1);
+  if (!name || !extension) error(422, `New file name and extension could not be parsed`);
+
+  const hash = Uuid25.fromBytes(uuidv7obj().bytes).toHex();
+  const hashedFilename = `${hash}.${extension}`;
 
   let collection: MediaCollection | null = null;
   if (Object.values(MediaCollection).includes(collectionRaw as MediaCollection)) collection = collectionRaw as MediaCollection;
-  if (!collection || !filename) error(422, `File not found.`);
-  if (collection === MediaCollection.externals) error(403, `Cannot upload external files.`);
+  if (!collection || !filename) error(422, `File not found`);
+  if (collection === MediaCollection.externals) error(403, `Cannot upload external files`);
 
   // Obtain the new file
   let file: File;
@@ -77,12 +97,12 @@ export const POST = (async ({ params, request, locals, fetch }) => {
   if (!file?.size) error(422, 'Not a valid file.');
 
   await db.transaction().execute(async (trx) => {
-    let dir = `${private_env.SECRET_ASSETS_DIR}/clients/${clientId}/${collection}`;
-    if (collection === MediaCollection.internals) dir = `${private_env.SECRET_ASSETS_DIR}/${collection}`;
+    let dir = `${ASSETS_DIR}/clients/${clientId}/${collection}`;
+    if (collection === MediaCollection.internals) dir = `${ASSETS_DIR}/${collection}`;
 
     // Persist the file in database
     const data = {
-      name: filename,
+      name: hashedFilename,
       extension,
       description,
       size: file.size,
@@ -125,7 +145,7 @@ export const POST = (async ({ params, request, locals, fetch }) => {
     }
 
     // Upload the file
-    const path = `${dir}/${filename}`
+    const path = `${dir}/${hashedFilename}`
     try {
       if (!fs.existsSync(dir)) await fs.promises.mkdir(dir, { recursive: true });
 
@@ -149,77 +169,101 @@ export const POST = (async ({ params, request, locals, fetch }) => {
     }
   });
 
-  return new Response(JSON.stringify({ collection, filename } as Media), {
+  return new Response(JSON.stringify({ collection, filename: hashedFilename } as Media), {
     status: 201, headers: {
       'Content-Type': 'application/json'
     }
   });
 }) satisfies RequestHandler;
 
-// export const DELETE = (async ({ url, params, locals }) => {
-//   const clientId = locals.client.id;
-//   const userId = locals.authusr?.id;
-//   if (!userId) error(401, 'Unauthorized');
+/**
+ * @openapi
+ * summary: Delete media file
+ * tags:
+ *  - Media
+ */
+export const DELETE = (async ({ params, locals }) => {
+  const clientId = locals.client.id;
+  const authUser = locals.authusr;
+  const userId = authUser?.id;
+  if (!userId) error(401, 'Unauthorized');
 
-//   const { collection: collectionRaw, filename } = params;
-//   const [name, extension] = filename?.split('.') || [undefined, undefined];
-//   if (!name || !extension) error(422, `New file name and extension could not be parsed.`);
+  const { collection: collectionRaw, filename } = params;
+  const [name, ...extensionParts] = filename?.split('.') || [undefined];
+  const extension = extensionParts.at(-1);
+  if (!name || !extension) error(422, `New file name and extension could not be parsed`);
 
-//   let collection: MediaCollection | null = null;
-//   if (Object.values(MediaCollection).includes(collectionRaw as MediaCollection)) collection = collectionRaw as MediaCollection;
-//   if (!collection || !filename) error(422, `File not found.`);
-//   if (collection === MediaCollection.externals) error(422, `Cannot delete external files.`);
+  let collection: MediaCollection | null = null;
+  if (Object.values(MediaCollection).includes(collectionRaw as MediaCollection)) collection = collectionRaw as MediaCollection;
+  if (!collection || !filename) error(422, `File not found`);
+  if (collection === MediaCollection.externals) error(422, `Cannot delete external files`);
+  if (collection === MediaCollection.internals) error(422, `Cannot delete internal files`);
 
-//   const x = url.searchParams.get('x');
-//   if (collection === MediaCollection.campaigns && !x?.length) error(422, `Campaign reference query parameter (x) required when uploading campaign files.`);
+  const isAdmin = authUser?.roles.includes(UserRole.admin) ?? false;
+  const isEditor = authUser?.roles.includes(UserRole.editor) ?? false;
+  let canDelete = false;
+  switch (collection) {
+    case MediaCollection.clients: {
+      canDelete = isAdmin || isEditor;
+      break;
+    }
+    case MediaCollection.users: {
+      canDelete = isAdmin ||
+        Boolean(await db
+          .selectFrom('userMedia')
+          .select('id')
+          .where('userId', '=', userId)
+          .where('name', '=', filename)
+          .executeTakeFirst());
+      break;
+    }
+  }
+  if (!canDelete) error(403, 'You are not allowed to delete this file');
 
-//   // TODO: Check if deleting a file is allowed for the given user.
+  await db.transaction().execute(async (trx) => {
+    if (await isMediaReferenced(trx, clientId, { collection, filename })) {
+      error(409, 'Media is still referenced');
+    }
 
-//   await db.transaction().execute(async (trx) => {
-//     // Remove the database entry
-//     switch (collection) {
-//       case MediaCollection.clients: {
-//         await trx
-//           .deleteFrom('clientMedia')
-//           .where('name', '=', name)
-//           .where('clientId', '=', clientId)
-//           .execute();
-//         break;
-//       }
-//       case MediaCollection.campaigns: {
-//         const { id: campaignId } = await trx.selectFrom('campaign').select('id').where('reference', '=', x).executeTakeFirstOrThrow();
+    // Remove the database entry
+    switch (collection) {
+      case MediaCollection.clients: {
+        await trx
+          .deleteFrom('clientMedia')
+          .where('name', '=', filename)
+          .where('clientId', '=', clientId)
+          .execute();
+        break;
+      }
+      case MediaCollection.users: {
+        let query = trx
+          .deleteFrom('userMedia')
+          .where('name', '=', filename)
+          .where((eb) => eb.exists(
+            eb.selectFrom('user')
+              .select('user.id')
+              .whereRef('user.id', '=', 'userMedia.userId')
+              .where('user.clientId', '=', clientId)
+          ));
+        if (!isAdmin) query = query.where('userId', '=', userId);
+        await query.execute();
+        break;
+      }
+    }
 
-//         await trx
-//           .deleteFrom('campaignMedia')
-//           .where('name', '=', name)
-//           .where('campaignId', '=', campaignId)
-//           .execute();
-//         break;
-//       }
-//       case MediaCollection.users: {
-//         await trx
-//           .deleteFrom('userMedia')
-//           .where('name', '=', name)
-//           .where('userId', '=', userId)
-//           .execute();
-//         break;
-//       }
-//     }
+    // Remove the file
+    const path = `${ASSETS_DIR}/clients/${clientId}/${collection}/${filename}`;
+    try {
+      await fs.promises.rm(path, { force: true });
+    } catch (e) {
+      console.error(e);
+      error(400, 'Deleting file failed.');
+    }
+  });
 
-//     // Remove the file
-//     let path = `${private_env.SECRET_ASSETS_DIR}/clients/${clientId}/${collection}/${filename}`;
-//     if (collection === MediaCollection.internals) path = `${private_env.SECRET_ASSETS_DIR}/${collection}/${filename}`;
-//     try {
-//       if (fs.existsSync(path)) fs.promises.rm(path, { force: true });
-//     } catch (e) {
-//       console.error(e);
-//       error(400, 'Deleting file failed.');
-//     }
-//   });
-
-//   return new Response(JSON.stringify({}), {
-//     status: 201, headers: {
-//       'Content-Type': 'application/json'
-//     }
-//   });
-// }) satisfies RequestHandler;
+  return new Response(JSON.stringify({}), {
+    status: 201, headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}) satisfies RequestHandler;

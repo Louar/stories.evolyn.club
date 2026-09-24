@@ -1,4 +1,5 @@
-import { Kysely, Migrator } from 'kysely';
+import { Kysely } from 'kysely';
+import { Migrator } from 'kysely/migration';
 import { migrations } from './migrations/';
 import type { Schema } from './schema';
 

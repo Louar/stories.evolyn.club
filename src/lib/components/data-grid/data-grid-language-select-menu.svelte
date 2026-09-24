@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Command from '$lib/components/ui/command/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
@@ -16,17 +17,35 @@
 	let { align = 'end', class: className }: Props = $props();
 
 	let open = $state(false);
+	const languages = $derived.by<Array<Language | 'default'>>(() => {
+		const locales = (page.data.client?.locales ?? []).filter(
+			(locale: Language): locale is Language => Object.values(Language).includes(locale)
+		);
+		if (locales.length === 1) {
+			return locales[0] === Language.English ? [Language.English] : (['default'] as const);
+		}
+		return ['default', ...locales] as const;
+	});
+
+	$effect(() => {
+		let isSupported = false;
+		for (const language of languages) {
+			if (language === UI.language) isSupported = true;
+		}
+		if (!isSupported) UI.language = languages[0] ?? 'default';
+	});
 
 	function handleKeyDown(event: KeyboardEvent) {
-		if (
-			event.target instanceof HTMLInputElement ||
-			event.target instanceof HTMLTextAreaElement ||
-			(event.target instanceof HTMLElement && event.target.contentEditable === 'true')
-		) {
+		if (!(event.ctrlKey || event.metaKey)) return;
+
+		if (event.key.toLowerCase() === 'k') {
+			event.preventDefault();
+			const currentIndex = languages.indexOf(UI.language);
+			UI.language = languages[(currentIndex + 1) % languages.length];
 			return;
 		}
 
-		if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'l') {
+		if (event.shiftKey && event.key.toLowerCase() === 'l') {
 			event.preventDefault();
 			open = !open;
 		}
@@ -40,7 +59,7 @@
 		{#snippet child({ props })}
 			<Button
 				{...props}
-				aria-label="Toggle columns"
+				aria-label="Select language"
 				role="combobox"
 				variant="outline"
 				size="sm"
@@ -57,23 +76,21 @@
 			<Command.List>
 				<Command.Empty>No languages found.</Command.Empty>
 				<Command.Group>
-					<Command.Item value="default" onSelect={() => (UI.language = 'default')}>
-						<span class="truncate">Default</span>
-						<CheckIcon
-							class={cn(
-								'ml-auto size-4 shrink-0',
-								UI.language === 'default' ? 'opacity-100' : 'opacity-0'
-							)}
-						/>
-					</Command.Item>
-					<Command.Separator class="my-1" />
-					{#each Object.values(Language) as l}
-						<Command.Item value={LanguageReverse[l]} onSelect={() => (UI.language = l)}>
-							<span class="truncate">{LanguageReverse[l]}</span>
+					{#each languages as language, index (language)}
+						{#if index === 1 && languages[0] === 'default'}
+							<Command.Separator class="my-1" />
+						{/if}
+						<Command.Item
+							value={language === 'default' ? 'default' : LanguageReverse[language]}
+							onSelect={() => (UI.language = language)}
+						>
+							<span class="truncate">
+								{language === 'default' ? 'Default' : LanguageReverse[language]}
+							</span>
 							<CheckIcon
 								class={cn(
 									'ml-auto size-4 shrink-0',
-									UI.language === l ? 'opacity-100' : 'opacity-0'
+									UI.language === language ? 'opacity-100' : 'opacity-0'
 								)}
 							/>
 						</Command.Item>
