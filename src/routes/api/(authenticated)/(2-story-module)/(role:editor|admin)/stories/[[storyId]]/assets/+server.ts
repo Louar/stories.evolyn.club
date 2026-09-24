@@ -1,5 +1,5 @@
 import { db } from '$lib/db/database';
-import type { Media } from '$lib/db/schemas/0-utils';
+import type { Media, Translatable, TranslatableMedia } from '$lib/db/schemas/0-utils';
 import { UserRole } from '$lib/db/schemas/1-client-user-module';
 import { StoryPermissionRole } from '$lib/db/schemas/2-story-module';
 import {
@@ -26,6 +26,9 @@ type AssetRow =
 			type: 'video';
 			asset: string;
 			name: string;
+			source: TranslatableMedia;
+			thumbnail: TranslatableMedia | null;
+			captions: Translatable | null;
 			duration: number;
 	  }
 	| {
@@ -126,7 +129,15 @@ const listVideosAllStories = async (args: {
 		.innerJoin('story', 'story.id', 'link.storyId')
 		.where('story.clientId', '=', args.clientId)
 		.orderBy('link.videoId')
-		.select(['link.id as id', 'video.id as asset', 'video.name', 'video.duration']);
+		.select([
+			'link.id as id',
+			'video.id as asset',
+			'video.name',
+			'video.source',
+			'video.thumbnail',
+			'video.captions',
+			'video.duration'
+		]);
 
 	if (args.permittedStoryIds !== null) {
 		qb = qb.where('story.id', 'in', args.permittedStoryIds);
@@ -194,7 +205,15 @@ const listVideosForStory = async (
 		.selectFrom('videoAvailableToStory as link')
 		.innerJoin('video', 'video.id', 'link.videoId')
 		.where('link.storyId', '=', storyId)
-		.select(['link.id as id', 'video.id as asset', 'video.name', 'video.duration'])
+		.select([
+			'link.id as id',
+			'video.id as asset',
+			'video.name',
+			'video.source',
+			'video.thumbnail',
+			'video.captions',
+			'video.duration'
+		])
 		.execute();
 
 	return rows.map((row) => ({ type: 'video', ...row }));

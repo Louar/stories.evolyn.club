@@ -2,6 +2,7 @@
 	export type EditorSelection =
 		| { kind: 'still'; id?: string }
 		| { kind: 'video'; id?: string }
+		| { kind: 'video-library' }
 		| { kind: 'announcement'; id?: string }
 		| { kind: 'quiz'; id?: string }
 		| { kind: 'taxonomy'; partId: string }
@@ -23,6 +24,7 @@
 	import StillEditor from './StillEditor.svelte';
 	import TaxonomyLogicEditor from './TaxonomyLogicEditor.svelte';
 	import VideoEditor from './VideoEditor.svelte';
+	import VideoLibrary from './VideoLibrary.svelte';
 
 	type Story = Awaited<ReturnType<typeof findOneStoryById>>;
 	type TaxonomyDraft = NonNullable<Story['parts'][number]['taxonomyDraftForPart']>;
@@ -33,6 +35,7 @@
 		open = $bindable(false),
 		closeStill,
 		closeVideo,
+		addVideo,
 		closeAnnouncement,
 		closeQuiz,
 		closeTaxonomy
@@ -52,6 +55,7 @@
 			video?: Awaited<ReturnType<typeof findOneVideoById>>;
 			keepOpen?: boolean;
 		}) => void;
+		addVideo: (video?: Awaited<ReturnType<typeof findOneVideoById>>) => void;
 		closeAnnouncement: (output: {
 			action: 'persist' | 'delete' | 'close';
 			id?: string;
@@ -93,11 +97,17 @@
 			<XIcon />
 		</Button> -->
 		{#if selection}
-			{#key selection.kind === 'taxonomy' ? `${selection.kind}-${selection.partId}` : `${selection.kind}-${selection.id ?? 'new'}`}
+			{#key selection.kind === 'taxonomy' ? `${selection.kind}-${selection.partId}` : selection.kind === 'video-library' ? selection.kind : `${selection.kind}-${selection.id ?? 'new'}`}
 				{#if selection.kind === 'still'}
 					<StillEditor storyId={story.id} selectedId={selection.id} close={closeStill} />
 				{:else if selection.kind === 'video'}
 					<VideoEditor storyId={story.id} selectedId={selection.id} close={closeVideo} />
+				{:else if selection.kind === 'video-library'}
+					<VideoLibrary
+						storyId={story.id}
+						selectedVideoIds={story.videos.map((video) => video.id)}
+						close={addVideo}
+					/>
 				{:else if selection.kind === 'announcement'}
 					<AnnouncementEditor
 						storyId={story.id}

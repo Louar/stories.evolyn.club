@@ -59,6 +59,7 @@
 		editorSelection?.kind === 'still' && editorSelection.id === id;
 	const isEditingVideo = (id?: string) =>
 		editorSelection?.kind === 'video' && editorSelection.id === id;
+	const isAddingVideo = () => editorSelection?.kind === 'video-library';
 	const isEditingAnnouncement = (id?: string) =>
 		editorSelection?.kind === 'announcement' && editorSelection.id === id;
 	const isEditingQuiz = (id?: string) =>
@@ -72,6 +73,10 @@
 	};
 	const openVideo = (id?: string) => {
 		editorSelection = { kind: 'video', id };
+		inspectorOpen = true;
+	};
+	const openVideoLibrary = () => {
+		editorSelection = { kind: 'video-library' };
 		inspectorOpen = true;
 	};
 	const openAnnouncement = (id?: string) => {
@@ -126,6 +131,17 @@
 			};
 			if (!keepOpen) editorSelection = { kind: 'video', id: video.id };
 		}
+	};
+	const addVideo = (video?: Awaited<ReturnType<typeof findOneVideoById>>) => {
+		if (!video) {
+			editorSelection = null;
+			inspectorOpen = false;
+			return;
+		}
+
+		EDITORS.videos = [...EDITORS.videos, video];
+		story = { ...story, videos: [...story.videos, video] };
+		editorSelection = { kind: 'video', id: video.id };
 	};
 	const closeStill = (output: {
 		action: 'persist' | 'delete' | 'close';
@@ -341,9 +357,9 @@
 						<Tabs.Content value="stills">
 							<Command.Root class="border bg-sidebar-accent/30">
 								<Command.Input placeholder="Search stills..." />
-								<Command.List class="max-h-[calc(100svh-15rem)]">
+								<Command.List>
 									<Command.Empty>No stills found.</Command.Empty>
-									<Command.Group heading="Background stills">
+									<Command.Group>
 										<Command.Item
 											value="create new still"
 											class={isEditingStill() ? activeCommandItemClass : ''}
@@ -367,13 +383,18 @@
 						<Tabs.Content value="videos">
 							<Command.Root class="border bg-sidebar-accent/30">
 								<Command.Input placeholder="Search videos..." />
-								<Command.List class="max-h-[calc(100svh-15rem)]">
+								<Command.List>
 									<Command.Empty>No videos found.</Command.Empty>
-									<Command.Group heading="Background videos">
+									<Command.Group>
 										<Command.Item
 											value="create new video"
 											class={isEditingVideo() ? activeCommandItemClass : ''}
 											onSelect={() => openVideo()}><PlusIcon />Create video</Command.Item
+										>
+										<Command.Item
+											value="add an existing video"
+											class={isAddingVideo() ? activeCommandItemClass : ''}
+											onSelect={openVideoLibrary}><VideoIcon />Add a video</Command.Item
 										>
 										{#each EDITORS.videos as video (video.id)}
 											<Command.Item
@@ -400,10 +421,9 @@
 						<Tabs.Content value="announcements">
 							<Command.Root class="border bg-sidebar-accent/30">
 								<Command.Input placeholder="Search announcements..." />
-								<Command.List class="max-h-[calc(100svh-15rem)]"
-									><Command.Empty>No announcements found.</Command.Empty><Command.Group
-										heading="Foreground announcements"
-									>
+								<Command.List>
+									<Command.Empty>No announcements found.</Command.Empty>
+									<Command.Group>
 										<Command.Item
 											value="create new announcement"
 											class={isEditingAnnouncement() ? activeCommandItemClass : ''}
@@ -424,10 +444,9 @@
 						<Tabs.Content value="quizzes">
 							<Command.Root class="border bg-sidebar-accent/30">
 								<Command.Input placeholder="Search quizzes..." />
-								<Command.List class="max-h-[calc(100svh-15rem)]"
-									><Command.Empty>No quizzes found.</Command.Empty><Command.Group
-										heading="Foreground quizzes"
-									>
+								<Command.List>
+									<Command.Empty>No quizzes found.</Command.Empty>
+									<Command.Group>
 										<Command.Item
 											value="create new quiz"
 											class={isEditingQuiz() ? activeCommandItemClass : ''}
@@ -452,10 +471,9 @@
 						<Tabs.Content value="taxonomies">
 							<Command.Root class="border bg-sidebar-accent/30">
 								<Command.Input placeholder="Search taxonomy drafts..." />
-								<Command.List class="max-h-[calc(100svh-15rem)]"
-									><Command.Empty>No taxonomy drafts in this flow.</Command.Empty><Command.Group
-										heading="Taxonomy drafts"
-									>
+								<Command.List>
+									<Command.Empty>No taxonomy drafts in this flow.</Command.Empty>
+									<Command.Group>
 										{#each story.parts.filter((part) => part.taxonomyDraftForPart) as part (part.id)}
 											<Command.Item
 												value={`${part.taxonomyDraftForPart?.taxonomyName ?? ''} ${part.id}`}
@@ -485,6 +503,7 @@
 		bind:open={inspectorOpen}
 		{closeStill}
 		{closeVideo}
+		{addVideo}
 		{closeAnnouncement}
 		{closeQuiz}
 		{closeTaxonomy}
