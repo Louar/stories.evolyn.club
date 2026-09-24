@@ -25,6 +25,7 @@
 			  >
 			| undefined
 	);
+	const Icon = $derived(meta?.icon);
 	const url = $derived.by(() => {
 		const template = meta?.url;
 		if (!template?.length) return '';
@@ -64,7 +65,12 @@
 				if (url?.length) event.stopPropagation();
 			}}
 		>
-			<span class="grow truncate">{label}</span>
+			{#if Icon}
+				<Icon class="size-4 grow" aria-hidden="true" />
+				<span class="sr-only">{label}</span>
+			{:else}
+				<span class="grow truncate">{label}</span>
+			{/if}
 			{#if url?.length && !url.includes('{')}
 				<ArrowRightIcon
 					class="size-4 shrink-0 text-muted-foreground transition-colors {url?.length

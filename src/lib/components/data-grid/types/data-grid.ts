@@ -59,7 +59,7 @@ export type CellOpts<TData = unknown> =
 			expectedVariableType?: unknown;
 	  }
 	| { variant: 'badge-item'; url?: string }
-	| { variant: 'relation-follow'; url?: string }
+	| { variant: 'relation-follow'; url?: string; icon?: Component }
 	| { variant: 'relation-select-single'; options: CellSelectOption[] }
 	| { variant: 'input-with-suggestions'; options: CellSelectOption[] }
 	| { variant: 'number'; min?: number; max?: number; step?: number }
