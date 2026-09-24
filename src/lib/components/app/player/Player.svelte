@@ -3,7 +3,7 @@
 	import { MediaCollection, type Media } from '$lib/db/schemas/0-utils';
 	import {
 		createYouTubePlayer,
-		getYouTubeThumbnailUrl,
+		getYouTubeVideoId,
 		getVideoSourceType,
 		isYouTubeShort,
 		warmYouTubeConnections,
@@ -83,9 +83,11 @@
 
 	const source = $derived(mediaUrl(src));
 	const sourceType = $derived(getVideoSourceType(source));
-	const youtubeThumbnailUrl = $derived(
-		sourceType === 'youtube' ? getYouTubeThumbnailUrl(source) : undefined
-	);
+	const youtubeThumbnailUrl = $derived.by(() => {
+		if (sourceType !== 'youtube' || !isInitialPart || poster) return undefined;
+		const videoId = getYouTubeVideoId(source);
+		return videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : undefined;
+	});
 	const isShort = $derived(sourceType === 'youtube' && isYouTubeShort(source));
 	const clipStart = $derived(start ?? 0);
 
@@ -118,9 +120,7 @@
 	const progressPercentage = $derived(
 		clipDuration > 0 ? Math.min(100, Math.max(0, (time / clipDuration) * 100)) : 0
 	);
-	const hasOverlayCue = $derived(
-		typeof overlayStart === 'number' && Number.isFinite(overlayStart)
-	);
+	const hasOverlayCue = $derived(typeof overlayStart === 'number' && Number.isFinite(overlayStart));
 	const cueTolerance = 0.02;
 
 	const getCurrentTime = () =>
@@ -507,16 +507,6 @@
 	{/if}
 
 	{#if sourceType === 'youtube'}
-		{#if youtubeThumbnailUrl && !isLoaded}
-			<img
-				src={youtubeThumbnailUrl}
-				alt=""
-				class="pointer-events-none absolute inset-0 z-10 size-full object-cover"
-				loading={isInitialPart ? 'eager' : 'lazy'}
-				fetchpriority={isInitialPart ? 'high' : 'low'}
-				referrerpolicy="origin"
-			/>
-		{/if}
 		<div
 			bind:this={youtubeContainer}
 			class="youtube-frame pointer-events-none absolute inset-0 z-10 size-full overflow-hidden bg-background"
@@ -553,6 +543,15 @@
 		<MediaFile
 			src={poster}
 			class="pointer-events-none absolute inset-0 z-10 size-full object-contain"
+		/>
+	{:else if youtubeThumbnailUrl && !hasStarted}
+		<img
+			src={youtubeThumbnailUrl}
+			alt=""
+			class="pointer-events-none absolute inset-0 z-10 size-full object-cover"
+			loading="eager"
+			fetchpriority="high"
+			referrerpolicy="origin"
 		/>
 	{/if}
 
