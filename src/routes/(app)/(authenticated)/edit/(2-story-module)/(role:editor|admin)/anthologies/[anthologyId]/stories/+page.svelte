@@ -103,7 +103,7 @@
 	/>
 </Header>
 
-<div class="mx-auto mt-4 grid w-full max-w-2xl gap-4 px-4">
+<div class="mx-auto mt-4 grid w-full max-w-2xl gap-4 px-4 pb-10">
 	<Item.Root variant="outline">
 		<Item.Content>
 			<Item.Title>{data.anthology.name ?? data.anthology.slug}</Item.Title>

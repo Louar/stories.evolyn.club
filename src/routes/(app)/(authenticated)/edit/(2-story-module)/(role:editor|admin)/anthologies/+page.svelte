@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import { page } from '$app/state';
 	import Header from '$lib/components/app/header/app-header.svelte';
 	import {
 		createDataGridPersistenceIdentity,
@@ -15,18 +16,19 @@
 		type DataGridDeleteResult
 	} from '$lib/components/data-grid';
 	import DataGridLanguageSelectMenu from '$lib/components/data-grid/data-grid-language-select-menu.svelte';
+	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
 	import DataGridUploadMenu from '$lib/components/data-grid/data-grid-upload-menu.svelte';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import BreadcrumbMenu from '$lib/components/ui/breadcrumb-menu/breadcrumb-menu.svelte';
-	import { Switch } from '$lib/components/ui/switch';
 	import { MEGABYTE } from '$lib/components/ui/file-drop-zone';
+	import { Switch } from '$lib/components/ui/switch';
 	import { renderComponent } from '$lib/components/ui/table-tanstack/index.js';
-	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
 	import { AnthologyVisualization } from '$lib/db/schemas/2-story-module';
+	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
 	import LoaderCircleIcon from '@lucide/svelte/icons/loader-circle';
+	import SquarePenIcon from '@lucide/svelte/icons/square-pen';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
-	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
-	import { page } from '$app/state';
+	import UserShieldIcon from '@lucide/svelte/icons/user-shield';
 
 	let { data } = $props();
 	const endpoint = '/api/anthologies';
@@ -137,6 +139,43 @@
 		},
 		{ accessorKey: 'slug', header: 'Slug', meta: { cell: { variant: 'text-short' } }, filterFn },
 		{
+			id: 'stories',
+			accessorFn: (row) => row.positions.length,
+			header: 'Stories',
+			size: 60,
+			meta: {
+				cell: {
+					variant: 'relation-follow',
+					url: '/edit/anthologies/{row}/stories',
+					icon: SquarePenIcon
+				},
+				readOnly: true
+			},
+			filterFn
+		},
+		{
+			accessorKey: 'permissions',
+			header: 'Permissions',
+			size: 60,
+			meta: {
+				cell: {
+					variant: 'relation-follow',
+					url: '/edit/anthologies/{row}/permissions',
+					icon: UserShieldIcon
+				},
+				readOnly: true
+			},
+			filterFn
+		},
+		{
+			id: 'url',
+			accessorFn: (row) => `${page.url.host}/${row.slug}`,
+			header: 'Anthology URL',
+			size: 220,
+			meta: { cell: { variant: 'relation-follow', url: `/{slug}` }, readOnly: true },
+			filterFn
+		},
+		{
 			accessorKey: 'nameRaw',
 			header: 'Name',
 			meta: { cell: { variant: 'text-translated-short' } },
@@ -164,35 +203,6 @@
 			accessorKey: 'isPublic',
 			header: 'Public',
 			meta: { cell: { variant: 'checkbox' } },
-			filterFn
-		},
-		{
-			id: 'stories',
-			accessorFn: (row) => row.positions.length,
-			header: 'Stories',
-			size: 100,
-			meta: {
-				cell: { variant: 'relation-follow', url: '/edit/anthologies/{row}/stories' },
-				readOnly: true
-			},
-			filterFn
-		},
-		{
-			accessorKey: 'permissions',
-			header: 'Permissions',
-			size: 120,
-			meta: {
-				cell: { variant: 'relation-follow', url: '/edit/anthologies/{row}/permissions' },
-				readOnly: true
-			},
-			filterFn
-		},
-		{
-			id: 'url',
-			accessorFn: (row) => `${page.url.host}/${row.slug}`,
-			header: 'Anthology URL',
-			size: 220,
-			meta: { cell: { variant: 'relation-follow', url: `/{slug}` }, readOnly: true },
 			filterFn
 		},
 		{

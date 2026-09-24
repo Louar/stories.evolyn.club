@@ -15,7 +15,7 @@ export const DummyDataDefaultClientAndUsers: Migration = {
         slug: DEFAULT_CLIENT_SLUG,
         name: DEFAULT_CLIENT_NAME,
         domains: [...(process.env.NODE_ENV !== 'production' ? ['localhost:5173', 'localhost:4173'] : []), DEFAULT_CLIENT_DEFAULT_DOMAIN],
-				locales: [Language.English, Language.Nederlands],
+        locales: [Language.English, Language.Nederlands],
         administrationEmail: DEFAULT_CLIENT_ADMINISTRATION_EMAIL,
         css: JSON.stringify({
           ":root": {
@@ -89,19 +89,19 @@ export const DummyDataDefaultClientAndUsers: Migration = {
         manifest: JSON.stringify(
           {
             name: DEFAULT_CLIENT_NAME,
-            short_name: 'Missions',
-            description: 'Achieve your missions.',
+            short_name: 'Stories',
+            description: 'Your interactive stories.',
             scope: '/',
             start_url: '/',
             display: 'standalone',
             icons: [
               {
-                src: '/evolyn-logo.svg',
+                src: '/stories-logo.svg',
                 sizes: 'any',
                 type: 'image/svg+xml',
               },
               {
-                src: `/evolyn-logo-maskable.png`,
+                src: `/stories-logo-maskable.png`,
                 purpose: 'maskable',
                 sizes: '1024x1024',
                 type: 'image/png',

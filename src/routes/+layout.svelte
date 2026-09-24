@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { DEFAULT_CLIENT_NAME } from '$app/env/private';
-	import favicon from '$lib/assets/evolyn-logo.svg';
 	import PolicyConsent from '$lib/components/app/policy-consent/policy-consent.svelte';
 	import { ModeWatcher } from 'mode-watcher';
 
@@ -26,8 +25,8 @@
 			href="/api/media/{client.favicon.collection}/{client.favicon.filename}"
 		/>
 	{:else}
-		<link rel="icon" href={favicon} />
-		<link rel="apple-touch-icon" sizes="180x180" href={favicon} />
+		<link rel="icon" href="/stories-logo.svg" />
+		<link rel="apple-touch-icon" sizes="180x180" href="/stories-logo.svg" />
 	{/if}
 
 	{#if client?.plausibleDomain?.length && import.meta.env.MODE === 'production'}

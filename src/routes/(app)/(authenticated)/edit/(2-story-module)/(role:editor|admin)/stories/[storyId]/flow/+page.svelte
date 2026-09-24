@@ -316,7 +316,7 @@
 				</div>
 			</Sidebar.Header>
 
-			<Sidebar.Content class="px-3 py-4 muted-scrollbar">
+			<Sidebar.Content class="muted-scrollbar px-3 py-4">
 				<Tabs.Content value="settings" class="min-h-0 flex-1">
 					<StorySettingsEditor
 						storyId={story.id}
