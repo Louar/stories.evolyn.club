@@ -424,7 +424,11 @@
 	<title>Edit story: {translateLocalizedField(story.name)}</title>
 </svelte:head>
 
-<Sidebar.Provider bind:open={sidebarOpen} style="--sidebar-width: 24rem;">
+<Sidebar.Provider
+	bind:open={sidebarOpen}
+	class={preferencesHydrated ? undefined : 'invisible'}
+	style="--sidebar-width: 24rem;"
+>
 	<Sidebar.Root collapsible="offcanvas" class="border-r">
 		<Tabs.Root bind:value={mainTab} class="h-full min-h-0 gap-0">
 			<Sidebar.Header class="-mt-px border-b p-0">
