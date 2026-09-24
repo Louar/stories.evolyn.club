@@ -27,6 +27,7 @@ import {
 } from '$lib/components/data-grid/config/data-grid.js';
 import {
 	clearCellMedia,
+	createOnRowsDuplicate,
 	getSelectedRows,
 	isAcknowledgedNullClearCurrent,
 	isCellMutationSnapshotCurrent,
@@ -103,7 +104,9 @@ import type {
 	DataGridClearResult,
 	DataGridCreateResult,
 	DataGridDataAdapter,
+	DataGridDeleteDialogState,
 	DataGridDeleteResult,
+	DataGridDuplicateTarget,
 	DataGridMutationResult,
 	DataGridStatusProps,
 	FileCellData,
@@ -346,6 +349,19 @@ export interface UseDataGridOptions<TData extends RowData> extends DataGridStatu
 		rows: TData[],
 		rowIndices: number[]
 	) => DataGridDeleteResult | boolean | Promise<DataGridDeleteResult | boolean>;
+	/**
+	 * Duplicates persisted rows and their owned child relations. Returned rows are appended to the grid.
+	 * Pass `true` to use `dataAdapter.duplicate`.
+	 */
+	onRowsDuplicate?:
+		| ((
+				rows: TData[],
+				rowIds: string[],
+				targetId?: string
+		  ) => DataGridCreateResult<TData> | Promise<DataGridCreateResult<TData>>)
+		| boolean;
+	rowDuplicateTargets?:
+		readonly DataGridDuplicateTarget[] | (() => readonly DataGridDuplicateTarget[]);
 	onDownload?: ((rows: TData[]) => void | Promise<void>) | boolean;
 	onPaste?: (updates: UpdateCell[]) => void | Promise<void>;
 	onFilesUpload?: (params: {
@@ -445,11 +461,17 @@ export function useDataGrid<TData extends RowData>(
 		onRowsAdd: onRowsAddProp,
 		onRowChange: onRowChangeProp,
 		onRowsDelete: onRowsDeleteProp,
+		onRowsDuplicate: onRowsDuplicateProp,
+		rowDuplicateTargets: rowDuplicateTargetsProp = [],
 		onDownload: onDownloadProp,
 		onPaste,
 		onFilesUpload,
 		onFilesDelete
 	} = options;
+	const getRowDuplicateTargets =
+		typeof rowDuplicateTargetsProp === 'function'
+			? rowDuplicateTargetsProp
+			: () => rowDuplicateTargetsProp;
 	const status: DataGridStatusProps = {
 		loading: options.loading,
 		error: options.error,
@@ -1172,6 +1194,15 @@ export function useDataGrid<TData extends RowData>(
 			: (onRowAddProp ?? defaultOnRowAdd);
 	const resolvedOnRowsAdd = onRowsAddProp ?? defaultOnRowsAdd;
 	const resolvedOnRowsDelete = onRowsDeleteProp ?? defaultOnRowsDelete;
+	const adapterOnRowsDuplicate = dataAdapter?.duplicate
+		? createOnRowsDuplicate((params) => dataAdapter.duplicate!(params), getRowIdValue)
+		: undefined;
+	const resolvedOnRowsDuplicate =
+		typeof onRowsDuplicateProp === 'boolean'
+			? onRowsDuplicateProp
+				? adapterOnRowsDuplicate
+				: undefined
+			: (onRowsDuplicateProp ?? adapterOnRowsDuplicate);
 	const resolvedOnRowChange = onRowChangeProp ?? defaultOnRowChange;
 	const resolvedOnDownload =
 		typeof onDownloadProp === 'boolean'
@@ -1243,6 +1274,7 @@ export function useDataGrid<TData extends RowData>(
 	let sorting = $state<SortingState>([...codeDefaults.sorting]);
 	let columnFilters = $state<ColumnFiltersState>([...codeDefaults.columnFilters]);
 	let rowSelection = $state<RowSelectionState>(initialState?.rowSelection ?? {});
+	let isDuplicating = $state(false);
 	let isDownloading = $state(false);
 	let columnPinning = $state<ColumnPinningState>({ ...codeDefaults.columnPinning });
 	let columnVisibility = $state<VisibilityState>({ ...codeDefaults.columnVisibility });
@@ -1511,6 +1543,12 @@ export function useDataGrid<TData extends RowData>(
 		rowsNeeded: 0,
 		clipboardText: ''
 	});
+	let deleteDialog = $state<DataGridDeleteDialogState>({
+		open: false,
+		rowCount: 0,
+		isDeleting: false
+	});
+	let pendingDeleteRowIds: string[] = [];
 
 	// SvelteSet for O(1) reactive error match lookups
 	const hasErrorMatchSet = new SvelteSet<string>();
@@ -2393,6 +2431,55 @@ export function useDataGrid<TData extends RowData>(
 			: { deletedRowIds: [], failedRowIds: rowIds };
 	}
 
+	function requestRowsDelete(rowIndices: number[]) {
+		if (readOnly || !resolvedOnRowsDelete || deleteDialog.isDeleting) return;
+		const rows = table.getRowModel().rows;
+		pendingDeleteRowIds = rowIndices.flatMap((rowIndex) => {
+			const rowId = rows[rowIndex]?.id;
+			return rowId ? [rowId] : [];
+		});
+		if (pendingDeleteRowIds.length === 0) return;
+		deleteDialog = {
+			open: true,
+			rowCount: pendingDeleteRowIds.length,
+			isDeleting: false
+		};
+	}
+
+	async function confirmRowsDelete() {
+		if (!deleteDialog.open || deleteDialog.isDeleting) return;
+		const rows = table.getRowModel().rows;
+		const pendingRowIdSet = new SvelteSet(pendingDeleteRowIds);
+		const rowIndices = rows.flatMap((row, rowIndex) =>
+			pendingRowIdSet.has(row.id) ? [rowIndex] : []
+		);
+		if (rowIndices.length === 0) {
+			pendingDeleteRowIds = [];
+			deleteDialog = { open: false, rowCount: 0, isDeleting: false };
+			return;
+		}
+
+		deleteDialog = { ...deleteDialog, isDeleting: true };
+		try {
+			const result = await deleteRows(rowIndices);
+			const rowCount = result.deletedRowIds.length;
+			if (rowCount > 0) {
+				clearSelection();
+				toast.success(`${rowCount} row${rowCount === 1 ? '' : 's'} deleted`);
+			}
+			if (result.failedRowIds.length > 0) {
+				toast.error(
+					`${result.failedRowIds.length} row${result.failedRowIds.length === 1 ? '' : 's'} could not be deleted`
+				);
+			}
+			pendingDeleteRowIds = [];
+			deleteDialog = { open: false, rowCount: 0, isDeleting: false };
+		} catch (error) {
+			deleteDialog = { ...deleteDialog, isDeleting: false };
+			toast.error(error instanceof Error ? error.message : 'Failed to delete selected rows');
+		}
+	}
+
 	function getSelectedRowIndices(): number[] {
 		const rows = table.getRowModel().rows;
 		const rowIndexById = new SvelteMap(rows.map((row, index) => [row.id, index]));
@@ -2409,13 +2496,58 @@ export function useDataGrid<TData extends RowData>(
 		return Array.from(selectedRowIndices).sort((a, b) => a - b);
 	}
 
-	async function deleteSelectedRows() {
+	function deleteSelectedRows() {
 		if (readOnly || !resolvedOnRowsDelete) return;
 
 		const rowIndices = getSelectedRowIndices();
-		if (rowIndices.length > 0) {
-			const result = await deleteRows(rowIndices);
-			if (result.deletedRowIds.length > 0) clearSelection();
+		if (rowIndices.length > 0) requestRowsDelete(rowIndices);
+	}
+
+	async function duplicateSelectedRows(
+		targetId?: string
+	): Promise<DataGridCreateResult<TData> | void> {
+		if (readOnly || !resolvedOnRowsDuplicate || isDuplicating) return;
+
+		const selectedRows = getSelectedRows(table.getRowModel().rows, rowSelection);
+		if (selectedRows.length === 0) return;
+		const rowIds = selectedRows.map(({ row }) => row.id);
+		if (rowIds.some((rowId) => rowIdentities.isTemporary(rowId))) {
+			toast.error('Save new rows before duplicating them');
+			return;
+		}
+
+		isDuplicating = true;
+		try {
+			const result = await resolvedOnRowsDuplicate(
+				selectedRows.map(({ row }) => row.original),
+				rowIds,
+				targetId
+			);
+			const shouldAppendRows =
+				getRowDuplicateTargets().find((target) => target.id === targetId)?.appendToCurrentGrid ??
+				true;
+			if (result.rows.length > 0 && shouldAppendRows) {
+				replaceData([...getData(), ...result.rows]);
+			}
+			if (result.rows.length > 0) {
+				clearSelection();
+			}
+			const duplicatedCount = result.rows.length;
+			if (duplicatedCount > 0) {
+				toast.success(
+					`${duplicatedCount} row${duplicatedCount === 1 ? '' : 's'} duplicated${result.failedCount ? `, ${result.failedCount} failed` : ''}`
+				);
+			}
+			if (result.failedCount > 0 && duplicatedCount === 0) {
+				toast.error(
+					`${result.failedCount} row${result.failedCount === 1 ? '' : 's'} could not be duplicated`
+				);
+			}
+			return result;
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : 'Failed to duplicate selected rows');
+		} finally {
+			isDuplicating = false;
 		}
 	}
 
@@ -3072,6 +3204,9 @@ export function useDataGrid<TData extends RowData>(
 		get pasteDialog() {
 			return pasteDialog;
 		},
+		get deleteDialog() {
+			return deleteDialog;
+		},
 		getIsCellSelected,
 		// Expose cellValueMap directly for fine-grained cell-level reactivity
 		// Cells access map.get(key) inside $derived for proper Svelte tracking
@@ -3115,7 +3250,19 @@ export function useDataGrid<TData extends RowData>(
 			updates: UpdateCell | UpdateCell[],
 			expectedSnapshots?: ReadonlyMap<string, { generation: number; value: unknown }>
 		) => handleDataUpdate(updates, false, expectedSnapshots, true),
-		onRowsDelete: deleteRows,
+		onRowsDeleteRequest: requestRowsDelete,
+		onDeleteDialogOpenChange: (open: boolean) => {
+			if (deleteDialog.isDeleting) return;
+			if (!open) pendingDeleteRowIds = [];
+			deleteDialog = {
+				...deleteDialog,
+				open,
+				...(open ? {} : { rowCount: 0 })
+			};
+		},
+		onRowsDeleteConfirm: confirmRowsDelete,
+		onRowsDuplicate: resolvedOnRowsDuplicate ? duplicateSelectedRows : undefined,
+		getRowDuplicateTargets,
 		onDownload: resolvedOnDownload
 			? async () => {
 					if (isDownloading) return;
@@ -3141,6 +3288,7 @@ export function useDataGrid<TData extends RowData>(
 				}
 			: undefined,
 		getSelectedRowCount: () => getSelectedRows(table.getRowModel().rows, rowSelection).length,
+		getIsDuplicating: () => isDuplicating,
 		getIsDownloading: () => isDownloading,
 		onCellsCopy: copySelectedCells,
 		onCellsCut: cutSelectedCells,

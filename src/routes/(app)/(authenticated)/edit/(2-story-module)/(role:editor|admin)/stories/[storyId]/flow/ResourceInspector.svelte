@@ -7,6 +7,10 @@
 		| { kind: 'quiz'; id?: string }
 		| { kind: 'taxonomy'; partId: string }
 		| null;
+	export type PartResourceEditorSelection = Exclude<
+		EditorSelection,
+		{ kind: 'video-library' } | null
+	>;
 </script>
 
 <script lang="ts">

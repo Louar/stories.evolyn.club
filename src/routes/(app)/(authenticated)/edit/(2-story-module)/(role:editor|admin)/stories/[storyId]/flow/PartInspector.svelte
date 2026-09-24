@@ -4,6 +4,7 @@
 	import { useSidebar } from '$lib/components/ui/sidebar/index.js';
 	import type { findOneStoryById } from '$lib/db/repositories/2-story-module.js';
 	import PartEditor from './PartEditor.svelte';
+	import type { PartResourceEditorSelection } from './ResourceInspector.svelte';
 
 	type Story = Awaited<ReturnType<typeof findOneStoryById>>;
 	type Part = Story['parts'][number];
@@ -13,13 +14,15 @@
 		partId = $bindable(),
 		scrollPositions = $bindable({}),
 		onSave,
-		onDelete
+		onDelete,
+		onOpenResource
 	}: {
 		story: Story;
 		partId?: string;
 		scrollPositions?: Record<string, number>;
 		onSave: (part: Part) => void;
 		onDelete: (partId: string) => void;
+		onOpenResource: (selection: PartResourceEditorSelection) => void;
 	} = $props();
 
 	const sidebar = useSidebar();
@@ -42,6 +45,7 @@
 						{part}
 						{onSave}
 						{onDelete}
+						{onOpenResource}
 						onDismiss={dismiss}
 						initialScrollTop={scrollPositions[part.id] ?? 0}
 						onScroll={(scrollTop) =>

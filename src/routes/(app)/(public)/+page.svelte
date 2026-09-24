@@ -62,7 +62,7 @@
 				</Card.Title>
 				<Card.Description>Session details for the logged-in visitor.</Card.Description>
 			</Card.Header>
-			<Card.Content>
+			<Card.Content class="space-y-4">
 				{#if user}
 					<div class="flex items-center gap-4">
 						<AvatarMedia src={user.picture} fallback={userInitials} class="size-14" />
@@ -73,6 +73,10 @@
 							</p>
 						</div>
 					</div>
+					<Button href={resolve('/edit/stories')} class="w-full">
+						<AppIcon icon="Pencil" class="text-primary-foreground" />
+						Open editor
+					</Button>
 				{:else}
 					<div class="space-y-4 rounded-xl border border-dashed p-4">
 						<div>

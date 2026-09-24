@@ -36,7 +36,10 @@
 	import type { z } from 'zod/v4';
 	import Flow from './Flow.svelte';
 	import PartInspector from './PartInspector.svelte';
-	import ResourceInspector, { type EditorSelection } from './ResourceInspector.svelte';
+	import ResourceInspector, {
+		type EditorSelection,
+		type PartResourceEditorSelection
+	} from './ResourceInspector.svelte';
 	import StorySettingsEditor from './StorySettingsEditor.svelte';
 	import {
 		getStoryFlowPreferencesKey,
@@ -193,6 +196,40 @@
 		selectedTaxonomyPartId = partId;
 		editorSelection = { kind: 'taxonomy', partId };
 		inspectorOpen = true;
+	};
+	const canKeepPartEditorOpen = () => {
+		const rootFontSize = Number.parseFloat(
+			window.getComputedStyle(document.documentElement).fontSize
+		);
+		const resourceInspectorRight = (sidebarOpen ? 24 : 0) * rootFontSize + 30 * rootFontSize;
+		const partInspectorWidth = Math.min(44 * rootFontSize, window.innerWidth - 4 * rootFontSize);
+
+		return resourceInspectorRight <= window.innerWidth - partInspectorWidth;
+	};
+	const openPartResource = (selection: PartResourceEditorSelection) => {
+		if (selection.kind === 'still') {
+			mainTab = 'backgrounds';
+			backgroundTab = 'stills';
+			openStill(selection.id);
+		} else if (selection.kind === 'video') {
+			mainTab = 'backgrounds';
+			backgroundTab = 'videos';
+			openVideo(selection.id);
+		} else if (selection.kind === 'announcement') {
+			mainTab = 'foregrounds';
+			foregroundTab = 'announcements';
+			openAnnouncement(selection.id);
+		} else if (selection.kind === 'quiz') {
+			mainTab = 'foregrounds';
+			foregroundTab = 'quizzes';
+			openQuiz(selection.id);
+		} else {
+			mainTab = 'foregrounds';
+			foregroundTab = 'taxonomies';
+			openTaxonomy(selection.partId);
+		}
+
+		if (!canKeepPartEditorOpen()) selectedPartId = undefined;
 	};
 	const addTaxonomyDraft = () => {
 		const targetPart = selectedPart ?? story.parts[0];
@@ -702,5 +739,6 @@
 		bind:scrollPositions={partScrollPositions}
 		onSave={replacePart}
 		onDelete={removePart}
+		onOpenResource={openPartResource}
 	/>
 </Sidebar.Provider>

@@ -27,6 +27,7 @@
 	import LayersIcon from '@lucide/svelte/icons/layers';
 	import MagnetIcon from '@lucide/svelte/icons/magnet';
 	import MessageSquareIcon from '@lucide/svelte/icons/message-square';
+	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import ShapesIcon from '@lucide/svelte/icons/shapes';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import VideoIcon from '@lucide/svelte/icons/video';
@@ -36,6 +37,7 @@
 	import { toast } from 'svelte-sonner';
 	import QuizLogicEditor from './QuizLogicEditor.svelte';
 	import ResourceCombobox from './ResourceCombobox.svelte';
+	import type { PartResourceEditorSelection } from './ResourceInspector.svelte';
 	import TaxonomyLogicEditor from './TaxonomyLogicEditor.svelte';
 	import VideoFramePreview from './VideoFramePreview.svelte';
 
@@ -51,6 +53,7 @@
 		part,
 		onSave,
 		onDelete,
+		onOpenResource,
 		onDismiss,
 		initialScrollTop = 0,
 		onScroll
@@ -60,6 +63,7 @@
 		part: Part;
 		onSave: (part: Part) => void;
 		onDelete: (partId: string) => void;
+		onOpenResource: (selection: PartResourceEditorSelection) => void;
 		onDismiss: () => void;
 		initialScrollTop?: number;
 		onScroll?: (scrollTop: number) => void;
@@ -335,6 +339,11 @@
 		clearTimeout(autosaveTimer);
 		autosaveTimer = setTimeout(() => persist(), 700);
 	};
+	const openResourceEditor = async (selection: PartResourceEditorSelection) => {
+		if (saveState === 'dirty') await persist();
+		if (saveState === 'error') return;
+		onOpenResource(selection);
+	};
 
 	onDestroy(() => {
 		clearTimeout(autosaveTimer);
@@ -586,32 +595,64 @@
 		{#if draft.backgroundType === 'still'}
 			<Field.Field>
 				<Field.Label>Still</Field.Label>
-				<ResourceCombobox
-					items={stillItems}
-					value={draft.stillId}
-					placeholder="Select a still"
-					searchPlaceholder="Search stills..."
-					emptyText="No stills found."
-					onValueChange={(value) => {
-						draft.stillId = value;
-						scheduleAutosave();
-					}}
-				/>
+				<div class="flex gap-2">
+					<div class="min-w-0 flex-1">
+						<ResourceCombobox
+							items={stillItems}
+							value={draft.stillId}
+							placeholder="Select a still"
+							searchPlaceholder="Search stills..."
+							emptyText="No stills found."
+							onValueChange={(value) => {
+								draft.stillId = value;
+								scheduleAutosave();
+							}}
+						/>
+					</div>
+					<Button
+						type="button"
+						variant="outline"
+						size="icon"
+						class="shrink-0"
+						disabled={!draft.stillId || saveState === 'saving'}
+						aria-label="Edit selected still"
+						onclick={() =>
+							void openResourceEditor({ kind: 'still', id: draft.stillId ?? undefined })}
+					>
+						<PencilIcon />
+					</Button>
+				</div>
 			</Field.Field>
 		{:else if draft.backgroundType === 'video'}
 			<Field.Field>
 				<Field.Label>Video</Field.Label>
-				<ResourceCombobox
-					items={videoItems}
-					value={draft.videoId}
-					placeholder="Select a video"
-					searchPlaceholder="Search videos..."
-					emptyText="No videos found."
-					onValueChange={(value) => {
-						draft.videoId = value;
-						scheduleAutosave();
-					}}
-				/>
+				<div class="flex gap-2">
+					<div class="min-w-0 flex-1">
+						<ResourceCombobox
+							items={videoItems}
+							value={draft.videoId}
+							placeholder="Select a video"
+							searchPlaceholder="Search videos..."
+							emptyText="No videos found."
+							onValueChange={(value) => {
+								draft.videoId = value;
+								scheduleAutosave();
+							}}
+						/>
+					</div>
+					<Button
+						type="button"
+						variant="outline"
+						size="icon"
+						class="shrink-0"
+						disabled={!draft.videoId || saveState === 'saving'}
+						aria-label="Edit selected video"
+						onclick={() =>
+							void openResourceEditor({ kind: 'video', id: draft.videoId ?? undefined })}
+					>
+						<PencilIcon />
+					</Button>
+				</div>
 			</Field.Field>
 			<div class="grid gap-3 sm:grid-cols-2">
 				<Field.Field>
@@ -720,47 +761,97 @@
 		{#if draft.foregroundType === 'announcement'}
 			<Field.Field>
 				<Field.Label>Announcement</Field.Label>
-				<ResourceCombobox
-					items={announcementItems}
-					value={draft.announcementTemplateId}
-					placeholder="Select an announcement"
-					searchPlaceholder="Search announcements..."
-					emptyText="No announcements found."
-					onValueChange={(value) => {
-						draft.announcementTemplateId = value;
-						scheduleAutosave();
-					}}
-				/>
+				<div class="flex gap-2">
+					<div class="min-w-0 flex-1">
+						<ResourceCombobox
+							items={announcementItems}
+							value={draft.announcementTemplateId}
+							placeholder="Select an announcement"
+							searchPlaceholder="Search announcements..."
+							emptyText="No announcements found."
+							onValueChange={(value) => {
+								draft.announcementTemplateId = value;
+								scheduleAutosave();
+							}}
+						/>
+					</div>
+					<Button
+						type="button"
+						variant="outline"
+						size="icon"
+						class="shrink-0"
+						disabled={!draft.announcementTemplateId || saveState === 'saving'}
+						aria-label="Edit selected announcement"
+						onclick={() =>
+							void openResourceEditor({
+								kind: 'announcement',
+								id: draft.announcementTemplateId ?? undefined
+							})}
+					>
+						<PencilIcon />
+					</Button>
+				</div>
 			</Field.Field>
 		{:else if draft.foregroundType === 'quiz'}
 			<Field.Field>
 				<Field.Label>Quiz</Field.Label>
-				<ResourceCombobox
-					items={quizItems}
-					value={draft.quizTemplateId}
-					placeholder="Select a quiz"
-					searchPlaceholder="Search quizzes..."
-					emptyText="No quizzes found."
-					onValueChange={(value) => {
-						draft.quizTemplateId = value;
-						scheduleAutosave();
-					}}
-				/>
+				<div class="flex gap-2">
+					<div class="min-w-0 flex-1">
+						<ResourceCombobox
+							items={quizItems}
+							value={draft.quizTemplateId}
+							placeholder="Select a quiz"
+							searchPlaceholder="Search quizzes..."
+							emptyText="No quizzes found."
+							onValueChange={(value) => {
+								draft.quizTemplateId = value;
+								scheduleAutosave();
+							}}
+						/>
+					</div>
+					<Button
+						type="button"
+						variant="outline"
+						size="icon"
+						class="shrink-0"
+						disabled={!draft.quizTemplateId || saveState === 'saving'}
+						aria-label="Edit selected quiz"
+						onclick={() =>
+							void openResourceEditor({ kind: 'quiz', id: draft.quizTemplateId ?? undefined })}
+					>
+						<PencilIcon />
+					</Button>
+				</div>
 			</Field.Field>
 		{:else if draft.foregroundType === 'taxonomy'}
 			<Field.Field>
 				<Field.Label>Taxonomy</Field.Label>
-				<ResourceCombobox
-					items={taxonomyItems}
-					value={draft.taxonomyId}
-					placeholder="Select a taxonomy"
-					searchPlaceholder="Search taxonomies..."
-					emptyText="No taxonomies found."
-					onValueChange={(value) => {
-						draft.taxonomyId = value;
-						scheduleAutosave();
-					}}
-				/>
+				<div class="flex gap-2">
+					<div class="min-w-0 flex-1">
+						<ResourceCombobox
+							items={taxonomyItems}
+							value={draft.taxonomyId}
+							placeholder="Select a taxonomy"
+							searchPlaceholder="Search taxonomies..."
+							emptyText="No taxonomies found."
+							onValueChange={(value) => {
+								draft.taxonomyId = value;
+								scheduleAutosave();
+							}}
+						/>
+					</div>
+					<Button
+						type="button"
+						variant="outline"
+						size="icon"
+						class="shrink-0"
+						disabled={!draft.taxonomyId || saveState === 'saving'}
+						aria-label="Edit selected taxonomy draft"
+						onclick={() => void openResourceEditor({ kind: 'taxonomy', partId: draft.id })}
+					>
+						<PencilIcon />
+					</Button>
+				</div>
 			</Field.Field>
 		{/if}
 

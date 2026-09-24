@@ -29,6 +29,7 @@
 	import ImageUpIcon from '@lucide/svelte/icons/image-up';
 	import SquarePenIcon from '@lucide/svelte/icons/square-pen';
 	import UserShieldIcon from '@lucide/svelte/icons/user-shield';
+	import CreateStoryMenu from './CreateStoryMenu.svelte';
 
 	let { data } = $props();
 	const endpoint = '/api/stories';
@@ -220,6 +221,7 @@
 		persistence: createDataGridPersistenceIdentity('edit.stories', () => data),
 		getRowId: (row) => row.id,
 		endpoint,
+		onRowAdd: false,
 		defaultRow: () => ({
 			slug: crypto.randomUUID().slice(0, 8),
 			name: { en: 'New story' },
@@ -269,6 +271,7 @@
 			]
 		]}
 	/>
+	<CreateStoryMenu />
 </Header>
 
 <div class="mx-auto mt-4 w-full max-w-6xl space-y-4 px-4">
