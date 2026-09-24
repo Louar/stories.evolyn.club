@@ -31,7 +31,8 @@
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import VideoIcon from '@lucide/svelte/icons/video';
 	import XIcon from '@lucide/svelte/icons/x';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, untrack } from 'svelte';
+	import type { Attachment } from 'svelte/attachments';
 	import { toast } from 'svelte-sonner';
 	import QuizLogicEditor from './QuizLogicEditor.svelte';
 	import ResourceCombobox from './ResourceCombobox.svelte';
@@ -50,7 +51,9 @@
 		part,
 		onSave,
 		onDelete,
-		onDismiss
+		onDismiss,
+		initialScrollTop = 0,
+		onScroll
 	}: {
 		story: Story;
 		storyId: string;
@@ -58,7 +61,20 @@
 		onSave: (part: Part) => void;
 		onDelete: (partId: string) => void;
 		onDismiss: () => void;
+		initialScrollTop?: number;
+		onScroll?: (scrollTop: number) => void;
 	} = $props();
+	let scrollTimer: ReturnType<typeof setTimeout> | undefined;
+	let pendingScrollTop = 0;
+	const restoreScroll: Attachment<HTMLDivElement> = (element) => {
+		pendingScrollTop = untrack(() => initialScrollTop);
+		element.scrollTop = pendingScrollTop;
+	};
+	const scheduleScrollPersistence = (scrollTop: number) => {
+		pendingScrollTop = scrollTop;
+		clearTimeout(scrollTimer);
+		scrollTimer = setTimeout(() => onScroll?.(pendingScrollTop), 150);
+	};
 
 	// svelte-ignore state_referenced_locally
 	let draft = $state(structuredClone($state.snapshot(part)));
@@ -322,6 +338,8 @@
 
 	onDestroy(() => {
 		clearTimeout(autosaveTimer);
+		clearTimeout(scrollTimer);
+		onScroll?.(pendingScrollTop);
 		if (saveState === 'dirty') void persist();
 	});
 
@@ -484,9 +502,11 @@
 </HeaderBlank>
 
 <div
+	{@attach restoreScroll}
 	class="h-[calc(100svh-(--spacing(16)))] muted-scrollbar overflow-y-auto"
 	oninput={scheduleAutosave}
 	onchange={scheduleAutosave}
+	onscroll={(event) => scheduleScrollPersistence(event.currentTarget.scrollTop)}
 >
 	<HeaderBlank class="h-12 w-full bg-muted/50">
 		<div class="size-full">

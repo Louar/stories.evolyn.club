@@ -9,7 +9,8 @@
 		type Edge,
 		type Node,
 		type OnConnectEnd,
-		type OnDelete
+		type OnDelete,
+		type Viewport
 	} from '@xyflow/svelte';
 	import { mode } from 'mode-watcher';
 	import { toast } from 'svelte-sonner';
@@ -26,6 +27,8 @@
 		onPartCreated: (part: Part) => void;
 		onPartDeleted: (partId: string) => void;
 		onConnectionChange: (sourceId: string, handle: string, targetId: string | null) => void;
+		viewport?: Viewport;
+		onViewportChange: (viewport: Viewport) => void;
 	};
 	let {
 		story,
@@ -34,7 +37,9 @@
 		onPartSaved,
 		onPartCreated,
 		onPartDeleted,
-		onConnectionChange
+		onConnectionChange,
+		viewport,
+		onViewportChange
 	}: Props = $props();
 
 	let nodes = $state.raw<Node[]>([]);
@@ -240,7 +245,8 @@
 	edgeTypes={{ media: MediaEdge }}
 	bind:nodes
 	bind:edges
-	fitView
+	fitView={!viewport}
+	initialViewport={viewport}
 	maxZoom={1}
 	minZoom={0.25}
 	defaultEdgeOptions={{ type: 'media' }}
@@ -249,6 +255,7 @@
 	onnodeclick={({ node }) => onSelectPart(node.id)}
 	onpaneclick={() => onSelectPart(undefined)}
 	onnodedragstop={persistPosition}
+	onmoveend={(_, nextViewport) => onViewportChange(nextViewport)}
 	proOptions={{ hideAttribution: true }}
 	snapGrid={[50, 50]}
 	colorMode={mode.current}

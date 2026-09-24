@@ -11,11 +11,13 @@
 	let {
 		story,
 		partId = $bindable(),
+		scrollPositions = $bindable({}),
 		onSave,
 		onDelete
 	}: {
 		story: Story;
 		partId?: string;
+		scrollPositions?: Record<string, number>;
 		onSave: (part: Part) => void;
 		onDelete: (partId: string) => void;
 	} = $props();
@@ -34,7 +36,17 @@
 		{#if part}
 			{#key part.id}
 				<Dialog.Root>
-					<PartEditor {story} storyId={story.id} {part} {onSave} {onDelete} onDismiss={dismiss} />
+					<PartEditor
+						{story}
+						storyId={story.id}
+						{part}
+						{onSave}
+						{onDelete}
+						onDismiss={dismiss}
+						initialScrollTop={scrollPositions[part.id] ?? 0}
+						onScroll={(scrollTop) =>
+							(scrollPositions = { ...scrollPositions, [part.id]: scrollTop })}
+					/>
 				</Dialog.Root>
 			{/key}
 		{/if}

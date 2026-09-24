@@ -17,6 +17,7 @@
 	} from '$lib/db/repositories/2-story-module.js';
 	import { translateLocalizedField } from '$lib/db/schemas/0-utils.js';
 	import { EDITORS } from '$lib/states/editors.svelte.js';
+	import { UI } from '$lib/states/ui.svelte.js';
 	import ChartLineIcon from '@lucide/svelte/icons/chart-no-axes-combined';
 	import HouseIcon from '@lucide/svelte/icons/house';
 	import ImageIcon from '@lucide/svelte/icons/image';
@@ -28,7 +29,7 @@
 	import ShapesIcon from '@lucide/svelte/icons/shapes';
 	import TvMinimalPlayIcon from '@lucide/svelte/icons/tv-minimal-play';
 	import VideoIcon from '@lucide/svelte/icons/video';
-	import { SvelteFlowProvider } from '@xyflow/svelte';
+	import { SvelteFlowProvider, type Viewport } from '@xyflow/svelte';
 	import '@xyflow/svelte/dist/style.css';
 	import { onMount } from 'svelte';
 	import type { z } from 'zod/v4';
@@ -36,23 +37,29 @@
 	import PartInspector from './PartInspector.svelte';
 	import ResourceInspector, { type EditorSelection } from './ResourceInspector.svelte';
 	import StorySettingsEditor from './StorySettingsEditor.svelte';
+	import {
+		getStoryFlowPreferencesKey,
+		parseStoryFlowPreferences,
+		STORY_FLOW_PREFERENCES_VERSION,
+		type StoryFlowPreferences
+	} from './story-flow-preferences.js';
 
 	let { data } = $props();
 	// svelte-ignore state_referenced_locally
 	let story = $state(data.story);
 
-	onMount(() => {
-		EDITORS.videos = story.videos;
-		EDITORS.stills = story.stills;
-		EDITORS.announcements = story.announcements;
-		EDITORS.quizzes = story.quizzes;
-		EDITORS.taxonomies = story.taxonomies;
-	});
-
 	let editorSelection = $state<EditorSelection>(null);
 	let inspectorOpen = $state(false);
 	let selectedTaxonomyPartId = $state<string>();
 	let selectedPartId = $state<string>();
+	let partScrollPositions = $state<Record<string, number>>({});
+	let sidebarOpen = $state(true);
+	let mainTab = $state<StoryFlowPreferences['mainTab']>('settings');
+	let backgroundTab = $state<StoryFlowPreferences['backgroundTab']>('stills');
+	let foregroundTab = $state<StoryFlowPreferences['foregroundTab']>('announcements');
+	let viewport = $state<Viewport>();
+	let preferencesHydrated = $state(false);
+	let preferencesKey = $derived(getStoryFlowPreferencesKey(story.id));
 	let selectedPart = $derived(story.parts.find((part) => part.id === selectedPartId));
 	const activeCommandItemClass =
 		'bg-primary! text-primary-foreground! [&_svg]:text-primary-foreground!';
@@ -68,6 +75,103 @@
 		editorSelection?.kind === 'quiz' && editorSelection.id === id;
 	const isEditingTaxonomy = (partId: string) =>
 		editorSelection?.kind === 'taxonomy' && editorSelection.partId === partId;
+
+	const reconcileEditorSelection = (selection: EditorSelection): EditorSelection => {
+		if (!selection || selection.kind === 'video-library') return selection;
+		if (selection.kind === 'taxonomy')
+			return story.parts.some((part) => part.id === selection.partId && part.taxonomyDraftForPart)
+				? selection
+				: null;
+		if (!selection.id) return selection;
+		if (selection.kind === 'still')
+			return story.stills.some((item) => item.id === selection.id) ? selection : null;
+		if (selection.kind === 'video')
+			return story.videos.some((item) => item.id === selection.id) ? selection : null;
+		if (selection.kind === 'announcement')
+			return story.announcements.some((item) => item.id === selection.id) ? selection : null;
+		return story.quizzes.some((item) => item.id === selection.id) ? selection : null;
+	};
+
+	let preferences = $derived.by((): StoryFlowPreferences => ({
+		version: STORY_FLOW_PREFERENCES_VERSION,
+		mainTab,
+		backgroundTab,
+		foregroundTab,
+		sidebarOpen,
+		inspectorOpen,
+		editorSelection,
+		selectedPartId,
+		partScrollPositions: { ...partScrollPositions },
+		viewport,
+		language: UI.language
+	}));
+	let serializedPreferences = $derived(JSON.stringify(preferences));
+
+	const persistPreferences = () => {
+		try {
+			localStorage[preferencesKey] = serializedPreferences;
+		} catch {
+			// Persistence is best-effort when storage is unavailable or full.
+		}
+	};
+
+	const applyPreferences = (preferences: StoryFlowPreferences) => {
+		mainTab = preferences.mainTab;
+		backgroundTab = preferences.backgroundTab;
+		foregroundTab = preferences.foregroundTab;
+		sidebarOpen = preferences.sidebarOpen;
+		viewport = preferences.viewport;
+		UI.language = preferences.language;
+		partScrollPositions = Object.fromEntries(
+			Object.entries(preferences.partScrollPositions).filter(([partId]) =>
+				story.parts.some((part) => part.id === partId)
+			)
+		);
+		selectedPartId = story.parts.some((part) => part.id === preferences.selectedPartId)
+			? preferences.selectedPartId
+			: undefined;
+		editorSelection = reconcileEditorSelection(preferences.editorSelection);
+		selectedTaxonomyPartId =
+			editorSelection?.kind === 'taxonomy' ? editorSelection.partId : undefined;
+		inspectorOpen = preferences.inspectorOpen && editorSelection !== null;
+	};
+
+	onMount(() => {
+		EDITORS.videos = story.videos;
+		EDITORS.stills = story.stills;
+		EDITORS.announcements = story.announcements;
+		EDITORS.quizzes = story.quizzes;
+		EDITORS.taxonomies = story.taxonomies;
+
+		try {
+			const raw = localStorage.getItem(preferencesKey);
+			const preferences = raw ? parseStoryFlowPreferences(raw) : undefined;
+			if (preferences) applyPreferences(preferences);
+		} catch {
+			// Keep defaults when storage cannot be read.
+		}
+		preferencesHydrated = true;
+
+		const flush = () => {
+			if (!preferencesHydrated) return;
+			persistPreferences();
+		};
+		window.addEventListener('pagehide', flush);
+		return () => {
+			window.removeEventListener('pagehide', flush);
+			flush();
+		};
+	});
+
+	$effect(() => {
+		const serialized = serializedPreferences;
+		if (!preferencesHydrated) return;
+		try {
+			localStorage[preferencesKey] = serialized;
+		} catch {
+			// Persistence is best-effort when storage is unavailable or full.
+		}
+	});
 
 	const openStill = (id?: string) => {
 		editorSelection = { kind: 'still', id };
@@ -320,9 +424,9 @@
 	<title>Edit story: {translateLocalizedField(story.name)}</title>
 </svelte:head>
 
-<Sidebar.Provider style="--sidebar-width: 24rem;">
+<Sidebar.Provider bind:open={sidebarOpen} style="--sidebar-width: 24rem;">
 	<Sidebar.Root collapsible="offcanvas" class="border-r">
-		<Tabs.Root value="settings" class="h-full min-h-0 gap-0">
+		<Tabs.Root bind:value={mainTab} class="h-full min-h-0 gap-0">
 			<Sidebar.Header class="-mt-px border-b p-0">
 				<div class="flex h-16 w-full shrink-0 items-center">
 					<div class="grid size-16 place-items-center border-r">
@@ -360,7 +464,7 @@
 				</Tabs.Content>
 
 				<Tabs.Content value="backgrounds">
-					<Tabs.Root value="stills" class="gap-3">
+					<Tabs.Root bind:value={backgroundTab} class="gap-3">
 						<Tabs.List class="grid w-full grid-cols-2">
 							<Tabs.Trigger value="stills"><ImageIcon />Stills</Tabs.Trigger>
 							<Tabs.Trigger value="videos"><VideoIcon />Videos</Tabs.Trigger>
@@ -434,7 +538,7 @@
 				</Tabs.Content>
 
 				<Tabs.Content value="foregrounds">
-					<Tabs.Root value="announcements" class="gap-3">
+					<Tabs.Root bind:value={foregroundTab} class="gap-3">
 						<Tabs.List class="grid w-full grid-cols-3">
 							<Tabs.Trigger value="announcements"><MessageSquareIcon />Notes</Tabs.Trigger>
 							<Tabs.Trigger value="quizzes"><ShapesIcon />Quizzes</Tabs.Trigger>
@@ -574,18 +678,28 @@
 			</div>
 		</HeaderBlank>
 		<div class="min-h-0 flex-1">
-			<SvelteFlowProvider>
-				<Flow
-					{story}
-					{selectedPartId}
-					onSelectPart={(partId) => (selectedPartId = partId)}
-					onPartSaved={replacePart}
-					onPartCreated={addPart}
-					onPartDeleted={removePart}
-					onConnectionChange={updateConnection}
-				/>
-			</SvelteFlowProvider>
+			{#if preferencesHydrated}
+				<SvelteFlowProvider>
+					<Flow
+						{story}
+						{selectedPartId}
+						{viewport}
+						onViewportChange={(nextViewport) => (viewport = nextViewport)}
+						onSelectPart={(partId) => (selectedPartId = partId)}
+						onPartSaved={replacePart}
+						onPartCreated={addPart}
+						onPartDeleted={removePart}
+						onConnectionChange={updateConnection}
+					/>
+				</SvelteFlowProvider>
+			{/if}
 		</div>
 	</Sidebar.Inset>
-	<PartInspector {story} bind:partId={selectedPartId} onSave={replacePart} onDelete={removePart} />
+	<PartInspector
+		{story}
+		bind:partId={selectedPartId}
+		bind:scrollPositions={partScrollPositions}
+		onSave={replacePart}
+		onDelete={removePart}
+	/>
 </Sidebar.Provider>
