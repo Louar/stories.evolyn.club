@@ -115,7 +115,7 @@ export const DummyDataDefaultClientAndUsers: Migration = {
         plausibleDomain: process.env.NODE_ENV === 'production' ? DEFAULT_CLIENT_PLAUSIBLE_DOMAIN : undefined,
         authenticationMethods: [ClientAuthenticationMethod.code, ClientAuthenticationMethod.password],
         accessTokenKey: DEFAULT_CLIENT_ACCESS_TOKEN_KEY,
-        redirectAuthorized: process.env.NODE_ENV !== 'production' ? '/edit/groups' : null,
+        redirectAuthorized: process.env.NODE_ENV !== 'production' ? '/edit/stories' : null,
         // createdBy: admin.id,
         // updatedBy: admin.id,
       })

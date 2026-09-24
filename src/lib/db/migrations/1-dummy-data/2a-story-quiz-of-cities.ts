@@ -5,6 +5,7 @@ import {
   type Translatable,
   type TranslatableMedia
 } from '$lib/db/schemas/0-utils';
+import { PartTerminationStrategy } from '$lib/db/schemas/2-story-module';
 
 export const DummyDataStoryQuizOfCities = async (
   storySlug: string,
@@ -630,7 +631,7 @@ export const DummyDataStoryQuizOfCities = async (
         defaultNextPartId: null, // set later -> city-Luzern
         videoId: videoThumbsDown.id,
         announcementTemplateId: null,
-        quizLogicForPartId: null,
+        terminationStrategy: PartTerminationStrategy.failStory,
         position: JSON.stringify({ x: 2000, y: 200 })
       })
       .returning('id')
@@ -664,7 +665,7 @@ export const DummyDataStoryQuizOfCities = async (
         defaultNextPartId: null,
         videoId: videoGameOver.id,
         announcementTemplateId: null,
-        quizLogicForPartId: null, // set later
+        terminationStrategy: PartTerminationStrategy.completeStory,
         position: JSON.stringify({ x: 2400, y: 0 })
       })
       .returning('id')
