@@ -423,8 +423,7 @@
 
 	$effect(() => {
 		if (!doBuffer) return;
-		if (sourceType === 'youtube') warmYouTubeConnections();
-		else load();
+		load();
 	});
 
 	$effect(() => {
@@ -564,14 +563,14 @@
 			<button
 				type="button"
 				aria-label={isPlaying ? m.player_pause() : m.player_play()}
+				disabled={sourceType === 'youtube' && !canPlay}
 				class="group/control grid size-full place-items-center px-2 pt-10 outline-none"
 				onclick={() => {
 					if (!isActive) return;
 					PLAYERS.didUserInteract = true;
 					load();
 					if (isPlaying) pauseMedia();
-					else if (canPlay) void playMedia();
-					else doPlay = true;
+					else void playMedia();
 				}}
 			>
 				{#if !isOverlaid && !isPlaying}
