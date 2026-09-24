@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import { displaySize } from '$lib/components/ui/file-drop-zone/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { MediaFile } from '$lib/components/ui/media-file/index.js';
 	import { MediaCollection, type Media } from '$lib/db/schemas/0-utils';
@@ -18,6 +19,7 @@
 	type Props = {
 		value?: Media | null;
 		accept?: string;
+		maxFileSize?: number;
 		placeholder?: string;
 		uploadCollection?: MediaCollection;
 		preview?: 'image' | 'video' | 'file';
@@ -29,6 +31,7 @@
 	let {
 		value = $bindable(null),
 		accept,
+		maxFileSize,
 		placeholder = 'https://',
 		uploadCollection = MediaCollection.clients,
 		preview = 'file',
@@ -99,6 +102,10 @@
 		if (disabled || isUploading) return;
 		if (!isAcceptedFile(file)) {
 			toast.error('File type not accepted');
+			return;
+		}
+		if (maxFileSize !== undefined && file.size > maxFileSize) {
+			toast.error(`Maximum file size is ${displaySize(maxFileSize)}`);
 			return;
 		}
 

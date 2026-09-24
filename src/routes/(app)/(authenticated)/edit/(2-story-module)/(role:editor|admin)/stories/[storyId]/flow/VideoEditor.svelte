@@ -2,6 +2,7 @@
 	import HeaderBlank from '$lib/components/app/header/app-header-blank.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
+	import { MEGABYTE } from '$lib/components/ui/file-drop-zone/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { MediaFileInput } from '$lib/components/ui/media-file-input/index.js';
 	import type { findOneVideoById } from '$lib/db/repositories/2-story-module';
@@ -235,6 +236,7 @@
 				<MediaFileInput
 					value={getMedia(video.source)}
 					accept="video/*,.m3u8"
+					maxFileSize={2 * MEGABYTE}
 					preview="video"
 					placeholder=".m3u8 stream URL, or YouTube URL"
 					onValueChange={updateSource}
