@@ -32,6 +32,7 @@
 	import { SvelteFlowProvider, type Viewport } from '@xyflow/svelte';
 	import '@xyflow/svelte/dist/style.css';
 	import { onMount } from 'svelte';
+	import type { Attachment } from 'svelte/attachments';
 	import type { z } from 'zod/v4';
 	import Flow from './Flow.svelte';
 	import PartInspector from './PartInspector.svelte';
@@ -40,6 +41,7 @@
 	import {
 		getStoryFlowPreferencesKey,
 		parseStoryFlowPreferences,
+		persistStoryFlowPreferences,
 		STORY_FLOW_PREFERENCES_VERSION,
 		type StoryFlowPreferences
 	} from './story-flow-preferences.js';
@@ -107,12 +109,16 @@
 	}));
 	let serializedPreferences = $derived(JSON.stringify(preferences));
 
-	const persistPreferences = () => {
+	const persistPreferences = (serialized = serializedPreferences) => {
 		try {
-			localStorage[preferencesKey] = serializedPreferences;
+			persistStoryFlowPreferences(localStorage, story.id, serialized);
 		} catch {
 			// Persistence is best-effort when storage is unavailable or full.
 		}
+	};
+	const persistStoryFlowState: Attachment<HTMLDivElement> = () => {
+		if (!preferencesHydrated) return;
+		persistPreferences(serializedPreferences);
 	};
 
 	const applyPreferences = (preferences: StoryFlowPreferences) => {
@@ -161,16 +167,6 @@
 			window.removeEventListener('pagehide', flush);
 			flush();
 		};
-	});
-
-	$effect(() => {
-		const serialized = serializedPreferences;
-		if (!preferencesHydrated) return;
-		try {
-			localStorage[preferencesKey] = serialized;
-		} catch {
-			// Persistence is best-effort when storage is unavailable or full.
-		}
 	});
 
 	const openStill = (id?: string) => {
@@ -425,6 +421,7 @@
 </svelte:head>
 
 <Sidebar.Provider
+	{@attach persistStoryFlowState}
 	bind:open={sidebarOpen}
 	class={preferencesHydrated ? undefined : 'invisible'}
 	style="--sidebar-width: 24rem;"

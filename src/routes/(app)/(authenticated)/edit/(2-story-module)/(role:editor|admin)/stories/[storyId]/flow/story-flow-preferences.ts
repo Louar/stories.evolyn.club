@@ -3,6 +3,11 @@ import type { Viewport } from '@xyflow/svelte';
 import type { EditorSelection } from './ResourceInspector.svelte';
 
 export const STORY_FLOW_PREFERENCES_VERSION = 1;
+export const STORY_FLOW_PREFERENCES_LIMIT = 25;
+export const STORY_FLOW_RECENT_KEY = 'story-flow:recent';
+const STORY_FLOW_KEY_PREFIX = 'story-flow:';
+
+type StoryFlowStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem' | 'key' | 'length'>;
 
 export type StoryFlowPreferences = {
 	version: typeof STORY_FLOW_PREFERENCES_VERSION;
@@ -38,7 +43,55 @@ const parseSelection = (value: unknown): EditorSelection | undefined => {
 };
 
 export const getStoryFlowPreferencesKey = (storyId: string) =>
-	`story-flow:${encodeURIComponent(storyId)}`;
+	`${STORY_FLOW_KEY_PREFIX}${encodeURIComponent(storyId)}`;
+
+const getStoredStoryIds = (storage: StoryFlowStorage) => {
+	const storyIds: string[] = [];
+	for (let index = 0; index < storage.length; index++) {
+		const key = storage.key(index);
+		if (!key?.startsWith(STORY_FLOW_KEY_PREFIX) || key === STORY_FLOW_RECENT_KEY) continue;
+		try {
+			storyIds.push(decodeURIComponent(key.slice(STORY_FLOW_KEY_PREFIX.length)));
+		} catch {
+			// Ignore keys that do not use the story flow key format.
+		}
+	}
+	return storyIds;
+};
+
+const getRecentStoryIds = (storage: StoryFlowStorage) => {
+	try {
+		const value: unknown = JSON.parse(storage.getItem(STORY_FLOW_RECENT_KEY) ?? '[]');
+		return Array.isArray(value) && value.every((storyId) => typeof storyId === 'string')
+			? [...new Set(value)]
+			: [];
+	} catch {
+		return [];
+	}
+};
+
+export const persistStoryFlowPreferences = (
+	storage: StoryFlowStorage,
+	storyId: string,
+	serializedPreferences: string
+) => {
+	storage.setItem(getStoryFlowPreferencesKey(storyId), serializedPreferences);
+
+	const indexedStoryIds = getRecentStoryIds(storage);
+	const indexedSet = new Set(indexedStoryIds);
+	const unindexedStoryIds = getStoredStoryIds(storage).filter(
+		(storedStoryId) => storedStoryId !== storyId && !indexedSet.has(storedStoryId)
+	);
+	const storyIds = [
+		storyId,
+		...indexedStoryIds.filter((storedStoryId) => storedStoryId !== storyId),
+		...unindexedStoryIds.reverse()
+	];
+	const retainedStoryIds = storyIds.slice(0, STORY_FLOW_PREFERENCES_LIMIT);
+	for (const removedStoryId of storyIds.slice(STORY_FLOW_PREFERENCES_LIMIT))
+		storage.removeItem(getStoryFlowPreferencesKey(removedStoryId));
+	storage.setItem(STORY_FLOW_RECENT_KEY, JSON.stringify(retainedStoryIds));
+};
 
 export const parseStoryFlowPreferences = (raw: string): StoryFlowPreferences | undefined => {
 	let value: unknown;
