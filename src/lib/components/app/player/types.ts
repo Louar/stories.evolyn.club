@@ -1,5 +1,6 @@
 import type { Media } from '$lib/db/schemas/0-utils';
 import type { LogicHitpolicy } from '$lib/db/schemas/2-story-module';
+import type { WebMotionConfig } from '$lib/media/animation';
 
 type LogicInput = {
   id: string;
@@ -39,6 +40,7 @@ export type OutputFromLogic<L extends Logic> = Partial<
 
 export type Player = {
   id: string;
+  animation?: WebMotionConfig;
   source: Media | undefined;
   thumbnail: Media | undefined;
   captions: string | undefined;

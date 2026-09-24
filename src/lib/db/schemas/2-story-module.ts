@@ -1,4 +1,5 @@
 import type { ColumnType, Generated, JSONColumnType } from 'kysely';
+import type { AnimationTexts, WebMotionConfig } from '$lib/media/animation';
 import type { MediaColumn, TranslatableColumn, TranslatableMediaColumn } from './0-utils';
 
 export const LogicHitpolicy = {
@@ -30,6 +31,7 @@ export type StoryPermissionRole = (typeof StoryPermissionRole)[keyof typeof Stor
 
 export const PartBackgroundType = {
 	still: 'still',
+	animation: 'animation',
 	video: 'video'
 } as const;
 export type PartBackgroundType = (typeof PartBackgroundType)[keyof typeof PartBackgroundType];
@@ -70,6 +72,8 @@ export type StoryModuleSchema = {
 	stillAvailableToStory: StillAvailableToStory;
 	video: Video;
 	videoAvailableToStory: VideoAvailableToStory;
+	animation: Animation;
+	animationAvailableToStory: AnimationAvailableToStory;
 	announcementTemplate: AnnouncementTemplate;
 	announcementTemplateAvailableToStory: AnnouncementTemplateAvailableToStory;
 	quizTemplate: QuizTemplate;
@@ -200,6 +204,7 @@ type Part = {
 	defaultNextPartId: string | null;
 	stillId: string | null;
 	videoId: string | null;
+	animationId: string | null;
 	announcementTemplateId: string | null;
 	quizLogicForPartId: string | null;
 	taxonomyDraftForPartId: string | null;
@@ -230,6 +235,22 @@ type VideoAvailableToStory = {
 	id: Generated<string>;
 	storyId: string;
 	videoId: string;
+};
+
+type Animation = {
+	id: Generated<string>;
+	name: string;
+	version: WebMotionConfig['version'];
+	playback: JSONColumnType<NonNullable<WebMotionConfig['playback']>>;
+	composition: JSONColumnType<WebMotionConfig['composition']>;
+	motions: JSONColumnType<NonNullable<WebMotionConfig['motions']>>;
+	layers: JSONColumnType<WebMotionConfig['layers']>;
+	texts: JSONColumnType<AnimationTexts>;
+};
+type AnimationAvailableToStory = {
+	id: Generated<string>;
+	storyId: string;
+	animationId: string;
 };
 
 type AnnouncementTemplate = {

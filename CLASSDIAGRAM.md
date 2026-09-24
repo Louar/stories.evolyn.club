@@ -194,6 +194,7 @@ classDiagram
       <<enumeration>>
       STILL
       VIDEO
+      ANIMATION
   }
 
   class PartForegroundType {
@@ -276,6 +277,16 @@ classDiagram
       thumbnail: TranslatableMedia?
       captions: TranslatableMedia?
       duration: number
+  }
+
+  class Animation {
+      name: string
+      version: integer
+      playback: jsonb?
+      composition: jsonb?
+      motions: jsonb?
+      layers: jsonb?
+      texts: jsonb?
   }
 
   class AnnouncementTemplate {
@@ -369,11 +380,13 @@ classDiagram
   Part "*" -- "0..1" Part: defaultNextPart
   Part "*" -- "0..1" Still
   Part "*" -- "0..1" Video
+  Part "*" -- "0..1" Animation
   Part "*" -- "0..1" AnnouncementTemplate
   Part "*" -- "0..1" QuizLogicForPart
 
   Story "*" -- "*" Still: StillAvailableToStory
   Story "*" -- "*" Video: VideoAvailableToStory
+  Story "*" -- "*" Animation: AnimationAvailableToStory
   Story "*" -- "*" AnnouncementTemplate: AnnouncementTemplateAvailableToStory
   Story "*" -- "*" QuizTemplate: QuizTemplateAvailableToStory
 

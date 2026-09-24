@@ -19,6 +19,7 @@
 	import AnnouncementOverlay from './AnnouncementOverlay.svelte';
 	import InteractionOverlay from './InteractionOverlay.svelte';
 	import PlayerComponent from './Player.svelte';
+	import AnimationPlayer from './AnimationPlayer.svelte';
 	import TaxonomyGame from './taxonomy/Game.svelte';
 	import type { GamePerformance } from './taxonomy/types';
 	import type { InputFromLogic, Logic, OutputFromLogic, Player, Rule } from './types.js';
@@ -239,21 +240,33 @@
 	};
 
 	const cueTolerance = 0.02;
+	const getDuration = (part: StoryPart) => {
+		if (
+			part.backgroundType === 'animation' &&
+			part.background &&
+			'composition' in part.background
+		) {
+			return part.background.composition.durationInFrames / part.background.composition.fps;
+		}
+		if (part.backgroundType === 'video' && part.background && 'duration' in part.background)
+			return part.background.duration;
+	};
 
 	const getOverlayStart = (part: StoryPart, player: Player | undefined) => {
-		if (part.backgroundType !== 'video') return undefined;
-		if (!part.background || !('duration' in part.background)) return undefined;
+		const duration = getDuration(part);
+		if (duration === undefined) return undefined;
 		if (!part.foreground) return undefined;
 
 		const clipStart = player?.start ?? 0;
-		const clipEnd = Math.min(player?.end ?? part.background.duration, part.background.duration);
-		const cue = (part.foreground.start ?? 0) * part.background.duration - clipStart;
+		const clipEnd = Math.min(player?.end ?? duration, duration);
+		const cue = (part.foreground.start ?? 0) * duration - clipStart;
 
 		return Math.min(Math.max(cue, 0), Math.max(0, clipEnd - clipStart));
 	};
 
 	const hasOverlay = (part: StoryPart, player: Player | undefined) => {
-		if (part.backgroundType !== 'video') return Boolean(part.foreground);
+		if (part.backgroundType !== 'video' && part.backgroundType !== 'animation')
+			return Boolean(part.foreground);
 		const overlayStart = getOverlayStart(part, player);
 		return (
 			PLAYERS.didUserInteract &&
@@ -302,10 +315,10 @@
 	};
 
 	const updatePlayerTimeToPartEnd = (part: StoryPart, player: Player) => {
-		if (part.backgroundType !== 'video') return;
-		if (!part.background || !('duration' in part.background)) return;
+		const duration = getDuration(part);
+		if (duration === undefined) return;
 
-		const partEnd = Math.min(player.end ?? part.background.duration, part.background.duration);
+		const partEnd = Math.min(player.end ?? duration, duration);
 		player.time = Math.max(player.time ?? 0, partEnd - (player.start ?? 0));
 	};
 
@@ -344,7 +357,7 @@
 		if (!pid || isEnded || !isActiveStory) return;
 		const activePart = story.parts.find((part) => part.id === pid);
 		if (!activePart || activePart.terminationStrategy === PartTerminationStrategy.none) return;
-		if (activePart.backgroundType === 'video') return;
+		if (activePart.backgroundType === 'video' || activePart.backgroundType === 'animation') return;
 		finishPart(activePart.id, visit);
 	});
 
@@ -392,6 +405,16 @@
 							? `url("${mediaUrl(background.image)}")`
 							: undefined}
 					></div>
+				{:else if part?.backgroundType === 'animation' && player?.animation}
+					<AnimationPlayer
+						config={player.animation}
+						bind:player={players[players.indexOf(player)]}
+						isActive={isActiveStory && part.id === pid && !isEnded}
+						{overlayStart}
+						pauseAtOverlay={shouldPauseAtOverlay(part)}
+						onoverlaystart={() => handleOverlayStart(part, player, activeVisit)}
+						onended={() => finishPart(part.id, activeVisit)}
+					/>
 				{:else if part?.backgroundType === 'video' && player?.source}
 					{@const nextPlayers =
 						part.terminationStrategy === PartTerminationStrategy.none
@@ -426,7 +449,7 @@
 						bind:doEnd={player.doEnd}
 						bind:time={player.time}
 						isOverlaid={hasOverlay(part, player)}
-						overlayStart={overlayStart}
+						{overlayStart}
 						pauseAtOverlay={shouldPauseAtOverlay(part)}
 						bufferNext={() => {
 							if (nextPlayers?.length) {

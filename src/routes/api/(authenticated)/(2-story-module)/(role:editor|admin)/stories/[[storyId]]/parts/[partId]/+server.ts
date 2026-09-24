@@ -7,7 +7,7 @@ import {
 	PartTerminationStrategy
 } from '$lib/db/schemas/2-story-module.js';
 import { canModifyStory, requireParam } from '$lib/server/utils.server';
-import { json } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 import z from 'zod/v4';
 import type { RequestHandler } from './$types';
 
@@ -20,6 +20,7 @@ const partSchema = z.object({
 	terminationStrategy: z.enum(PartTerminationStrategy).default(PartTerminationStrategy.none),
 	defaultNextPartId: z.string().nullish(),
 	videoId: z.string().nullish(),
+	animationId: z.uuid().nullish(),
 	stillId: z.string().nullish(),
 	announcementTemplateId: z.string().nullish(),
 	quizTemplateId: z.string().nullish(),
@@ -58,10 +59,38 @@ export const POST = async ({ locals, params, request }) => {
 				? rawRest.defaultNextPartId
 				: null,
 		videoId: rawRest.backgroundType === 'video' ? rawRest.videoId : null,
+		animationId: rawRest.backgroundType === 'animation' ? rawRest.animationId : null,
 		stillId: rawRest.backgroundType === 'still' ? rawRest.stillId : null
 	};
 
 	const partId = await db.transaction().execute(async (trx) => {
+		const story = await trx
+			.selectFrom('story')
+			.where('id', '=', storyId)
+			.where('clientId', '=', locals.client.id)
+			.select('id')
+			.executeTakeFirst();
+		if (!story) error(404, 'Story not found');
+		if (params.partId !== 'new') {
+			const existing = await trx
+				.selectFrom('part')
+				.where('id', '=', params.partId)
+				.where('storyId', '=', storyId)
+				.select('id')
+				.forUpdate()
+				.executeTakeFirst();
+			if (!existing) error(404, 'Part not found');
+		}
+		if (rest.backgroundType === 'animation') {
+			if (!rest.animationId) error(422, 'An animation is required');
+			const animation = await trx
+				.selectFrom('animationAvailableToStory')
+				.where('storyId', '=', storyId)
+				.where('animationId', '=', rest.animationId)
+				.select('id')
+				.executeTakeFirst();
+			if (!animation) error(422, 'Animation is not available to this story');
+		}
 		const {
 			id: partId,
 			foregroundType,
@@ -205,7 +234,11 @@ export const DELETE = (async ({ locals, params }) => {
 	const storyId = requireParam(params.storyId, 'The story path parameter is required');
 	await canModifyStory(locals, storyId);
 
-	await db.deleteFrom('part').where('id', '=', params.partId).executeTakeFirstOrThrow();
+	await db
+		.deleteFrom('part')
+		.where('id', '=', params.partId)
+		.where('storyId', '=', storyId)
+		.executeTakeFirstOrThrow();
 
 	return json({ success: true });
 }) satisfies RequestHandler;

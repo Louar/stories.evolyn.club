@@ -2,7 +2,7 @@
 	import WebMotionPlayer, { type WebMotionConfig } from './WebMotionPlayer.svelte';
 
 	const animation: WebMotionConfig = {
-		version: 2,
+		version: 1,
 		composition: {
 			width: 1280,
 			height: 720,

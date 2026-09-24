@@ -12,6 +12,7 @@
 	import MessageSquareIcon from '@lucide/svelte/icons/message-square';
 	import ShapesIcon from '@lucide/svelte/icons/shapes';
 	import VideoIcon from '@lucide/svelte/icons/video';
+	import ClapperboardIcon from '@lucide/svelte/icons/clapperboard';
 	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
 
 	type Part = Awaited<ReturnType<typeof findOneStoryById>>['parts'][number];
@@ -21,6 +22,7 @@
 	let part = $derived(data.part);
 	let video = $derived(EDITORS.videos.find((item) => item.id === part.videoId));
 	let still = $derived(EDITORS.stills.find((item) => item.id === part.stillId));
+	let animation = $derived(EDITORS.animations.find((item) => item.id === part.animationId));
 	let announcement = $derived(
 		EDITORS.announcements.find((item) => item.id === part.announcementTemplateId)
 	);
@@ -32,7 +34,9 @@
 			? (video?.name ?? 'Unselected video')
 			: part.backgroundType === 'still'
 				? (still?.image?.filename ?? still?.color ?? 'Unselected still')
-				: 'No background'
+				: part.backgroundType === 'animation'
+					? (animation?.name ?? 'Unselected animation')
+					: 'No background'
 	);
 	let foregroundLabel = $derived(
 		part.foregroundType === 'quiz'
@@ -92,6 +96,8 @@
 					<BanIcon class="size-4" />
 				{:else if part.backgroundType === 'video'}
 					<VideoIcon class="size-4" />
+				{:else if part.backgroundType === 'animation'}
+					<ClapperboardIcon class="size-4" />
 				{:else}
 					<ImageIcon class="size-4" />
 				{/if}
@@ -102,6 +108,8 @@
 					<p class="text-xs text-muted-foreground">{formatDuration(video.duration)}</p>
 				{:else if !part.backgroundType}
 					<p class="text-xs text-muted-foreground">Transparent canvas</p>
+				{:else if part.backgroundType === 'animation'}
+					<p class="text-xs text-muted-foreground">Animation</p>
 				{/if}
 			</div>
 		</div>

@@ -1,6 +1,7 @@
 <script lang="ts" module>
 	export type EditorSelection =
 		| { kind: 'still'; id?: string }
+		| { kind: 'animation'; id?: string }
 		| { kind: 'video'; id?: string }
 		| { kind: 'video-library' }
 		| { kind: 'announcement'; id?: string }
@@ -24,6 +25,7 @@
 		findOneVideoById
 	} from '$lib/db/repositories/2-story-module.js';
 	import AnnouncementEditor from './AnnouncementEditor.svelte';
+	import AnimationEditor, { type AnimationEditorOutput } from './AnimationEditor.svelte';
 	import QuizEditor from './QuizEditor.svelte';
 	import StillEditor from './StillEditor.svelte';
 	import TaxonomyLogicEditor from './TaxonomyLogicEditor.svelte';
@@ -38,6 +40,7 @@
 		selection = $bindable(null),
 		open = $bindable(false),
 		closeStill,
+		closeAnimation,
 		closeVideo,
 		addVideo,
 		closeAnnouncement,
@@ -47,6 +50,7 @@
 		story: Story;
 		selection?: EditorSelection;
 		open?: boolean;
+		closeAnimation: (output: AnimationEditorOutput) => void;
 		closeStill: (output: {
 			action: 'persist' | 'delete' | 'close';
 			id?: string;
@@ -106,6 +110,8 @@
 					<StillEditor storyId={story.id} selectedId={selection.id} close={closeStill} />
 				{:else if selection.kind === 'video'}
 					<VideoEditor storyId={story.id} selectedId={selection.id} close={closeVideo} />
+				{:else if selection.kind === 'animation'}
+					<AnimationEditor storyId={story.id} selectedId={selection.id} close={closeAnimation} />
 				{:else if selection.kind === 'video-library'}
 					<VideoLibrary
 						storyId={story.id}

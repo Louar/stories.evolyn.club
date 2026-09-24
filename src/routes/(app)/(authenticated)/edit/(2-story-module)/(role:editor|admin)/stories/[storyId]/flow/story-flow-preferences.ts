@@ -12,7 +12,7 @@ type StoryFlowStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem' | 'ke
 export type StoryFlowPreferences = {
 	version: typeof STORY_FLOW_PREFERENCES_VERSION;
 	mainTab: 'settings' | 'backgrounds' | 'foregrounds';
-	backgroundTab: 'stills' | 'videos';
+	backgroundTab: 'stills' | 'videos' | 'animations';
 	foregroundTab: 'announcements' | 'quizzes' | 'taxonomies';
 	sidebarOpen: boolean;
 	inspectorOpen: boolean;
@@ -37,7 +37,8 @@ const parseSelection = (value: unknown): EditorSelection | undefined => {
 		return typeof value.partId === 'string'
 			? { kind: value.kind, partId: value.partId }
 			: undefined;
-	if (!['still', 'video', 'announcement', 'quiz'].includes(value.kind)) return undefined;
+	if (!['still', 'video', 'animation', 'announcement', 'quiz'].includes(value.kind))
+		return undefined;
 	if (value.id !== undefined && typeof value.id !== 'string') return undefined;
 	return { kind: value.kind, id: value.id } as EditorSelection;
 };
@@ -105,7 +106,7 @@ export const parseStoryFlowPreferences = (raw: string): StoryFlowPreferences | u
 	const editorSelection = parseSelection(value.editorSelection);
 	if (editorSelection === undefined) return undefined;
 	if (!isOneOf(value.mainTab, ['settings', 'backgrounds', 'foregrounds'])) return undefined;
-	if (!isOneOf(value.backgroundTab, ['stills', 'videos'])) return undefined;
+	if (!isOneOf(value.backgroundTab, ['stills', 'videos', 'animations'])) return undefined;
 	if (!isOneOf(value.foregroundTab, ['announcements', 'quizzes', 'taxonomies'])) return undefined;
 	if (typeof value.sidebarOpen !== 'boolean' || typeof value.inspectorOpen !== 'boolean')
 		return undefined;

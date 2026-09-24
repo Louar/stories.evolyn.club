@@ -1,7 +1,7 @@
 import { db } from '$lib/db/database';
 import { findOneStoryById } from '$lib/db/repositories/2-story-module';
 import { PartTerminationStrategy } from '$lib/db/schemas/2-story-module';
-import { requireParam } from '$lib/server/utils.server';
+import { canModifyStory, requireParam } from '$lib/server/utils.server';
 import { error, json } from '@sveltejs/kit';
 import YAML from 'yaml';
 import type { RequestHandler } from './$types';
@@ -32,6 +32,7 @@ const canHaveOutgoingConnections = (terminationStrategy: PartTerminationStrategy
 export const GET = (async ({ locals, params }) => {
 	const clientId = locals.client.id;
 	const storyId = requireParam(params.storyId, 'The story path parameter is required');
+	await canModifyStory(locals, storyId);
 
 	const story = await findOneStoryById(clientId, storyId);
 
@@ -62,6 +63,21 @@ export const POST = (async ({ locals, request }) => {
 	const body = schema.safeParse(rawBody);
 	if (!body.success) return json(body.error.issues, { status: 422 });
 	const story_raw = body.data;
+	const animationIds = new Set(
+		story_raw.animations.map((animation) => animation.id).filter(Boolean)
+	);
+	if (animationIds.size !== story_raw.animations.filter((animation) => animation.id).length) {
+		return json({ message: 'Animation IDs must be unique' }, { status: 422 });
+	}
+	if (
+		story_raw.parts.some(
+			(part) =>
+				(part.animationId && !animationIds.has(part.animationId)) ||
+				(part.backgroundType === 'animation' && !part.animationId)
+		)
+	) {
+		return json({ message: 'A part references a missing animation' }, { status: 422 });
+	}
 	const taxonomySlugs = [
 		...new Set(
 			story_raw.parts
@@ -213,6 +229,28 @@ export const POST = (async ({ locals, request }) => {
 			if (video_raw.id?.length) mapOfVideos.set(video_raw.id, video.id);
 		}
 
+		const mapOfAnimations = new Map<string, string>();
+		for (const animation_raw of story_raw.animations) {
+			const animation = await trx
+				.insertInto('animation')
+				.values({
+					name: animation_raw.name,
+					version: animation_raw.version,
+					playback: JSON.stringify(animation_raw.playback),
+					composition: JSON.stringify(animation_raw.composition),
+					motions: JSON.stringify(animation_raw.motions),
+					layers: JSON.stringify(animation_raw.layers),
+					texts: JSON.stringify(animation_raw.texts)
+				})
+				.returning('id')
+				.executeTakeFirstOrThrow();
+			await trx
+				.insertInto('animationAvailableToStory')
+				.values({ storyId: story.id, animationId: animation.id })
+				.executeTakeFirstOrThrow();
+			if (animation_raw.id) mapOfAnimations.set(animation_raw.id, animation.id);
+		}
+
 		// 3. Announcement templates
 		const mapOfAnnouncements: Map<string, string> = new Map();
 		for (const announcement_raw of story_raw.announcements) {
@@ -315,6 +353,7 @@ export const POST = (async ({ locals, request }) => {
 					isInitial: part_raw.isInitial,
 					terminationStrategy: part_raw.terminationStrategy,
 					videoId,
+					animationId: part_raw.animationId ? mapOfAnimations.get(part_raw.animationId) : null,
 					stillId,
 					announcementTemplateId,
 					position: JSON.stringify(part_raw.position)

@@ -26,6 +26,7 @@
 	const relations = $derived(data.relations);
 
 	let videoRows = $derived(assets.videos);
+	let animationRows = $derived(assets.animations);
 	let stillRows = $derived(assets.stills);
 	let announcementRows = $derived(assets.announcements);
 	let quizRows = $derived(assets.quizzes);
@@ -37,6 +38,12 @@
 
 	const videoOptions = () =>
 		relations.allAvailableVideos.map((asset) => ({
+			title: asset.title ?? '?',
+			summary: asset.summary,
+			value: asset.asset
+		}));
+	const animationOptions = () =>
+		relations.allAvailableAnimations.map((asset) => ({
 			title: asset.title ?? '?',
 			summary: asset.summary,
 			value: asset.asset
@@ -92,7 +99,7 @@
 		}
 	];
 
-	const createGrid = (rows: () => AssetRow[], type: 'still' | 'video' | 'announcement' | 'quiz') =>
+	const createGrid = (rows: () => AssetRow[], type: AssetRow['type']) =>
 		useDataGrid<AssetRow>({
 			columns: columns.map((column) => {
 				if (column.id === 'asset') {
@@ -108,6 +115,13 @@
 							...column,
 							meta: {
 								cell: { variant: 'relation-select-single', options: videoOptions() }
+							}
+						};
+					} else if (type === 'animation') {
+						return {
+							...column,
+							meta: {
+								cell: { variant: 'relation-select-single', options: animationOptions() }
 							}
 						};
 					} else if (type === 'announcement') {
@@ -135,6 +149,8 @@
 			onDataChange: (nextRows) => {
 				if (type === 'still') stillRows = nextRows as Extract<AssetRow, { type: 'still' }>[];
 				else if (type === 'video') videoRows = nextRows as Extract<AssetRow, { type: 'video' }>[];
+				else if (type === 'animation')
+					animationRows = nextRows as Extract<AssetRow, { type: 'animation' }>[];
 				else if (type === 'announcement')
 					announcementRows = nextRows as Extract<AssetRow, { type: 'announcement' }>[];
 				else if (type === 'quiz') quizRows = nextRows as Extract<AssetRow, { type: 'quiz' }>[];
@@ -172,6 +188,10 @@
 					videoRows = videoRows.filter((row, index) =>
 						row.id ? !wereRemoved.includes(row.id) : !rowIndices.includes(index)
 					);
+				} else if (type === 'animation') {
+					animationRows = animationRows.filter((row, index) =>
+						row.id ? !wereRemoved.includes(row.id) : !rowIndices.includes(index)
+					);
 				} else if (type === 'announcement') {
 					announcementRows = announcementRows.filter((row, index) =>
 						row.id ? !wereRemoved.includes(row.id) : !rowIndices.includes(index)
@@ -196,6 +216,7 @@
 		} as const);
 
 	const videoGrid = createGrid(() => videoRows, 'video');
+	const animationGrid = createGrid(() => animationRows, 'animation');
 	const stillGrid = createGrid(() => stillRows, 'still');
 	const announcementGrid = createGrid(() => announcementRows, 'announcement');
 	const quizGrid = createGrid(() => quizRows, 'quiz');
@@ -252,6 +273,20 @@
 			</div>
 		</div>
 		<DataGrid {...videoGrid} height={gridHeight} />
+	</section>
+
+	<section class="space-y-3">
+		<h2 class="text-lg font-semibold">Animations</h2>
+		<div role="toolbar" aria-orientation="horizontal" class="flex items-center justify-between">
+			<DataGridKeyboardShortcuts enableSearch={!!animationGrid.searchState} />
+			<div class="flex w-full items-center gap-1">
+				<DataGridFilterMenu table={animationGrid.table} />
+				<DataGridSortMenu table={animationGrid.table} />
+				<DataGridRowHeightMenu table={animationGrid.table} />
+				<DataGridViewMenu table={animationGrid.table} />
+			</div>
+		</div>
+		<DataGrid {...animationGrid} height={gridHeight} />
 	</section>
 
 	<section class="space-y-3">
