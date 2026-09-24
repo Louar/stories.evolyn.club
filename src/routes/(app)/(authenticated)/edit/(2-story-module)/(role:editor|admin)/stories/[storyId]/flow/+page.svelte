@@ -21,6 +21,7 @@
 	import HouseIcon from '@lucide/svelte/icons/house';
 	import ImageIcon from '@lucide/svelte/icons/image';
 	import LayersIcon from '@lucide/svelte/icons/layers';
+	import LibraryIcon from '@lucide/svelte/icons/library-big';
 	import MessageSquareIcon from '@lucide/svelte/icons/message-square';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
@@ -52,6 +53,7 @@
 	let inspectorOpen = $state(false);
 	let selectedTaxonomyPartId = $state<string>();
 	let selectedPartId = $state<string>();
+	let selectedPart = $derived(story.parts.find((part) => part.id === selectedPartId));
 	const activeCommandItemClass =
 		'bg-primary! text-primary-foreground! [&_svg]:text-primary-foreground!';
 
@@ -91,6 +93,15 @@
 		selectedTaxonomyPartId = partId;
 		editorSelection = { kind: 'taxonomy', partId };
 		inspectorOpen = true;
+	};
+	const addTaxonomyDraft = () => {
+		const targetPart = selectedPart ?? story.parts[0];
+		if (!targetPart) return;
+		if (targetPart.taxonomyDraftForPart) {
+			openTaxonomy(targetPart.id);
+			return;
+		}
+		selectedPartId = targetPart.id;
 	};
 
 	const closeSettings = (output: {
@@ -355,16 +366,19 @@
 							<Tabs.Trigger value="videos"><VideoIcon />Videos</Tabs.Trigger>
 						</Tabs.List>
 						<Tabs.Content value="stills">
+							<Button
+								type="button"
+								variant={isEditingStill() ? 'default' : 'outline'}
+								class="mb-3 w-full justify-start"
+								onclick={() => openStill()}
+							>
+								<PlusIcon />Create still
+							</Button>
 							<Command.Root class="border bg-sidebar-accent/30">
 								<Command.Input placeholder="Search stills..." />
 								<Command.List class="max-h-auto">
 									<Command.Empty>No stills found.</Command.Empty>
 									<Command.Group>
-										<Command.Item
-											value="create new still"
-											class={isEditingStill() ? activeCommandItemClass : ''}
-											onSelect={() => openStill()}><PlusIcon />Create still</Command.Item
-										>
 										{#each EDITORS.stills as still (still.id)}
 											<Command.Item
 												value={`${still.image?.filename ?? ''} ${still.color ?? ''}`}
@@ -381,21 +395,29 @@
 							</Command.Root>
 						</Tabs.Content>
 						<Tabs.Content value="videos">
+							<div class="mb-3 grid grid-cols-2 gap-2">
+								<Button
+									type="button"
+									variant={isEditingVideo() ? 'default' : 'outline'}
+									class="justify-start"
+									onclick={() => openVideo()}
+								>
+									<PlusIcon />Create video
+								</Button>
+								<Button
+									type="button"
+									variant={isAddingVideo() ? 'default' : 'outline'}
+									class="justify-start"
+									onclick={openVideoLibrary}
+								>
+									<LibraryIcon />Add from library
+								</Button>
+							</div>
 							<Command.Root class="border bg-sidebar-accent/30">
 								<Command.Input placeholder="Search videos..." />
 								<Command.List class="max-h-auto">
 									<Command.Empty>No videos found.</Command.Empty>
 									<Command.Group>
-										<Command.Item
-											value="create new video"
-											class={isEditingVideo() ? activeCommandItemClass : ''}
-											onSelect={() => openVideo()}><PlusIcon />Create video</Command.Item
-										>
-										<Command.Item
-											value="add an existing video"
-											class={isAddingVideo() ? activeCommandItemClass : ''}
-											onSelect={openVideoLibrary}><VideoIcon />Add a video</Command.Item
-										>
 										{#each EDITORS.videos as video (video.id)}
 											<Command.Item
 												value={video.name}
@@ -419,17 +441,19 @@
 							<Tabs.Trigger value="taxonomies"><LayersIcon />Drafts</Tabs.Trigger>
 						</Tabs.List>
 						<Tabs.Content value="announcements">
+							<Button
+								type="button"
+								variant={isEditingAnnouncement() ? 'default' : 'outline'}
+								class="mb-3 w-full justify-start"
+								onclick={() => openAnnouncement()}
+							>
+								<PlusIcon />Create announcement
+							</Button>
 							<Command.Root class="border bg-sidebar-accent/30">
 								<Command.Input placeholder="Search announcements..." />
 								<Command.List class="max-h-auto">
 									<Command.Empty>No announcements found.</Command.Empty>
 									<Command.Group>
-										<Command.Item
-											value="create new announcement"
-											class={isEditingAnnouncement() ? activeCommandItemClass : ''}
-											onSelect={() => openAnnouncement()}
-											><PlusIcon />Create announcement</Command.Item
-										>
 										{#each EDITORS.announcements as announcement (announcement.id)}<Command.Item
 												value={announcement.name}
 												class={isEditingAnnouncement(announcement.id) ? activeCommandItemClass : ''}
@@ -442,16 +466,19 @@
 							</Command.Root>
 						</Tabs.Content>
 						<Tabs.Content value="quizzes">
+							<Button
+								type="button"
+								variant={isEditingQuiz() ? 'default' : 'outline'}
+								class="mb-3 w-full justify-start"
+								onclick={() => openQuiz()}
+							>
+								<PlusIcon />Create quiz
+							</Button>
 							<Command.Root class="border bg-sidebar-accent/30">
 								<Command.Input placeholder="Search quizzes..." />
 								<Command.List class="max-h-auto">
 									<Command.Empty>No quizzes found.</Command.Empty>
 									<Command.Group>
-										<Command.Item
-											value="create new quiz"
-											class={isEditingQuiz() ? activeCommandItemClass : ''}
-											onSelect={() => openQuiz()}><PlusIcon />Create quiz</Command.Item
-										>
 										{#each EDITORS.quizzes as quiz (quiz.id)}<Command.Item
 												value={quiz.name}
 												class={isEditingQuiz(quiz.id) ? activeCommandItemClass : ''}
@@ -469,6 +496,15 @@
 							</Command.Root>
 						</Tabs.Content>
 						<Tabs.Content value="taxonomies">
+							<Button
+								type="button"
+								variant={editorSelection?.kind === 'taxonomy' ? 'default' : 'outline'}
+								class="mb-3 w-full justify-start"
+								disabled={!story.parts.length}
+								onclick={addTaxonomyDraft}
+							>
+								<PlusIcon />Add taxonomy draft
+							</Button>
 							<Command.Root class="border bg-sidebar-accent/30">
 								<Command.Input placeholder="Search taxonomy drafts..." />
 								<Command.List class="max-h-auto">
