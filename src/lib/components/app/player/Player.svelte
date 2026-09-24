@@ -556,7 +556,10 @@
 	{/if}
 
 	<div
-		class="pointer-events-none absolute inset-0 z-20 flex size-full flex-col bg-linear-to-t from-black/10 to-transparent opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
+		class={cn(
+			'pointer-events-none absolute inset-0 z-20 flex size-full flex-col bg-linear-to-t from-black/10 to-transparent transition-opacity group-focus-within:opacity-100 group-hover:opacity-100',
+			!isPlaying && !isOverlaid ? 'opacity-100' : 'opacity-0'
+		)}
 	>
 		<div class="pointer-events-auto grid h-full w-full place-items-center">
 			<button
