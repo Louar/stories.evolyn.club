@@ -849,6 +849,10 @@
 		color: #f4f4f5;
 	}
 
+	w-player::part(bar) {
+		display: none;
+	}
+
 	canvas {
 		display: block;
 		width: 100%;
