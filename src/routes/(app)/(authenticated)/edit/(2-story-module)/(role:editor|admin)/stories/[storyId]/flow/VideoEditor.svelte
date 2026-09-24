@@ -216,6 +216,11 @@
 				<div>
 					<Field.Label>
 						Source
+						<span
+							class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground uppercase"
+						>
+							Editing {UI.language} locale
+						</span>
 						{#if isLoading}
 							<LoaderIcon class="size-4 animate-spin text-muted-foreground" />
 						{/if}
@@ -250,7 +255,14 @@
 				{/if}
 			</Field.Field>
 			<Field.Field>
-				<Field.Label>Thumbnail (optional)</Field.Label>
+				<Field.Label>
+					Thumbnail (optional)
+					<span
+						class="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground uppercase"
+					>
+						Editing {UI.language} locale
+					</span>
+				</Field.Label>
 				<MediaFileInput
 					value={getMedia(video.thumbnail)}
 					accept="image/*"
