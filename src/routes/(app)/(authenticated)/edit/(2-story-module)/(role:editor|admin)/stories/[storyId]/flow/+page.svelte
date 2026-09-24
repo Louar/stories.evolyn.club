@@ -357,7 +357,7 @@
 						<Tabs.Content value="stills">
 							<Command.Root class="border bg-sidebar-accent/30">
 								<Command.Input placeholder="Search stills..." />
-								<Command.List>
+								<Command.List class="max-h-auto">
 									<Command.Empty>No stills found.</Command.Empty>
 									<Command.Group>
 										<Command.Item
@@ -383,7 +383,7 @@
 						<Tabs.Content value="videos">
 							<Command.Root class="border bg-sidebar-accent/30">
 								<Command.Input placeholder="Search videos..." />
-								<Command.List>
+								<Command.List class="max-h-auto">
 									<Command.Empty>No videos found.</Command.Empty>
 									<Command.Group>
 										<Command.Item
@@ -421,7 +421,7 @@
 						<Tabs.Content value="announcements">
 							<Command.Root class="border bg-sidebar-accent/30">
 								<Command.Input placeholder="Search announcements..." />
-								<Command.List>
+								<Command.List class="max-h-auto">
 									<Command.Empty>No announcements found.</Command.Empty>
 									<Command.Group>
 										<Command.Item
@@ -444,7 +444,7 @@
 						<Tabs.Content value="quizzes">
 							<Command.Root class="border bg-sidebar-accent/30">
 								<Command.Input placeholder="Search quizzes..." />
-								<Command.List>
+								<Command.List class="max-h-auto">
 									<Command.Empty>No quizzes found.</Command.Empty>
 									<Command.Group>
 										<Command.Item
@@ -471,7 +471,7 @@
 						<Tabs.Content value="taxonomies">
 							<Command.Root class="border bg-sidebar-accent/30">
 								<Command.Input placeholder="Search taxonomy drafts..." />
-								<Command.List>
+								<Command.List class="max-h-auto">
 									<Command.Empty>No taxonomy drafts in this flow.</Command.Empty>
 									<Command.Group>
 										{#each story.parts.filter((part) => part.taxonomyDraftForPart) as part (part.id)}

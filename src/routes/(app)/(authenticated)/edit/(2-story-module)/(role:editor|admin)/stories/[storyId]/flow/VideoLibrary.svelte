@@ -1,12 +1,14 @@
 <script lang="ts">
 	import HeaderBlank from '$lib/components/app/header/app-header-blank.svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 	import { MediaFile } from '$lib/components/ui/media-file/index.js';
 	import type { findOneVideoById } from '$lib/db/repositories/2-story-module.js';
 	import { translateLocalizedMediaField, type TranslatableMedia } from '$lib/db/schemas/0-utils.js';
 	import { getYouTubeThumbnailUrl } from '$lib/media/video.js';
 	import { UI } from '$lib/states/ui.svelte.js';
 	import LoaderIcon from '@lucide/svelte/icons/loader-circle';
+	import SearchIcon from '@lucide/svelte/icons/search';
 	import VideoIcon from '@lucide/svelte/icons/video';
 	import XIcon from '@lucide/svelte/icons/x';
 	import { onMount } from 'svelte';
@@ -25,6 +27,7 @@
 	let isLoading = $state(true);
 	let addingId = $state<string>();
 	let loadError = $state(false);
+	let search = $state('');
 
 	const getMedia = (value?: TranslatableMedia | null) =>
 		translateLocalizedMediaField(value, UI.language);
@@ -32,6 +35,14 @@
 		const source = getMedia(video.source);
 		return source ? getYouTubeThumbnailUrl(source.filename) : undefined;
 	};
+	let filteredVideos = $derived.by(() => {
+		const query = search.trim().toLocaleLowerCase();
+		if (!query) return videos;
+		return videos.filter((video) => {
+			const source = getMedia(video.source)?.filename ?? '';
+			return `${video.name} ${source}`.toLocaleLowerCase().includes(query);
+		});
+	});
 
 	const loadVideos = async () => {
 		isLoading = true;
@@ -100,8 +111,19 @@
 				<Button variant="outline" onclick={loadVideos}>Try again</Button>
 			</div>
 		{:else}
+			<div class="relative mb-4">
+				<SearchIcon
+					class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+				/>
+				<Input
+					bind:value={search}
+					class="pl-9"
+					placeholder="Search videos..."
+					aria-label="Search videos"
+				/>
+			</div>
 			<div class="grid grid-cols-2 gap-3">
-				{#each videos as video (video.id)}
+				{#each filteredVideos as video (video.id)}
 					{@const thumbnail = getMedia(video.thumbnail)}
 					{@const youtubeThumbnail = thumbnail ? undefined : getYouTubeThumbnail(video)}
 					<button
@@ -139,9 +161,13 @@
 					>
 						<div class="text-center">
 							<VideoIcon class="mx-auto mb-3 size-8 text-muted-foreground/60" />
-							<p class="text-sm font-medium">No videos available</p>
+							<p class="text-sm font-medium">
+								{search.trim() ? 'No videos match your search' : 'No videos available'}
+							</p>
 							<p class="mt-1 text-xs text-muted-foreground">
-								Videos already added to this story are not shown.
+								{search.trim()
+									? 'Try a different name or source.'
+									: 'Videos already added to this story are not shown.'}
 							</p>
 						</div>
 					</div>
