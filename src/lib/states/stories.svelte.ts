@@ -15,9 +15,11 @@ type StoryEvent =
 
 export const STORIES: {
   averageWatchTimePercentages: Record<string, number>;
+  completed: Record<string, boolean>;
   events: Record<string, StoryEvent[]>;
 }
   = $state({
     averageWatchTimePercentages: {},
+    completed: {},
     events: {},
   });

@@ -17,6 +17,9 @@
 	let progressStorage = $derived(
 		anthology?.slug?.length ? `anthology-progress:${anthology.slug}` : undefined
 	);
+	let completionStorage = $derived(
+		anthology?.slug?.length ? `anthology-completions:${anthology.slug}` : undefined
+	);
 	let stories = $derived(data.stories);
 	// svelte-ignore state_referenced_locally
 	let playersOfStories = $state(data.playersOfStories);
@@ -34,6 +37,7 @@
 	const META_INFO_FADE_IN_DELAY_MS = 350;
 
 	type StoryWatchProgress = Record<string, number>;
+	type StoryCompletions = Record<string, boolean>;
 
 	const isValidPersistedProgress = (value: unknown): value is StoryWatchProgress => {
 		if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
@@ -57,11 +61,31 @@
 		}
 	};
 
+	const readCompletions = (): StoryCompletions => {
+		if (!browser || !completionStorage) return {};
+		const raw = localStorage.getItem(completionStorage);
+		if (!raw) return {};
+
+		try {
+			const parsed: unknown = JSON.parse(raw);
+			if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+			if (!Object.values(parsed).every((entry) => typeof entry === 'boolean')) return {};
+			return parsed as StoryCompletions;
+		} catch {
+			return {};
+		}
+	};
+
 	const writeProgress = (progress: StoryWatchProgress) => {
 		if (!browser) return;
 		if (!progressStorage) return;
 		if (!Object.keys(progress)?.length) return;
 		localStorage.setItem(progressStorage, JSON.stringify(progress));
+	};
+
+	const writeCompletions = (completions: StoryCompletions) => {
+		if (!browser || !completionStorage || !Object.keys(completions).length) return;
+		localStorage.setItem(completionStorage, JSON.stringify(completions));
 	};
 
 	const waitForScrollEnd = (target: HTMLElement, { timeout = 120 } = {}) => {
@@ -180,6 +204,9 @@
 				persistedPercentage
 			);
 		}
+		for (const [storyId, completed] of Object.entries(readCompletions())) {
+			if (currentStoryIds.has(storyId) && completed) STORIES.completed[storyId] = true;
+		}
 		hasHydratedProgress = true;
 
 		window.addEventListener('keydown', onKeydown, { passive: false });
@@ -236,7 +263,7 @@
 	});
 
 	const isStoryCompleted = (storyId: string) => {
-		return STORIES.averageWatchTimePercentages[storyId] > 10;
+		return STORIES.completed[storyId] === true;
 	};
 
 	$effect(() => {
@@ -251,6 +278,16 @@
 		}
 
 		writeProgress(progressForCurrentAnthology);
+	});
+
+	$effect(() => {
+		if (!browser || !hasHydratedProgress) return;
+
+		const completions: StoryCompletions = {};
+		for (const { id: storyId } of stories) {
+			if (STORIES.completed[storyId]) completions[storyId] = true;
+		}
+		writeCompletions(completions);
 	});
 
 	$effect(() => {
@@ -284,7 +321,6 @@
 						}
 					}}
 					doRestart={storiesRestart[i]}
-					class="rounded-3xl"
 				/>
 			</section>
 		{/each}

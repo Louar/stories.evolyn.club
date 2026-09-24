@@ -29,6 +29,9 @@
 	let progressStorage = $derived(
 		anthology?.slug?.length ? `anthology-progress:${anthology.slug}` : undefined
 	);
+	let completionStorage = $derived(
+		anthology?.slug?.length ? `anthology-completions:${anthology.slug}` : undefined
+	);
 	let stories = $derived(data.stories);
 	let transitioningStorySlug = $state<string | null>(null);
 	let modalPlayers = $state<Player[]>([]);
@@ -36,6 +39,7 @@
 
 	type Story = PageData['stories'][number];
 	type StoryWatchProgress = Record<string, number>;
+	type StoryCompletions = Record<string, boolean>;
 	type StoryModalState = {
 		storySlug?: string;
 	};
@@ -78,6 +82,21 @@
 		}
 	};
 
+	const readCompletions = (): StoryCompletions => {
+		if (!browser || !completionStorage) return {};
+		const raw = localStorage.getItem(completionStorage);
+		if (!raw) return {};
+
+		try {
+			const parsed: unknown = JSON.parse(raw);
+			if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+			if (!Object.values(parsed).every((entry) => typeof entry === 'boolean')) return {};
+			return parsed as StoryCompletions;
+		} catch {
+			return {};
+		}
+	};
+
 	const isMedia = (value: unknown): value is Media => {
 		return !!value && typeof value === 'object' && 'collection' in value && 'filename' in value;
 	};
@@ -101,7 +120,7 @@
 	};
 
 	const isStoryCompleted = (storyId: string) => {
-		return getStoryProgress(storyId) > 10;
+		return STORIES.completed[storyId] === true;
 	};
 
 	const prepareStoryTransition = (storySlug: string) => {
@@ -168,6 +187,9 @@
 				persistedPercentage
 			);
 		}
+		for (const [storyId, completed] of Object.entries(readCompletions())) {
+			if (currentStoryIds.has(storyId) && completed) STORIES.completed[storyId] = true;
+		}
 		hasHydratedProgress = true;
 	});
 
@@ -185,6 +207,18 @@
 
 		if (progressStorage && hasProgress) {
 			localStorage.setItem(progressStorage, JSON.stringify(progressForCurrentAnthology));
+		}
+	});
+
+	$effect(() => {
+		if (!browser || !hasHydratedProgress || !completionStorage) return;
+
+		const completions: StoryCompletions = {};
+		for (const { id: storyId } of stories) {
+			if (STORIES.completed[storyId]) completions[storyId] = true;
+		}
+		if (Object.keys(completions).length) {
+			localStorage.setItem(completionStorage, JSON.stringify(completions));
 		}
 	});
 </script>

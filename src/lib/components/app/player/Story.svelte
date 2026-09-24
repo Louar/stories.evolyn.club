@@ -170,6 +170,7 @@
 			STORIES.averageWatchTimePercentages[story.id] ?? 0,
 			watchTimePercentage
 		);
+		if (completed) STORIES.completed[story.id] = true;
 		parent.postMessage(
 			{
 				isCompleted: completed,
