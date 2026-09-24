@@ -4,12 +4,13 @@ import type { NotNull } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
 	const clientId = locals.client.id;
 	const userId = locals.authusr!.id;
+	const showAll = url.searchParams.has('all');
 	const isAdmin = locals.authusr?.roles?.includes(UserRole.admin) ?? false;
 	let anthologyQuery = db.selectFrom('anthology').where('anthology.clientId', '=', clientId);
-	if (!isAdmin) {
+	if (!(isAdmin && showAll)) {
 		anthologyQuery = anthologyQuery
 			.innerJoin('anthologyPermission', 'anthologyPermission.anthologyId', 'anthology.id')
 			.where('anthologyPermission.userId', '=', userId)

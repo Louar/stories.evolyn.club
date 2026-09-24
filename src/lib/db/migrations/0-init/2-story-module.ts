@@ -231,7 +231,7 @@ export const InitStoryModule: Migration = {
 					.notNull()
 			)
 			.addColumn('story_id', 'uuid', (col) =>
-				col.references('client.id').onDelete('cascade').notNull()
+				col.references('story.id').onDelete('cascade').notNull()
 			)
 			.addColumn('value', 'text', (col) => col.notNull())
 			.addColumn('used_at', 'timestamptz')

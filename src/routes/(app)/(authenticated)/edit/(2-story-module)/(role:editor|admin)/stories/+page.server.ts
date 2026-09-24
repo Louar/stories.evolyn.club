@@ -11,7 +11,7 @@ import { schemaOfAttachments } from './schemas';
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const clientId = locals.client.id;
 	const userId = locals.authusr!.id;
-	const showAll = url.searchParams.get('show') === 'all';
+	const showAll = url.searchParams.has('all');
 	const isAdmin = locals.authusr?.roles?.includes(UserRole.admin) ?? false;
 
 	let query = db.selectFrom('story').distinctOn('story.id').where('story.clientId', '=', clientId);

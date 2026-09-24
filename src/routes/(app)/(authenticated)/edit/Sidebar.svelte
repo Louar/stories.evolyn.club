@@ -4,6 +4,7 @@
 	import Account from '$lib/components/app/menu/items/account.svelte';
 	import { useSidebar } from '$lib/components/ui/sidebar';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
+	import { UserRole } from '$lib/db/schemas/1-client-user-module';
 	import RocketIcon from '@lucide/svelte/icons/rocket';
 
 	let { data } = $props();
@@ -101,23 +102,51 @@
 				<Sidebar.MenuItem class="px-2">
 					<Sidebar.MenuButton
 						onclick={() => sidebar?.setOpenMobile(false)}
-						isActive={page.url.pathname?.startsWith('/edit/anthologies')}
+						isActive={page.url.pathname?.startsWith('/edit/anthologies') &&
+							!page.url.searchParams.has('all')}
 					>
 						{#snippet child({ props })}
 							<a href={resolve('/edit/anthologies')} {...props}>Anthologies</a>
 						{/snippet}
 					</Sidebar.MenuButton>
 				</Sidebar.MenuItem>
+				{#if authusr.roles?.includes(UserRole.admin)}
+					<Sidebar.MenuItem class="px-2">
+						<Sidebar.MenuButton
+							onclick={() => sidebar?.setOpenMobile(false)}
+							isActive={page.url.pathname?.startsWith('/edit/anthologies') &&
+								page.url.searchParams.has('all')}
+						>
+							{#snippet child({ props })}
+								<a href={resolve('/edit/anthologies?all')} {...props}>All anthologies</a>
+							{/snippet}
+						</Sidebar.MenuButton>
+					</Sidebar.MenuItem>
+				{/if}
 				<Sidebar.MenuItem class="px-2">
 					<Sidebar.MenuButton
 						onclick={() => sidebar?.setOpenMobile(false)}
-						isActive={page.url.pathname?.startsWith('/edit/stories')}
+						isActive={page.url.pathname?.startsWith('/edit/stories') &&
+							!page.url.searchParams.has('all')}
 					>
 						{#snippet child({ props })}
 							<a href={resolve('/edit/stories')} {...props}>Stories</a>
 						{/snippet}
 					</Sidebar.MenuButton>
 				</Sidebar.MenuItem>
+				{#if authusr.roles?.includes(UserRole.admin)}
+					<Sidebar.MenuItem class="px-2">
+						<Sidebar.MenuButton
+							onclick={() => sidebar?.setOpenMobile(false)}
+							isActive={page.url.pathname?.startsWith('/edit/stories') &&
+								page.url.searchParams.has('all')}
+						>
+							{#snippet child({ props })}
+								<a href={resolve('/edit/stories?all')} {...props}>All stories</a>
+							{/snippet}
+						</Sidebar.MenuButton>
+					</Sidebar.MenuItem>
+				{/if}
 			</Sidebar.Menu>
 		</Sidebar.Group>
 		<Sidebar.Group class="p-0">
