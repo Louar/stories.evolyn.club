@@ -213,26 +213,26 @@
 				</Field.Error>
 			</Field.Field>
 			<Field.Field>
-			<div>
-				<Field.Label>
-					Source
-					{#if isLoading}
-						<LoaderIcon class="size-4 animate-spin text-muted-foreground" />
-					{/if}
-					{#if !isLoading && hasError === false}
-						<CircleCheckIcon
-							class="size-4 rounded-full border border-emerald-500 bg-emerald-500 text-white"
-						/>
-					{:else if !isLoading && hasError === true}
-						<CircleXIcon
-							class="size-4 rounded-full border border-rose-500 bg-rose-500 text-white"
-						/>
-					{/if}
-				</Field.Label>
-				<Field.Description>
-					Drop a video file, browse, or add a stream/YouTube URL.
-				</Field.Description>
-			</div>
+				<div>
+					<Field.Label>
+						Source
+						{#if isLoading}
+							<LoaderIcon class="size-4 animate-spin text-muted-foreground" />
+						{/if}
+						{#if !isLoading && hasError === false}
+							<CircleCheckIcon
+								class="size-4 rounded-full border border-emerald-500 bg-emerald-500 text-white"
+							/>
+						{:else if !isLoading && hasError === true}
+							<CircleXIcon
+								class="size-4 rounded-full border border-rose-500 bg-rose-500 text-white"
+							/>
+						{/if}
+					</Field.Label>
+					<Field.Description>
+						Drop a video file, browse, or add a stream/YouTube URL.
+					</Field.Description>
+				</div>
 				<MediaFileInput
 					value={getMedia(video.source)}
 					accept="video/*,.m3u8"
@@ -263,7 +263,7 @@
 				</Field.Error>
 			</Field.Field>
 			<Field.Field>
-				<Field.Label>Duration (in seconds)</Field.Label>
+				<Field.Label>Duration (in seconds, calculated when setting source)</Field.Label>
 				<Input
 					type="number"
 					bind:value={video.duration}

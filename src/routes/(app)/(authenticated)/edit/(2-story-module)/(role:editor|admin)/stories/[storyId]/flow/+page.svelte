@@ -295,7 +295,7 @@
 
 <Sidebar.Provider style="--sidebar-width: 24rem;">
 	<Sidebar.Root collapsible="offcanvas" class="border-r">
-		<Tabs.Root value="settings" class="h-full min-h-0 gap-4">
+		<Tabs.Root value="settings" class="h-full min-h-0 gap-0">
 			<Sidebar.Header class="-mt-px border-b p-0">
 				<div class="flex h-16 w-full shrink-0 items-center">
 					<div class="grid size-16 place-items-center border-r">
@@ -316,8 +316,8 @@
 				</div>
 			</Sidebar.Header>
 
-			<Sidebar.Content class="px-3 py-0">
-				<Tabs.Content value="settings" class="min-h-0 flex-1 overflow-hidden">
+			<Sidebar.Content class="px-3 py-4 muted-scrollbar">
+				<Tabs.Content value="settings" class="min-h-0 flex-1">
 					<StorySettingsEditor
 						storyId={story.id}
 						story={{

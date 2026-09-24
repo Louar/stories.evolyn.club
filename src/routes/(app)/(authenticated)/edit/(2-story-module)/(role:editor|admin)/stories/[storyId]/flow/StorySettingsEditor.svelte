@@ -303,8 +303,8 @@
 		</Field.Group>
 	</form>
 
-	<div class="mt-auto flex w-full items-center justify-between gap-2 py-4">
-		<span class="self-center text-xs text-muted-foreground" aria-live="polite">
+	<div class="mt-auto flex w-full flex-col gap-2 py-4">
+		<span class="min-h-4 text-xs text-muted-foreground" aria-live="polite">
 			{saveState === 'saving'
 				? 'Saving...'
 				: saveState === 'dirty'
@@ -314,13 +314,12 @@
 						: ''}
 		</span>
 		<Button
-			class="ml-auto"
+			class="w-full"
 			variant="destructive"
-			size="icon"
 			disabled={isDeleting}
 			onclick={() => (isDeleteDialogOpen = true)}
 		>
-			<TrashIcon />
+			<TrashIcon /> Delete story
 		</Button>
 	</div>
 </div>
