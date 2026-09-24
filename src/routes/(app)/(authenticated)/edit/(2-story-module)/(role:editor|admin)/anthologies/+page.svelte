@@ -238,7 +238,6 @@
 		getRowId: (row) => row.id,
 		dataAdapter,
 		defaultRow: () => ({
-			slug: crypto.randomUUID().slice(0, 8),
 			nameRaw: { en: 'New anthology' },
 			visualization: AnthologyVisualization.grid,
 			configuration: null,
@@ -327,10 +326,10 @@
 <div class="mx-auto mt-4 w-full max-w-6xl space-y-4 px-4">
 	<DataGridToolbar {table} enableSearch={!!dataGridProps.searchState}>
 		{#snippet actions()}
+			<label class="flex items-center gap-2 text-xs text-muted-foreground">
+				<Switch bind:checked={includeStoryDefinitions} />Include stories
+			</label>
 			<div class="ml-auto flex items-center gap-3 text-xs text-muted-foreground">
-				<label class="flex items-center gap-2"
-					><Switch bind:checked={includeStoryDefinitions} />Include stories</label
-				>
 				<DataGridUploadMenu
 					endpoint="{endpoint}/io"
 					description="Upload anthology .YAMLs, optionally with embedded story definitions."
