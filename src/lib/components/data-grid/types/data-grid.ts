@@ -125,8 +125,22 @@ export interface DataGridMutationContext<TData> {
 	rowId: string;
 }
 
+export interface DataGridDuplicateContext<TData> extends DataGridMutationContext<TData> {
+	targetId?: string;
+}
+
+export interface DataGridDuplicateTarget {
+	id: string;
+	label: string;
+	description?: string;
+	group?: { id: string; label: string; slug?: string };
+	appendToCurrentGrid?: boolean;
+}
+
 export interface DataGridDataAdapter<TData> {
 	create?: (params: { row: Partial<TData> }) => Promise<TData>;
+	/** Duplicates one persisted row, including any owned child relations. */
+	duplicate?: (params: DataGridDuplicateContext<TData>) => Promise<TData>;
 	update?: (params: DataGridMutationContext<TData> & { changes: Partial<TData> }) => Promise<TData>;
 	delete?: (params: DataGridMutationContext<TData>) => Promise<boolean>;
 	download?: (params: { rows: TData[]; rowIds: string[] }) => Promise<void>;
@@ -141,6 +155,12 @@ export interface DataGridCreateResult<TData> {
 export interface DataGridDeleteResult {
 	deletedRowIds: string[];
 	failedRowIds: string[];
+}
+
+export interface DataGridDeleteDialogState {
+	open: boolean;
+	rowCount: number;
+	isDeleting: boolean;
 }
 
 export interface DataGridPreferencesController {
@@ -339,6 +359,8 @@ declare module '@tanstack/table-core' {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	interface ColumnMeta<TFeatures extends TableFeatures, TData extends RowData, TValue> {
 		label?: string;
+		/** Markdown-formatted explanation shown at the top of the column menu. */
+		description?: string;
 		cell?: CellOpts<TData>;
 		readOnly?: boolean;
 		navigable?: boolean;
@@ -395,9 +417,15 @@ declare module '@tanstack/table-core' {
 			params: UpdateCell | UpdateCell[],
 			expectedSnapshots?: ReadonlyMap<string, { generation: number; value: unknown }>
 		) => Promise<DataGridMutationResult[]>;
-		onRowsDelete?: (rowIndices: number[]) => Promise<DataGridDeleteResult>;
+		deleteDialog?: DataGridDeleteDialogState;
+		onRowsDeleteRequest?: (rowIndices: number[]) => void;
+		onDeleteDialogOpenChange?: (open: boolean) => void;
+		onRowsDeleteConfirm?: () => Promise<void>;
+		onRowsDuplicate?: (targetId?: string) => Promise<DataGridCreateResult<TData> | void>;
+		getRowDuplicateTargets?: () => readonly DataGridDuplicateTarget[];
 		onDownload?: () => void | Promise<void>;
 		getSelectedRowCount?: () => number;
+		getIsDuplicating?: () => boolean;
 		getIsDownloading?: () => boolean;
 		onColumnClick?: (columnId: string) => void;
 		onCellClick?: (rowIndex: number, columnId: string, event?: MouseEvent) => void;

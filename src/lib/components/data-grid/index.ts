@@ -42,5 +42,12 @@ export * from '$lib/components/data-grid/types/data-grid.js';
 // Re-export filter utilities
 export * from '$lib/components/data-grid/data-grid-filters.js';
 
+// Re-export action helpers used to compose custom adapters.
+export { createOnRowsDuplicate } from '$lib/components/data-grid/data-grid-actions.js';
+export {
+	getDuplicateSlug,
+	requireDataGridJsonResponse
+} from '$lib/components/data-grid/data-grid-duplicate-api.js';
+
 // Re-export persistence utilities used by route consumers.
 export * from '$lib/components/data-grid/data-grid-preferences.js';

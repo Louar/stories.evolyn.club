@@ -36,7 +36,11 @@
 		{
 			accessorKey: 'domain',
 			header: 'Domain',
-			meta: { cell: { variant: 'text-short' }, readOnly: true },
+			meta: {
+				cell: { variant: 'text-short' },
+				description: 'Configured Caddy domain.',
+				readOnly: true
+			},
 			filterFn
 		}
 	];

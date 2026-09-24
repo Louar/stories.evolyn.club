@@ -32,66 +32,96 @@
 			enableHiding: false,
 			enableResizing: false,
 			header: ({ table }) => renderComponent(RowSelectHeader, { table }),
-			meta: { cell: { variant: 'row-select' } }
+			meta: { cell: { variant: 'row-select' }, description: 'Select this policy row.' }
 		},
 		{
 			accessorKey: 'id',
 			header: 'ID',
-			meta: { cell: { variant: 'text-short' }, readOnly: true },
+			meta: {
+				cell: { variant: 'text-short' },
+				description: 'Unique policy identifier.',
+				readOnly: true
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'name',
 			header: 'Name',
-			meta: { cell: { variant: 'text-translated-short' } },
+			meta: { cell: { variant: 'text-translated-short' }, description: 'Translated policy name.' },
 			filterFn
 		},
 		{
 			accessorKey: 'version',
 			header: 'Version',
-			meta: { cell: { variant: 'text-short' } },
+			meta: { cell: { variant: 'text-short' }, description: 'Policy version.' },
 			filterFn
 		},
 		{
 			accessorKey: 'termsOfUse',
 			header: 'Terms of use',
-			meta: { cell: { variant: 'text-translated-long', markdown: true } },
+			meta: {
+				cell: { variant: 'text-translated-long', markdown: true },
+				description: 'Translated terms of use in Markdown.'
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'privacyPolicy',
 			header: 'Privacy policy',
-			meta: { cell: { variant: 'text-translated-long', markdown: true } },
+			meta: {
+				cell: { variant: 'text-translated-long', markdown: true },
+				description: 'Translated privacy policy in Markdown.'
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'agreements',
 			header: 'Number of agreed users',
-			meta: { cell: { variant: 'text-short' }, readOnly: true },
+			meta: {
+				cell: { variant: 'text-short' },
+				description: 'Number of users who agreed to this policy.',
+				readOnly: true
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'createdAt',
 			header: 'Created at',
-			meta: { cell: { variant: 'date-time' }, readOnly: true },
+			meta: {
+				cell: { variant: 'date-time' },
+				description: 'When the policy was created.',
+				readOnly: true
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'createdBy',
 			header: 'Created by',
-			meta: { cell: { variant: 'badge-item' }, readOnly: true },
+			meta: {
+				cell: { variant: 'badge-item' },
+				description: 'Who created the policy.',
+				readOnly: true
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'updatedAt',
 			header: 'Updated at',
-			meta: { cell: { variant: 'date-time' }, readOnly: true },
+			meta: {
+				cell: { variant: 'date-time' },
+				description: 'When the policy was last updated.',
+				readOnly: true
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'updatedBy',
 			header: 'Updated by',
-			meta: { cell: { variant: 'badge-item' }, readOnly: true },
+			meta: {
+				cell: { variant: 'badge-item' },
+				description: 'Who last updated the policy.',
+				readOnly: true
+			},
 			filterFn
 		}
 	];

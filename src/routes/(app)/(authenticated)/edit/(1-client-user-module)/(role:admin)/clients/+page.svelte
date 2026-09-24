@@ -3,6 +3,7 @@
 	import Header from '$lib/components/app/header/app-header.svelte';
 	import {
 		createDataGridPersistenceIdentity,
+		createEndpointDataGridAdapter,
 		DataGrid,
 		DataGridToolbar,
 		fileCellMediaToFileCellData,
@@ -21,6 +22,7 @@
 	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
 
 	let { data } = $props();
+	const endpoint = `/api/clients`;
 
 	let rows = $derived(data.clients);
 	type Row = (typeof rows)[number];
@@ -39,6 +41,7 @@
 	const filterFn = getFilterFn<Row>();
 	const windowSize = useWindowSize({ defaultHeight: 800 });
 	const gridHeight = $derived(Math.max(250, windowSize.height - 150));
+	const dataAdapter = createEndpointDataGridAdapter<Row>(endpoint);
 
 	const columns: ColumnDef<Row, unknown>[] = [
 		{
@@ -48,48 +51,61 @@
 			enableHiding: false,
 			enableResizing: false,
 			header: ({ table }) => renderComponent(RowSelectHeader, { table }),
-			meta: { cell: { variant: 'row-select' } }
+			meta: { cell: { variant: 'row-select' }, description: 'Select this client row.' }
 		},
 		{
 			accessorKey: 'id',
 			header: 'ID',
-			meta: { cell: { variant: 'text-short' }, readOnly: true },
+			meta: {
+				cell: { variant: 'text-short' },
+				description: 'Unique client identifier.',
+				readOnly: true
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'slug',
 			header: 'Slug',
-			meta: { cell: { variant: 'text-short' } },
+			meta: { cell: { variant: 'text-short' }, description: 'URL-safe client identifier.' },
 			filterFn
 		},
 		{
 			accessorKey: 'name',
 			header: 'Name',
-			meta: { cell: { variant: 'text-short' } },
+			meta: { cell: { variant: 'text-short' }, description: 'Client name.' },
 			filterFn
 		},
 		{
 			accessorKey: 'description',
 			header: 'Description',
-			meta: { cell: { variant: 'text-translated-long', markdown: true } },
+			meta: {
+				cell: { variant: 'text-translated-long', markdown: true },
+				description: 'Translated client description in Markdown.'
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'domains',
 			header: 'Domains',
-			meta: { cell: { variant: 'text-long' } },
+			meta: { cell: { variant: 'text-long' }, description: 'Domains assigned to the client.' },
 			filterFn
 		},
 		{
 			accessorKey: 'locales',
 			header: 'Locales',
-			meta: { cell: { variant: 'select-multiple', options: languageOptions() } },
+			meta: {
+				cell: { variant: 'select-multiple', options: languageOptions() },
+				description: 'Locales supported by the client.'
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'administrationEmail',
 			header: 'Administration email',
-			meta: { cell: { variant: 'text-short' } },
+			meta: {
+				cell: { variant: 'text-short' },
+				description: 'Email address used for client administration.'
+			},
 			filterFn
 		},
 		{
@@ -102,7 +118,8 @@
 					accept: 'image/*',
 					maxFiles: 1,
 					multiple: false
-				}
+				},
+				description: 'Client logo image.'
 			}
 		},
 		{
@@ -115,7 +132,8 @@
 					accept: 'image/*',
 					maxFiles: 1,
 					multiple: false
-				}
+				},
+				description: 'Client favicon image.'
 			}
 		},
 		{
@@ -128,7 +146,8 @@
 					accept: 'image/*',
 					maxFiles: 1,
 					multiple: false
-				}
+				},
+				description: 'Client splash image.'
 			}
 		},
 		{
@@ -141,55 +160,80 @@
 					accept: 'image/*',
 					maxFiles: 1,
 					multiple: false
-				}
+				},
+				description: 'Client hero image.'
 			}
 		},
 		{
 			accessorKey: 'css',
 			header: 'CSS',
-			meta: { cell: { variant: 'json-yaml' } },
+			meta: {
+				cell: { variant: 'json-yaml' },
+				description: 'Custom CSS configuration for the client.'
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'manifest',
 			header: 'Manifest',
-			meta: { cell: { variant: 'json-yaml' } },
+			meta: {
+				cell: { variant: 'json-yaml' },
+				description: 'Web app manifest configuration for the client.'
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'isFindableBySearchEngines',
 			header: 'Findable by search engines',
-			meta: { cell: { variant: 'checkbox' } },
+			meta: {
+				cell: { variant: 'checkbox' },
+				description: 'Whether search engines may index the client.'
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'plausibleDomain',
 			header: 'Plausible domain',
-			meta: { cell: { variant: 'text-short' } },
+			meta: {
+				cell: { variant: 'text-short' },
+				description: 'Domain used for Plausible analytics.'
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'authenticationMethods',
 			header: 'Authentication methods',
-			meta: { cell: { variant: 'select-multiple', options: authenticationMethodOptions() } },
+			meta: {
+				cell: { variant: 'select-multiple', options: authenticationMethodOptions() },
+				description: 'Authentication methods enabled for the client.'
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'accessTokenKey',
 			header: 'Access token key',
-			meta: { cell: { variant: 'text-short' } },
+			meta: {
+				cell: { variant: 'text-short' },
+				description: 'Key used to sign client access tokens.'
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'redirectAuthorized',
 			header: 'Redirect authorized',
-			meta: { cell: { variant: 'text-short' } },
+			meta: {
+				cell: { variant: 'text-short' },
+				description: 'Redirect target after authorized access.'
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'redirectUnauthorized',
 			header: 'Redirect unauthorized',
-			meta: { cell: { variant: 'text-short' } },
+			meta: {
+				cell: { variant: 'text-short' },
+				description: 'Redirect target after unauthorized access.'
+			},
 			filterFn
 		},
 		{
@@ -198,6 +242,7 @@
 			size: 120,
 			meta: {
 				cell: { variant: 'relation-follow', url: `${page.url.pathname}/{row}/api-keys` },
+				description: 'API keys belonging to the client.',
 				readOnly: true
 			},
 			filterFn
@@ -205,25 +250,41 @@
 		{
 			accessorKey: 'createdAt',
 			header: 'Created at',
-			meta: { cell: { variant: 'date-time' }, readOnly: true },
+			meta: {
+				cell: { variant: 'date-time' },
+				description: 'When the client was created.',
+				readOnly: true
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'createdBy',
 			header: 'Created by',
-			meta: { cell: { variant: 'badge-item' }, readOnly: true },
+			meta: {
+				cell: { variant: 'badge-item' },
+				description: 'Who created the client.',
+				readOnly: true
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'updatedAt',
 			header: 'Updated at',
-			meta: { cell: { variant: 'date-time' }, readOnly: true },
+			meta: {
+				cell: { variant: 'date-time' },
+				description: 'When the client was last updated.',
+				readOnly: true
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'updatedBy',
 			header: 'Updated by',
-			meta: { cell: { variant: 'badge-item' }, readOnly: true },
+			meta: {
+				cell: { variant: 'badge-item' },
+				description: 'Who last updated the client.',
+				readOnly: true
+			},
 			filterFn
 		}
 	];
@@ -233,7 +294,7 @@
 		data: () => rows,
 		persistence: createDataGridPersistenceIdentity('edit.clients', () => data),
 		getRowId: (row) => row.id,
-		endpoint: `/api/clients`,
+		dataAdapter,
 		onDataChange: (nextRows) => (rows = nextRows),
 		onFilesUpload: async ({ files, columnId, rowId }) =>
 			uploadMedia({

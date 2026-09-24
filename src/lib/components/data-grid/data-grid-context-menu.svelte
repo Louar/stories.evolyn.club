@@ -1,19 +1,27 @@
 <script lang="ts" generics="TData extends RowData">
-	import { parseCellKey } from '$lib/components/data-grid/types/data-grid.js';
+	import {
+		parseCellKey,
+		type DataGridDuplicateTarget
+	} from '$lib/components/data-grid/types/data-grid.js';
 	import {
 		DropdownMenu,
 		DropdownMenuContent,
 		DropdownMenuItem,
+		DropdownMenuLabel,
 		DropdownMenuSeparator,
+		DropdownMenuSub,
+		DropdownMenuSubContent,
+		DropdownMenuSubTrigger,
 		DropdownMenuTrigger
 	} from '$lib/components/ui/dropdown-menu/index.js';
 	import Copy from '@lucide/svelte/icons/copy';
 	import Eraser from '@lucide/svelte/icons/eraser';
 	import FileDownIcon from '@lucide/svelte/icons/file-down';
-// import Scissors from '@lucide/svelte/icons/scissors';
+	// import Scissors from '@lucide/svelte/icons/scissors';
 	import type { RowData, Table } from '$lib/components/data-grid/data-grid-table.js';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { toast } from 'svelte-sonner';
+	import DataGridDeleteDialog from './data-grid-delete-dialog.svelte';
 
 	interface Props {
 		table: Table<TData>;
@@ -26,9 +34,33 @@
 	const onContextMenuOpenChange = $derived(meta?.onContextMenuOpenChange);
 	const selectionState = $derived(meta?.selectionState);
 	const dataGridRef = $derived(meta?.dataGridRef);
-	const onRowsDelete = $derived(meta?.onRowsDelete);
+	const onRowsDeleteRequest = $derived(meta?.onRowsDeleteRequest);
 	const onDownload = $derived(meta?.onDownload);
-	const onCellsCopy = $derived(meta?.onCellsCopy);
+	const onRowsDuplicate = $derived(meta?.onRowsDuplicate);
+	const rowDuplicateTargets = $derived(meta?.getRowDuplicateTargets?.() ?? []);
+	const currentDuplicateTarget = $derived(
+		rowDuplicateTargets.find((target) => target.appendToCurrentGrid)
+	);
+	const otherDuplicateTargets = $derived(
+		rowDuplicateTargets.filter((target) => !target.appendToCurrentGrid)
+	);
+	const groupedDuplicateTargets = $derived.by(() => {
+		return otherDuplicateTargets.reduce<
+			Array<{ id: string; slug?: string; label: string; targets: DataGridDuplicateTarget[] }>
+		>((groups, target) => {
+			const group = target.group ?? { id: '', label: '' };
+			const existing = groups.find(({ id }) => id === group.id);
+			if (!existing) {
+				return [
+					...groups,
+					{ id: group.id, label: group.label, slug: group.slug, targets: [target] }
+				];
+			}
+			return groups.map((item) =>
+				item.id === group.id ? { ...item, targets: [...item.targets, target] } : item
+			);
+		}, []);
+	});
 	// const onCellsCut = $derived(meta?.onCellsCut);
 	const onCellsClear = $derived(meta?.onCellsClear);
 	const readOnly = $derived(meta?.readOnly ?? false);
@@ -41,13 +73,14 @@
 
 	function onCloseAutoFocus(event: Event) {
 		event.preventDefault();
+		if (meta?.deleteDialog?.open) return;
 		if (dataGridRef instanceof HTMLElement) {
 			dataGridRef.focus();
 		}
 	}
 
-	function onCopy() {
-		onCellsCopy?.();
+	async function onDuplicate(targetId?: string) {
+		await onRowsDuplicate?.(targetId);
 	}
 
 	// async function onCut() {
@@ -77,7 +110,7 @@
 		else if (result.clearedCellCount) toast.success(message);
 	}
 
-	async function onDelete() {
+	function onDelete() {
 		const rows = table.getRowModel().rows;
 		const rowIndices = rows.flatMap((row, rowIndex) => (row.getIsSelected() ? [rowIndex] : []));
 
@@ -90,14 +123,7 @@
 		}
 
 		const rowIndicesArray = rowIndices.sort((a, b) => a - b);
-		const result = await onRowsDelete?.(rowIndicesArray);
-		const rowCount = result?.deletedRowIds.length ?? 0;
-		if (rowCount > 0) toast.success(`${rowCount} row${rowCount !== 1 ? 's' : ''} deleted`);
-		if (result?.failedRowIds.length) {
-			toast.error(
-				`${result.failedRowIds.length} row${result.failedRowIds.length !== 1 ? 's' : ''} could not be deleted`
-			);
-		}
+		onRowsDeleteRequest?.(rowIndicesArray);
 	}
 
 	async function onDownloadRows() {
@@ -109,10 +135,56 @@
 	<DropdownMenu open={contextMenu.open} onOpenChange={onContextMenuOpenChange}>
 		<DropdownMenuTrigger style={triggerStyle}></DropdownMenuTrigger>
 		<DropdownMenuContent data-grid-popover="" align="start" class="w-48" {onCloseAutoFocus}>
-			<DropdownMenuItem onSelect={onCopy}>
-				<Copy class="mr-2 size-4" />
-				Copy
-			</DropdownMenuItem>
+			{#if onRowsDuplicate && (meta?.getSelectedRowCount?.() ?? 0) > 0}
+				<DropdownMenuItem
+					onSelect={() => onDuplicate(currentDuplicateTarget?.id)}
+					disabled={readOnly || meta?.getIsDuplicating?.()}
+				>
+					<Copy class="mr-2 size-4" />
+					Duplicate
+				</DropdownMenuItem>
+				{#if groupedDuplicateTargets.length}
+					<DropdownMenuSub>
+						<DropdownMenuSubTrigger disabled={readOnly || meta?.getIsDuplicating?.()}>
+							<Copy class="mr-2 size-4" />
+							Duplicate to
+						</DropdownMenuSubTrigger>
+						<DropdownMenuSubContent
+							align="start"
+							sideOffset={4}
+							class="max-h-80 w-64 muted-scrollbar overflow-y-auto py-0"
+						>
+							{#each groupedDuplicateTargets as group (group.id)}
+								{#if group.label}
+									<DropdownMenuLabel
+										class="sticky top-0 z-10 -mx-1 mb-1 border-b bg-popover px-3 py-2 text-xs font-medium"
+									>
+										<span class="block truncate">{group.label}</span>
+										{#if group.slug}
+											<span class="block truncate font-normal text-muted-foreground"
+												>{group.slug}</span
+											>
+										{/if}
+									</DropdownMenuLabel>
+								{/if}
+								{#each group.targets as target (target.id)}
+									<DropdownMenuItem onSelect={() => onDuplicate(target.id)}>
+										<div class="min-w-0">
+											<p class="line-clamp-3 text-xs">{target.label}</p>
+											{#if target.description}
+												<p class="line-clamp-3 text-xs text-muted-foreground">
+													{target.description}
+												</p>
+											{/if}
+										</div>
+									</DropdownMenuItem>
+								{/each}
+							{/each}
+						</DropdownMenuSubContent>
+					</DropdownMenuSub>
+				{/if}
+				<DropdownMenuSeparator />
+			{/if}
 			<!-- <DropdownMenuItem onSelect={onCut} disabled={readOnly}>
 				<Scissors class="mr-2 size-4" />
 				Cut
@@ -128,7 +200,7 @@
 					Download
 				</DropdownMenuItem>
 			{/if}
-			{#if onRowsDelete && contextMenu.isSelectedRow}
+			{#if onRowsDeleteRequest && contextMenu.isSelectedRow}
 				<DropdownMenuSeparator />
 				<DropdownMenuItem variant="destructive" onSelect={onDelete}>
 					<Trash2 class="mr-2 size-4" />
@@ -138,3 +210,5 @@
 		</DropdownMenuContent>
 	</DropdownMenu>
 {/if}
+
+<DataGridDeleteDialog {table} />

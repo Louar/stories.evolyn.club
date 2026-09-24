@@ -1,4 +1,8 @@
 import type { Row, RowData, RowSelectionState } from '$lib/components/data-grid/data-grid-table.js';
+import type {
+	DataGridCreateResult,
+	DataGridDuplicateContext
+} from '$lib/components/data-grid/types/data-grid.js';
 import { areEditValuesEqual } from './data-grid-mutations.js';
 import {
 	deduplicateDeletableMedia,
@@ -37,6 +41,35 @@ export function getSelectedRows<TData extends RowData>(
 	rowSelection: RowSelectionState
 ): Array<{ row: Row<TData>; rowIndex: number }> {
 	return rows.flatMap((row, rowIndex) => (rowSelection[row.id] ? [{ row, rowIndex }] : []));
+}
+
+/** Builds the batch callback expected by useDataGrid from a one-row duplication primitive. */
+export function createOnRowsDuplicate<TData extends RowData>(
+	duplicateRow: (params: DataGridDuplicateContext<TData>) => Promise<TData>,
+	getRowId: (row: TData, index: number) => string
+): (rows: TData[], rowIds: string[], targetId?: string) => Promise<DataGridCreateResult<TData>> {
+	return async (rows, rowIds, targetId) => {
+		if (rows.length !== rowIds.length) {
+			throw new Error('Rows and row IDs must have the same length');
+		}
+
+		const duplicated: Array<{ row: TData; rowId: string }> = [];
+		let failedCount = 0;
+		for (const [index, row] of rows.entries()) {
+			try {
+				const duplicatedRow = await duplicateRow({ row, rowId: rowIds[index]!, targetId });
+				duplicated.push({ row: duplicatedRow, rowId: getRowId(duplicatedRow, index) });
+			} catch {
+				failedCount++;
+			}
+		}
+
+		return {
+			rows: duplicated.map(({ row }) => row),
+			rowIds: duplicated.map(({ rowId }) => rowId),
+			failedCount
+		};
+	};
 }
 
 export async function clearCellMedia<TContext>(

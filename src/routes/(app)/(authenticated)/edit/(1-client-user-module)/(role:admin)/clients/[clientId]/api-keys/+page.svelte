@@ -112,61 +112,89 @@
 			enableHiding: false,
 			enableResizing: false,
 			header: ({ table }) => renderComponent(RowSelectHeader, { table }),
-			meta: { cell: { variant: 'row-select' } }
+			meta: { cell: { variant: 'row-select' }, description: 'Select this API key row.' }
 		},
 		{
 			accessorKey: 'id',
 			header: 'ID',
-			meta: { cell: { variant: 'text-short' }, readOnly: true },
+			meta: {
+				cell: { variant: 'text-short' },
+				description: 'Unique API key identifier.',
+				readOnly: true
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'name',
 			header: 'Name',
-			meta: { cell: { variant: 'text-short' } },
+			meta: { cell: { variant: 'text-short' }, description: 'Display name of the API key.' },
 			filterFn
 		},
 		{
 			accessorKey: 'secret',
 			header: 'Secret',
 			size: 240,
-			meta: { cell: { variant: 'text-short' }, readOnly: true },
+			meta: {
+				cell: { variant: 'text-short' },
+				description: 'Secret used to authenticate with the API.',
+				readOnly: true
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'scopes',
 			header: 'Scopes',
-			meta: { cell: { variant: 'text-long' } },
+			meta: { cell: { variant: 'text-long' }, description: 'Scopes granted to the API key.' },
 			filterFn
 		},
 		{
 			accessorKey: 'lastUsedAt',
 			header: 'Last used at',
-			meta: { cell: { variant: 'date-time' }, readOnly: true },
+			meta: {
+				cell: { variant: 'date-time' },
+				description: 'When the API key was last used.',
+				readOnly: true
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'createdAt',
 			header: 'Created at',
-			meta: { cell: { variant: 'date-time' }, readOnly: true },
+			meta: {
+				cell: { variant: 'date-time' },
+				description: 'When the API key was created.',
+				readOnly: true
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'createdBy',
 			header: 'Created by',
-			meta: { cell: { variant: 'badge-item' }, readOnly: true },
+			meta: {
+				cell: { variant: 'badge-item' },
+				description: 'Who created the API key.',
+				readOnly: true
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'updatedAt',
 			header: 'Updated at',
-			meta: { cell: { variant: 'date-time' }, readOnly: true },
+			meta: {
+				cell: { variant: 'date-time' },
+				description: 'When the API key was last updated.',
+				readOnly: true
+			},
 			filterFn
 		},
 		{
 			accessorKey: 'updatedBy',
 			header: 'Updated by',
-			meta: { cell: { variant: 'badge-item' }, readOnly: true },
+			meta: {
+				cell: { variant: 'badge-item' },
+				description: 'Who last updated the API key.',
+				readOnly: true
+			},
 			filterFn
 		}
 	];

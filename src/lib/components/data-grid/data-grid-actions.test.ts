@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
 	clearCellMedia,
+	createOnRowsDuplicate,
 	getSelectedRows,
 	hasFileUploadHandler,
 	isAcknowledgedCellValueCurrent,
@@ -31,6 +32,57 @@ describe('data grid actions', () => {
 			{ row: rows[1], rowIndex: 1 },
 			{ row: rows[2], rowIndex: 2 }
 		]);
+		expect(getSelectedRows(rows as never[], { missing: true })).toEqual([]);
+	});
+
+	it('derives an ordered row duplication handler with partial failure reporting', async () => {
+		let activeDuplications = 0;
+		let maxActiveDuplications = 0;
+		const receivedTargetIds: Array<string | undefined> = [];
+		const onRowsDuplicate = createOnRowsDuplicate(
+			async ({
+				row,
+				rowId,
+				targetId
+			}: {
+				row: { id: string };
+				rowId: string;
+				targetId?: string;
+			}) => {
+				receivedTargetIds.push(targetId);
+				activeDuplications++;
+				maxActiveDuplications = Math.max(maxActiveDuplications, activeDuplications);
+				await Promise.resolve();
+				activeDuplications--;
+				if (rowId === 'second') throw new Error('Failed to duplicate');
+				return { ...row, id: `${rowId}-copy` };
+			},
+			(row) => row.id
+		);
+
+		await expect(
+			onRowsDuplicate(
+				[{ id: 'first' }, { id: 'second' }, { id: 'third' }],
+				['first', 'second', 'third'],
+				'target-parent'
+			)
+		).resolves.toEqual({
+			rows: [{ id: 'first-copy' }, { id: 'third-copy' }],
+			rowIds: ['first-copy', 'third-copy'],
+			failedCount: 1
+		});
+		expect(maxActiveDuplications).toBe(1);
+		expect(receivedTargetIds).toEqual(['target-parent', 'target-parent', 'target-parent']);
+	});
+
+	it('rejects mismatched duplicate rows and IDs before invoking the adapter', async () => {
+		const duplicateRow = vi.fn(async ({ row }: { row: { id: string } }) => row);
+		const onRowsDuplicate = createOnRowsDuplicate(duplicateRow, (row) => row.id);
+
+		await expect(onRowsDuplicate([{ id: 'first' }], [])).rejects.toThrow(
+			'Rows and row IDs must have the same length'
+		);
+		expect(duplicateRow).not.toHaveBeenCalled();
 	});
 
 	it('normalizes empty file lists to null and accepts object or array values', () => {

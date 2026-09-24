@@ -1,5 +1,11 @@
 <script lang="ts" generics="TData extends RowData, TValue">
 	import type { CellOpts } from '$lib/components/data-grid/types/data-grid.js';
+	import Markdown from '$lib/components/ai/markdown/markdown.svelte';
+	import {
+		Collapsible,
+		CollapsibleContent,
+		CollapsibleTrigger
+	} from '$lib/components/ui/collapsible/index.js';
 	import {
 		DropdownMenu,
 		DropdownMenuCheckboxItem,
@@ -56,6 +62,7 @@
 	}
 
 	let { header, table, class: className }: Props = $props();
+	let isDescriptionOpen = $state(false);
 
 	const column = $derived(header.column);
 	const label = $derived.by(() => {
@@ -68,12 +75,14 @@
 		return column.id;
 	});
 
-	const isAnyColumnResizing = $derived(
-		table.atoms.columnResizing.get().isResizingColumn ?? false
-	);
+	const isAnyColumnResizing = $derived(table.atoms.columnResizing.get().isResizingColumn ?? false);
 
 	const cellVariant = $derived(column.columnDef.meta?.cell);
 	const columnVariant = $derived.by(() => getColumnVariant(cellVariant?.variant));
+	const description = $derived(column.columnDef.meta?.description?.trim());
+	const hasLongDescription = $derived(
+		(description?.length ?? 0) > 240 || (description?.split('\n').length ?? 0) > 4
+	);
 
 	// Get pinning state reactively from table state
 	const columnPinning = $derived(table.atoms.columnPinning.get());
@@ -304,7 +313,46 @@
 		<!-- Right side: chevron -->
 		<ChevronDown class="shrink-0 text-muted-foreground" />
 	</DropdownMenuTrigger>
-	<DropdownMenuContent align="start" sideOffset={0} class="w-60">
+	<DropdownMenuContent align="start" sideOffset={0} class={description ? 'w-80' : 'w-60'}>
+		{#if description}
+			<div class="px-2 py-2.5">
+				{#if hasLongDescription}
+					<Collapsible bind:open={isDescriptionOpen}>
+						{#if !isDescriptionOpen}
+							<div class="relative max-h-24 overflow-hidden">
+								<Markdown
+									content={description}
+									class="prose prose-sm whitespace-pre-wrap text-muted-foreground"
+								/>
+								<div
+									class="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-popover to-transparent"
+								></div>
+							</div>
+						{/if}
+						<CollapsibleContent>
+							<Markdown
+								content={description}
+								class="prose prose-sm whitespace-pre-wrap text-muted-foreground"
+							/>
+						</CollapsibleContent>
+						<CollapsibleTrigger
+							class="mt-1 flex w-full items-center justify-center gap-1 rounded-sm py-1 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+						>
+							{isDescriptionOpen ? 'Show less' : 'Show more'}
+							<ChevronDown
+								class={cn('size-3 transition-transform', isDescriptionOpen && 'rotate-180')}
+							/>
+						</CollapsibleTrigger>
+					</Collapsible>
+				{:else}
+					<Markdown
+						content={description}
+						class="prose prose-sm whitespace-pre-wrap text-muted-foreground"
+					/>
+				{/if}
+			</div>
+			<DropdownMenuSeparator />
+		{/if}
 		{#if column.getCanSort()}
 			<DropdownMenuCheckboxItem
 				class="relative pr-8 pl-2 [&_svg]:text-muted-foreground [&>span:first-child]:right-2 [&>span:first-child]:left-auto"
