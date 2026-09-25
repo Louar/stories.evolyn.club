@@ -7,11 +7,13 @@ export type YouTubePlayer = {
 	getCurrentTime: () => number;
 	getDuration: () => number;
 	getIframe: () => HTMLIFrameElement;
+	getOptions: () => string[];
 	mute: () => void;
 	pauseVideo: () => void;
 	playVideo: () => void;
 	seekTo: (seconds: number, allowSeekAhead: boolean) => void;
 	setPlaybackRate: (rate: number) => void;
+	unloadModule: (module: string) => void;
 };
 
 type YouTubePlayerEvent = { target: YouTubePlayer };
@@ -27,6 +29,7 @@ type YouTubeNamespace = {
 			playerVars: Record<string, number | string>;
 			events: {
 				onReady: (event: YouTubePlayerEvent) => void;
+				onApiChange: (event: YouTubePlayerEvent) => void;
 				onStateChange: (event: YouTubeStateEvent) => void;
 				onError: (event: YouTubeErrorEvent) => void;
 			};
@@ -213,6 +216,7 @@ export const createYouTubePlayer = async (
 		start?: number;
 		end?: number;
 		onReady: (player: YouTubePlayer) => void;
+		onApiChange?: (player: YouTubePlayer) => void;
 		onStateChange: (state: YouTubePlayerState) => void;
 		onError: () => void;
 	}
@@ -234,6 +238,7 @@ export const createYouTubePlayer = async (
 		},
 		events: {
 			onReady: ({ target }) => options.onReady(target),
+			onApiChange: ({ target }) => options.onApiChange?.(target),
 			onStateChange: ({ data }) => options.onStateChange(data),
 			onError: () => options.onError()
 		}

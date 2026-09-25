@@ -309,7 +309,13 @@
 		endWatching();
 	};
 
+	const disableYouTubeCaptions = (player: YouTubePlayer | undefined) => {
+		// Caption preferences can load the module after the player is ready.
+		if (player?.getOptions().includes('captions')) player.unloadModule('captions');
+	};
+
 	const handleYouTubeState = (state: YouTubePlayerState) => {
+		disableYouTubeCaptions(youtube);
 		if (state === 1 && !isActive) pauseMedia();
 		else if (state === 1) startWatching();
 		else if (state === 0) handleEnded();
@@ -335,6 +341,7 @@
 				end,
 				onReady: (player) => {
 					youtube = player;
+					disableYouTubeCaptions(player);
 					const iframe = player.getIframe();
 					iframe.title = title ?? m.player_youtube_video_player();
 					iframe.classList.add('vds-youtube');
@@ -358,6 +365,7 @@
 					youtubeReadyTimer = setInterval(markReady, 250);
 					markReady();
 				},
+				onApiChange: disableYouTubeCaptions,
 				onStateChange: handleYouTubeState,
 				onError: () => {
 					if (youtubeReadyTimer) clearInterval(youtubeReadyTimer);
