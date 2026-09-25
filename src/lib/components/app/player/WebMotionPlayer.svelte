@@ -32,6 +32,8 @@
 		label?: string;
 		class?: string;
 		controls?: boolean;
+		/** Contain fills a bounded parent; responsive uses the viewbox's intrinsic ratio. */
+		fit?: 'responsive' | 'contain';
 		onready?: (controller: PlaybackController) => void;
 		onerror?: (error: unknown) => void;
 	};
@@ -87,6 +89,7 @@
 		label = 'Animation player',
 		class: className,
 		controls = false,
+		fit = 'responsive',
 		onready,
 		onerror
 	}: Props = $props();
@@ -495,7 +498,13 @@
 
 		try {
 			const parsed = webMotionConfigSchema.parse(config);
-			const composition = new Composition(parsed.composition);
+			// Keep authoring coordinates stable while CSS scales the canvas to its parent.
+			const { viewBoxWidth, viewBoxHeight, ...settings } = parsed.composition;
+			const composition = new Composition({
+				...settings,
+				width: viewBoxWidth,
+				height: viewBoxHeight
+			});
 			const compiledLayers = parsed.layers.map((definition) => compileLayer(definition, parsed));
 			const layers = compiledLayers.map(
 				(compiled) =>
@@ -571,9 +580,12 @@
 	}
 </script>
 
-<div class={className} {@attach setupPlayer}>
-	<w-player aria-label={label} data-controls={controls} inert={!controls}>
-		<canvas aria-label={label}></canvas>
+<div class={className} data-fit={fit} inert={!controls} {@attach setupPlayer}>
+	<w-player aria-label={label} data-controls={controls}>
+		<canvas
+			aria-label={label}
+			style:aspect-ratio={config.composition.viewBoxWidth / config.composition.viewBoxHeight}
+		></canvas>
 	</w-player>
 
 	{#if loadError}
@@ -582,6 +594,11 @@
 </div>
 
 <style>
+	div {
+		width: 100%;
+		min-width: 0;
+	}
+
 	w-player {
 		--w-player-accent: #f4f4f5;
 		--w-player-accent-contrast: #18181b;
@@ -598,6 +615,27 @@
 
 	w-player[data-controls='false']::part(bar) {
 		display: none;
+	}
+
+	/* Override the transport's inline fit-to-height width when the parent grows. */
+	w-player::part(shell) {
+		width: 100% !important;
+	}
+
+	/* Reserve the bar's natural height and contain the canvas in the remaining viewport. */
+	div[data-fit='contain'],
+	[data-fit='contain'] w-player,
+	[data-fit='contain'] w-player::part(shell) {
+		height: 100%;
+	}
+
+	[data-fit='contain'] w-player::part(viewport) {
+		flex-basis: 0;
+		overflow: hidden;
+	}
+
+	[data-fit='contain'] canvas {
+		height: 100%;
 	}
 
 	/* The installed player calls its multiplier timeline zoom, not playback speed. */
@@ -620,6 +658,7 @@
 		display: block;
 		width: 100%;
 		height: auto;
+		object-fit: contain;
 	}
 
 	.error {

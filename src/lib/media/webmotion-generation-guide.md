@@ -4,19 +4,19 @@ Generate a single valid JSON object describing a frame-based WebMotion animation
 
 The configuration supports:
 
-* text
-* rectangles
-* circles
-* ellipses
-* lines
-* polygons
-* SVG paths
-* reusable motion presets
-* keyframe animation
-* transforms
-* opacity and blur
-* color animation
-* nested property animation
+- text
+- rectangles
+- circles
+- ellipses
+- lines
+- polygons
+- SVG paths
+- reusable motion presets
+- keyframe animation
+- transforms
+- opacity and blur
+- color animation
+- nested property animation
 
 Prefer simple, reusable motion definitions and concise keyframes.
 
@@ -26,20 +26,20 @@ Prefer simple, reusable motion definitions and concise keyframes.
 
 ```json
 {
-  "version": 1,
-  "composition": {
-    "width": 1280,
-    "height": 720,
-    "fps": 30,
-    "durationInFrames": 300,
-    "background": "#09090b"
-  },
-  "playback": {
-    "autoplay": false,
-    "loop": true
-  },
-  "motions": {},
-  "layers": []
+	"version": 1,
+	"composition": {
+		"viewBoxWidth": 1280,
+		"viewBoxHeight": 720,
+		"fps": 30,
+		"durationInFrames": 300,
+		"background": "#09090b"
+	},
+	"playback": {
+		"autoplay": false,
+		"loop": true
+	},
+	"motions": {},
+	"layers": []
 }
 ```
 
@@ -59,8 +59,8 @@ Required.
 
 | Property           | Type             | Description                                |
 | ------------------ | ---------------- | ------------------------------------------ |
-| `width`            | positive integer | Canvas width in pixels                     |
-| `height`           | positive integer | Canvas height in pixels                    |
+| `viewBoxWidth`     | positive integer | Logical coordinate width; required         |
+| `viewBoxHeight`    | positive integer | Logical coordinate height; required        |
 | `fps`              | positive number  | Frames per second                          |
 | `durationInFrames` | positive integer | Total composition duration                 |
 | `background`       | string           | Canvas background; default `"transparent"` |
@@ -69,13 +69,46 @@ Example:
 
 ```json
 {
-  "width": 1280,
-  "height": 720,
-  "fps": 30,
-  "durationInFrames": 300,
-  "background": "#09090b"
+	"viewBoxWidth": 1280,
+	"viewBoxHeight": 720,
+	"fps": 30,
+	"durationInFrames": 300,
+	"background": "#09090b"
 }
 ```
+
+The aspect ratio is derived from `viewBoxWidth / viewBoxHeight`; do not provide a
+separate ratio attribute. These dimensions define logical drawing coordinates,
+not the player's screen dimensions.
+
+In a bounded parent, the player fills the container and uses `object-fit: contain`
+on the canvas. The complete animation scales as far as fits without cropping or
+distortion, with letterboxing when the ratios differ. Controls, when enabled,
+remain below the canvas within the container. In responsive, unbounded layouts,
+the canvas fills the available width and derives its height from the viewbox ratio;
+controls add to the player's total height. Resizing never changes the timeline.
+
+Common logical viewboxes:
+
+- Landscape 16:9: `1280` by `720`, or `1920` by `1080`
+- Portrait 9:16: `720` by `1280`, or `1080` by `1920`
+- Square 1:1: `1000` by `1000`
+
+Version remains `1`. Composition `width` and `height` are not accepted.
+Layer dimensions, such as rectangle and SVG `width` and `height`, remain supported.
+
+### Drawing coordinates
+
+Author positions, sizes, font sizes, strokes, and blur in the logical viewbox.
+The runtime canvas uses exactly `viewBoxWidth` by `viewBoxHeight`, with no
+normalization. The origin is the top-left corner, and the center is
+`(viewBoxWidth / 2, viewBoxHeight / 2)`. For the `1280` by `720` examples here,
+the center is `(640, 360)`. All layer geometry scales with the displayed canvas.
+
+To rename an old composition's `width` and `height`, use `viewBoxWidth` and
+`viewBoxHeight` with the same values. Preserve all existing geometry and keyframes.
+SVG path data and each SVG layer's `viewBox` remain in their own coordinate system;
+the layer's outer `width` and `height` place it within the composition viewbox.
 
 ### `playback`
 
@@ -83,8 +116,8 @@ Optional.
 
 ```json
 {
-  "autoplay": false,
-  "loop": true
+	"autoplay": false,
+	"loop": true
 }
 ```
 
@@ -118,13 +151,13 @@ Every layer has this general form:
 
 ```json
 {
-  "type": "circle",
-  "name": "Background glow",
-  "from": 0,
-  "duration": 300,
-  "motion": "fadeIn",
-  "props": {},
-  "animate": {}
+	"type": "circle",
+	"name": "Background glow",
+	"from": 0,
+	"duration": 300,
+	"motion": "fadeIn",
+	"props": {},
+	"animate": {}
 }
 ```
 
@@ -154,8 +187,8 @@ For example:
 
 ```json
 {
-  "from": 30,
-  "duration": 60
+	"from": 30,
+	"duration": 60
 }
 ```
 
@@ -169,27 +202,27 @@ Most layer types support:
 
 ```json
 {
-  "x": 640,
-  "y": 360,
-  "rotation": 0,
-  "scale": 1,
-  "scaleX": 1,
-  "scaleY": 1,
-  "opacity": 1,
-  "blur": 0
+	"x": 640,
+	"y": 360,
+	"rotation": 0,
+	"scale": 1,
+	"scaleX": 1,
+	"scaleY": 1,
+	"opacity": 1,
+	"blur": 0
 }
 ```
 
 ### Meaning
 
-* `x`: horizontal position in pixels
-* `y`: vertical position in pixels
-* `rotation`: degrees
-* `scale`: uniform X/Y scale
-* `scaleX`: horizontal scale
-* `scaleY`: vertical scale
-* `opacity`: `0` to `1`
-* `blur`: blur radius in pixels, ≥ `0`
+- `x`: horizontal position in logical drawing units
+- `y`: vertical position in logical drawing units
+- `rotation`: degrees
+- `scale`: uniform X/Y scale
+- `scaleX`: horizontal scale
+- `scaleY`: vertical scale
+- `opacity`: `0` to `1`
+- `blur`: blur radius in logical drawing units, ≥ `0`
 
 `scale` is shorthand for setting both `scaleX` and `scaleY`.
 
@@ -209,15 +242,15 @@ Shape layers can use:
 
 ```json
 {
-  "fill": "#818cf8",
-  "stroke": "#ffffff",
-  "lineWidth": 2
+	"fill": "#818cf8",
+	"stroke": "#ffffff",
+	"lineWidth": 2
 }
 ```
 
-* `fill`: CSS color string
-* `stroke`: CSS color string
-* `lineWidth`: number ≥ `0`
+- `fill`: CSS color string
+- `stroke`: CSS color string
+- `lineWidth`: number ≥ `0`
 
 ---
 
@@ -227,19 +260,19 @@ Shape layers can use:
 
 ```json
 {
-  "type": "text",
-  "props": {
-    "x": 640,
-    "y": 360,
-    "text": "Hello world",
-    "fontSize": 72,
-    "fontFamily": "system-ui",
-    "fontWeight": 700,
-    "color": "#ffffff",
-    "align": "center",
-    "baseline": "middle",
-    "maxWidth": 800
-  }
+	"type": "text",
+	"props": {
+		"x": 640,
+		"y": 360,
+		"text": "Hello world",
+		"fontSize": 72,
+		"fontFamily": "system-ui",
+		"fontWeight": 700,
+		"color": "#ffffff",
+		"align": "center",
+		"baseline": "middle",
+		"maxWidth": 800
+	}
 }
 ```
 
@@ -307,17 +340,17 @@ baseline: middle
 
 ```json
 {
-  "type": "rectangle",
-  "props": {
-    "x": 640,
-    "y": 360,
-    "width": 600,
-    "height": 280,
-    "cornerRadius": 40,
-    "fill": "#18181b",
-    "stroke": "#818cf8",
-    "lineWidth": 2
-  }
+	"type": "rectangle",
+	"props": {
+		"x": 640,
+		"y": 360,
+		"width": 600,
+		"height": 280,
+		"cornerRadius": 40,
+		"fill": "#18181b",
+		"stroke": "#818cf8",
+		"lineWidth": 2
+	}
 }
 ```
 
@@ -345,13 +378,13 @@ plus all common transforms.
 
 ```json
 {
-  "type": "circle",
-  "props": {
-    "x": 640,
-    "y": 360,
-    "radius": 150,
-    "fill": "#818cf8"
-  }
+	"type": "circle",
+	"props": {
+		"x": 640,
+		"y": 360,
+		"radius": 150,
+		"fill": "#818cf8"
+	}
 }
 ```
 
@@ -369,14 +402,14 @@ Supports paint and common transforms.
 
 ```json
 {
-  "type": "ellipse",
-  "props": {
-    "x": 640,
-    "y": 360,
-    "radiusX": 120,
-    "radiusY": 50,
-    "fill": "#818cf8"
-  }
+	"type": "ellipse",
+	"props": {
+		"x": 640,
+		"y": 360,
+		"radiusX": 120,
+		"radiusY": 50,
+		"fill": "#818cf8"
+	}
 }
 ```
 
@@ -395,18 +428,18 @@ Supports paint and common transforms.
 
 ```json
 {
-  "type": "line",
-  "props": {
-    "x": 640,
-    "y": 360,
-    "x1": -150,
-    "y1": 0,
-    "x2": 150,
-    "y2": 0,
-    "stroke": "#ffffff",
-    "lineWidth": 4,
-    "lineCap": "round"
-  }
+	"type": "line",
+	"props": {
+		"x": 640,
+		"y": 360,
+		"x1": -150,
+		"y1": 0,
+		"x2": 150,
+		"y2": 0,
+		"stroke": "#ffffff",
+		"lineWidth": 4,
+		"lineCap": "round"
+	}
 }
 ```
 
@@ -435,17 +468,17 @@ Supports common transforms.
 
 ```json
 {
-  "type": "polygon",
-  "props": {
-    "x": 640,
-    "y": 360,
-    "points": [
-      [0, -50],
-      [45, 35],
-      [-45, 35]
-    ],
-    "fill": "#c4b5fd"
-  }
+	"type": "polygon",
+	"props": {
+		"x": 640,
+		"y": 360,
+		"points": [
+			[0, -50],
+			[45, 35],
+			[-45, 35]
+		],
+		"fill": "#c4b5fd"
+	}
 }
 ```
 
@@ -461,23 +494,23 @@ SVG layers contain one or more SVG paths.
 
 ```json
 {
-  "type": "svg",
-  "props": {
-    "x": 640,
-    "y": 360,
-    "width": 120,
-    "height": 120,
-    "viewBox": [0, 0, 24, 24],
-    "paths": [
-      {
-        "d": "M12 2L22 22H2Z",
-        "fill": "#818cf8",
-        "stroke": "#ffffff",
-        "lineWidth": 0.5,
-        "fillRule": "nonzero"
-      }
-    ]
-  }
+	"type": "svg",
+	"props": {
+		"x": 640,
+		"y": 360,
+		"width": 120,
+		"height": 120,
+		"viewBox": [0, 0, 24, 24],
+		"paths": [
+			{
+				"d": "M12 2L22 22H2Z",
+				"fill": "#818cf8",
+				"stroke": "#ffffff",
+				"lineWidth": 0.5,
+				"fillRule": "nonzero"
+			}
+		]
+	}
 }
 ```
 
@@ -598,12 +631,12 @@ Examples:
 
 ```json
 {
-  "values": [0, 1],
-  "at": [0, 1],
-  "duration": 30,
-  "delay": 10,
-  "easing": "easeOutCubic",
-  "relative": false
+	"values": [0, 1],
+	"at": [0, 1],
+	"duration": 30,
+	"delay": 10,
+	"easing": "easeOutCubic",
+	"relative": false
 }
 ```
 
@@ -629,7 +662,7 @@ Prefer omitting keyframe positions when they are evenly spaced.
 
 ```json
 {
-  "values": [0.8, 1.2, 0.8]
+	"values": [0.8, 1.2, 0.8]
 }
 ```
 
@@ -645,7 +678,7 @@ Five values:
 
 ```json
 {
-  "values": [0, 1, 0, 1, 0]
+	"values": [0, 1, 0, 1, 0]
 }
 ```
 
@@ -669,17 +702,17 @@ Use `at` for uneven timing.
 
 ```json
 {
-  "values": [0, 1, 1, 0],
-  "at": [0, 0.15, 0.8, 1],
-  "easing": "easeInOutCubic"
+	"values": [0, 1, 1, 0],
+	"at": [0, 0.15, 0.8, 1],
+	"easing": "easeInOutCubic"
 }
 ```
 
 `at` values must:
 
-* be between `0` and `1`
-* increase strictly
-* have the same number of entries as `values`
+- be between `0` and `1`
+- increase strictly
+- have the same number of entries as `values`
 
 ---
 
@@ -689,9 +722,9 @@ Use `frames` when exact frame positions matter.
 
 ```json
 {
-  "values": [0, 1, 0],
-  "frames": [0, 20, 60],
-  "easing": "easeInOutSine"
+	"values": [0, 1, 0],
+	"frames": [0, 20, 60],
+	"easing": "easeInOutSine"
 }
 ```
 
@@ -759,19 +792,19 @@ Example:
 
 ```json
 {
-  "type": "text",
-  "props": {
-    "x": 640,
-    "y": 300,
-    "text": "Hello"
-  },
-  "animate": {
-    "y": {
-      "values": [40, 0],
-      "duration": 30,
-      "relative": true
-    }
-  }
+	"type": "text",
+	"props": {
+		"x": 640,
+		"y": 300,
+		"text": "Hello"
+	},
+	"animate": {
+		"y": {
+			"values": [40, 0],
+			"duration": 30,
+			"relative": true
+		}
+	}
 }
 ```
 
@@ -785,8 +818,8 @@ because the base Y is `300`.
 
 Relative animation only works with:
 
-* a numeric base value
-* numeric keyframe values
+- a numeric base value
+- numeric keyframe values
 
 This is especially useful for reusable motions such as `fadeUp`, `slideLeft`, etc.
 
@@ -811,11 +844,11 @@ easeInOutSine
 
 Good defaults:
 
-* constant movement/rotation → `linear`
-* entrances → `easeOutCubic`
-* exits → `easeInCubic`
-* smooth looping/pulsing → `easeInOutSine`
-* smooth positional movement → `easeInOutCubic`
+- constant movement/rotation → `linear`
+- entrances → `easeOutCubic`
+- exits → `easeInCubic`
+- smooth looping/pulsing → `easeInOutSine`
+- smooth positional movement → `easeInOutCubic`
 
 ---
 
@@ -864,12 +897,12 @@ Apply one to a layer:
 
 ```json
 {
-  "type": "text",
-  "motion": "fadeIn",
-  "props": {
-    "text": "Hello",
-    "opacity": 0
-  }
+	"type": "text",
+	"motion": "fadeIn",
+	"props": {
+		"text": "Hello",
+		"opacity": 0
+	}
 }
 ```
 
@@ -918,16 +951,16 @@ Then:
 
 ```json
 {
-  "type": "text",
-  "from": 20,
-  "motion": "fadeUp",
-  "props": {
-    "x": 640,
-    "y": 360,
-    "text": "WebMotion",
-    "fontSize": 80,
-    "opacity": 0
-  }
+	"type": "text",
+	"from": 20,
+	"motion": "fadeUp",
+	"props": {
+		"x": 640,
+		"y": 360,
+		"text": "WebMotion",
+		"fontSize": 80,
+		"opacity": 0
+	}
 }
 ```
 
@@ -1039,8 +1072,8 @@ A layer with:
 
 ```json
 {
-  "from": 30,
-  "duration": 100
+	"from": 30,
+	"duration": 100
 }
 ```
 
@@ -1058,9 +1091,9 @@ A track may occupy all or only part of the layer:
 
 ```json
 {
-  "values": [0, 1],
-  "duration": 20,
-  "delay": 10
+	"values": [0, 1],
+	"duration": 20,
+	"delay": 10
 }
 ```
 
@@ -1074,7 +1107,7 @@ Never create animation tracks that extend past the end of their layer.
 
 When generating a configuration:
 
-1. Use a clear composition size, usually `1280×720` or `1920×1080`.
+1. Set positive integer composition `viewBoxWidth` and `viewBoxHeight`, usually `1280` by `720` for landscape or `720` by `1280` for portrait. Author geometry in those logical coordinates; do not include a separate ratio or composition `width` or `height`.
 2. Usually use `30` fps unless another rate is requested.
 3. Put static/base values in `props`.
 4. Put changing values in `animate`.
@@ -1099,103 +1132,103 @@ When generating a configuration:
 
 ```json
 {
-  "version": 1,
-  "composition": {
-    "width": 1280,
-    "height": 720,
-    "fps": 30,
-    "durationInFrames": 180,
-    "background": "#09090b"
-  },
-  "playback": {
-    "autoplay": false,
-    "loop": true
-  },
-  "motions": {
-    "fadeUp": {
-      "duration": 24,
-      "easing": "easeOutCubic",
-      "animate": {
-        "opacity": [0, 1],
-        "y": {
-          "values": [30, 0],
-          "relative": true
-        }
-      }
-    }
-  },
-  "layers": [
-    {
-      "type": "circle",
-      "name": "Background glow",
-      "props": {
-        "x": 300,
-        "y": 360,
-        "radius": 220,
-        "fill": "rgba(99, 102, 241, 0.3)",
-        "blur": 60
-      },
-      "animate": {
-        "x": {
-          "values": [300, 980, 300],
-          "easing": "easeInOutCubic"
-        },
-        "scale": {
-          "values": [0.9, 1.15, 0.9],
-          "easing": "easeInOutSine"
-        }
-      }
-    },
-    {
-      "type": "rectangle",
-      "name": "Card",
-      "from": 10,
-      "motion": "fadeUp",
-      "props": {
-        "x": 640,
-        "y": 360,
-        "width": 620,
-        "height": 260,
-        "cornerRadius": 42,
-        "fill": "rgba(24, 24, 27, 0.9)",
-        "stroke": "#818cf8",
-        "lineWidth": 2,
-        "opacity": 0
-      }
-    },
-    {
-      "type": "text",
-      "name": "Title",
-      "from": 20,
-      "motion": "fadeUp",
-      "props": {
-        "x": 640,
-        "y": 340,
-        "text": "WEBMOTION",
-        "fontSize": 82,
-        "fontWeight": 700,
-        "fontFamily": "system-ui",
-        "color": "#fafafa",
-        "opacity": 0
-      }
-    },
-    {
-      "type": "text",
-      "name": "Subtitle",
-      "from": 32,
-      "motion": "fadeUp",
-      "props": {
-        "x": 640,
-        "y": 420,
-        "text": "JSON-driven animation",
-        "fontSize": 28,
-        "fontWeight": 400,
-        "fontFamily": "system-ui",
-        "color": "#c7d2fe",
-        "opacity": 0
-      }
-    }
-  ]
+	"version": 1,
+	"composition": {
+		"viewBoxWidth": 1280,
+		"viewBoxHeight": 720,
+		"fps": 30,
+		"durationInFrames": 180,
+		"background": "#09090b"
+	},
+	"playback": {
+		"autoplay": false,
+		"loop": true
+	},
+	"motions": {
+		"fadeUp": {
+			"duration": 24,
+			"easing": "easeOutCubic",
+			"animate": {
+				"opacity": [0, 1],
+				"y": {
+					"values": [30, 0],
+					"relative": true
+				}
+			}
+		}
+	},
+	"layers": [
+		{
+			"type": "circle",
+			"name": "Background glow",
+			"props": {
+				"x": 300,
+				"y": 360,
+				"radius": 220,
+				"fill": "rgba(99, 102, 241, 0.3)",
+				"blur": 60
+			},
+			"animate": {
+				"x": {
+					"values": [300, 980, 300],
+					"easing": "easeInOutCubic"
+				},
+				"scale": {
+					"values": [0.9, 1.15, 0.9],
+					"easing": "easeInOutSine"
+				}
+			}
+		},
+		{
+			"type": "rectangle",
+			"name": "Card",
+			"from": 10,
+			"motion": "fadeUp",
+			"props": {
+				"x": 640,
+				"y": 360,
+				"width": 620,
+				"height": 260,
+				"cornerRadius": 42,
+				"fill": "rgba(24, 24, 27, 0.9)",
+				"stroke": "#818cf8",
+				"lineWidth": 2,
+				"opacity": 0
+			}
+		},
+		{
+			"type": "text",
+			"name": "Title",
+			"from": 20,
+			"motion": "fadeUp",
+			"props": {
+				"x": 640,
+				"y": 340,
+				"text": "WEBMOTION",
+				"fontSize": 82,
+				"fontWeight": 700,
+				"fontFamily": "system-ui",
+				"color": "#fafafa",
+				"opacity": 0
+			}
+		},
+		{
+			"type": "text",
+			"name": "Subtitle",
+			"from": 32,
+			"motion": "fadeUp",
+			"props": {
+				"x": 640,
+				"y": 420,
+				"text": "JSON-driven animation",
+				"fontSize": 28,
+				"fontWeight": 400,
+				"fontFamily": "system-ui",
+				"color": "#c7d2fe",
+				"opacity": 0
+			}
+		}
+	]
 }
 ```
 
@@ -1205,11 +1238,11 @@ When generating a configuration:
 
 When asked to create a WebMotion animation:
 
-* Output a valid `WebMotionConfig` version 1 object.
-* Use only supported layer types and properties.
-* Choose visually sensible dimensions, timings, positions, sizes, and colors.
-* Use reusable motions when animation patterns repeat.
-* Avoid unnecessary keyframe positions.
-* Keep all layer and track durations within the composition.
-* Prefer smooth, purposeful animation over excessive movement.
-* Unless specifically requested otherwise, return pure JSON without explanatory prose.
+- Output a valid `WebMotionConfig` version 1 object.
+- Use only supported layer types and properties.
+- Choose a sensible aspect ratio, timings, positions, sizes, and colors using the documented logical drawing coordinates.
+- Use reusable motions when animation patterns repeat.
+- Avoid unnecessary keyframe positions.
+- Keep all layer and track durations within the composition.
+- Prefer smooth, purposeful animation over excessive movement.
+- Unless specifically requested otherwise, return pure JSON without explanatory prose.

@@ -210,8 +210,8 @@ export const webMotionConfigSchema = z
 		version: z.literal(1),
 		composition: z
 			.object({
-				width: z.number().int().positive(),
-				height: z.number().int().positive(),
+				viewBoxWidth: z.number().int().positive(),
+				viewBoxHeight: z.number().int().positive(),
 				fps: z.number().positive(),
 				durationInFrames: z.number().int().positive(),
 				background: z.string().default('transparent')

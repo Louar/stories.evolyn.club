@@ -125,12 +125,8 @@
 </script>
 
 <div class="absolute inset-0 flex items-center justify-center overflow-hidden">
-	<div
-		inert
-		class="pointer-events-none w-full"
-		style:max-width={`min(100%, ${(config.composition.width / config.composition.height) * 100}dvh)`}
-	>
-		<WebMotionPlayer config={playbackConfig} onready={ready} />
+	<div inert class="pointer-events-none h-full w-full">
+		<WebMotionPlayer config={playbackConfig} fit="contain" onready={ready} />
 	</div>
 	{#if isActive && !PLAYERS.didUserInteract}
 		<button

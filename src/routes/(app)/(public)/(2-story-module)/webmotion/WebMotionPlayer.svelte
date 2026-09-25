@@ -234,8 +234,8 @@
 			version: z.literal(1),
 			composition: z
 				.object({
-					width: z.number().int().positive(),
-					height: z.number().int().positive(),
+					viewBoxWidth: z.number().int().positive(),
+					viewBoxHeight: z.number().int().positive(),
 					fps: z.number().positive(),
 					durationInFrames: z.number().int().positive(),
 					background: z.string().default('transparent')
@@ -748,7 +748,12 @@
 
 		try {
 			const parsed = webMotionConfigSchema.parse(config);
-			const composition = new Composition(parsed.composition);
+			const { viewBoxWidth, viewBoxHeight, ...settings } = parsed.composition;
+			const composition = new Composition({
+				...settings,
+				width: viewBoxWidth,
+				height: viewBoxHeight
+			});
 			const compiledLayers = parsed.layers.map((definition) => compileLayer(definition, parsed));
 			const layers = compiledLayers.map(
 				(compiled) =>
@@ -826,7 +831,10 @@
 
 <div class={className} {@attach setupPlayer}>
 	<w-player aria-label={label}>
-		<canvas aria-label={label}></canvas>
+		<canvas
+			aria-label={label}
+			style:aspect-ratio={config.composition.viewBoxWidth / config.composition.viewBoxHeight}
+		></canvas>
 	</w-player>
 
 	{#if loadError}
@@ -835,6 +843,11 @@
 </div>
 
 <style>
+	div {
+		width: 100%;
+		min-width: 0;
+	}
+
 	w-player {
 		--w-player-accent: #f4f4f5;
 		--w-player-accent-contrast: #18181b;
@@ -849,6 +862,11 @@
 		color: #f4f4f5;
 	}
 
+	w-player::part(shell) {
+		/* Override the native inline fit-to-height width when the parent grows. */
+		width: 100% !important;
+	}
+
 	w-player::part(bar) {
 		display: none;
 	}
@@ -857,6 +875,7 @@
 		display: block;
 		width: 100%;
 		height: auto;
+		object-fit: contain;
 	}
 
 	.error {

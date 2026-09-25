@@ -4,8 +4,8 @@
 	const animation: WebMotionConfig = {
 		version: 1,
 		composition: {
-			width: 1280,
-			height: 720,
+			viewBoxWidth: 1280,
+			viewBoxHeight: 720,
 			fps: 30,
 			durationInFrames: 300,
 			background: '#09090b'
@@ -277,8 +277,8 @@
 			Data-driven WebMotion animations
 		</h1>
 		<p class="text-base leading-7 text-muted-foreground sm:text-lg">
-			A compact JSON document controls the timeline, reusable motions, text, shapes, SVG paths
-			and keyframed transforms.
+			A compact JSON document controls the timeline, reusable motions, text, shapes, SVG paths and
+			keyframed transforms.
 		</p>
 	</header>
 

@@ -50,7 +50,7 @@
 		story: Story;
 		selection?: EditorSelection;
 		open?: boolean;
-		closeAnimation: (output: AnimationEditorOutput) => void;
+		closeAnimation: (output: AnimationEditorOutput, selection: EditorSelection) => void;
 		closeStill: (output: {
 			action: 'persist' | 'delete' | 'close';
 			id?: string;
@@ -80,6 +80,9 @@
 	} = $props();
 
 	const sidebar = useSidebar();
+	// Capture the opening selection so late saves cannot replace another resource's editor.
+	const animationCallback = (current: EditorSelection) => (output: AnimationEditorOutput) =>
+		closeAnimation(output, current);
 	let taxonomyPart = $derived.by(() => {
 		const current = selection;
 		if (current?.kind !== 'taxonomy') return undefined;
@@ -105,13 +108,17 @@
 			<XIcon />
 		</Button> -->
 		{#if selection}
-			{#key selection.kind === 'taxonomy' ? `${selection.kind}-${selection.partId}` : selection.kind === 'video-library' ? selection.kind : `${selection.kind}-${selection.id ?? 'new'}`}
+			{#key selection.kind === 'animation' ? selection : selection.kind === 'taxonomy' ? `${selection.kind}-${selection.partId}` : selection.kind === 'video-library' ? selection.kind : `${selection.kind}-${selection.id ?? 'new'}`}
 				{#if selection.kind === 'still'}
 					<StillEditor storyId={story.id} selectedId={selection.id} close={closeStill} />
 				{:else if selection.kind === 'video'}
 					<VideoEditor storyId={story.id} selectedId={selection.id} close={closeVideo} />
 				{:else if selection.kind === 'animation'}
-					<AnimationEditor storyId={story.id} selectedId={selection.id} close={closeAnimation} />
+					<AnimationEditor
+						storyId={story.id}
+						selectedId={selection.id}
+						close={animationCallback(selection)}
+					/>
 				{:else if selection.kind === 'video-library'}
 					<VideoLibrary
 						storyId={story.id}

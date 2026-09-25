@@ -12,19 +12,17 @@
 	import WebMotionPlayer from '$lib/components/app/player/WebMotionPlayer.svelte';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import { CopyButton } from '$lib/components/ui/copy-button/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
-	import {
-		animationSchema,
-		resolveAnimationConfig,
-		type WebMotionConfig
-	} from '$lib/media/animation.js';
+	import { animationSchema, resolveAnimationConfig } from '$lib/media/animation.js';
+	import generationGuide from '$lib/media/webmotion-generation-guide.md?raw';
 	import { EDITORS } from '$lib/states/editors.svelte.js';
 	import { UI } from '$lib/states/ui.svelte.js';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import XIcon from '@lucide/svelte/icons/x';
-	import { untrack } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { toast } from 'svelte-sonner';
 
 	let {
@@ -38,6 +36,8 @@
 	} = $props();
 	const uid = $props.id();
 	const initial = untrack(() => EDITORS.animations.find((item) => item.id === selectedId));
+	const notify = untrack(() => close);
+	const endpoint = untrack(() => `/api/stories/${storyId}/animations`);
 	let id = $state(initial?.id ?? 'new');
 	let name = $state(initial?.name ?? '');
 	let configJson = $state(
@@ -45,7 +45,7 @@
 			initial?.configuration ?? {
 				version: 1,
 				playback: { autoplay: false, loop: false },
-				composition: { width: 1920, height: 1080, fps: 30, durationInFrames: 150 },
+				composition: { viewBoxWidth: 1920, viewBoxHeight: 1080, fps: 30, durationInFrames: 150 },
 				motions: {},
 				layers: []
 			},
@@ -57,17 +57,21 @@
 	let busy = $state(false);
 	let error = $state('');
 	let deleteOpen = $state(false);
-	let saved = $state(false);
-	let previewConfig = $state.raw<WebMotionConfig>();
-	let previewError = $state('');
+	let deleting = $state(false);
+	let deleted = false;
+	let disposed = false;
+	let autosaveTimer: ReturnType<typeof setTimeout> | undefined;
+	let inFlight: Promise<void> | undefined;
+	const snapshot = () => JSON.stringify([name, configJson, textsJson]);
+	let savedSnapshot = $state(untrack(snapshot));
+	let dirty = $derived(snapshot() !== savedSnapshot);
 	let validation = $derived.by(() => {
 		try {
 			const config: unknown = JSON.parse(configJson);
 			if (!config || typeof config !== 'object' || Array.isArray(config))
 				return { error: 'Configuration must be a JSON object.' };
-			const result = animationSchema.safeParse({
+			const result = animationSchema.omit({ name: true }).safeParse({
 				configuration: config,
-				name,
 				texts: JSON.parse(textsJson)
 			});
 			return result.success
@@ -81,44 +85,83 @@
 			return { error: cause instanceof Error ? cause.message : 'Invalid JSON.' };
 		}
 	});
-	const persist = async (event: SubmitEvent) => {
-		event.preventDefault();
-		if (busy || !validation.data) return;
+	let previewConfig = $derived(
+		validation.data ? resolveAnimationConfig(validation.data, UI.language) : undefined
+	);
+	const persist = async (): Promise<void> => {
+		if (deleted || deleting) return;
+		if (inFlight) {
+			await inFlight;
+			return persist();
+		}
+		if (!dirty || !validation.data) return;
+		const submittedSnapshot = snapshot();
+		const body = JSON.stringify({ ...validation.data, name });
 		busy = true;
 		error = '';
-		try {
-			const response = await fetch(`/api/stories/${storyId}/animations/${id}`, {
-				method: 'POST',
-				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify(validation.data)
-			});
-			if (!response.ok) throw new Error(`Could not save animation (${response.status}).`);
-			const animation: NonNullable<AnimationEditorOutput['animation']> = await response.json();
-			id = animation.id;
-			saved = true;
-			toast.success('Animation saved');
-			close({ action: 'persist', animation });
-		} catch (cause) {
-			error = cause instanceof Error ? cause.message : 'Could not save animation.';
-		} finally {
-			busy = false;
+		inFlight = (async () => {
+			try {
+				const response = await fetch(`${endpoint}/${id}`, {
+					method: 'POST',
+					headers: { 'content-type': 'application/json' },
+					body
+				});
+				if (!response.ok) throw new Error(`Could not save animation (${response.status}).`);
+				const animation: NonNullable<AnimationEditorOutput['animation']> = await response.json();
+				id = animation.id;
+				// A response acknowledges only its own draft, never edits made while it was in flight.
+				savedSnapshot = submittedSnapshot;
+				notify({ action: 'persist', animation });
+			} catch (cause) {
+				error = cause instanceof Error ? cause.message : 'Could not save animation.';
+				if (disposed) toast.error(error);
+			} finally {
+				busy = false;
+				inFlight = undefined;
+			}
+		})();
+		await inFlight;
+	};
+	const scheduleAutosave = () => {
+		clearTimeout(autosaveTimer);
+		if (!disposed && !deleted && !deleting) {
+			autosaveTimer = setTimeout(() => void persist(), 700);
 		}
 	};
+	const dismiss = async () => {
+		clearTimeout(autosaveTimer);
+		await persist();
+		if (dirty && error) return;
+		notify({ action: 'close' });
+	};
+	onMount(() => () => {
+		disposed = true;
+		clearTimeout(autosaveTimer);
+		void persist();
+	});
 	const remove = async () => {
-		if (busy || id === 'new') return;
-		busy = true;
+		if (deleting || deleted || id === 'new') return;
+		deleting = true;
+		clearTimeout(autosaveTimer);
+		await inFlight;
 		error = '';
 		try {
-			const response = await fetch(`/api/stories/${storyId}/animations/${id}`, {
+			const response = await fetch(`${endpoint}/${id}`, {
 				method: 'DELETE'
 			});
 			if (!response.ok) throw new Error(`Could not delete animation (${response.status}).`);
-			close({ action: 'delete', id });
+			deleted = true;
+			notify({ action: 'delete', id });
 		} catch (cause) {
 			error = cause instanceof Error ? cause.message : 'Could not delete animation.';
+			if (disposed) toast.error(error);
 		} finally {
-			busy = false;
+			deleting = false;
 			deleteOpen = false;
+			if (!deleted && dirty) {
+				if (disposed) void persist();
+				else scheduleAutosave();
+			}
 		}
 	};
 </script>
@@ -133,10 +176,10 @@
 			>
 		</AlertDialog.Header>
 		<AlertDialog.Footer>
-			<AlertDialog.Cancel disabled={busy}>Cancel</AlertDialog.Cancel>
+			<AlertDialog.Cancel disabled={deleting}>Cancel</AlertDialog.Cancel>
 			<AlertDialog.Action
 				variant="destructive"
-				disabled={busy}
+				disabled={deleting}
 				onclick={(event) => {
 					event.preventDefault();
 					void remove();
@@ -150,7 +193,19 @@
 		<div class="min-w-0">
 			<h1 class="text-sm font-medium">{id === 'new' ? 'New animation' : 'Edit animation'}</h1>
 			<p class="text-xs text-muted-foreground" aria-live="polite">
-				{busy ? 'Saving...' : saved ? 'Saved' : 'Save to apply changes'}
+				{deleting
+					? 'Deleting...'
+					: busy
+						? 'Saving...'
+						: error
+							? 'Not saved'
+							: dirty
+								? validation.data
+									? 'Unsaved changes'
+									: 'Fix JSON to save'
+								: id === 'new'
+									? 'Changes save automatically'
+									: 'Saved'}
 			</p>
 		</div>
 		<div class="ml-auto flex shrink-0 gap-2">
@@ -158,7 +213,7 @@
 				<Button
 					variant="destructive"
 					size="icon"
-					disabled={busy}
+					disabled={deleting}
 					aria-label="Delete animation"
 					onclick={() => (deleteOpen = true)}><TrashIcon /></Button
 				>
@@ -166,21 +221,17 @@
 			<Button
 				variant="ghost"
 				size="icon"
-				disabled={busy}
+				disabled={deleting}
 				aria-label="Close animation editor"
-				onclick={() => close({ action: 'close' })}><XIcon /></Button
+				onclick={() => void dismiss()}><XIcon /></Button
 			>
 		</div>
 	</HeaderBlank>
-	<form
-		class="min-h-0 min-w-0 flex-1 muted-scrollbar overflow-x-hidden overflow-y-auto p-4"
-		onsubmit={persist}
-		oninput={() => (saved = false)}
-	>
-		<fieldset disabled={busy} class="grid min-w-0 gap-4">
+	<div class="min-h-0 min-w-0 flex-1 muted-scrollbar overflow-x-hidden overflow-y-auto p-4">
+		<div class="grid min-w-0 gap-4" inert={deleting}>
 			<Field.Field class="min-w-0">
 				<Field.Label for={`${uid}-name`}>Name</Field.Label>
-				<Input id={`${uid}-name`} bind:value={name} required />
+				<Input id={`${uid}-name`} bind:value={name} oninput={scheduleAutosave} required />
 			</Field.Field>
 			<Field.Field class="min-w-0">
 				<Field.Label for={`${uid}-config`}>WebMotion configuration (JSON)</Field.Label>
@@ -191,6 +242,7 @@
 				<Textarea
 					id={`${uid}-config`}
 					bind:value={configJson}
+					oninput={scheduleAutosave}
 					rows={10}
 					class="field-sizing-fixed h-48 min-w-0 resize-y font-mono text-xs [overflow-wrap:anywhere]"
 					spellcheck={false}
@@ -204,6 +256,13 @@
 					</Field.Description>
 				{/if}
 			</Field.Field>
+			<CopyButton
+				text={generationGuide}
+				variant="outline"
+				tabindex={0}
+				class="h-auto max-w-full justify-self-start whitespace-normal"
+				>Copy LLM generation guide</CopyButton
+			>
 			<Field.Field class="min-w-0">
 				<Field.Label for={`${uid}-texts`}>Translated texts (JSON)</Field.Label>
 				<Field.Description
@@ -212,6 +271,7 @@
 				<Textarea
 					id={`${uid}-texts`}
 					bind:value={textsJson}
+					oninput={scheduleAutosave}
 					rows={5}
 					class="field-sizing-fixed h-28 min-w-0 resize-y font-mono text-xs [overflow-wrap:anywhere]"
 					spellcheck={false}
@@ -221,31 +281,17 @@
 					{validation.error}
 				</p>{/if}
 			{#if error}<p class="text-sm text-destructive" role="alert">{error}</p>{/if}
-			<div class="flex flex-wrap gap-2">
-				<Button
-					type="button"
-					variant="outline"
-					class="h-auto max-w-full whitespace-normal"
-					disabled={!validation.data}
-					onclick={() => {
-						if (!validation.data) return;
-						previewError = '';
-						previewConfig = resolveAnimationConfig(validation.data, UI.language);
-					}}>Preview / restart ({UI.language})</Button
-				>
-			</div>
 			{#if previewConfig}
-				<WebMotionPlayer
-					config={previewConfig}
-					controls
-					class="min-w-0 overflow-hidden rounded-lg"
-					label={`Preview of ${name || 'animation'}`}
-					onerror={(cause) =>
-						(previewError = cause instanceof Error ? cause.message : 'Preview failed.')}
-				/>
+				<div class="aspect-video min-w-0 overflow-hidden rounded-lg border bg-black">
+					<WebMotionPlayer
+						config={previewConfig}
+						controls
+						fit="contain"
+						class="h-full"
+						label={`Preview of ${name || 'animation'}`}
+					/>
+				</div>
 			{/if}
-			{#if previewError}<p class="text-sm text-destructive" role="alert">{previewError}</p>{/if}
-			<Button type="submit" disabled={busy || !validation.data}>Save animation</Button>
-		</fieldset>
-	</form>
+		</div>
+	</div>
 </div>

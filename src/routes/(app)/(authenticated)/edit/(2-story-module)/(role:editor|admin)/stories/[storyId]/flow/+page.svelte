@@ -335,13 +335,19 @@
 			if (!keepOpen) editorSelection = { kind: 'still', id: still.id };
 		}
 	};
-	const closeAnimation = ({ action, id, animation }: AnimationEditorOutput) => {
+	const closeAnimation = (
+		{ action, id, animation }: AnimationEditorOutput,
+		selection: EditorSelection
+	) => {
 		if (action === 'persist' && animation) {
 			EDITORS.animations = EDITORS.animations.some((item) => item.id === animation.id)
 				? EDITORS.animations.map((item) => (item.id === animation.id ? animation : item))
 				: [...EDITORS.animations, animation];
 			story = { ...story, animations: EDITORS.animations };
-			editorSelection = { kind: 'animation', id: animation.id };
+			if (editorSelection === selection && editorSelection?.kind === 'animation') {
+				// Preserve the keyed editor and focus when a new animation receives its ID.
+				editorSelection.id = animation.id;
+			}
 		} else {
 			if (action === 'delete' && id) {
 				if (selectedPart?.animationId === id) selectedPartId = undefined;
@@ -356,8 +362,10 @@
 					)
 				};
 			}
-			editorSelection = null;
-			inspectorOpen = false;
+			if (editorSelection === selection) {
+				editorSelection = null;
+				inspectorOpen = false;
+			}
 		}
 	};
 	const closeAnnouncement = (output: {
