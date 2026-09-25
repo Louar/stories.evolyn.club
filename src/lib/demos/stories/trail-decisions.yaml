@@ -1,4 +1,5 @@
-# Standalone branching story; no taxonomy dependencies.
+# Standalone fictional survival chat; no taxonomy dependencies.
+# Busy beats use short in-player durations, not real-world waiting or notifications.
 
 slug: trail-decisions
 name:
@@ -15,42 +16,188 @@ stills:
     image: null
     style: null
   - id: shelter
-    color: '#243448'
+    color: '#182934'
     image: null
     style: null
+  - id: silence
+    color: '#131b22'
+    image: null
+    style: null
+animations:
+  - id: storm-motion
+    name: Rain at the ridge
+    texts: null
+    configuration:
+      version: 1
+      composition:
+        viewBoxWidth: 1280
+        viewBoxHeight: 720
+        fps: 30
+        durationInFrames: 150
+        background: '#10251f'
+      playback:
+        autoplay: true
+        loop: false
+      layers:
+        - type: ellipse
+          name: Low cloud at the edge
+          props:
+            x: 1100
+            y: 90
+            radiusX: 240
+            radiusY: 95
+            fill: '#647d87'
+            opacity: 0.12
+          animate:
+            x: [1100, 1020]
+        - type: line
+          name: Rain on the left
+          props:
+            x: 90
+            y: 80
+            x1: 0
+            y1: 0
+            x2: -35
+            y2: 170
+            stroke: '#789aab'
+            lineWidth: 2
+            opacity: 0.25
+          animate:
+            y: [80, 430]
+        - type: line
+          name: Rain on the right
+          props:
+            x: 1190
+            y: 260
+            x1: 0
+            y1: 0
+            x2: -35
+            y2: 170
+            stroke: '#789aab'
+            lineWidth: 2
+            opacity: 0.2
+          animate:
+            y: [260, 610]
+  - id: rescue-motion
+    name: Lanterns through the trees
+    texts: null
+    configuration:
+      version: 1
+      composition:
+        viewBoxWidth: 1280
+        viewBoxHeight: 720
+        fps: 30
+        durationInFrames: 540
+        background: '#182934'
+      playback:
+        autoplay: true
+        loop: false
+      layers:
+        - type: circle
+          name: First lantern
+          props:
+            x: 80
+            y: 590
+            radius: 95
+            fill: '#d6b878'
+            opacity: 0.08
+          animate:
+            x: [80, 160]
+            opacity: [0.08, 0.22]
+        - type: circle
+          name: Second lantern
+          props:
+            x: 1210
+            y: 120
+            radius: 70
+            fill: '#d6b878'
+            opacity: 0.06
+          animate:
+            x: [1210, 1130]
+            opacity: [0.06, 0.18]
 announcements:
   - id: welcome
-    name: A change in the weather
+    name: Rowan makes contact
     title:
-      en: A change in the weather
-      nl: Het weer slaat om
+      en: 'ROWAN / 12% battery'
+      nl: 'ROWAN / 12% batterij'
     message:
-      en:
-        You are walking a forest trail when thunder rolls over the ridge. Decide how to get your group
-        home safely.
-      nl: Je wandelt door het bos wanneer het begint te onweren. Breng je groep veilig naar huis.
-  - id: rethink
-    name: Rethink the ridge
+      en: >-
+        Hello? The trail app says you're my emergency contact. Excellent. We've skipped the awkward introductions.
+        I'm Rowan. Alone in Blackpine Forest, ankle swollen, bridge washed out behind me.
+        My emergency call dropped, but these messages go through. Please stay. It's getting dark.
+      nl: >-
+        Hallo? Volgens de wandelapp ben jij mijn noodcontact. Mooi. Slaan we het ongemakkelijke voorstellen over.
+        Ik ben Rowan. Alleen in het Zwartdennenbos, dikke enkel, brug achter me weggespoeld.
+        Mijn noodoproep viel weg, maar deze berichten komen door. Blijf alsjeblieft. Het wordt donker.
+  - id: road-busy
+    name: Rowan follows the service road
     title:
-      en: The ridge is exposed
-      nl: De bergkam is onbeschut
+      en: Rowan is busy / walking
+      nl: Rowan is bezig / onderweg
     message:
-      en:
-        High ground and isolated trees are dangerous during lightning. Return to the junction and choose
-        a safer route.
-      nl:
-        Hoog terrein en alleenstaande bomen zijn gevaarlijk bij bliksem. Ga terug en kies een veiligere
-        route.
-  - id: finish
-    name: Home safely
+      en: 'Taking the service road. One careful step at a time. My ankle has filed a formal complaint.'
+      nl: 'Ik neem de dienstweg. Voorzichtig, stap voor stap. Mijn enkel heeft officieel bezwaar ingediend.'
+  - id: ridge-busy
+    name: Rowan attempts the ridge
     title:
-      en: Everyone is accounted for
-      nl: Iedereen is veilig
+      en: Rowan is busy / climbing
+      nl: Rowan is bezig / klimmen
     message:
-      en:
-        You reached a substantial building, checked your group, and waited for the storm to pass. Good
-        decisions matter more than finishing the planned route.
-      nl: Je bereikte een stevig gebouw, controleerde je groep en wachtte tot het onweer voorbij was.
+      en: 'Trying the ridge. Rain in my eyes. The trail just slid under my bad foot. Wait. Where is the marker?'
+      nl: 'Ik probeer de kam. Regen in mijn ogen. Het pad gleed net onder mijn slechte voet weg. Wacht. Waar is de markering?'
+  - id: call-busy
+    name: Rowan contacts rescue
+    title:
+      en: Rowan is busy / calling for help
+      nl: Rowan is bezig / hulp bellen
+    message:
+      en: 'Calling again from the doorway. Reading them the pump-house number. Please let someone pick up.'
+      nl: 'Ik bel opnieuw vanuit de deuropening. Ik lees het nummer van het pomphuis voor. Neem alsjeblieft op.'
+  - id: rescue-busy
+    name: Rowan waits for the team
+    title:
+      en: Rowan is busy / signalling
+      nl: Rowan is bezig / signaleren
+    message:
+      en: 'Staying put. Whistle, listen, repeat. Someone just whistled back. Please be a person, not a very talented owl.'
+      nl: 'Ik blijf hier. Fluiten, luisteren, herhalen. Er fluit iemand terug. Hopelijk een mens, geen bijzonder getalenteerde uil.'
+  - id: lost
+    name: The connection is lost
+    title:
+      en: 'ROWAN / message interrupted'
+      nl: 'ROWAN / bericht onderbroken'
+    message:
+      en: >-
+        I shouldn't have left the marked route. Can't find my way back in this rain.
+        My ankle won't hold. Phone hit the water when I fell. If this sends, I'm near the...
+        [No further messages. Rowan's location is unknown.]
+      nl: >-
+        Ik had de gemarkeerde route niet moeten verlaten. Ik vind de weg terug niet in deze regen.
+        Mijn enkel houdt het niet. Telefoon viel in het water toen ik viel. Als dit aankomt, ik ben bij de...
+        [Geen nieuwe berichten. Rowans locatie is onbekend.]
+  - id: goodbye
+    name: End this attempt
+    title:
+      en: Connection closed
+      nl: Verbinding gesloten
+    message:
+      en: 'This attempt ends here. Rowan was not located before the connection failed. No rescue is confirmed.'
+      nl: 'Deze poging eindigt hier. Rowan was nog niet gevonden toen de verbinding wegviel. Er is geen redding bevestigd.'
+  - id: rescued
+    name: Rowan is rescued
+    title:
+      en: 'ROWAN / borrowing a phone'
+      nl: 'ROWAN / geleende telefoon'
+    message:
+      en: >-
+        They found the pump house. Found me. I'm in the rescue van, wrapped in enough foil to qualify as a baked potato.
+        You kept me somewhere they could find. Thank you for staying.
+        When my ankle works again: a walk? Somewhere dangerous. Like a bakery.
+      nl: >-
+        Ze vonden het pomphuis. En mij. Ik zit in de reddingswagen, in genoeg folie om door te gaan voor een gepofte aardappel.
+        Dankzij jou bleef ik op een plek waar ze me konden vinden. Bedankt dat je bleef.
+        Als mijn enkel weer werkt: wandelen? Ergens gevaarlijks. Een bakkerij of zo.
 quizzes:
   - id: route
     name: Choose a route
@@ -60,34 +207,112 @@ quizzes:
         order: 1
         answerTemplateSlug: select-single
         title:
-          en: Which way do you go?
-          nl: Welke route kies je?
+          en: 'ROWAN: Sign says pump house along the service road. Ridge might have better reception. Thunder up there. Your call?'
+          nl: 'ROWAN: Bord wijst naar een pomphuis langs de dienstweg. Op de kam misschien beter bereik. Wel onweer. Wat denk jij?'
+        instruction:
+          en: 'Fictional chat: busy scenes are compressed into a few seconds. Take your time choosing a reply.'
+          nl: 'Fictieve chat: bezige momenten duren hier maar een paar seconden. Neem de tijd voor je antwoord.'
         isRequired: true
         answerGroup:
           doRandomize: false
         answerOptions:
-          - id: ridge-answer
+          - id: service-road-answer
             order: 1
+            value: service-road
+            label:
+              en: Take the marked service road. Give that ankle a chance.
+              nl: Neem de gemarkeerde dienstweg. Spaar die enkel.
+          - id: ridge-answer
+            order: 2
             value: ridge
             label:
-              en: Cross the open ridge
-              nl: Over de open bergkam
-          - id: shelter-answer
-            order: 2
-            value: shelter
+              en: Try the ridge. We need a stronger signal.
+              nl: Probeer de kam. We hebben beter bereik nodig.
+  - id: shelter-plan
+    name: Use the landmark
+    doRandomize: false
+    questions:
+      - id: shelter-question
+        order: 1
+        answerTemplateSlug: select-single
+        title:
+          en: 'ROWAN: Made it. Brick pump house, sign P-17, dry doorway. Five-star accommodation if you like spiders. Call again, or look for the road beyond the trees?'
+          nl: 'ROWAN: Ik ben er. Bakstenen pomphuis, bord P-17, droge deuropening. Vijf sterren als je van spinnen houdt. Weer bellen, of achter de bomen naar de weg zoeken?'
+        isRequired: true
+        answerGroup:
+          doRandomize: false
+        answerOptions:
+          - id: call-answer
+            order: 1
+            value: call
             label:
-              en: Return to the visitor centre
-              nl: Terug naar het bezoekerscentrum
+              en: Call emergency services. Tell them P-17 and stay there.
+              nl: Bel de hulpdiensten. Geef P-17 door en blijf daar.
+          - id: search-answer
+            order: 2
+            value: search
+            label:
+              en: Look for the road. You might flag down a car.
+              nl: Zoek de weg. Misschien kun je een auto aanhouden.
+  - id: signal-plan
+    name: Help rescuers find Rowan
+    doRandomize: false
+    questions:
+      - id: signal-question
+        order: 1
+        answerTemplateSlug: select-single
+        title:
+          en: 'ROWAN: They answered! Team coming to P-17. Told me to stay. Now there are lights beyond the trees, moving away. I have a whistle. Follow them or make some noise?'
+          nl: 'ROWAN: Ze namen op! Er komt een team naar P-17. Ik moet hier blijven. Nu zie ik licht achter de bomen, het gaat verder weg. Ik heb een fluitje. Eropaf of geluid maken?'
+        isRequired: true
+        answerGroup:
+          doRandomize: false
+        answerOptions:
+          - id: follow-answer
+            order: 1
+            value: follow
+            label:
+              en: Follow the lights before you lose them.
+              nl: Volg het licht voordat het verdwijnt.
+          - id: whistle-answer
+            order: 2
+            value: whistle
+            label:
+              en: Stay at P-17. Use the whistle to bring them to you.
+              nl: Blijf bij P-17. Laat ze met je fluitje naar jou komen.
+  - id: retry
+    name: Rewind the story
+    doRandomize: false
+    questions:
+      - id: retry-question
+        order: 1
+        answerTemplateSlug: select-single
+        title:
+          en: 'The chat has gone silent. Rewind this fictional story to Rowan at the junction, before any route was chosen?'
+          nl: 'De chat is stilgevallen. Dit fictieve verhaal terugspoelen naar Rowan bij de splitsing, voordat je een route koos?'
+        isRequired: true
+        answerGroup:
+          doRandomize: false
+        answerOptions:
+          - id: rewind-answer
+            order: 1
+            value: rewind
+            label:
+              en: Rewind to the junction. Let's choose differently.
+              nl: Terug naar de splitsing. We kiezen anders.
+          - id: end-answer
+            order: 2
+            value: end
+            label:
+              en: End this attempt here.
+              nl: Stop deze poging hier.
 parts:
   - id: introduction
     isInitial: true
     terminationStrategy: NONE
-    position:
-      x: 0
-      y: 0
+    position: { x: 0, y: 0 }
     backgroundType: still
-    backgroundConfiguration:
-      duration: 8
+    backgroundConfiguration: { duration: 22 }
     stillId: forest
     videoId: null
     defaultNextPartId: junction
@@ -101,9 +326,7 @@ parts:
   - id: junction
     isInitial: false
     terminationStrategy: NONE
-    position:
-      x: 400
-      y: 0
+    position: { x: 400, y: 0 }
     backgroundType: still
     backgroundConfiguration: null
     stillId: forest
@@ -117,30 +340,127 @@ parts:
     quizLogicForPart:
       hitpolicy: first
       quizTemplateId: route
-      defaultNextPartId: exposed-ridge
+      defaultNextPartId: climbing-ridge
       rules:
         - order: 1
-          name: Choose shelter
-          nextPartId: safe-arrival
+          name: Stay on the service road
+          nextPartId: walking-road
           inputs:
             - quizQuestionTemplateId: route-question
-              quizQuestionTemplateAnswerItemId: shelter-answer
+              quizQuestionTemplateAnswerItemId: service-road-answer
     taxonomyDraftForPartId: null
-  - id: exposed-ridge
+  - id: walking-road
     isInitial: false
     terminationStrategy: NONE
-    position:
-      x: 800
-      y: 200
+    position: { x: 800, y: 0 }
     backgroundType: still
-    backgroundConfiguration:
-      duration: 8
+    backgroundConfiguration: { duration: 6 }
     stillId: forest
     videoId: null
-    defaultNextPartId: junction
+    defaultNextPartId: pump-house
     foregroundType: announcement
     foregroundConfiguration: null
-    announcementTemplateId: rethink
+    announcementTemplateId: road-busy
+    quizTemplateId: null
+    quizLogicForPartId: null
+    quizLogicForPart: null
+    taxonomyDraftForPartId: null
+  - id: climbing-ridge
+    isInitial: false
+    terminationStrategy: NONE
+    position: { x: 800, y: 400 }
+    backgroundType: animation
+    backgroundConfiguration: null
+    animationId: storm-motion
+    videoId: null
+    defaultNextPartId: signal-lost
+    foregroundType: announcement
+    foregroundConfiguration: null
+    announcementTemplateId: ridge-busy
+    quizTemplateId: null
+    quizLogicForPartId: null
+    quizLogicForPart: null
+    taxonomyDraftForPartId: null
+  - id: pump-house
+    isInitial: false
+    terminationStrategy: NONE
+    position: { x: 1200, y: 0 }
+    backgroundType: still
+    backgroundConfiguration: null
+    stillId: shelter
+    videoId: null
+    defaultNextPartId: null
+    foregroundType: quiz
+    foregroundConfiguration: null
+    announcementTemplateId: null
+    quizTemplateId: shelter-plan
+    quizLogicForPartId: shelter-logic
+    quizLogicForPart:
+      hitpolicy: first
+      quizTemplateId: shelter-plan
+      defaultNextPartId: signal-lost
+      rules:
+        - order: 1
+          name: Report the pump-house number
+          nextPartId: contacting-rescue
+          inputs:
+            - quizQuestionTemplateId: shelter-question
+              quizQuestionTemplateAnswerItemId: call-answer
+    taxonomyDraftForPartId: null
+  - id: contacting-rescue
+    isInitial: false
+    terminationStrategy: NONE
+    position: { x: 1600, y: 0 }
+    backgroundType: still
+    backgroundConfiguration: { duration: 5 }
+    stillId: shelter
+    videoId: null
+    defaultNextPartId: rescue-signal
+    foregroundType: announcement
+    foregroundConfiguration: null
+    announcementTemplateId: call-busy
+    quizTemplateId: null
+    quizLogicForPartId: null
+    quizLogicForPart: null
+    taxonomyDraftForPartId: null
+  - id: rescue-signal
+    isInitial: false
+    terminationStrategy: NONE
+    position: { x: 2000, y: 0 }
+    backgroundType: still
+    backgroundConfiguration: null
+    stillId: shelter
+    videoId: null
+    defaultNextPartId: null
+    foregroundType: quiz
+    foregroundConfiguration: null
+    announcementTemplateId: null
+    quizTemplateId: signal-plan
+    quizLogicForPartId: signal-logic
+    quizLogicForPart:
+      hitpolicy: first
+      quizTemplateId: signal-plan
+      defaultNextPartId: signal-lost
+      rules:
+        - order: 1
+          name: Signal from the known location
+          nextPartId: waiting-rescue
+          inputs:
+            - quizQuestionTemplateId: signal-question
+              quizQuestionTemplateAnswerItemId: whistle-answer
+    taxonomyDraftForPartId: null
+  - id: waiting-rescue
+    isInitial: false
+    terminationStrategy: NONE
+    position: { x: 2400, y: 0 }
+    backgroundType: still
+    backgroundConfiguration: { duration: 6 }
+    stillId: shelter
+    videoId: null
+    defaultNextPartId: safe-arrival
+    foregroundType: announcement
+    foregroundConfiguration: null
+    announcementTemplateId: rescue-busy
     quizTemplateId: null
     quizLogicForPartId: null
     quizLogicForPart: null
@@ -148,18 +468,73 @@ parts:
   - id: safe-arrival
     isInitial: false
     terminationStrategy: COMPLETE_STORY
-    position:
-      x: 800
-      y: -200
-    backgroundType: still
-    backgroundConfiguration:
-      duration: 10
-    stillId: shelter
+    position: { x: 2800, y: 0 }
+    backgroundType: animation
+    backgroundConfiguration: null
+    animationId: rescue-motion
     videoId: null
     defaultNextPartId: null
     foregroundType: announcement
     foregroundConfiguration: null
-    announcementTemplateId: finish
+    announcementTemplateId: rescued
+    quizTemplateId: null
+    quizLogicForPartId: null
+    quizLogicForPart: null
+    taxonomyDraftForPartId: null
+  - id: signal-lost
+    isInitial: false
+    terminationStrategy: NONE
+    position: { x: 1600, y: 400 }
+    backgroundType: still
+    backgroundConfiguration: { duration: 16 }
+    stillId: silence
+    videoId: null
+    defaultNextPartId: rewind
+    foregroundType: announcement
+    foregroundConfiguration: null
+    announcementTemplateId: lost
+    quizTemplateId: null
+    quizLogicForPartId: null
+    quizLogicForPart: null
+    taxonomyDraftForPartId: null
+  - id: rewind
+    isInitial: false
+    terminationStrategy: NONE
+    position: { x: 2000, y: 400 }
+    backgroundType: still
+    backgroundConfiguration: null
+    stillId: silence
+    videoId: null
+    defaultNextPartId: null
+    foregroundType: quiz
+    foregroundConfiguration: null
+    announcementTemplateId: null
+    quizTemplateId: retry
+    quizLogicForPartId: retry-logic
+    quizLogicForPart:
+      hitpolicy: first
+      quizTemplateId: retry
+      defaultNextPartId: connection-ended
+      rules:
+        - order: 1
+          name: Rewind to the first decision
+          nextPartId: junction
+          inputs:
+            - quizQuestionTemplateId: retry-question
+              quizQuestionTemplateAnswerItemId: rewind-answer
+    taxonomyDraftForPartId: null
+  - id: connection-ended
+    isInitial: false
+    terminationStrategy: FAIL_STORY
+    position: { x: 2400, y: 400 }
+    backgroundType: still
+    backgroundConfiguration: { duration: 10 }
+    stillId: silence
+    videoId: null
+    defaultNextPartId: null
+    foregroundType: announcement
+    foregroundConfiguration: null
+    announcementTemplateId: goodbye
     quizTemplateId: null
     quizLogicForPartId: null
     quizLogicForPart: null

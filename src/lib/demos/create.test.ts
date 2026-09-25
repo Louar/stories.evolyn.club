@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { demos } from './catalog';
 import { createDemo } from '$lib/server/create-demo.server';
 import { POST } from '../../routes/api/(authenticated)/(2-story-module)/(role:editor|admin)/demos/[kind]/[slug]/+server';
 import { schema as storySchema } from '../../routes/api/(authenticated)/(2-story-module)/(role:editor|admin)/stories/[[storyId]]/io/schemas';
@@ -40,15 +41,19 @@ describe('demo creation', { timeout: 20000 }, () => {
 		expect(request).not.toHaveBeenCalled();
 	});
 
-	it('returns a compact creation result from the endpoint', async () => {
-		const { request } = mockImporter();
-		const response = await POST({
-			params: { kind: 'stories', slug: 'trail-decisions' },
-			fetch: request
-		} as unknown as Parameters<typeof POST>[0]);
-		expect(response.status).toBe(201);
-		expect(Object.keys(await response.json())).toEqual(['id', 'slug']);
-	});
+	it.each(demos.stories)(
+		'publishes $slug and returns a compact creation result',
+		async ({ slug }) => {
+			const { calls, request } = mockImporter();
+			const response = await POST({
+				params: { kind: 'stories', slug },
+				fetch: request
+			} as unknown as Parameters<typeof POST>[0]);
+			expect(response.status).toBe(201);
+			expect(Object.keys(await response.json())).toEqual(['id', 'slug']);
+			expect(calls.at(-1)?.body.isPublished).toBe(true);
+		}
+	);
 
 	it('imports fresh taxonomy dependencies first and uses returned slugs in drafts', async () => {
 		const { calls, request } = mockImporter();
@@ -60,7 +65,7 @@ describe('demo creation', { timeout: 20000 }, () => {
 		]);
 		expect(result.id).toBe('created-3');
 		const story = calls[2].body;
-		expect(story.isPublished).toBe(false);
+		expect(story.isPublished).toBe(true);
 		const slugs = story.parts.flatMap((part) =>
 			part.taxonomyDraftForPart ? [part.taxonomyDraftForPart.taxonomySlug] : []
 		);
@@ -79,7 +84,7 @@ describe('demo creation', { timeout: 20000 }, () => {
 		expect(calls.map((call) => call.url)).toEqual(['/api/stories/io']);
 		const story = storySchema.parse(calls[0].body);
 		expect(story.slug).toMatch(/^home-workout-/);
-		expect(story.isPublished).toBe(false);
+		expect(story.isPublished).toBe(true);
 		expect(story.videos).toHaveLength(4);
 		expect(story.announcements).toHaveLength(2);
 		expect(story.quizzes).toHaveLength(2);
@@ -103,7 +108,7 @@ describe('demo creation', { timeout: 20000 }, () => {
 		expect(calls).toHaveLength(2);
 		expect(calls[0].body.slug).not.toBe(calls[1].body.slug);
 		expect(
-			calls.every((call) => call.body.slug.startsWith('quiz-of-cities-') && !call.body.isPublished)
+			calls.every((call) => call.body.slug.startsWith('quiz-of-cities-') && call.body.isPublished)
 		).toBe(true);
 	});
 
@@ -119,8 +124,9 @@ describe('demo creation', { timeout: 20000 }, () => {
 		expect(anthology.positions.map((position) => position.storySlug)).toEqual(
 			anthology.stories.map((story) => story.slug)
 		);
-		expect(anthology.isPublished).toBe(false);
-		expect(anthology.stories.every((story) => !story.isPublished)).toBe(true);
+		expect(anthology.isPublished).toBe(true);
+		expect(anthology.stories.length).toBeGreaterThan(0);
+		expect(anthology.stories.every((story) => story.isPublished === true)).toBe(true);
 	});
 
 	it('creates a standalone taxonomy copy', async () => {

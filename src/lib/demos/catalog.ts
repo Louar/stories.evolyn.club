@@ -12,7 +12,7 @@ export const demos = {
 			slug: 'trail-decisions',
 			name: 'Trail Decisions',
 			description:
-				'A short safety scenario with still backgrounds, a route choice, explanatory feedback, and a retry loop.'
+				'Guide a stranded hiker through a survival conversation with two-response choices, brief busy pauses, animated tension, and a second chance after lost contact.'
 		},
 		{
 			slug: 'world-food-expedition',

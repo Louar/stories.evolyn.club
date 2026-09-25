@@ -32,20 +32,89 @@ describe('demo bundles', { timeout: 20000 }, () => {
 		}
 	});
 
-	it('preserves timed trail announcements while leaving the route choice interactive', () => {
+	it('marks standalone and anthology demo stories as published for manual imports', () => {
+		for (const demo of demos.stories) {
+			expect(storySchema.parse(load('stories', demo.slug)).isPublished).toBe(true);
+		}
+		for (const demo of demos.anthologies) {
+			const anthology = anthologySchema.parse(load('anthologies', demo.slug));
+			expect(anthology.isPublished).toBe(true);
+			for (const story of anthology.stories ?? []) expect(story.isPublished).toBe(true);
+		}
+	});
+
+	it('keeps trail responses interactive and uses animation only for selected story beats', () => {
 		const story = storySchema.parse(load('stories', 'trail-decisions'));
-		expect(story.parts.map((part) => [part.id, part.backgroundConfiguration?.duration])).toEqual([
-			['introduction', 8],
-			['junction', undefined],
-			['exposed-ridge', 8],
-			['safe-arrival', 10]
-		]);
-		expect(
-			story.parts
-				.filter((part) => part.backgroundConfiguration?.duration)
-				.every((part) => part.backgroundType === 'still' && part.foregroundType === 'announcement')
-		).toBe(true);
-		expect(story.parts.find((part) => part.id === 'junction')?.foregroundType).toBe('quiz');
+		const choices = story.parts.filter((part) => part.foregroundType === 'quiz');
+		expect(choices.length).toBeGreaterThanOrEqual(3);
+		for (const part of choices) {
+			expect(part.backgroundType).toBe('still');
+			expect(part.backgroundConfiguration?.duration).toBeUndefined();
+			const quiz = story.quizzes.find((quiz) => quiz.id === part.quizTemplateId)!;
+			expect(quiz.doRandomize).toBe(false);
+			expect(quiz.questions).toHaveLength(1);
+			const question = quiz.questions[0];
+			expect(question.answerTemplateSlug).toBe('select-single');
+			expect(question.isRequired).toBe(true);
+			expect(question.answerOptions).toHaveLength(2);
+			for (const answer of question.answerOptions) {
+				expect(answer.label.en).toBeTruthy();
+				expect(answer.label.nl).toBeTruthy();
+			}
+			const logic = part.quizLogicForPart!;
+			expect(logic.quizTemplateId).toBe(quiz.id);
+			expect(
+				new Set([logic.defaultNextPartId, ...logic.rules.map((rule) => rule.nextPartId)]).size
+			).toBe(2);
+		}
+		const animated = story.parts.filter((part) => part.backgroundType === 'animation');
+		expect(animated.length).toBeGreaterThan(0);
+		expect(animated.length).toBeLessThan(story.parts.length / 2);
+		for (const part of animated) {
+			expect(part.foregroundType).toBe('announcement');
+			expect(story.animations.some((animation) => animation.id === part.animationId)).toBe(true);
+		}
+		for (const announcement of story.announcements) {
+			expect(announcement.message?.en).toBeTruthy();
+			expect(announcement.message?.nl).toBeTruthy();
+		}
+	});
+
+	it('offers trail rescue, lost-contact retries, and short busy intervals', () => {
+		const story = storySchema.parse(load('stories', 'trail-decisions'));
+		const parts = new Map(story.parts.map((part) => [part.id, part]));
+		const next = (id: string, answerId?: string) => {
+			const part = parts.get(id)!;
+			if (!answerId) return part.defaultNextPartId;
+			const logic = part.quizLogicForPart!;
+			return (
+				logic.rules.find((rule) =>
+					rule.inputs.some((input) => input.quizQuestionTemplateAnswerItemId === answerId)
+				)?.nextPartId ?? logic.defaultNextPartId
+			);
+		};
+		expect(next('introduction')).toBe('junction');
+		expect(next('junction', 'service-road-answer')).toBe('walking-road');
+		expect(next('walking-road')).toBe('pump-house');
+		expect(next('pump-house', 'call-answer')).toBe('contacting-rescue');
+		expect(next('contacting-rescue')).toBe('rescue-signal');
+		expect(next('rescue-signal', 'whistle-answer')).toBe('waiting-rescue');
+		expect(next('waiting-rescue')).toBe('safe-arrival');
+		expect(parts.get('safe-arrival')?.terminationStrategy).toBe('COMPLETE_STORY');
+		expect(next('junction', 'ridge-answer')).toBe('climbing-ridge');
+		expect(next('climbing-ridge')).toBe('signal-lost');
+		expect(next('pump-house', 'search-answer')).toBe('signal-lost');
+		expect(next('rescue-signal', 'follow-answer')).toBe('signal-lost');
+		expect(next('signal-lost')).toBe('rewind');
+		expect(next('rewind', 'rewind-answer')).toBe('junction');
+		expect(next('rewind', 'end-answer')).toBe('connection-ended');
+		expect(parts.get('connection-ended')?.terminationStrategy).toBe('FAIL_STORY');
+		for (const id of ['walking-road', 'contacting-rescue', 'waiting-rescue']) {
+			const part = parts.get(id)!;
+			expect(part.foregroundType).toBe('announcement');
+			expect(part.backgroundConfiguration?.duration).toBeGreaterThan(0);
+			expect(part.backgroundConfiguration?.duration).toBeLessThanOrEqual(10);
+		}
 	});
 
 	it('includes city quiz assets, numeric answers, and fail/success branches', () => {
@@ -87,7 +156,7 @@ describe('demo bundles', { timeout: 20000 }, () => {
 
 	it('preserves the genuine workout Shorts and regular video sources', () => {
 		const story = storySchema.parse(load('stories', 'home-workout'));
-		expect(story.isPublished).toBe(false);
+		expect(story.isPublished).toBe(true);
 		expect(story.videos).toHaveLength(4);
 		const sources = story.videos.map((video) => {
 			expect(video.source.default?.collection).toBe('externals');

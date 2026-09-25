@@ -59,7 +59,7 @@ export async function createDemo(kind: DemoKind, slug: string, request: typeof f
 		for (const story of stories) {
 			const originalSlug = story.slug;
 			story.slug = `${originalSlug}-${suffix}`;
-			story.isPublished = false;
+			story.isPublished = true;
 			for (const position of bundle.positions ?? []) {
 				if (position.storySlug === originalSlug) position.storySlug = story.slug;
 			}
@@ -72,7 +72,7 @@ export async function createDemo(kind: DemoKind, slug: string, request: typeof f
 			}
 		}
 		if (kind !== 'stories') bundle.slug = `${bundle.slug}-${suffix}`;
-		if (kind !== 'taxonomies') bundle.isPublished = false;
+		if (kind !== 'taxonomies') bundle.isPublished = true;
 		return await upload(kind, bundle);
 	} catch (error) {
 		const message = error instanceof Error ? error.message : 'Demo creation failed';
