@@ -365,7 +365,7 @@ export const findOneStoryById = async (clientId: string, storyId: string, langua
 											.selectFrom('attribute')
 											.whereRef('attribute.taxonomyId', '=', 'taxonomyDraftForPart.taxonomyId')
 											.orderBy('attribute.slug')
-											.select(['attribute.id', 'attribute.slug', 'attribute.name'])
+											.select(['attribute.id', 'attribute.slug', 'attribute.name', 'attribute.question'])
 									).as('attributeOptions'),
 									jsonArrayFrom(
 										eb
@@ -915,7 +915,7 @@ export const findOnePartById = async (partId: string, language?: Language) => {
 								.selectFrom('attribute')
 								.whereRef('attribute.taxonomyId', '=', 'taxonomyDraftForPart.taxonomyId')
 								.orderBy('attribute.slug')
-								.select(['attribute.id', 'attribute.slug', 'attribute.name'])
+								.select(['attribute.id', 'attribute.slug', 'attribute.name', 'attribute.question'])
 						).as('attributeOptions'),
 						jsonArrayFrom(
 							eb

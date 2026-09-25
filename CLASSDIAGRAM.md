@@ -453,6 +453,7 @@ classDiagram
       name: Translatable
       image: Media?
       description: Translatable?
+      question: Translatable?
       type: AttributeType
       schema: json?
   }

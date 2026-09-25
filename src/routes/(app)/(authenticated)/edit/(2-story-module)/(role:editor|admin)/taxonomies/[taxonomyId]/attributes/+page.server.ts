@@ -25,6 +25,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			'attribute.name',
 			'attribute.image',
 			'attribute.description',
+			'attribute.question',
 			'attribute.type',
 			'attribute.referencedCategoryId',
 			'attribute.schema'

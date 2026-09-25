@@ -358,6 +358,9 @@ categories:
 attributes:
   - id: attribute-1
     slug: name
+    question:
+      en: Where is this food group?
+      nl: Waar staat deze productgroep?
     name:
       en: Name
       nl: Naam
@@ -382,6 +385,9 @@ attributes:
     schema: null
   - id: attribute-3
     slug: calories
+    question:
+      en: How much energy per 100 g (kcal)?
+      nl: Hoeveel energie per 100 g (kcal)?
     name:
       en: Calories
       nl: Calorieën
@@ -466,6 +472,9 @@ attributes:
     schema: null
   - id: attribute-10
     slug: wheelOfFive
+    question:
+      en: Where does this food belong in the Wheel of Five?
+      nl: Waar hoort dit voedsel in de Schijf van Vijf?
     name:
       en: Wheel of Five
       nl: Schijf van Vijf

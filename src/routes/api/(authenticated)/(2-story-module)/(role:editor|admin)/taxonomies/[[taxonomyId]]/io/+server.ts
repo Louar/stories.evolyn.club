@@ -70,6 +70,7 @@ const findOneTaxonomyById = async (clientId: string, taxonomyId: string) => {
 					'attribute.name',
 					'attribute.image',
 					'attribute.description',
+					'attribute.question',
 					'attribute.type',
 					'attribute.referencedCategoryId',
 					'attribute.schema'
@@ -234,6 +235,7 @@ export const POST = (async ({ locals, request }) => {
 					name: JSON.stringify(attributeRaw.name),
 					image: stringifyOrNull(attributeRaw.image),
 					description: stringifyOrNull(attributeRaw.description),
+					question: stringifyOrNull(attributeRaw.question),
 					type: attributeRaw.type,
 					referencedCategoryId,
 					schema: stringifyOrNull(attributeRaw.schema)

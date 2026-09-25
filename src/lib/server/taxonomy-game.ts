@@ -156,6 +156,7 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 				selectLocalizedField(eb, 'category.name', language).as('categoryName'),
 				'targetAttribute.id as attributeId',
 				selectLocalizedField(eb, 'targetAttribute.name', language).as('attributeName'),
+				selectLocalizedField(eb, 'targetAttribute.question', language).as('attributeQuestion'),
 				'targetAttribute.type as attributeType',
 				'targetAttribute.schema',
 				'targetAttribute.referencedCategoryId'
@@ -191,6 +192,7 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 					attributes: {
 						id: string;
 						name: string | null;
+						question: string | null;
 						referencedCategoryId: string | null;
 						type: AttributeTypeValue;
 						schema: Record<string, unknown> | null;
@@ -207,6 +209,7 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 			categories[combination.categoryId].attributes.push({
 				id: combination.attributeId,
 				name: combination.attributeName,
+				question: combination.attributeQuestion,
 				referencedCategoryId: combination.referencedCategoryId,
 				type: combination.attributeType,
 				schema: combination.schema
@@ -436,6 +439,7 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 				attribute: {
 					id: attribute.id,
 					name: attribute.name,
+					question: attribute.question,
 					referencedCategoryId: attribute.referencedCategoryId,
 					type: attribute.type,
 					schema: attribute.schema

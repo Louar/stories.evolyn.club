@@ -8,6 +8,7 @@ export type TaxonomyRound = {
 	attribute: {
 		id: string;
 		name: string | null;
+		question: string | null;
 		referencedCategoryId: string | null;
 		type: AttributeType;
 		schema: Record<string, unknown> | null;

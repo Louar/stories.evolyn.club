@@ -154820,6 +154820,9 @@ categories:
 attributes:
   - id: attribute-1
     slug: name
+    question:
+      en: Where is this country?
+      nl: Waar ligt dit land?
     name:
       en: Name
       nl: Naam
@@ -154844,6 +154847,9 @@ attributes:
     schema: null
   - id: attribute-3
     slug: calories
+    question:
+      en: How much energy per 100 g (kcal)?
+      nl: Hoeveel energie per 100 g (kcal)?
     name:
       en: Calories
       nl: Calorieën
@@ -154916,6 +154922,9 @@ attributes:
     schema: null
   - id: attribute-9
     slug: countryOfOrigin
+    question:
+      en: Which country does this food come from?
+      nl: Uit welk land komt dit voedsel?
     name:
       en: Country of origin
       nl: Land van oorsprong
@@ -154928,6 +154937,9 @@ attributes:
     schema: null
   - id: attribute-10
     slug: population
+    question:
+      en: How many people live here?
+      nl: Hoeveel mensen wonen hier?
     name:
       en: Population
       nl: Bevolking

@@ -39,6 +39,7 @@ const attributeSchema = z.object({
 	image: mediaSchema,
 	description: nullableTranslatableSchema,
 	type: z.enum(AttributeType),
+	question: nullableTranslatableSchema.optional().default(null),
 	referencedCategoryId: z.string().min(1).nullable(),
 	schema: nullableJsonSchema
 });

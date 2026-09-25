@@ -368,6 +368,7 @@ type Attribute = {
 	name: TranslatableColumn;
 	image: MediaColumn | null;
 	description: TranslatableColumn | null;
+	question: TranslatableColumn | null;
 	type: AttributeType;
 	referencedCategoryId: string | null;
 	schema: JSONColumnType<Record<string, unknown>> | null;

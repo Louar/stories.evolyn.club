@@ -33,6 +33,7 @@ const attributeSchema = z.object({
 	name: requiredTranslatableField,
 	image: mediaField,
 	description: nullableTranslatableField,
+	question: nullableTranslatableField,
 	type: z.enum(AttributeType),
 	referencedCategoryId: z.string().trim().min(1).nullable(),
 	schema: nullableJsonField
@@ -43,6 +44,7 @@ export const attributeCreateSchema = attributeSchema.extend({
 	name: attributeSchema.shape.name.optional(),
 	image: attributeSchema.shape.image.optional(),
 	description: attributeSchema.shape.description.optional(),
+	question: attributeSchema.shape.question.optional(),
 	type: attributeSchema.shape.type.optional(),
 	referencedCategoryId: attributeSchema.shape.referencedCategoryId.optional(),
 	schema: attributeSchema.shape.schema.optional()

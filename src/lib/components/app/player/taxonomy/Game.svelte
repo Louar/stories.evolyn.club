@@ -74,6 +74,16 @@
 	let feedbackTimeoutToken = 0;
 	let didComplete = false;
 	const currentRound = $derived(playableRounds[currentRoundIndex] ?? null);
+	const question = $derived.by(() => {
+		if (!currentRound) return '';
+		if (currentRound.attribute.question) return currentRound.attribute.question;
+		const attribute = currentRound.attribute.name;
+		if (currentRound.kind === 'map')
+			return m.taxonomy_map_prompt({ attribute: attribute ?? m.taxonomy_location() });
+		if (currentRound.kind === 'numeric-slider')
+			return m.taxonomy_slider_prompt({ attribute: attribute ?? m.taxonomy_value() });
+		return m.taxonomy_sort_by({ attribute: attribute ?? m.taxonomy_value() });
+	});
 	const hintFeatures = $derived(
 		showHints && currentRound?.kind === 'map' ? [currentRound.targetGeometry] : []
 	);
@@ -433,9 +443,7 @@
 			<NumericSlider
 				bind:value={sliderValue}
 				settings={currentRound.settings}
-				label={m.taxonomy_slider_prompt({
-					attribute: currentRound.attribute.name ?? m.taxonomy_value()
-				})}
+				label={question}
 				disabled={feedback?.correct ?? false}
 				onchange={() => (sliderChanged = true)}
 			/>
@@ -502,21 +510,11 @@
 						class="flex items-center justify-center rounded-md border border-game-border bg-game-inverse px-4 py-2 text-center text-game-inverse-text shadow-panel"
 					>
 						<div>
-							{#if currentRound.kind === 'map'}<p class="mt-1 text-sm">
-									{m.taxonomy_map_prompt({
-										attribute: currentRound.attribute.name ?? m.taxonomy_location()
-									})}
-								</p>{:else if currentRound.kind === 'numeric-slider'}<p class="mt-1 text-sm">
-									{m.taxonomy_slider_prompt({
-										attribute: currentRound.attribute.name ?? m.taxonomy_value()
-									})}
-								</p>{/if}
+							{#if currentRound.kind !== 'sortable'}
+								<p class="mt-1 text-sm">{question}</p>
+							{/if}
 							<h1 class="font-serif text-[clamp(1.7rem,3.6vw,3.5rem)] leading-none font-black">
-								{currentRound.kind === 'sortable'
-									? m.taxonomy_sort_by({
-											attribute: currentRound.attribute.name ?? m.taxonomy_value()
-										})
-									: currentRound.target.name}
+								{currentRound.kind === 'sortable' ? question : currentRound.target.name}
 							</h1>
 						</div>
 					</div>

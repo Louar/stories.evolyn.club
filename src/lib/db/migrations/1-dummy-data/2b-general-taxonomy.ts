@@ -73,6 +73,7 @@ export const DummyDataGeneralTaxonomy = async (
 		const attributeDefinitions = {
 			name: {
 				name: { en: 'Name', nl: 'Naam' },
+				question: { en: 'Where is this country?', nl: 'Waar ligt dit land?' },
 				description: {
 					en: 'Name',
 					nl: 'Naam'
@@ -89,6 +90,10 @@ export const DummyDataGeneralTaxonomy = async (
 			},
 			calories: {
 				name: { en: 'Calories', nl: 'Calorieën' },
+				question: {
+					en: 'How much energy per 100 g (kcal)?',
+					nl: 'Hoeveel energie per 100 g (kcal)?'
+				},
 				description: {
 					en: 'Energy per 100 g in kcal',
 					nl: 'Energie per 100 g in kcal'
@@ -137,6 +142,10 @@ export const DummyDataGeneralTaxonomy = async (
 			},
 			countryOfOrigin: {
 				name: { en: 'Country of origin', nl: 'Land van oorsprong' },
+				question: {
+					en: 'Which country does this food come from?',
+					nl: 'Uit welk land komt dit voedsel?'
+				},
 				description: {
 					en: 'Representative country associated with the food for demo purposes',
 					nl: 'Representatief land dat voor demodoeleinden met het voedsel wordt geassocieerd'
@@ -146,6 +155,7 @@ export const DummyDataGeneralTaxonomy = async (
 			},
 			population: {
 				name: { en: 'Population', nl: 'Bevolking' },
+				question: { en: 'How many people live here?', nl: 'Hoeveel mensen wonen hier?' },
 				description: {
 					en: 'Population count',
 					nl: 'Aantal inwoners'
@@ -2829,6 +2839,7 @@ export const DummyDataGeneralTaxonomy = async (
 					slug,
 					name: JSON.stringify(attribute.name as Translatable),
 					description: JSON.stringify(attribute.description as Translatable),
+					question: 'question' in attribute ? JSON.stringify(attribute.question) : null,
 					type: attribute.type,
 					referencedCategoryId: referencedCategoryReference
 						? categoryIdsByReference[referencedCategoryReference]

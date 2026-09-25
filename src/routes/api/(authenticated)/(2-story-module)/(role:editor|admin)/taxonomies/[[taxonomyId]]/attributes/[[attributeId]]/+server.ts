@@ -39,6 +39,7 @@ const findOneAttributeById = async (taxonomyId: string, attributeId: string) => 
 			'attribute.name',
 			'attribute.image',
 			'attribute.description',
+			'attribute.question',
 			'attribute.type',
 			'attribute.referencedCategoryId',
 			'attribute.schema'

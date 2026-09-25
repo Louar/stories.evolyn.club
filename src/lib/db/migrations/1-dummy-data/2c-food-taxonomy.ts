@@ -135,6 +135,7 @@ export const DummyDataFoodTaxonomy = async (
 		const attributeDefinitions = {
 			name: {
 				name: { en: 'Name', nl: 'Naam' },
+				question: { en: 'Where is this food group?', nl: 'Waar staat deze productgroep?' },
 				description: {
 					en: 'Name',
 					nl: 'Naam'
@@ -151,6 +152,10 @@ export const DummyDataFoodTaxonomy = async (
 			},
 			calories: {
 				name: { en: 'Calories', nl: 'Calorieën' },
+				question: {
+					en: 'How much energy per 100 g (kcal)?',
+					nl: 'Hoeveel energie per 100 g (kcal)?'
+				},
 				description: {
 					en: 'Energy per 100 g in kcal',
 					nl: 'Energie per 100 g in kcal'
@@ -207,6 +212,10 @@ export const DummyDataFoodTaxonomy = async (
 			},
 			wheelOfFive: {
 				name: { en: 'Wheel of Five', nl: 'Schijf van Vijf' },
+				question: {
+					en: 'Where does this food belong in the Wheel of Five?',
+					nl: 'Waar hoort dit voedsel in de Schijf van Vijf?'
+				},
 				description: {
 					en: 'Dutch Wheel of Five product group',
 					nl: 'Productgroep uit de Schijf van Vijf'
@@ -1520,6 +1529,7 @@ export const DummyDataFoodTaxonomy = async (
 					slug,
 					name: JSON.stringify(attribute.name as Translatable),
 					description: JSON.stringify(attribute.description as Translatable),
+					question: 'question' in attribute ? JSON.stringify(attribute.question) : null,
 					type: attribute.type,
 					referencedCategoryId: referencedCategoryReference
 						? categoryIdsByReference[referencedCategoryReference]

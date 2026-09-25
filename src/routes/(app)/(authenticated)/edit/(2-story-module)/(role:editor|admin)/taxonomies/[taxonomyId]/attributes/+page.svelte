@@ -113,6 +113,12 @@
 			filterFn
 		},
 		{
+			accessorKey: 'question',
+			header: 'Question',
+			meta: { cell: { variant: 'text-translated-short' } },
+			filterFn
+		},
+		{
 			accessorKey: 'referencedCategoryId',
 			header: 'Referenced category',
 			size: 240,

@@ -628,6 +628,7 @@ export const InitStoryModule: Migration = {
 			.addColumn('image', 'jsonb')
 			.addColumn('description', 'jsonb')
 			.addColumn('type', sql`attribute_type`, (col) => col.notNull())
+			.addColumn('question', 'jsonb')
 			.addColumn('referenced_category_id', 'uuid', (col) =>
 				col.references('category.id').onDelete('set null')
 			)
