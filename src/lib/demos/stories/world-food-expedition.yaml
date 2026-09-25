@@ -4,7 +4,7 @@ slug: world-food-expedition
 name:
   en: World Food Expedition
   nl: Wereldvoedselexpeditie
-isPublished: false
+isPublished: true
 isPublic: true
 defaultBackgroundColor: '#101b2b'
 configuration: null

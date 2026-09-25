@@ -242,7 +242,7 @@
 			nameRaw: { en: 'New anthology' },
 			visualization: AnthologyVisualization.grid,
 			configuration: null,
-			isPublished: false,
+			isPublished: true,
 			isPublic: true,
 			positions: []
 		}),

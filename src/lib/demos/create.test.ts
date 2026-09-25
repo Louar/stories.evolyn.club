@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createDemo } from '$lib/server/create-demo.server';
 import { POST } from '../../routes/api/(authenticated)/(2-story-module)/(role:editor|admin)/demos/[kind]/[slug]/+server';
+import { schema as storySchema } from '../../routes/api/(authenticated)/(2-story-module)/(role:editor|admin)/stories/[[storyId]]/io/schemas';
 
 type ImportedStory = {
 	slug: string;
@@ -66,6 +67,31 @@ describe('demo creation', { timeout: 20000 }, () => {
 		expect([...new Set(slugs)]).toEqual(
 			calls.slice(0, 2).map((call) => `${call.body.slug}-returned`)
 		);
+	});
+
+	it('imports the standalone workout through the endpoint without dependencies', async () => {
+		const { calls, request } = mockImporter();
+		const response = await POST({
+			params: { kind: 'stories', slug: 'home-workout' },
+			fetch: request
+		} as unknown as Parameters<typeof POST>[0]);
+		expect(response.status).toBe(201);
+		expect(calls.map((call) => call.url)).toEqual(['/api/stories/io']);
+		const story = storySchema.parse(calls[0].body);
+		expect(story.slug).toMatch(/^home-workout-/);
+		expect(story.isPublished).toBe(false);
+		expect(story.videos).toHaveLength(4);
+		expect(story.announcements).toHaveLength(2);
+		expect(story.quizzes).toHaveLength(2);
+		expect(
+			story.parts.every((part) => part.backgroundConfiguration && part.foregroundConfiguration)
+		).toBe(true);
+		expect(story.parts[1].quizLogicForPart).toMatchObject({
+			quizTemplateId: 'pace-quiz',
+			defaultNextPartId: 'low-impact',
+			rules: [{ nextPartId: 'full-body' }]
+		});
+		expect(story.parts.at(-1)?.terminationStrategy).toBe('COMPLETE_STORY');
 	});
 
 	it('creates distinct copies on repeated clicks without changing the source bundles', async () => {

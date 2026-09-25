@@ -229,7 +229,7 @@
 			defaultBackgroundColor: null,
 			thumbnail: null,
 			configuration: null,
-			isPublished: false,
+			isPublished: true,
 			isPublic: true
 		}),
 		onDataChange: (nextRows) => (rows = nextRows),

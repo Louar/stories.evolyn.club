@@ -19,6 +19,12 @@ export const demos = {
 			name: 'World Food Expedition',
 			description:
 				'Five taxonomy challenges with animated backgrounds: countries, populations, food origins, nutrition, and the Wheel of Five. Includes both taxonomies.'
+		},
+		{
+			slug: 'home-workout',
+			name: 'Home Workout',
+			description:
+				'Four 10-second YouTube excerpts, including two genuine Shorts, with workout tips, two knowledge checks with retries, and a gentle stretching completion.'
 		}
 	],
 	taxonomies: [
@@ -40,7 +46,7 @@ export const demos = {
 			slug: 'discovery-collection',
 			name: 'Discovery Collection',
 			description:
-				'An ordered anthology containing all three demo stories and their taxonomy dependencies, with a performance overview.'
+				'An ordered anthology containing Quiz of Cities, Trail Decisions, and World Food Expedition with their taxonomy dependencies and a performance overview.'
 		}
 	]
 } satisfies Record<DemoKind, { slug: string; name: string; description: string }[]>;
