@@ -1,9 +1,9 @@
-import { z } from 'zod';
 import {
 	translatableValidator,
 	translateLocalizedField,
 	type Language
 } from '$lib/db/schemas/0-utils';
+import { z } from 'zod';
 
 const easingSchema = z.enum([
 	'linear',
@@ -236,9 +236,10 @@ export const webMotionConfigSchema = z
 	})
 	.strict();
 
-export const animationSchema = webMotionConfigSchema.extend({
+export const animationSchema = z.object({
 	name: z.string(),
-	texts: z.record(z.string(), translatableValidator).default({})
+	configuration: webMotionConfigSchema,
+	texts: z.record(z.string(), translatableValidator).nullable()
 });
 export type WebMotionConfig = z.input<typeof webMotionConfigSchema>;
 export type AnimationTexts = z.output<typeof animationSchema>['texts'];
@@ -248,23 +249,20 @@ export type ParsedTrack = z.output<typeof trackSchema>;
 export type EasingName = z.output<typeof easingSchema>;
 
 export function resolveAnimationConfig(
-	config: WebMotionConfig & { texts?: AnimationTexts },
+	animation: { configuration: WebMotionConfig; texts?: AnimationTexts },
 	language?: Language | 'default' | null
 ): WebMotionConfig {
-	const { version, composition, playback, motions, layers, texts = {} } = config;
+	const { configuration, texts = {} } = animation;
 	return {
-		version,
-		composition,
-		playback,
-		motions,
-		layers: layers.map((layer) =>
+		...configuration,
+		layers: configuration.layers.map((layer) =>
 			layer.type === 'text'
 				? {
 						...layer,
 						props: {
 							...layer.props,
 							text: layer.props.text.replace(/\$\{([^{}]+)\}/g, (placeholder, variable: string) =>
-								Object.hasOwn(texts, variable)
+								texts && Object.hasOwn(texts, variable)
 									? (translateLocalizedField(texts[variable], language) ?? placeholder)
 									: placeholder
 							)

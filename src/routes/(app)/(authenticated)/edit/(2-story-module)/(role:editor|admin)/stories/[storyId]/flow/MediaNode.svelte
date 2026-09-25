@@ -109,7 +109,9 @@
 				{:else if !part.backgroundType}
 					<p class="text-xs text-muted-foreground">Transparent canvas</p>
 				{:else if part.backgroundType === 'animation'}
-					<p class="text-xs text-muted-foreground">Animation</p>
+					<p class="text-xs text-muted-foreground">
+						{animation ? formatDuration(animation.duration) : 'Animation'}
+					</p>
 				{/if}
 			</div>
 		</div>

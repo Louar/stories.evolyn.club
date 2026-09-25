@@ -141,7 +141,12 @@
 
 {#if sidebar.isMobile}
 	<Sheet.Root bind:open>
-		<Sheet.Content side="left" class="w-[min(100vw,32rem)] max-w-none p-0 [&>button]:hidden">
+		<Sheet.Content
+			side="left"
+			class={selection?.kind === 'animation'
+				? 'w-screen max-w-none min-w-0 p-0 sm:max-w-none [&>button]:hidden'
+				: 'w-[min(100vw,32rem)] max-w-none p-0 [&>button]:hidden'}
+		>
 			<Sheet.Header class="sr-only">
 				<Sheet.Title>Resource editor</Sheet.Title>
 				<Sheet.Description>Edit the selected story resource.</Sheet.Description>
@@ -151,7 +156,10 @@
 	</Sheet.Root>
 {:else if open && selection}
 	<aside
-		class="fixed inset-y-0 inset-s-(--sidebar-width) z-50 h-svh w-120 border-r bg-background shadow-sm peer-data-[collapsible=offcanvas]:inset-s-0"
+		class="fixed inset-y-0 inset-s-(--sidebar-width) z-50 h-svh border-r bg-background shadow-sm peer-data-[collapsible=offcanvas]:inset-s-0 {selection.kind ===
+		'animation'
+			? 'w-[48rem] max-w-[calc(100vw-var(--sidebar-width))] min-w-0 peer-data-[collapsible=offcanvas]:max-w-[100vw]'
+			: 'w-120'}"
 	>
 		{@render inspector()}
 	</aside>

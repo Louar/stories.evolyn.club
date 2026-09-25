@@ -42,14 +42,10 @@ export const POST = (async ({ locals, params, request }) => {
 	await authorize(locals, storyId, params.animationId);
 	const body = animationSchema.safeParse(await request.json());
 	if (!body.success) return json(body.error.issues, { status: 422 });
-	const { name, version, playback, composition, motions, layers, texts } = body.data;
+	const { name, configuration, texts } = body.data;
 	const values = {
 		name,
-		version,
-		playback: JSON.stringify(playback),
-		composition: JSON.stringify(composition),
-		motions: JSON.stringify(motions),
-		layers: JSON.stringify(layers),
+		configuration: JSON.stringify(configuration),
 		texts: JSON.stringify(texts)
 	};
 	const animation = await db.transaction().execute(async (trx) => {

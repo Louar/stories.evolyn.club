@@ -240,12 +240,8 @@ type VideoAvailableToStory = {
 type Animation = {
 	id: Generated<string>;
 	name: string;
-	version: WebMotionConfig['version'];
-	playback: JSONColumnType<NonNullable<WebMotionConfig['playback']>>;
-	composition: JSONColumnType<WebMotionConfig['composition']>;
-	motions: JSONColumnType<NonNullable<WebMotionConfig['motions']>>;
-	layers: JSONColumnType<WebMotionConfig['layers']>;
-	texts: JSONColumnType<AnimationTexts>;
+	configuration: JSONColumnType<WebMotionConfig> | null;
+	texts: JSONColumnType<AnimationTexts> | null;
 };
 type AnimationAvailableToStory = {
 	id: Generated<string>;

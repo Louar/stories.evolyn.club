@@ -34,7 +34,7 @@ export const load: PageServerLoad = async ({ cookies, locals, params }) => {
 		return {
 			id: part.id,
 			animation:
-				part.backgroundType === 'animation' && part.background && 'composition' in part.background
+				part.backgroundType === 'animation' && part.background && 'configuration' in part.background
 					? resolveAnimationConfig(part.background, language)
 					: undefined,
 			source:

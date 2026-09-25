@@ -9,6 +9,7 @@ export type AssetRow =
       type: 'animation';
       asset: string;
       name: string;
+      duration: number;
     }
   | {
       id: string;
@@ -72,7 +73,7 @@ const partitionStoryAssets = (rows: AssetRow[]) => {
 const partitionAvailableAssets = (rows: AssetRow[]) => {
   const allAvailableAnimations: (Extract<AssetRow, { type: 'animation' }> & {
     title: string;
-    summary: null;
+    summary: string;
   })[] = [];
   const allAvailableVideos: (Extract<AssetRow, { type: 'video' }> & {
     title: string;
@@ -94,7 +95,11 @@ const partitionAvailableAssets = (rows: AssetRow[]) => {
   for (const asset of rows) {
     switch (asset.type) {
       case 'animation':
-        allAvailableAnimations.push({ ...asset, title: asset.name, summary: null });
+        allAvailableAnimations.push({
+          ...asset,
+          title: asset.name,
+          summary: formatDuration(asset.duration)
+        });
         break;
       case 'still':
         allAvailableStills.push({

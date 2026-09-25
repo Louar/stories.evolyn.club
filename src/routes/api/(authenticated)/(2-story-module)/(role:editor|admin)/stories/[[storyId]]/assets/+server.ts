@@ -15,13 +15,15 @@ import z from 'zod/v4';
 import type { RequestHandler } from './$types';
 
 type AssetRow =
-	| (WebMotionConfig & {
+	| {
 			id: string;
 			type: 'animation';
 			asset: string;
 			name: string;
+			configuration: WebMotionConfig;
+			duration: number;
 			texts: AnimationTexts;
-	  })
+	  }
 	| {
 			id: string;
 			type: 'still';

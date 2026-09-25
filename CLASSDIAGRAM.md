@@ -281,12 +281,9 @@ classDiagram
 
   class Animation {
       name: string
-      version: integer
-      playback: jsonb?
-      composition: jsonb?
-      motions: jsonb?
-      layers: jsonb?
+      configuration: jsonb?
       texts: jsonb?
+      duration: number?
   }
 
   class AnnouncementTemplate {

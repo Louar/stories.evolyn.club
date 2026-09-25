@@ -22,7 +22,6 @@
 	} from '$lib/media/animation.js';
 	import { EDITORS } from '$lib/states/editors.svelte.js';
 	import { UI } from '$lib/states/ui.svelte.js';
-	import type { PlaybackController } from '@superhq/webmotion';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import XIcon from '@lucide/svelte/icons/x';
 	import { untrack } from 'svelte';
@@ -43,21 +42,13 @@
 	let name = $state(initial?.name ?? '');
 	let configJson = $state(
 		JSON.stringify(
-			initial
-				? {
-						version: initial.version,
-						playback: initial.playback,
-						composition: initial.composition,
-						motions: initial.motions,
-						layers: initial.layers
-					}
-				: {
-						version: 1,
-						playback: { autoplay: false, loop: false },
-						composition: { width: 1920, height: 1080, fps: 30, durationInFrames: 150 },
-						motions: {},
-						layers: []
-					},
+			initial?.configuration ?? {
+				version: 1,
+				playback: { autoplay: false, loop: false },
+				composition: { width: 1920, height: 1080, fps: 30, durationInFrames: 150 },
+				motions: {},
+				layers: []
+			},
 			null,
 			2
 		)
@@ -68,14 +59,17 @@
 	let deleteOpen = $state(false);
 	let saved = $state(false);
 	let previewConfig = $state.raw<WebMotionConfig>();
-	let previewController = $state.raw<PlaybackController>();
 	let previewError = $state('');
 	let validation = $derived.by(() => {
 		try {
 			const config: unknown = JSON.parse(configJson);
 			if (!config || typeof config !== 'object' || Array.isArray(config))
 				return { error: 'Configuration must be a JSON object.' };
-			const result = animationSchema.safeParse({ ...config, name, texts: JSON.parse(textsJson) });
+			const result = animationSchema.safeParse({
+				configuration: config,
+				name,
+				texts: JSON.parse(textsJson)
+			});
 			return result.success
 				? { data: result.data }
 				: {
@@ -151,15 +145,15 @@
 		</AlertDialog.Footer>
 	</AlertDialog.Content>
 </AlertDialog.Root>
-<div class="flex h-full min-h-0 flex-col">
+<div class="flex h-full min-h-0 min-w-0 flex-col [overflow-wrap:anywhere]">
 	<HeaderBlank class="w-full shrink-0">
-		<div>
+		<div class="min-w-0">
 			<h1 class="text-sm font-medium">{id === 'new' ? 'New animation' : 'Edit animation'}</h1>
 			<p class="text-xs text-muted-foreground" aria-live="polite">
 				{busy ? 'Saving...' : saved ? 'Saved' : 'Save to apply changes'}
 			</p>
 		</div>
-		<div class="ml-auto flex gap-2">
+		<div class="ml-auto flex shrink-0 gap-2">
 			{#if id !== 'new'}
 				<Button
 					variant="destructive"
@@ -179,16 +173,16 @@
 		</div>
 	</HeaderBlank>
 	<form
-		class="min-h-0 flex-1 muted-scrollbar overflow-y-auto p-4"
+		class="min-h-0 min-w-0 flex-1 muted-scrollbar overflow-x-hidden overflow-y-auto p-4"
 		onsubmit={persist}
 		oninput={() => (saved = false)}
 	>
 		<fieldset disabled={busy} class="grid min-w-0 gap-4">
-			<Field.Field>
+			<Field.Field class="min-w-0">
 				<Field.Label for={`${uid}-name`}>Name</Field.Label>
 				<Input id={`${uid}-name`} bind:value={name} required />
 			</Field.Field>
-			<Field.Field>
+			<Field.Field class="min-w-0">
 				<Field.Label for={`${uid}-config`}>WebMotion configuration (JSON)</Field.Label>
 				<Field.Description
 					>Edit version, playback, composition, motions and layers. Use text placeholders such as {'${title}'}
@@ -197,12 +191,20 @@
 				<Textarea
 					id={`${uid}-config`}
 					bind:value={configJson}
-					rows={18}
-					class="font-mono text-xs"
+					rows={10}
+					class="field-sizing-fixed h-48 min-w-0 resize-y font-mono text-xs [overflow-wrap:anywhere]"
 					spellcheck={false}
 				/>
+				{#if validation.data}
+					<Field.Description>
+						Duration: {(
+							validation.data.configuration.composition.durationInFrames /
+							validation.data.configuration.composition.fps
+						).toFixed(2)} seconds (derived from frames / FPS).
+					</Field.Description>
+				{/if}
 			</Field.Field>
-			<Field.Field>
+			<Field.Field class="min-w-0">
 				<Field.Label for={`${uid}-texts`}>Translated texts (JSON)</Field.Label>
 				<Field.Description
 					>Map each placeholder to its default text and language translations, for example {'{"title":{"default":"Hello","nl":"Hallo"}}'}.</Field.Description
@@ -210,8 +212,8 @@
 				<Textarea
 					id={`${uid}-texts`}
 					bind:value={textsJson}
-					rows={8}
-					class="font-mono text-xs"
+					rows={5}
+					class="field-sizing-fixed h-28 min-w-0 resize-y font-mono text-xs [overflow-wrap:anywhere]"
 					spellcheck={false}
 				/>
 			</Field.Field>
@@ -223,32 +225,21 @@
 				<Button
 					type="button"
 					variant="outline"
+					class="h-auto max-w-full whitespace-normal"
 					disabled={!validation.data}
 					onclick={() => {
 						if (!validation.data) return;
 						previewError = '';
-						previewController = undefined;
 						previewConfig = resolveAnimationConfig(validation.data, UI.language);
 					}}>Preview / restart ({UI.language})</Button
-				>
-				<Button
-					type="button"
-					variant="outline"
-					disabled={!previewController}
-					onclick={() => previewController?.play()}>Play</Button
-				>
-				<Button
-					type="button"
-					variant="outline"
-					disabled={!previewController}
-					onclick={() => previewController?.pause()}>Pause</Button
 				>
 			</div>
 			{#if previewConfig}
 				<WebMotionPlayer
 					config={previewConfig}
+					controls
+					class="min-w-0 overflow-hidden rounded-lg"
 					label={`Preview of ${name || 'animation'}`}
-					onready={(controller) => (previewController = controller)}
 					onerror={(cause) =>
 						(previewError = cause instanceof Error ? cause.message : 'Preview failed.')}
 				/>

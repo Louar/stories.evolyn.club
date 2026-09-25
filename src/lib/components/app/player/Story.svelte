@@ -242,13 +242,10 @@
 	const cueTolerance = 0.02;
 	const getDuration = (part: StoryPart) => {
 		if (
-			part.backgroundType === 'animation' &&
+			(part.backgroundType === 'video' || part.backgroundType === 'animation') &&
 			part.background &&
-			'composition' in part.background
-		) {
-			return part.background.composition.durationInFrames / part.background.composition.fps;
-		}
-		if (part.backgroundType === 'video' && part.background && 'duration' in part.background)
+			'duration' in part.background
+		)
 			return part.background.duration;
 	};
 
@@ -408,6 +405,7 @@
 				{:else if part?.backgroundType === 'animation' && player?.animation}
 					<AnimationPlayer
 						config={player.animation}
+						duration={getDuration(part)!}
 						bind:player={players[players.indexOf(player)]}
 						isActive={isActiveStory && part.id === pid && !isEnded}
 						{overlayStart}

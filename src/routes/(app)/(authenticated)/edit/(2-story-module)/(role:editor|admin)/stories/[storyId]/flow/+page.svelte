@@ -212,7 +212,8 @@
 		const rootFontSize = Number.parseFloat(
 			window.getComputedStyle(document.documentElement).fontSize
 		);
-		const resourceInspectorRight = (sidebarOpen ? 24 : 0) * rootFontSize + 30 * rootFontSize;
+		const resourceInspectorWidth = editorSelection?.kind === 'animation' ? 48 : 30;
+		const resourceInspectorRight = ((sidebarOpen ? 24 : 0) + resourceInspectorWidth) * rootFontSize;
 		const partInspectorWidth = Math.min(44 * rootFontSize, window.innerWidth - 4 * rootFontSize);
 
 		return resourceInspectorRight <= window.innerWidth - partInspectorWidth;

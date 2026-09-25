@@ -235,11 +235,7 @@ export const POST = (async ({ locals, request }) => {
 				.insertInto('animation')
 				.values({
 					name: animation_raw.name,
-					version: animation_raw.version,
-					playback: JSON.stringify(animation_raw.playback),
-					composition: JSON.stringify(animation_raw.composition),
-					motions: JSON.stringify(animation_raw.motions),
-					layers: JSON.stringify(animation_raw.layers),
+					configuration: JSON.stringify(animation_raw.configuration),
 					texts: JSON.stringify(animation_raw.texts)
 				})
 				.returning('id')

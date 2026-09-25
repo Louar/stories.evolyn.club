@@ -131,7 +131,7 @@
 	);
 	let selectedVideoDuration = $derived(
 		draft.backgroundType === 'animation' && selectedAnimation
-			? selectedAnimation.composition.durationInFrames / selectedAnimation.composition.fps
+			? selectedAnimation.duration
 			: (selectedVideo?.duration ?? videoDurationFromPart(draft))
 	);
 	let videoScrubberStep = $derived(

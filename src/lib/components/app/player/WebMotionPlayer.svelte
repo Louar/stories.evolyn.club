@@ -31,6 +31,7 @@
 		config: WebMotionConfig;
 		label?: string;
 		class?: string;
+		controls?: boolean;
 		onready?: (controller: PlaybackController) => void;
 		onerror?: (error: unknown) => void;
 	};
@@ -81,7 +82,14 @@
 		easeInOutSine: Easing.easeInOutSine
 	};
 
-	let { config, label = 'Animation player', class: className, onready, onerror }: Props = $props();
+	let {
+		config,
+		label = 'Animation player',
+		class: className,
+		controls = false,
+		onready,
+		onerror
+	}: Props = $props();
 	let controller: PlaybackController | undefined;
 	let loadError = $state<string>();
 
@@ -564,7 +572,7 @@
 </script>
 
 <div class={className} {@attach setupPlayer}>
-	<w-player aria-label={label}>
+	<w-player aria-label={label} data-controls={controls} inert={!controls}>
 		<canvas aria-label={label}></canvas>
 	</w-player>
 
@@ -588,8 +596,24 @@
 		color: #f4f4f5;
 	}
 
-	w-player::part(bar) {
+	w-player[data-controls='false']::part(bar) {
 		display: none;
+	}
+
+	/* The installed player calls its multiplier timeline zoom, not playback speed. */
+	w-player::part(sound),
+	w-player::part(zoom),
+	w-player::part(fullscreen-button) {
+		display: none;
+	}
+
+	w-player::part(bar) {
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	w-player::part(track) {
+		min-width: 4rem;
 	}
 
 	canvas {
@@ -599,6 +623,7 @@
 	}
 
 	.error {
+		overflow-wrap: anywhere;
 		margin-top: 0.75rem;
 		color: #dc2626;
 		font-size: 0.875rem;

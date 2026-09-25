@@ -67,12 +67,8 @@ export const InitStoryModule: Migration = {
 					.notNull()
 			)
 			.addColumn('name', 'text', (col) => col.notNull())
-			.addColumn('version', 'smallint', (col) => col.notNull())
-			.addColumn('playback', 'jsonb', (col) => col.notNull())
-			.addColumn('composition', 'jsonb', (col) => col.notNull())
-			.addColumn('motions', 'jsonb', (col) => col.notNull())
-			.addColumn('layers', 'jsonb', (col) => col.notNull())
-			.addColumn('texts', 'jsonb', (col) => col.defaultTo(sql`'{}'::jsonb`).notNull())
+			.addColumn('configuration', 'jsonb')
+			.addColumn('texts', 'jsonb')
 			.execute();
 
 		// Create Still table

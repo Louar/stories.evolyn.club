@@ -18,30 +18,22 @@ import { Language, selectLocalizedField, selectLocalizedMediaField } from '../sc
 export const animationSelection = [
 	'animation.id',
 	'animation.name',
-	'animation.version',
-	sql<string>`animation.playback::text`.as('playback'),
-	sql<string>`animation.composition::text`.as('composition'),
-	sql<string>`animation.motions::text`.as('motions'),
-	sql<string>`animation.layers::text`.as('layers'),
+	sql<string>`animation.configuration::text`.as('configuration'),
 	sql<string>`animation.texts::text`.as('texts')
 ] as const;
 
 export const parseAnimation = <
 	T extends {
-		playback: string;
-		composition: string;
-		motions: string;
-		layers: string;
+		configuration: string;
 		texts: string;
 	}
 >(animation: T) => {
-	const { playback, composition, motions, layers, texts, ...rest } = animation;
+	const { configuration: rawConfiguration, texts, ...rest } = animation;
+	const configuration = JSON.parse(rawConfiguration) as WebMotionConfig;
 	return {
 		...rest,
-		playback: JSON.parse(playback) as NonNullable<WebMotionConfig['playback']>,
-		composition: JSON.parse(composition) as WebMotionConfig['composition'],
-		motions: JSON.parse(motions) as NonNullable<WebMotionConfig['motions']>,
-		layers: JSON.parse(layers) as WebMotionConfig['layers'],
+		configuration,
+		duration: configuration.composition.durationInFrames / configuration.composition.fps,
 		texts: JSON.parse(texts) as AnimationTexts
 	};
 };

@@ -10,6 +10,7 @@
 
 	let {
 		config,
+		duration,
 		player = $bindable(),
 		isActive,
 		overlayStart,
@@ -18,6 +19,7 @@
 		onended
 	}: {
 		config: WebMotionConfig;
+		duration: number;
 		player: Player;
 		isActive: boolean;
 		overlayStart?: number;
@@ -28,7 +30,6 @@
 
 	// Story navigation owns autoplay and completion, including configs authored to loop.
 	const playbackConfig = $derived({ ...config, playback: { autoplay: false, loop: false } });
-	const duration = $derived(config.composition.durationInFrames / config.composition.fps);
 	let controller = $state<PlaybackController>();
 	let paused = false;
 	let ended = false;
