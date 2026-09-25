@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Header from '$lib/components/app/header/app-header.svelte';
+	import DemoCards from '$lib/components/app/demo-cards.svelte';
 	import {
 		DataGrid,
 		DataGridToolbar,
@@ -123,6 +124,7 @@
 </Header>
 
 <div class="mx-auto mt-4 w-full max-w-6xl space-y-4 px-4">
+	<DemoCards kind="taxonomies" />
 	<DataGridToolbar {table} enableSearch={!!dataGridProps.searchState}>
 		{#snippet actions()}
 			<DataGridUploadMenu

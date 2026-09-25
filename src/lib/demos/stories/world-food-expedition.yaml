@@ -1,0 +1,404 @@
+# Manual import: create general-taxonomy and food-taxonomy first. Demo cards create independent dependencies automatically.
+
+slug: world-food-expedition
+name:
+  en: World Food Expedition
+  nl: Wereldvoedselexpeditie
+isPublished: false
+isPublic: true
+defaultBackgroundColor: '#101b2b'
+configuration: null
+videos: []
+quizzes: []
+animations:
+  - id: atlas-motion
+    name: Atlas orbit
+    texts: null
+    configuration:
+      version: 1
+      composition:
+        viewBoxWidth: 1280
+        viewBoxHeight: 720
+        fps: 30
+        durationInFrames: 360
+        background: '#101b2b'
+      playback:
+        autoplay: true
+        loop: true
+      layers:
+        - type: circle
+          props:
+            x: 180
+            y: 130
+            radius: 180
+            fill: '#193c53'
+            opacity: 0.6
+          animate:
+            x: [180, 300, 180]
+            y: [130, 220, 130]
+        - type: circle
+          props:
+            x: 1120
+            y: 640
+            radius: 240
+            stroke: '#327f8a'
+            lineWidth: 2
+            opacity: 0.5
+          animate:
+            scale: [1, 1.2, 1]
+            rotation: [0, 180, 360]
+  - id: garden-motion
+    name: Garden drift
+    texts: null
+    configuration:
+      version: 1
+      composition:
+        viewBoxWidth: 1280
+        viewBoxHeight: 720
+        fps: 30
+        durationInFrames: 300
+        background: '#14271f'
+      playback:
+        autoplay: true
+        loop: true
+      layers:
+        - type: ellipse
+          props:
+            x: 100
+            y: 600
+            radiusX: 250
+            radiusY: 140
+            fill: '#286149'
+            opacity: 0.5
+          animate:
+            rotation: [-15, 15, -15]
+            x: [100, 170, 100]
+        - type: circle
+          props:
+            x: 1200
+            y: 80
+            radius: 190
+            fill: '#8b7534'
+            opacity: 0.25
+          animate:
+            y: [80, 160, 80]
+            scale: [1, 1.15, 1]
+announcements:
+  - id: welcome
+    name: Expedition briefing
+    title:
+      en: From the atlas to your plate
+      nl: Van de atlas naar je bord
+    message:
+      en:
+        Explore five challenges using real taxonomy data. Locate countries, compare populations, trace
+        food origins, compare nutrition, and classify foods on the Wheel of Five. Each stage has
+        five rounds; three correct answers unlock the next stage.
+      nl:
+        Ontdek vijf uitdagingen met taxonomiegegevens. Vind landen, vergelijk bevolkingen, ontdek de
+        herkomst en voedingswaarde van voedsel en oefen met de Schijf van Vijf. Drie goede
+        antwoorden openen de volgende fase.
+  - id: retry
+    name: Field notes
+    title:
+      en: Keep exploring
+      nl: Blijf ontdekken
+    message:
+      en: You did not reach three correct rounds in this stage. Review the answers and start the
+        expedition again. The next draft will bring a fresh selection.
+      nl:
+        Je behaalde geen drie goede rondes in deze fase. Bekijk de antwoorden en begin opnieuw met een
+        nieuwe selectie.
+  - id: complete
+    name: Expedition complete
+    title:
+      en: Expedition complete
+      nl: Expeditie voltooid
+    message:
+      en: You connected geography, food origins, nutrition, and food groups. These demo values are
+        educational examples, not dietary advice; food origins are representative associations.
+      nl:
+        Je hebt geografie, herkomst, voedingswaarden en voedselgroepen verkend. Deze demogegevens zijn
+        educatieve voorbeelden, geen voedingsadvies.
+parts:
+  - id: briefing
+    isInitial: true
+    terminationStrategy: NONE
+    position:
+      x: 0
+      y: 0
+    backgroundType: animation
+    backgroundConfiguration: null
+    animationId: atlas-motion
+    videoId: null
+    defaultNextPartId: locate-countries
+    foregroundType: announcement
+    foregroundConfiguration: null
+    announcementTemplateId: welcome
+    quizTemplateId: null
+    quizLogicForPartId: null
+    quizLogicForPart: null
+    taxonomyDraftForPartId: null
+    taxonomyDraftForPart: null
+  - id: locate-countries
+    isInitial: false
+    terminationStrategy: NONE
+    position:
+      x: 400
+      y: 0
+    backgroundType: animation
+    backgroundConfiguration: null
+    animationId: atlas-motion
+    videoId: null
+    defaultNextPartId: null
+    foregroundType: taxonomy
+    foregroundConfiguration: null
+    announcementTemplateId: null
+    quizTemplateId: null
+    quizLogicForPartId: null
+    quizLogicForPart: null
+    taxonomyDraftForPartId: locate-draft
+    taxonomyDraftForPart:
+      taxonomySlug: general-taxonomy
+      nrOfRounds: 5
+      nrOfItemsPerRound: 4
+      goal: 3
+      maxMistakes: null
+      difficulty: null
+      defaultNextPartId: field-notes
+      draftedAttributeIds:
+        - country-name
+      attributeOptions:
+        - id: country-name
+          slug: name
+      draftedCategoryIds: []
+      draftedItemIds: []
+      rules:
+        - order: 1
+          name: Three correct rounds
+          nextPartId: compare-populations
+          nrOfRounds: null
+          score:
+            - 3
+            - null
+          mistakes: null
+          duration: null
+  - id: compare-populations
+    isInitial: false
+    terminationStrategy: NONE
+    position:
+      x: 800
+      y: 0
+    backgroundType: animation
+    backgroundConfiguration: null
+    animationId: atlas-motion
+    videoId: null
+    defaultNextPartId: null
+    foregroundType: taxonomy
+    foregroundConfiguration: null
+    announcementTemplateId: null
+    quizTemplateId: null
+    quizLogicForPartId: null
+    quizLogicForPart: null
+    taxonomyDraftForPartId: population-draft
+    taxonomyDraftForPart:
+      taxonomySlug: general-taxonomy
+      nrOfRounds: 5
+      nrOfItemsPerRound: 4
+      goal: 3
+      maxMistakes: null
+      difficulty: null
+      defaultNextPartId: field-notes
+      draftedAttributeIds:
+        - population
+      attributeOptions:
+        - id: population
+          slug: population
+      draftedCategoryIds: []
+      draftedItemIds: []
+      rules:
+        - order: 1
+          name: Three correct rounds
+          nextPartId: trace-origins
+          nrOfRounds: null
+          score:
+            - 3
+            - null
+          mistakes: null
+          duration: null
+  - id: trace-origins
+    isInitial: false
+    terminationStrategy: NONE
+    position:
+      x: 1200
+      y: 0
+    backgroundType: animation
+    backgroundConfiguration: null
+    animationId: atlas-motion
+    videoId: null
+    defaultNextPartId: null
+    foregroundType: taxonomy
+    foregroundConfiguration: null
+    announcementTemplateId: null
+    quizTemplateId: null
+    quizLogicForPartId: null
+    quizLogicForPart: null
+    taxonomyDraftForPartId: origin-draft
+    taxonomyDraftForPart:
+      taxonomySlug: general-taxonomy
+      nrOfRounds: 5
+      nrOfItemsPerRound: 4
+      goal: 3
+      maxMistakes: null
+      difficulty: null
+      defaultNextPartId: field-notes
+      draftedAttributeIds:
+        - origins
+      attributeOptions:
+        - id: origins
+          slug: countryOfOrigin
+      draftedCategoryIds: []
+      draftedItemIds: []
+      rules:
+        - order: 1
+          name: Three correct rounds
+          nextPartId: compare-nutrition
+          nrOfRounds: null
+          score:
+            - 3
+            - null
+          mistakes: null
+          duration: null
+  - id: compare-nutrition
+    isInitial: false
+    terminationStrategy: NONE
+    position:
+      x: 1600
+      y: 0
+    backgroundType: animation
+    backgroundConfiguration: null
+    animationId: garden-motion
+    videoId: null
+    defaultNextPartId: null
+    foregroundType: taxonomy
+    foregroundConfiguration: null
+    announcementTemplateId: null
+    quizTemplateId: null
+    quizLogicForPartId: null
+    quizLogicForPart: null
+    taxonomyDraftForPartId: nutrition-draft
+    taxonomyDraftForPart:
+      taxonomySlug: food-taxonomy
+      nrOfRounds: 5
+      nrOfItemsPerRound: 4
+      goal: 3
+      maxMistakes: null
+      difficulty: null
+      defaultNextPartId: field-notes
+      draftedAttributeIds:
+        - calories
+        - protein
+        - fiber
+        - price
+      attributeOptions:
+        - id: calories
+          slug: calories
+        - id: protein
+          slug: protein
+        - id: fiber
+          slug: fiber
+        - id: price
+          slug: averagePrice
+      draftedCategoryIds: []
+      draftedItemIds: []
+      rules:
+        - order: 1
+          name: Three correct rounds
+          nextPartId: wheel-of-five
+          nrOfRounds: null
+          score:
+            - 3
+            - null
+          mistakes: null
+          duration: null
+  - id: wheel-of-five
+    isInitial: false
+    terminationStrategy: NONE
+    position:
+      x: 2000
+      y: 0
+    backgroundType: animation
+    backgroundConfiguration: null
+    animationId: garden-motion
+    videoId: null
+    defaultNextPartId: null
+    foregroundType: taxonomy
+    foregroundConfiguration: null
+    announcementTemplateId: null
+    quizTemplateId: null
+    quizLogicForPartId: null
+    quizLogicForPart: null
+    taxonomyDraftForPartId: wheel-draft
+    taxonomyDraftForPart:
+      taxonomySlug: food-taxonomy
+      nrOfRounds: 5
+      nrOfItemsPerRound: 4
+      goal: 3
+      maxMistakes: null
+      difficulty: null
+      defaultNextPartId: field-notes
+      draftedAttributeIds:
+        - wheel
+      attributeOptions:
+        - id: wheel
+          slug: wheelOfFive
+      draftedCategoryIds: []
+      draftedItemIds: []
+      rules:
+        - order: 1
+          name: Three correct rounds
+          nextPartId: expedition-complete
+          nrOfRounds: null
+          score:
+            - 3
+            - null
+          mistakes: null
+          duration: null
+  - id: field-notes
+    isInitial: false
+    terminationStrategy: NONE
+    position:
+      x: 1200
+      y: 350
+    backgroundType: animation
+    backgroundConfiguration: null
+    animationId: atlas-motion
+    videoId: null
+    defaultNextPartId: briefing
+    foregroundType: announcement
+    foregroundConfiguration: null
+    announcementTemplateId: retry
+    quizTemplateId: null
+    quizLogicForPartId: null
+    quizLogicForPart: null
+    taxonomyDraftForPartId: null
+    taxonomyDraftForPart: null
+  - id: expedition-complete
+    isInitial: false
+    terminationStrategy: COMPLETE_STORY
+    position:
+      x: 2400
+      y: 0
+    backgroundType: animation
+    backgroundConfiguration: null
+    animationId: garden-motion
+    videoId: null
+    defaultNextPartId: null
+    foregroundType: announcement
+    foregroundConfiguration: null
+    announcementTemplateId: complete
+    quizTemplateId: null
+    quizLogicForPartId: null
+    quizLogicForPart: null
+    taxonomyDraftForPartId: null
+    taxonomyDraftForPart: null

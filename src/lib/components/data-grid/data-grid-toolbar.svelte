@@ -26,7 +26,7 @@
 
 <div role="toolbar" aria-orientation="horizontal" class="flex items-center justify-between">
 	<DataGridKeyboardShortcuts {enableSearch} />
-	<div class="flex w-full items-center gap-1">
+	<div class="flex w-full flex-wrap items-center gap-1">
 		<DataGridFilterMenu {table} />
 		<DataGridSortMenu {table} />
 		<DataGridViewMenu {table} />

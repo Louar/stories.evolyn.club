@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
 	import Header from '$lib/components/app/header/app-header.svelte';
+	import DemoCards from '$lib/components/app/demo-cards.svelte';
 	import {
 		createDataGridPersistenceIdentity,
 		DataGrid,
@@ -275,6 +276,7 @@
 </Header>
 
 <div class="mx-auto mt-4 w-full max-w-6xl space-y-4 px-4">
+	<DemoCards kind="stories" />
 	<DataGridToolbar {table} enableSearch={!!dataGridProps.searchState}>
 		{#snippet actions()}
 			<div class="ml-auto flex items-center gap-2">

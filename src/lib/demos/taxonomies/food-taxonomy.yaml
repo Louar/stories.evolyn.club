@@ -1,0 +1,6610 @@
+# Originally derived from the food taxonomy seed migration.
+
+slug: food-taxonomy
+name:
+  en: Food taxonomy
+description:
+  en: Demo taxonomy with foods and Schijf van Vijf classifications
+categories:
+  - id: category-1
+    name:
+      en: Schijf van Vijf
+      nl: Schijf van Vijf
+    image: null
+    description:
+      en: Dutch Wheel of Five product groups used to classify foods
+      nl: Productgroepen uit de Schijf van Vijf waarmee voedsel wordt ingedeeld
+    map:
+      type: topojson
+      object: items
+      projection: identity
+      showLabels: true
+      topology:
+        type: Topology
+        arcs:
+          - - [0, 0]
+            - [-0.8863269777109872, 0.15628335990023726]
+            - [-0.8814065595889964, 0.18199581509883417]
+            - [-0.8757403835218415, 0.2075542836681963]
+            - [-0.8693332436601615, 0.23293714059226853]
+            - [-0.86219056108394, 0.2581229094399812]
+            - [-0.8543183792157305, 0.28309028053645235]
+            - [-0.8457233587073176, 0.3078181289931016]
+            - [-0.8364127718041403, 0.3322855325814159]
+            - [-0.8263944961922466, 0.3564717894352411]
+            - [-0.815677008332985, 0.38035643556662957]
+            - [-0.804269376291071, 0.4039192621804161]
+            - [-0.7921812520621001, 0.4271403327728762]
+            - [-0.7794228634059949, 0.44999999999999996]
+            - [-0.7660050051932997, 0.47247892230110417]
+            - [-0.751939030271643, 0.4945580802637252]
+            - [-0.7372368398600927, 0.5162187927159414]
+            - [-0.7219108734795395, 0.5374427325325076]
+            - [-0.7059740984276182, 0.5582119421414342]
+            - [-0.6894399988070802, 0.5785088487178855]
+            - [-0.6723225641168965, 0.5983162790525439]
+            - [-0.6546362774157439, 0.6176174740818603]
+            - [-0.6363961030678927, 0.6363961030678928]
+            - [-0.6176174740818604, 0.6546362774157437]
+            - [-0.5983162790525441, 0.6723225641168964]
+            - [-0.5785088487178854, 0.6894399988070802]
+            - [-0.558211942141434, 0.7059740984276183]
+            - [-0.5374427325325077, 0.7219108734795393]
+            - [-0.5162187927159415, 0.7372368398600926]
+            - [-0.49455808026372544, 0.7519390302716428]
+            - [-0.47247892230110405, 0.7660050051932997]
+            - [-0.4499999999999998, 0.7794228634059949]
+            - [-0.42714033277287644, 0.7921812520621]
+            - [-0.40391926218041596, 0.8042693762910711]
+            - [-0.3803564355666294, 0.8156770083329851]
+            - [-0.3564717894352413, 0.8263944961922465]
+            - [-0.3322855325814159, 0.8364127718041403]
+            - [-0.30781812899310185, 0.8457233587073176]
+            - [-0.2830902805364524, 0.8543183792157305]
+            - [-0.2581229094399812, 0.86219056108394]
+            - [-0.23293714059226858, 0.8693332436601615]
+            - [-0.20755428366819612, 0.8757403835218415]
+            - [-0.1819958150988342, 0.8814065595889964]
+            - [-0.15628335990023728, 0.8863269777109872]
+            - [-0.13043867337652193, 0.8904974747228501]
+            - [-0.10448362271270717, 0.8939145219677488]
+            - [-0.07844016847289241, 0.896575228282571]
+            - [-0.052330346019428195, 0.8984773424441413]
+            - [-0.026176246868800115, 0.8996192550739806]
+            - [5.5109105961630896e-17, 0.9]
+            - [0, 0]
+          - - [0, 0]
+            - [5.5109105961630896e-17, 0.9]
+            - [0.02944717453959855, 0.8995181287287292]
+            - [0.058862816307128744, 0.8980730309147431]
+            - [0.0882154262966047, 0.8956662540049771]
+            - [0.11747357299804655, 0.8923003752364294]
+            - [0.14660592605512995, 0.8879789988763911]
+            - [0.1755812898145155, 0.8827067523629074]
+            - [0.20436863673093592, 0.8764892813496002]
+            - [0.23293714059226867, 0.8693332436601615]
+            - [0.2612562095290161, 0.861246302158988]
+            - [0.28929551877284554, 0.8522371165455951]
+            - [0.31702504312911023, 0.8423153340815931]
+            - [0.3444150891285809, 0.831491579260158]
+            - [0.3714363268239553, 0.8197774424290583]
+            - [0.39805982119710115, 0.8071854673794195]
+            - [0.42425706314339784, 0.7937291379135195]
+            - [0.4499999999999999, 0.7794228634059949]
+            - [0.4752610655853313, 0.7642819633739211]
+            - [0.5000132097176421, 0.7483226510722907]
+            - [0.5242299271810219, 0.7315620161324538]
+            - [0.5478852861078486, 0.7140180062621116]
+            - [0.5709539557472809, 0.6957094080264632]
+            - [0.593411233590062, 0.6766558267310797]
+            - [0.6152330718205842, 0.6568776654280521]
+            - [0.6363961030678928, 0.6363961030678927]
+            - [0.6568776654280521, 0.6152330718205842]
+            - [0.6766558267310797, 0.593411233590062]
+            - [0.6957094080264633, 0.5709539557472809]
+            - [0.7140180062621116, 0.5478852861078486]
+            - [0.7315620161324538, 0.5242299271810219]
+            - [0.7483226510722907, 0.5000132097176421]
+            - [0.7642819633739211, 0.4752610655853312]
+            - [0.7794228634059948, 0.45]
+            - [0.7937291379135195, 0.4242570631433978]
+            - [0.8071854673794195, 0.3980598211971011]
+            - [0.8197774424290583, 0.3714363268239552]
+            - [0.831491579260158, 0.3444150891285808]
+            - [0.8423153340815931, 0.3170250431291102]
+            - [0.8522371165455951, 0.2892955187728455]
+            - [0.861246302158988, 0.2612562095290162]
+            - [0.8693332436601615, 0.2329371405922686]
+            - [0.8764892813496002, 0.20436863673093603]
+            - [0.8827067523629074, 0.17558128981451543]
+            - [0.8879789988763911, 0.1466059260551299]
+            - [0.8923003752364294, 0.11747357299804649]
+            - [0.8956662540049772, 0.08821542629660445]
+            - [0.8980730309147431, 0.0588628163071289]
+            - [0.8995181287287292, 0.029447174539598494]
+            - [0.9, 0]
+            - [0, 0]
+          - - [0, 0]
+            - [0.4500000000000001, -0.7794228634059948]
+            - [0.4285798522223919, -0.7914033802486774]
+            - [0.40684099155904807, -0.8027953709303826]
+            - [0.38479958408725395, -0.8135903638110991]
+            - [0.36247202087286334, -0.8237803312075025]
+            - [0.33987490578109975, -0.8333576953627347]
+            - [0.3170250431291102, -0.8423153340815931]
+            - [0.29393942518945976, -0.8506465860269411]
+            - [0.2706352195538461, -0.8583452556734041]
+            - [0.24712975636643916, -0.8654056179146657]
+            - [0.22344051543634444, -0.8718224223209339]
+            - [0.19958511323876238, -0.8775908970434176]
+            - [0.17558128981451548, -0.8827067523629074]
+            - [0.1514468955776932, -0.8871661838798182]
+            - [0.12719987804121105, -0.890965875343327]
+            - [0.10285826847016177, -0.8941030011175]
+            - [0.0784401684728921, -0.896575228282571]
+            - [0.05396373653976108, -0.8983807183698164]
+            - [0.02944717453959853, -0.8995181287287292]
+            - [0.004908714183912187, -0.8999866135254795]
+            - [-0.01963339653110475, -0.8997858243719182]
+            - [-0.04416090689467623, -0.8989159105846551]
+            - [-0.06865557705355736, -0.89737751907402]
+            - [-0.09309919157608156, -0.8951717938629881]
+            - [-0.11747357299804646, -0.8923003752364294]
+            - [-0.14176059534035837, -0.8887653985213124]
+            - [-0.16594219758839682, -0.8845694924987711]
+            - [-0.19000039712306868, -0.8797157774492147]
+            - [-0.21391730309355608, -0.8742078628319352]
+            - [-0.23767512972182828, -0.8680498446009377]
+            - [-0.2612562095290162, -0.861246302158988]
+            - [-0.28464300647380686, -0.8538022949521467]
+            - [-0.3078181289931017, -0.8457233587073176]
+            - [-0.33076434293523327, -0.8370155013156109]
+            - [-0.353464584376117, -0.8276851983645829]
+            - [-0.3759019723088195, -0.8177393883226731]
+            - [-0.3980598211971012, -0.8071854673794194]
+            - [-0.41992165338359083, -0.7960312839452929]
+            - [-0.441471211343377, -0.7842851328152354]
+            - [-0.4626924697738996, -0.7719557490002448]
+            - [-0.4835696475121418, -0.759052301231597]
+            - [-0.5040872192702749, -0.7455843851425282]
+            - [-0.524229927181022, -0.7315620161324536]
+            - [-0.5439827921441485, -0.7169956219190298]
+            - [-0.5633311249656531, -0.7018960347835937]
+            - [-0.5822605372813717, -0.6862744835157493]
+            - [-0.600756952256863, -0.6701425850630933]
+            - [-0.6188066150556306, -0.6535123358922865]
+            - [-0.636396103067893, -0.6363961030678927]
+            - [0, 0]
+          - - [0, 0]
+            - [0.9, -2.2043642384652358e-16]
+            - [0.8997858243719182, -0.01963339653110561]
+            - [0.899143399423672, -0.03925744862880257]
+            - [0.8980730309147431, -0.058862816307129306]
+            - [0.896575228282571, -0.0784401684728925]
+            - [0.8946507044000876, -0.09798018736676863]
+            - [0.8923003752364294, -0.11747357299804652]
+            - [0.8895253594209847, -0.1369110475709255]
+            - [0.8863269777109872, -0.15628335990023734]
+            - [0.8827067523629073, -0.17558128981451585]
+            - [0.87866640640794, -0.1947956525442926]
+            - [0.8742078628319352, -0.21391730309355614]
+            - [0.8693332436601615, -0.2329371405922686]
+            - [0.8640448689473358, -0.2518461126278932]
+            - [0.8583452556734043, -0.27063521955384573]
+            - [0.8522371165455951, -0.2892955187728457]
+            - [0.8457233587073176, -0.30781812899310174]
+            - [0.8388070823545186, -0.3261942344553317]
+            - [0.8314915792601582, -0.3444150891285806]
+            - [0.8237803312075024, -0.3624720208728637]
+            - [0.8156770083329851, -0.3803564355666293]
+            - [0.8071854673794194, -0.39805982119710126]
+            - [0.7983097498603993, -0.415573751911531]
+            - [0.7890540801367569, -0.432889892027449]
+            - [0.779422863405995, -0.44999999999999973]
+            - [0.769420683605652, -0.4668959323444693]
+            - [0.759052301231597, -0.4835696475121418]
+            - [0.7483226510722907, -0.500013209717642]
+            - [0.7372368398600925, -0.5162187927159418]
+            - [0.7258001438407344, -0.5321786835272241]
+            - [0.7140180062621114, -0.5478852861078488]
+            - [0.7018960347835936, -0.5633311249656531]
+            - [0.6894399988070801, -0.5785088487178857]
+            - [0.6766558267310797, -0.5934112335900619]
+            - [0.6635496031291115, -0.6080311868540944]
+            - [0.6501275658537802, -0.6223617502040424]
+            - [0.6363961030678926, -0.636396103067893]
+            - [0.6223617502040426, -0.6501275658537798]
+            - [0.6080311868540942, -0.6635496031291118]
+            - [0.5934112335900622, -0.6766558267310795]
+            - [0.5785088487178853, -0.6894399988070803]
+            - [0.5633311249656534, -0.7018960347835934]
+            - [0.5478852861078485, -0.7140180062621116]
+            - [0.5321786835272244, -0.7258001438407341]
+            - [0.5162187927159415, -0.7372368398600926]
+            - [0.5000132097176416, -0.7483226510722909]
+            - [0.4835696475121415, -0.7590523012315972]
+            - [0.4668959323444697, -0.7694206836056516]
+            - [0.4500000000000001, -0.7794228634059948]
+            - [0, 0]
+          - - [0, 0]
+            - [-0.636396103067893, -0.6363961030678927]
+            - [-0.6489950064490271, -0.6235426862727421]
+            - [-0.6613343577462077, -0.6104398965208704]
+            - [-0.6734092220919684, -0.5970929740011098]
+            - [-0.6852147703949081, -0.5835072565381286]
+            - [-0.6967462812709893, -0.5696881774576751]
+            - [-0.7079991429317555, -0.5556412634136343]
+            - [-0.7189688550287205, -0.5413721321777568]
+            - [-0.7296510304531911, -0.5268864903929463]
+            - [-0.7400413970907977, -0.5121901312910082]
+            - [-0.7501357995300393, -0.49728893237576555]
+            - [-0.7599302007241543, -0.48218885307247283]
+            - [-0.7694206836056521, -0.46689593234446913]
+            - [-0.7786034526528645, -0.4514162862780193]
+            - [-0.7874748354078853, -0.43575610563631123]
+            - [-0.7960312839452929, -0.41992165338359055]
+            - [-0.8042693762910711, -0.4039192621804159]
+            - [-0.8121858177911545, -0.38775533185104466]
+            - [-0.8197774424290583, -0.37143632682395533]
+            - [-0.8270412140920612, -0.35496877354653233]
+            - [-0.8339742277854347, -0.3383592578749514]
+            - [-0.8405737107942362, -0.3216144224403002]
+            - [-0.8468370237921979, -0.30474096399199824]
+            - [-0.8527616618972718, -0.2877456307195701]
+            - [-0.8583452556734043, -0.2706352195538458]
+            - [-0.8635855720781433, -0.2534165734486715]
+            - [-0.8684805153556974, -0.23609657864421146]
+            - [-0.8730281278750895, -0.21868216191293743]
+            - [-0.8772265909130714, -0.20118028778941252]
+            - [-0.8810742253814832, -0.18359795578496885]
+            - [-0.8845694924987711, -0.16594219758839693]
+            - [-0.8877109944053901, -0.1482200742537707]
+            - [-0.89049747472285, -0.13043867337652207]
+            - [-0.8929278190561767, -0.11260510625890714]
+            - [-0.895001055439592, -0.09472650506598718]
+            - [-0.896716354725231, -0.07681001997326611]
+            - [-0.8980730309147431, -0.058862816307128585]
+            - [-0.8990705414336418, -0.04089207167921508]
+            - [-0.899708487348297, -0.02290497311588407]
+            - [-0.8999866135254795, -0.004908714183912643]
+            - [-0.8999048087343967, 0.013089507886424353]
+            - [-0.8994631056911775, 0.031082495079734433]
+            - [-0.8986616810457868, 0.049063051474205546]
+            - [-0.8975008553113794, 0.06702398611946683]
+            - [-0.8959810927361166, 0.08495811591245724]
+            - [-0.8941030011175, 0.10285826847016165]
+            - [-0.8918673315592958, 0.12071728499805391]
+            - [-0.8892749781711456, 0.13852802315310922]
+            - [-0.8863269777109872, 0.15628335990023726]
+            - [0, 0]
+          - - [1.5, 0.18]
+            - [1.517643085259321, 0.17913325080099543]
+            - [1.5351162579629032, 0.17654135047258146]
+            - [1.5522512419058032, 0.1722492604317976]
+            - [1.5688830178257163, 0.16629831585203161]
+            - [1.5848514126286797, 0.1587458275827039]
+            - [1.6000026419435285, 0.14966453021445814]
+            - [1.6141907911494562, 0.13914188160529264]
+            - [1.6272792206135787, 0.12727922061357855]
+            - [1.6391418816052927, 0.11419079114945618]
+            - [1.6496645302144581, 0.10000264194352838]
+            - [1.6587458275827038, 0.0848514126286796]
+            - [1.6662983158520317, 0.06888301782571615]
+            - [1.6722492604317976, 0.05225124190580321]
+            - [1.6765413504725815, 0.03511625796290308]
+            - [1.6791332508009955, 0.01764308525932093]
+            - [1.68, 0]
+            - [1.6791332508009955, -0.01764308525932093]
+            - [1.6765413504725815, -0.03511625796290308]
+            - [1.6722492604317976, -0.05225124190580321]
+            - [1.6662983158520317, -0.06888301782571615]
+            - [1.6587458275827038, -0.0848514126286796]
+            - [1.6496645302144581, -0.10000264194352837]
+            - [1.6391418816052927, -0.11419079114945617]
+            - [1.6272792206135787, -0.12727922061357855]
+            - [1.6141907911494562, -0.13914188160529264]
+            - [1.6000026419435285, -0.14966453021445816]
+            - [1.5848514126286797, -0.1587458275827039]
+            - [1.5688830178257163, -0.16629831585203161]
+            - [1.5522512419058032, -0.1722492604317976]
+            - [1.5351162579629032, -0.17654135047258146]
+            - [1.517643085259321, -0.17913325080099543]
+            - [1.5, -0.18]
+            - [1.482356914740679, -0.17913325080099543]
+            - [1.4648837420370968, -0.17654135047258146]
+            - [1.4477487580941968, -0.1722492604317976]
+            - [1.431116982174284, -0.16629831585203161]
+            - [1.4151485873713203, -0.1587458275827039]
+            - [1.3999973580564717, -0.14966453021445816]
+            - [1.3858092088505438, -0.13914188160529267]
+            - [1.3727207793864213, -0.12727922061357855]
+            - [1.3608581183947075, -0.11419079114945624]
+            - [1.3503354697855419, -0.10000264194352838]
+            - [1.3412541724172962, -0.08485141262867961]
+            - [1.3337016841479685, -0.06888301782571625]
+            - [1.3277507395682024, -0.05225124190580323]
+            - [1.3234586495274185, -0.03511625796290315]
+            - [1.3208667491990045, -0.01764308525932087]
+            - [1.32, -2.2043642384652358e-17]
+            - [1.3208667491990045, 0.017643085259320825]
+            - [1.3234586495274185, 0.0351162579629031]
+            - [1.3277507395682024, 0.05225124190580318]
+            - [1.3337016841479685, 0.06888301782571621]
+            - [1.3412541724172962, 0.08485141262867957]
+            - [1.3503354697855419, 0.10000264194352834]
+            - [1.3608581183947073, 0.1141907911494562]
+            - [1.3727207793864213, 0.12727922061357855]
+            - [1.3858092088505438, 0.1391418816052926]
+            - [1.3999973580564715, 0.14966453021445814]
+            - [1.4151485873713203, 0.1587458275827039]
+            - [1.4311169821742837, 0.16629831585203156]
+            - [1.4477487580941968, 0.17224926043179759]
+            - [1.4648837420370968, 0.17654135047258146]
+            - [1.4823569147406792, 0.17913325080099543]
+            - [1.5, 0.18]
+        objects:
+          items:
+            type: GeometryCollection
+            geometries: []
+  - id: category-2
+    name:
+      en: Foods
+      nl: Voedsel
+    image: null
+    description:
+      en: Everyday foods with nutrition values per 100 g
+      nl: Dagelijks voedsel met voedingswaarden per 100 g
+    map: null
+attributes:
+  - id: attribute-1
+    slug: name
+    name:
+      en: Name
+      nl: Naam
+    image: null
+    description:
+      en: Name
+      nl: Naam
+    type: translatable_category
+    referencedCategoryId: null
+    schema: null
+  - id: attribute-2
+    slug: emoji
+    name:
+      en: Emoji
+      nl: Emoji
+    image: null
+    description:
+      en: Emoji
+      nl: Emoji
+    type: translatable_category
+    referencedCategoryId: null
+    schema: null
+  - id: attribute-3
+    slug: calories
+    name:
+      en: Calories
+      nl: Calorieën
+    image: null
+    description:
+      en: Energy per 100 g in kcal
+      nl: Energie per 100 g in kcal
+    type: number
+    referencedCategoryId: null
+    schema: null
+  - id: attribute-4
+    slug: averagePrice
+    name:
+      en: Average price
+      nl: Gemiddelde prijs
+    image: null
+    description:
+      en: Indicative average supermarket price per 100 g in EUR
+      nl: Indicatieve gemiddelde supermarktprijs per 100 g in EUR
+    type: number
+    referencedCategoryId: null
+    schema: null
+  - id: attribute-5
+    slug: carbs
+    name:
+      en: Carbohydrates
+      nl: Koolhydraten
+    image: null
+    description:
+      en: Carbohydrates per 100 g in grams
+      nl: Koolhydraten per 100 g in gram
+    type: number
+    referencedCategoryId: null
+    schema: null
+  - id: attribute-6
+    slug: protein
+    name:
+      en: Protein
+      nl: Eiwit
+    image: null
+    description:
+      en: Protein per 100 g in grams
+      nl: Eiwit per 100 g in gram
+    type: number
+    referencedCategoryId: null
+    schema: null
+  - id: attribute-7
+    slug: fat
+    name:
+      en: Fat
+      nl: Vet
+    image: null
+    description:
+      en: Fat per 100 g in grams
+      nl: Vet per 100 g in gram
+    type: number
+    referencedCategoryId: null
+    schema: null
+  - id: attribute-8
+    slug: fiber
+    name:
+      en: Fiber
+      nl: Vezels
+    image: null
+    description:
+      en: Fiber per 100 g in grams
+      nl: Vezels per 100 g in gram
+    type: number
+    referencedCategoryId: null
+    schema: null
+  - id: attribute-9
+    slug: countryOfOrigin
+    name:
+      en: Country of origin
+      nl: Land van oorsprong
+    image: null
+    description:
+      en: Representative country associated with the food for demo purposes
+      nl: Representatief land dat voor demodoeleinden met het voedsel wordt geassocieerd
+    type: translatable
+    referencedCategoryId: null
+    schema: null
+  - id: attribute-10
+    slug: wheelOfFive
+    name:
+      en: Wheel of Five
+      nl: Schijf van Vijf
+    image: null
+    description:
+      en: Dutch Wheel of Five product group
+      nl: Productgroep uit de Schijf van Vijf
+    type: item_reference
+    referencedCategoryId: category-1
+    schema: null
+  - id: attribute-11
+    slug: color
+    name:
+      en: Color
+      nl: Kleur
+    image: null
+    description:
+      en: CSS color used to fill this item on a map
+      nl: CSS-kleur waarmee dit item op een kaart wordt gevuld
+    type: custom
+    referencedCategoryId: null
+    schema: null
+  - id: attribute-12
+    slug: icons
+    name:
+      en: Icons
+      nl: Iconen
+    image: null
+    description:
+      en: Decorative icons displayed on this map item
+      nl: Decoratieve iconen die op dit kaartitem worden weergegeven
+    type: custom
+    referencedCategoryId: null
+    schema: null
+  - id: attribute-13
+    slug: shape
+    name:
+      en: Shape
+      nl: Vorm
+    image: null
+    description:
+      en: Geometry and map metadata used to visualize this item
+      nl: Geometrie en kaartmetadata om dit item te visualiseren
+    type: custom
+    referencedCategoryId: null
+    schema: null
+  - id: attribute-14
+    slug: center
+    name:
+      en: Center
+      nl: Middelpunt
+    image: null
+    description:
+      en: Map center formatted as longitude, latitude
+      nl: Kaartmiddelpunt geformatteerd als lengtegraad, breedtegraad
+    type: custom
+    referencedCategoryId: null
+    schema: null
+attributeOfCategories:
+  - categoryId: category-1
+    attributeId: attribute-1
+    order: 0
+    isRequired: true
+    isDefault: true
+  - categoryId: category-1
+    attributeId: attribute-11
+    order: 1
+    isRequired: true
+    isDefault: false
+  - categoryId: category-1
+    attributeId: attribute-12
+    order: 2
+    isRequired: true
+    isDefault: false
+  - categoryId: category-1
+    attributeId: attribute-13
+    order: 3
+    isRequired: true
+    isDefault: false
+  - categoryId: category-1
+    attributeId: attribute-14
+    order: 4
+    isRequired: true
+    isDefault: false
+  - categoryId: category-2
+    attributeId: attribute-1
+    order: 0
+    isRequired: true
+    isDefault: true
+  - categoryId: category-2
+    attributeId: attribute-2
+    order: 1
+    isRequired: true
+    isDefault: true
+  - categoryId: category-2
+    attributeId: attribute-3
+    order: 2
+    isRequired: true
+    isDefault: false
+  - categoryId: category-2
+    attributeId: attribute-4
+    order: 3
+    isRequired: true
+    isDefault: false
+  - categoryId: category-2
+    attributeId: attribute-5
+    order: 4
+    isRequired: true
+    isDefault: false
+  - categoryId: category-2
+    attributeId: attribute-6
+    order: 5
+    isRequired: true
+    isDefault: false
+  - categoryId: category-2
+    attributeId: attribute-7
+    order: 6
+    isRequired: true
+    isDefault: false
+  - categoryId: category-2
+    attributeId: attribute-8
+    order: 7
+    isRequired: true
+    isDefault: false
+  - categoryId: category-2
+    attributeId: attribute-9
+    order: 8
+    isRequired: true
+    isDefault: false
+  - categoryId: category-2
+    attributeId: attribute-10
+    order: 9
+    isRequired: true
+    isDefault: false
+items:
+  - id: item-1
+  - id: item-2
+  - id: item-3
+  - id: item-4
+  - id: item-5
+  - id: item-6
+  - id: item-7
+  - id: item-8
+  - id: item-9
+  - id: item-10
+  - id: item-11
+  - id: item-12
+  - id: item-13
+  - id: item-14
+  - id: item-15
+  - id: item-16
+  - id: item-17
+  - id: item-18
+  - id: item-19
+  - id: item-20
+  - id: item-21
+  - id: item-22
+  - id: item-23
+  - id: item-24
+  - id: item-25
+  - id: item-26
+  - id: item-27
+  - id: item-28
+  - id: item-29
+  - id: item-30
+  - id: item-31
+  - id: item-32
+  - id: item-33
+  - id: item-34
+  - id: item-35
+  - id: item-36
+  - id: item-37
+  - id: item-38
+  - id: item-39
+  - id: item-40
+  - id: item-41
+  - id: item-42
+  - id: item-43
+  - id: item-44
+  - id: item-45
+  - id: item-46
+  - id: item-47
+  - id: item-48
+  - id: item-49
+  - id: item-50
+  - id: item-51
+  - id: item-52
+  - id: item-53
+  - id: item-54
+  - id: item-55
+  - id: item-56
+  - id: item-57
+  - id: item-58
+  - id: item-59
+  - id: item-60
+  - id: item-61
+  - id: item-62
+  - id: item-63
+  - id: item-64
+  - id: item-65
+  - id: item-66
+  - id: item-67
+  - id: item-68
+  - id: item-69
+  - id: item-70
+  - id: item-71
+  - id: item-72
+  - id: item-73
+  - id: item-74
+  - id: item-75
+  - id: item-76
+  - id: item-77
+  - id: item-78
+  - id: item-79
+  - id: item-80
+  - id: item-81
+  - id: item-82
+  - id: item-83
+  - id: item-84
+  - id: item-85
+  - id: item-86
+  - id: item-87
+  - id: item-88
+  - id: item-89
+  - id: item-90
+  - id: item-91
+  - id: item-92
+  - id: item-93
+  - id: item-94
+  - id: item-95
+  - id: item-96
+  - id: item-97
+  - id: item-98
+  - id: item-99
+  - id: item-100
+  - id: item-101
+  - id: item-102
+  - id: item-103
+  - id: item-104
+  - id: item-105
+  - id: item-106
+itemOfCategories:
+  - itemId: item-1
+    categoryId: category-1
+  - itemId: item-2
+    categoryId: category-1
+  - itemId: item-3
+    categoryId: category-1
+  - itemId: item-4
+    categoryId: category-1
+  - itemId: item-5
+    categoryId: category-1
+  - itemId: item-6
+    categoryId: category-1
+  - itemId: item-7
+    categoryId: category-2
+  - itemId: item-8
+    categoryId: category-2
+  - itemId: item-9
+    categoryId: category-2
+  - itemId: item-10
+    categoryId: category-2
+  - itemId: item-11
+    categoryId: category-2
+  - itemId: item-12
+    categoryId: category-2
+  - itemId: item-13
+    categoryId: category-2
+  - itemId: item-14
+    categoryId: category-2
+  - itemId: item-15
+    categoryId: category-2
+  - itemId: item-16
+    categoryId: category-2
+  - itemId: item-17
+    categoryId: category-2
+  - itemId: item-18
+    categoryId: category-2
+  - itemId: item-19
+    categoryId: category-2
+  - itemId: item-20
+    categoryId: category-2
+  - itemId: item-21
+    categoryId: category-2
+  - itemId: item-22
+    categoryId: category-2
+  - itemId: item-23
+    categoryId: category-2
+  - itemId: item-24
+    categoryId: category-2
+  - itemId: item-25
+    categoryId: category-2
+  - itemId: item-26
+    categoryId: category-2
+  - itemId: item-27
+    categoryId: category-2
+  - itemId: item-28
+    categoryId: category-2
+  - itemId: item-29
+    categoryId: category-2
+  - itemId: item-30
+    categoryId: category-2
+  - itemId: item-31
+    categoryId: category-2
+  - itemId: item-32
+    categoryId: category-2
+  - itemId: item-33
+    categoryId: category-2
+  - itemId: item-34
+    categoryId: category-2
+  - itemId: item-35
+    categoryId: category-2
+  - itemId: item-36
+    categoryId: category-2
+  - itemId: item-37
+    categoryId: category-2
+  - itemId: item-38
+    categoryId: category-2
+  - itemId: item-39
+    categoryId: category-2
+  - itemId: item-40
+    categoryId: category-2
+  - itemId: item-41
+    categoryId: category-2
+  - itemId: item-42
+    categoryId: category-2
+  - itemId: item-43
+    categoryId: category-2
+  - itemId: item-44
+    categoryId: category-2
+  - itemId: item-45
+    categoryId: category-2
+  - itemId: item-46
+    categoryId: category-2
+  - itemId: item-47
+    categoryId: category-2
+  - itemId: item-48
+    categoryId: category-2
+  - itemId: item-49
+    categoryId: category-2
+  - itemId: item-50
+    categoryId: category-2
+  - itemId: item-51
+    categoryId: category-2
+  - itemId: item-52
+    categoryId: category-2
+  - itemId: item-53
+    categoryId: category-2
+  - itemId: item-54
+    categoryId: category-2
+  - itemId: item-55
+    categoryId: category-2
+  - itemId: item-56
+    categoryId: category-2
+  - itemId: item-57
+    categoryId: category-2
+  - itemId: item-58
+    categoryId: category-2
+  - itemId: item-59
+    categoryId: category-2
+  - itemId: item-60
+    categoryId: category-2
+  - itemId: item-61
+    categoryId: category-2
+  - itemId: item-62
+    categoryId: category-2
+  - itemId: item-63
+    categoryId: category-2
+  - itemId: item-64
+    categoryId: category-2
+  - itemId: item-65
+    categoryId: category-2
+  - itemId: item-66
+    categoryId: category-2
+  - itemId: item-67
+    categoryId: category-2
+  - itemId: item-68
+    categoryId: category-2
+  - itemId: item-69
+    categoryId: category-2
+  - itemId: item-70
+    categoryId: category-2
+  - itemId: item-71
+    categoryId: category-2
+  - itemId: item-72
+    categoryId: category-2
+  - itemId: item-73
+    categoryId: category-2
+  - itemId: item-74
+    categoryId: category-2
+  - itemId: item-75
+    categoryId: category-2
+  - itemId: item-76
+    categoryId: category-2
+  - itemId: item-77
+    categoryId: category-2
+  - itemId: item-78
+    categoryId: category-2
+  - itemId: item-79
+    categoryId: category-2
+  - itemId: item-80
+    categoryId: category-2
+  - itemId: item-81
+    categoryId: category-2
+  - itemId: item-82
+    categoryId: category-2
+  - itemId: item-83
+    categoryId: category-2
+  - itemId: item-84
+    categoryId: category-2
+  - itemId: item-85
+    categoryId: category-2
+  - itemId: item-86
+    categoryId: category-2
+  - itemId: item-87
+    categoryId: category-2
+  - itemId: item-88
+    categoryId: category-2
+  - itemId: item-89
+    categoryId: category-2
+  - itemId: item-90
+    categoryId: category-2
+  - itemId: item-91
+    categoryId: category-2
+  - itemId: item-92
+    categoryId: category-2
+  - itemId: item-93
+    categoryId: category-2
+  - itemId: item-94
+    categoryId: category-2
+  - itemId: item-95
+    categoryId: category-2
+  - itemId: item-96
+    categoryId: category-2
+  - itemId: item-97
+    categoryId: category-2
+  - itemId: item-98
+    categoryId: category-2
+  - itemId: item-99
+    categoryId: category-2
+  - itemId: item-100
+    categoryId: category-2
+  - itemId: item-101
+    categoryId: category-2
+  - itemId: item-102
+    categoryId: category-2
+  - itemId: item-103
+    categoryId: category-2
+  - itemId: item-104
+    categoryId: category-2
+  - itemId: item-105
+    categoryId: category-2
+  - itemId: item-106
+    categoryId: category-2
+attributeOfItems:
+  - itemId: item-1
+    attributeId: attribute-1
+    value:
+      en: Vegetables and fruit
+      nl: Groente en fruit
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-1
+    attributeId: attribute-11
+    value: '#2f9567'
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-1
+    attributeId: attribute-12
+    value:
+      - 🥦
+      - 🍎
+      - 🥕
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-1
+    attributeId: attribute-13
+    value:
+      - [0]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-1
+    attributeId: attribute-14
+    value: [-0.33553513225637355, 0.3998751993081065]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-2
+    attributeId: attribute-1
+    value:
+      en: Breads, grain/cereal products, and potatoes
+      nl: Brood, graanproducten en aardappelen
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-2
+    attributeId: attribute-11
+    value: '#f2b93f'
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-2
+    attributeId: attribute-12
+    value:
+      - 🍞
+      - 🌾
+      - 🥔
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-2
+    attributeId: attribute-13
+    value:
+      - [1]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-2
+    attributeId: attribute-14
+    value: [0.36910973977937783, 0.3691097397793778]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-3
+    attributeId: attribute-1
+    value:
+      en: Water, tea, and coffee
+      nl: Water, thee en koffie
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-3
+    attributeId: attribute-11
+    value: '#3e91ad'
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-3
+    attributeId: attribute-12
+    value:
+      - 💧
+      - 🍵
+      - ☕
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-3
+    attributeId: attribute-13
+    value:
+      - [2]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-3
+    attributeId: attribute-14
+    value: [-0.06813467233886696, -0.517534217637129]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-4
+    attributeId: attribute-1
+    value:
+      en: Legumes, nuts, fish, eggs, meat, and dairy
+      nl: Peulvruchten, noten, vis, ei, vlees en zuivel
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-4
+    attributeId: attribute-11
+    value: '#e5533f'
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-4
+    attributeId: attribute-12
+    value:
+      - 🫘
+      - 🐟
+      - 🥚
+      - 🥛
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-4
+    attributeId: attribute-13
+    value:
+      - [3]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-4
+    attributeId: attribute-14
+    value: [0.45206526077547676, -0.26100000000000023]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-5
+    attributeId: attribute-1
+    value:
+      en: Oils and fats
+      nl: Smeer- en bereidingsvetten
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-5
+    attributeId: attribute-11
+    value: '#197f7d'
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-5
+    attributeId: attribute-12
+    value:
+      - 🫒
+      - 🥜
+      - 🧈
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-5
+    attributeId: attribute-13
+    value:
+      - [4]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-5
+    attributeId: attribute-14
+    value: [-0.4978402482905745, -0.15696842734123054]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-6
+    attributeId: attribute-1
+    value:
+      en: None
+      nl: Niet in de Schijf van Vijf
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-6
+    attributeId: attribute-11
+    value: var(--map-helper-fill)
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-6
+    attributeId: attribute-12
+    value:
+      - 🍟
+      - 🍪
+      - 🍫
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-6
+    attributeId: attribute-13
+    value:
+      - [5]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-6
+    attributeId: attribute-14
+    value: [1.5, 0]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-7
+    attributeId: attribute-1
+    value:
+      en: Grapes
+      nl: Druiven
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-7
+    attributeId: attribute-2
+    value:
+      default: 🍇
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-7
+    attributeId: attribute-3
+    value: 78
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-7
+    attributeId: attribute-4
+    value: 0.45
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-7
+    attributeId: attribute-5
+    value: 16.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-7
+    attributeId: attribute-6
+    value: 0.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-7
+    attributeId: attribute-7
+    value: 0.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-7
+    attributeId: attribute-8
+    value: 1.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-7
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-7
+    attributeId: attribute-9
+    value:
+      en: Georgia
+      nl: Georgië
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-8
+    attributeId: attribute-1
+    value:
+      en: Melon
+      nl: Meloen
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-8
+    attributeId: attribute-2
+    value:
+      default: 🍈
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-8
+    attributeId: attribute-3
+    value: 34
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-8
+    attributeId: attribute-4
+    value: 0.35
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-8
+    attributeId: attribute-5
+    value: 8.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-8
+    attributeId: attribute-6
+    value: 0.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-8
+    attributeId: attribute-7
+    value: 0.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-8
+    attributeId: attribute-8
+    value: 0.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-8
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-8
+    attributeId: attribute-9
+    value:
+      en: Iran
+      nl: Iran
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-9
+    attributeId: attribute-1
+    value:
+      en: Watermelon
+      nl: Watermeloen
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-9
+    attributeId: attribute-2
+    value:
+      default: 🍉
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-9
+    attributeId: attribute-3
+    value: 30
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-9
+    attributeId: attribute-4
+    value: 0.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-9
+    attributeId: attribute-5
+    value: 7.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-9
+    attributeId: attribute-6
+    value: 0.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-9
+    attributeId: attribute-7
+    value: 0.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-9
+    attributeId: attribute-8
+    value: 0.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-9
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-9
+    attributeId: attribute-9
+    value:
+      en: South Africa
+      nl: Zuid-Afrika
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-10
+    attributeId: attribute-1
+    value:
+      en: Orange
+      nl: Sinaasappel
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-10
+    attributeId: attribute-2
+    value:
+      default: 🍊
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-10
+    attributeId: attribute-3
+    value: 51
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-10
+    attributeId: attribute-4
+    value: 0.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-10
+    attributeId: attribute-5
+    value: 7.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-10
+    attributeId: attribute-6
+    value: 0.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-10
+    attributeId: attribute-7
+    value: 1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-10
+    attributeId: attribute-8
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-10
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-10
+    attributeId: attribute-9
+    value:
+      en: China
+      nl: China
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-11
+    attributeId: attribute-1
+    value:
+      en: Lemon
+      nl: Citroen
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-11
+    attributeId: attribute-2
+    value:
+      default: 🍋
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-11
+    attributeId: attribute-3
+    value: 36
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-11
+    attributeId: attribute-4
+    value: 0.45
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-11
+    attributeId: attribute-5
+    value: 3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-11
+    attributeId: attribute-6
+    value: 0.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-11
+    attributeId: attribute-7
+    value: 0.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-11
+    attributeId: attribute-8
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-11
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-11
+    attributeId: attribute-9
+    value:
+      en: India
+      nl: India
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-12
+    attributeId: attribute-1
+    value:
+      en: Lime
+      nl: Limoen
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-12
+    attributeId: attribute-2
+    value:
+      default: 🍋‍🟩
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-12
+    attributeId: attribute-3
+    value: 30
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-12
+    attributeId: attribute-4
+    value: 0.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-12
+    attributeId: attribute-5
+    value: 10.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-12
+    attributeId: attribute-6
+    value: 0.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-12
+    attributeId: attribute-7
+    value: 0.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-12
+    attributeId: attribute-8
+    value: 2.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-12
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-12
+    attributeId: attribute-9
+    value:
+      en: India
+      nl: India
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-13
+    attributeId: attribute-1
+    value:
+      en: Banana
+      nl: Banaan
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-13
+    attributeId: attribute-2
+    value:
+      default: 🍌
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-13
+    attributeId: attribute-3
+    value: 95
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-13
+    attributeId: attribute-4
+    value: 0.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-13
+    attributeId: attribute-5
+    value: 20.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-13
+    attributeId: attribute-6
+    value: 1.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-13
+    attributeId: attribute-7
+    value: 0.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-13
+    attributeId: attribute-8
+    value: 1.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-13
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-13
+    attributeId: attribute-9
+    value:
+      en: Papua New Guinea
+      nl: Papoea-Nieuw-Guinea
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-14
+    attributeId: attribute-1
+    value:
+      en: Pineapple
+      nl: Ananas
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-14
+    attributeId: attribute-2
+    value:
+      default: 🍍
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-14
+    attributeId: attribute-3
+    value: 57
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-14
+    attributeId: attribute-4
+    value: 0.35
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-14
+    attributeId: attribute-5
+    value: 12
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-14
+    attributeId: attribute-6
+    value: 0.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-14
+    attributeId: attribute-7
+    value: 0.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-14
+    attributeId: attribute-8
+    value: 1.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-14
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-14
+    attributeId: attribute-9
+    value:
+      en: Brazil
+      nl: Brazilië
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-15
+    attributeId: attribute-1
+    value:
+      en: Mango
+      nl: Mango
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-15
+    attributeId: attribute-2
+    value:
+      default: 🥭
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-15
+    attributeId: attribute-3
+    value: 66
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-15
+    attributeId: attribute-4
+    value: 0.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-15
+    attributeId: attribute-5
+    value: 14.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-15
+    attributeId: attribute-6
+    value: 0.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-15
+    attributeId: attribute-7
+    value: 0.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-15
+    attributeId: attribute-8
+    value: 1.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-15
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-15
+    attributeId: attribute-9
+    value:
+      en: India
+      nl: India
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-16
+    attributeId: attribute-1
+    value:
+      en: Red apple
+      nl: Rode appel
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-16
+    attributeId: attribute-2
+    value:
+      default: 🍎
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-16
+    attributeId: attribute-3
+    value: 60
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-16
+    attributeId: attribute-4
+    value: 0.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-16
+    attributeId: attribute-5
+    value: 13
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-16
+    attributeId: attribute-6
+    value: 0.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-16
+    attributeId: attribute-7
+    value: 0.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-16
+    attributeId: attribute-8
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-16
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-16
+    attributeId: attribute-9
+    value:
+      en: Kazakhstan
+      nl: Kazachstan
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-17
+    attributeId: attribute-1
+    value:
+      en: Green apple
+      nl: Groene appel
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-17
+    attributeId: attribute-2
+    value:
+      default: 🍏
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-17
+    attributeId: attribute-3
+    value: 58
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-17
+    attributeId: attribute-4
+    value: 0.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-17
+    attributeId: attribute-5
+    value: 12.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-17
+    attributeId: attribute-6
+    value: 0.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-17
+    attributeId: attribute-7
+    value: 0.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-17
+    attributeId: attribute-8
+    value: 1.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-17
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-17
+    attributeId: attribute-9
+    value:
+      en: Kazakhstan
+      nl: Kazachstan
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-18
+    attributeId: attribute-1
+    value:
+      en: Pear
+      nl: Peer
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-18
+    attributeId: attribute-2
+    value:
+      default: 🍐
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-18
+    attributeId: attribute-3
+    value: 55
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-18
+    attributeId: attribute-4
+    value: 0.35
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-18
+    attributeId: attribute-5
+    value: 11.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-18
+    attributeId: attribute-6
+    value: 0.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-18
+    attributeId: attribute-7
+    value: 0.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-18
+    attributeId: attribute-8
+    value: 2.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-18
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-18
+    attributeId: attribute-9
+    value:
+      en: China
+      nl: China
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-19
+    attributeId: attribute-1
+    value:
+      en: Peach
+      nl: Perzik
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-19
+    attributeId: attribute-2
+    value:
+      default: 🍑
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-19
+    attributeId: attribute-3
+    value: 41
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-19
+    attributeId: attribute-4
+    value: 0.45
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-19
+    attributeId: attribute-5
+    value: 7.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-19
+    attributeId: attribute-6
+    value: 1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-19
+    attributeId: attribute-7
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-19
+    attributeId: attribute-8
+    value: 1.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-19
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-19
+    attributeId: attribute-9
+    value:
+      en: China
+      nl: China
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-20
+    attributeId: attribute-1
+    value:
+      en: Cherries
+      nl: Kersen
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-20
+    attributeId: attribute-2
+    value:
+      default: 🍒
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-20
+    attributeId: attribute-3
+    value: 54
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-20
+    attributeId: attribute-4
+    value: 0.95
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-20
+    attributeId: attribute-5
+    value: 11.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-20
+    attributeId: attribute-6
+    value: 0.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-20
+    attributeId: attribute-7
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-20
+    attributeId: attribute-8
+    value: 0.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-20
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-20
+    attributeId: attribute-9
+    value:
+      en: Turkey
+      nl: Turkije
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-21
+    attributeId: attribute-1
+    value:
+      en: Strawberries
+      nl: Aardbeien
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-21
+    attributeId: attribute-2
+    value:
+      default: 🍓
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-21
+    attributeId: attribute-3
+    value: 29
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-21
+    attributeId: attribute-4
+    value: 0.85
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-21
+    attributeId: attribute-5
+    value: 5.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-21
+    attributeId: attribute-6
+    value: 0.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-21
+    attributeId: attribute-7
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-21
+    attributeId: attribute-8
+    value: 1.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-21
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-21
+    attributeId: attribute-9
+    value:
+      en: France
+      nl: Frankrijk
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-22
+    attributeId: attribute-1
+    value:
+      en: Blueberries
+      nl: Blauwe bessen
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-22
+    attributeId: attribute-2
+    value:
+      default: 🫐
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-22
+    attributeId: attribute-3
+    value: 57
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-22
+    attributeId: attribute-4
+    value: 1.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-22
+    attributeId: attribute-5
+    value: 14.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-22
+    attributeId: attribute-6
+    value: 0.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-22
+    attributeId: attribute-7
+    value: 0.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-22
+    attributeId: attribute-8
+    value: 2.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-22
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-22
+    attributeId: attribute-9
+    value:
+      en: United States of America
+      nl: Verenigde Staten
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-23
+    attributeId: attribute-1
+    value:
+      en: Kiwi
+      nl: Kiwi
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-23
+    attributeId: attribute-2
+    value:
+      default: 🥝
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-23
+    attributeId: attribute-3
+    value: 61
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-23
+    attributeId: attribute-4
+    value: 0.65
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-23
+    attributeId: attribute-5
+    value: 14.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-23
+    attributeId: attribute-6
+    value: 1.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-23
+    attributeId: attribute-7
+    value: 0.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-23
+    attributeId: attribute-8
+    value: 3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-23
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-23
+    attributeId: attribute-9
+    value:
+      en: China
+      nl: China
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-24
+    attributeId: attribute-1
+    value:
+      en: Tomato
+      nl: Tomaat
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-24
+    attributeId: attribute-2
+    value:
+      default: 🍅
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-24
+    attributeId: attribute-3
+    value: 23
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-24
+    attributeId: attribute-4
+    value: 0.35
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-24
+    attributeId: attribute-5
+    value: 3.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-24
+    attributeId: attribute-6
+    value: 0.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-24
+    attributeId: attribute-7
+    value: 0.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-24
+    attributeId: attribute-8
+    value: 1.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-24
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-24
+    attributeId: attribute-9
+    value:
+      en: Mexico
+      nl: Mexico
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-25
+    attributeId: attribute-1
+    value:
+      en: Green olives
+      nl: Groene olijven
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-25
+    attributeId: attribute-2
+    value:
+      default: 🫒
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-25
+    attributeId: attribute-3
+    value: 113
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-25
+    attributeId: attribute-4
+    value: 0.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-25
+    attributeId: attribute-5
+    value: 0.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-25
+    attributeId: attribute-6
+    value: 0.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-25
+    attributeId: attribute-7
+    value: 11
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-25
+    attributeId: attribute-8
+    value: 4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-25
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-25
+    attributeId: attribute-9
+    value:
+      en: Greece
+      nl: Griekenland
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-26
+    attributeId: attribute-1
+    value:
+      en: Coconut
+      nl: Kokosnoot
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-26
+    attributeId: attribute-2
+    value:
+      default: 🥥
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-26
+    attributeId: attribute-3
+    value: 415
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-26
+    attributeId: attribute-4
+    value: 0.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-26
+    attributeId: attribute-5
+    value: 3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-26
+    attributeId: attribute-6
+    value: 4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-26
+    attributeId: attribute-7
+    value: 40
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-26
+    attributeId: attribute-8
+    value: 13.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-26
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-26
+    attributeId: attribute-9
+    value:
+      en: Indonesia
+      nl: Indonesië
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-27
+    attributeId: attribute-1
+    value:
+      en: Mushroom
+      nl: Champignon
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-27
+    attributeId: attribute-2
+    value:
+      default: 🍄
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-27
+    attributeId: attribute-3
+    value: 18
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-27
+    attributeId: attribute-4
+    value: 0.55
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-27
+    attributeId: attribute-5
+    value: 0.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-27
+    attributeId: attribute-6
+    value: 2.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-27
+    attributeId: attribute-7
+    value: 0.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-27
+    attributeId: attribute-8
+    value: 1.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-27
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-27
+    attributeId: attribute-9
+    value:
+      en: France
+      nl: Frankrijk
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-28
+    attributeId: attribute-1
+    value:
+      en: Avocado
+      nl: Avocado
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-28
+    attributeId: attribute-2
+    value:
+      default: 🥑
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-28
+    attributeId: attribute-3
+    value: 199
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-28
+    attributeId: attribute-4
+    value: 0.85
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-28
+    attributeId: attribute-5
+    value: 1.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-28
+    attributeId: attribute-6
+    value: 1.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-28
+    attributeId: attribute-7
+    value: 19.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-28
+    attributeId: attribute-8
+    value: 4.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-28
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-28
+    attributeId: attribute-9
+    value:
+      en: Mexico
+      nl: Mexico
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-29
+    attributeId: attribute-1
+    value:
+      en: Eggplant
+      nl: Aubergine
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-29
+    attributeId: attribute-2
+    value:
+      default: 🍆
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-29
+    attributeId: attribute-3
+    value: 20
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-29
+    attributeId: attribute-4
+    value: 0.45
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-29
+    attributeId: attribute-5
+    value: 3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-29
+    attributeId: attribute-6
+    value: 1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-29
+    attributeId: attribute-7
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-29
+    attributeId: attribute-8
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-29
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-29
+    attributeId: attribute-9
+    value:
+      en: India
+      nl: India
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-30
+    attributeId: attribute-1
+    value:
+      en: Potato
+      nl: Aardappel
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-30
+    attributeId: attribute-2
+    value:
+      default: 🥔
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-30
+    attributeId: attribute-3
+    value: 88
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-30
+    attributeId: attribute-4
+    value: 0.18
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-30
+    attributeId: attribute-5
+    value: 19
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-30
+    attributeId: attribute-6
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-30
+    attributeId: attribute-7
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-30
+    attributeId: attribute-8
+    value: 1.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-30
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-2
+    difficulty: null
+  - itemId: item-30
+    attributeId: attribute-9
+    value:
+      en: Peru
+      nl: Peru
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-31
+    attributeId: attribute-1
+    value:
+      en: Carrot
+      nl: Wortel
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-31
+    attributeId: attribute-2
+    value:
+      default: 🥕
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-31
+    attributeId: attribute-3
+    value: 33
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-31
+    attributeId: attribute-4
+    value: 0.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-31
+    attributeId: attribute-5
+    value: 5.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-31
+    attributeId: attribute-6
+    value: 0.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-31
+    attributeId: attribute-7
+    value: 0.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-31
+    attributeId: attribute-8
+    value: 2.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-31
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-31
+    attributeId: attribute-9
+    value:
+      en: Afghanistan
+      nl: Afghanistan
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-32
+    attributeId: attribute-1
+    value:
+      en: Sweet corn
+      nl: Suikermaïs
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-32
+    attributeId: attribute-2
+    value:
+      default: 🌽
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-32
+    attributeId: attribute-3
+    value: 74
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-32
+    attributeId: attribute-4
+    value: 0.35
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-32
+    attributeId: attribute-5
+    value: 11.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-32
+    attributeId: attribute-6
+    value: 2.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-32
+    attributeId: attribute-7
+    value: 1.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-32
+    attributeId: attribute-8
+    value: 2.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-32
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-32
+    attributeId: attribute-9
+    value:
+      en: Mexico
+      nl: Mexico
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-33
+    attributeId: attribute-1
+    value:
+      en: Chili pepper
+      nl: Chilipeper
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-33
+    attributeId: attribute-2
+    value:
+      default: 🌶️
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-33
+    attributeId: attribute-3
+    value: 30
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-33
+    attributeId: attribute-4
+    value: 0.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-33
+    attributeId: attribute-5
+    value: 4.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-33
+    attributeId: attribute-6
+    value: 1.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-33
+    attributeId: attribute-7
+    value: 0.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-33
+    attributeId: attribute-8
+    value: 1.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-33
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-33
+    attributeId: attribute-9
+    value:
+      en: Mexico
+      nl: Mexico
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-34
+    attributeId: attribute-1
+    value:
+      en: Bell pepper
+      nl: Paprika
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-34
+    attributeId: attribute-2
+    value:
+      default: 🫑
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-34
+    attributeId: attribute-3
+    value: 24
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-34
+    attributeId: attribute-4
+    value: 0.65
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-34
+    attributeId: attribute-5
+    value: 3.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-34
+    attributeId: attribute-6
+    value: 0.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-34
+    attributeId: attribute-7
+    value: 0.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-34
+    attributeId: attribute-8
+    value: 2.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-34
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-34
+    attributeId: attribute-9
+    value:
+      en: Mexico
+      nl: Mexico
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-35
+    attributeId: attribute-1
+    value:
+      en: Cucumber
+      nl: Komkommer
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-35
+    attributeId: attribute-2
+    value:
+      default: 🥒
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-35
+    attributeId: attribute-3
+    value: 13
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-35
+    attributeId: attribute-4
+    value: 0.25
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-35
+    attributeId: attribute-5
+    value: 1.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-35
+    attributeId: attribute-6
+    value: 0.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-35
+    attributeId: attribute-7
+    value: 0.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-35
+    attributeId: attribute-8
+    value: 0.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-35
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-35
+    attributeId: attribute-9
+    value:
+      en: India
+      nl: India
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-36
+    attributeId: attribute-1
+    value:
+      en: Lettuce
+      nl: Sla
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-36
+    attributeId: attribute-2
+    value:
+      default: 🥬
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-36
+    attributeId: attribute-3
+    value: 15
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-36
+    attributeId: attribute-4
+    value: 0.45
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-36
+    attributeId: attribute-5
+    value: 1.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-36
+    attributeId: attribute-6
+    value: 1.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-36
+    attributeId: attribute-7
+    value: 0.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-36
+    attributeId: attribute-8
+    value: 1.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-36
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-36
+    attributeId: attribute-9
+    value:
+      en: Egypt
+      nl: Egypte
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-37
+    attributeId: attribute-1
+    value:
+      en: Broccoli
+      nl: Broccoli
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-37
+    attributeId: attribute-2
+    value:
+      default: 🥦
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-37
+    attributeId: attribute-3
+    value: 27
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-37
+    attributeId: attribute-4
+    value: 0.45
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-37
+    attributeId: attribute-5
+    value: 0.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-37
+    attributeId: attribute-6
+    value: 2.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-37
+    attributeId: attribute-7
+    value: 0.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-37
+    attributeId: attribute-8
+    value: 3.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-37
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-37
+    attributeId: attribute-9
+    value:
+      en: Italy
+      nl: Italië
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-38
+    attributeId: attribute-1
+    value:
+      en: Garlic
+      nl: Knoflook
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-38
+    attributeId: attribute-2
+    value:
+      default: 🧄
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-38
+    attributeId: attribute-3
+    value: 158
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-38
+    attributeId: attribute-4
+    value: 0.75
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-38
+    attributeId: attribute-5
+    value: 31
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-38
+    attributeId: attribute-6
+    value: 6.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-38
+    attributeId: attribute-7
+    value: 0.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-38
+    attributeId: attribute-8
+    value: 2.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-38
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-38
+    attributeId: attribute-9
+    value:
+      en: China
+      nl: China
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-39
+    attributeId: attribute-1
+    value:
+      en: Onion
+      nl: Ui
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-39
+    attributeId: attribute-2
+    value:
+      default: 🧅
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-39
+    attributeId: attribute-3
+    value: 37
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-39
+    attributeId: attribute-4
+    value: 0.18
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-39
+    attributeId: attribute-5
+    value: 6.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-39
+    attributeId: attribute-6
+    value: 1.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-39
+    attributeId: attribute-7
+    value: 0.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-39
+    attributeId: attribute-8
+    value: 2.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-39
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-39
+    attributeId: attribute-9
+    value:
+      en: Iran
+      nl: Iran
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-40
+    attributeId: attribute-1
+    value:
+      en: Peanuts
+      nl: Pinda's
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-40
+    attributeId: attribute-2
+    value:
+      default: 🥜
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-40
+    attributeId: attribute-3
+    value: 631
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-40
+    attributeId: attribute-4
+    value: 0.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-40
+    attributeId: attribute-5
+    value: 12.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-40
+    attributeId: attribute-6
+    value: 25.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-40
+    attributeId: attribute-7
+    value: 51.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-40
+    attributeId: attribute-8
+    value: 6.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-40
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-4
+    difficulty: null
+  - itemId: item-40
+    attributeId: attribute-9
+    value:
+      en: Bolivia
+      nl: Bolivia
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-41
+    attributeId: attribute-1
+    value:
+      en: Kidney beans
+      nl: Kidneybonen
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-41
+    attributeId: attribute-2
+    value:
+      default: 🫘
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-41
+    attributeId: attribute-3
+    value: 127
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-41
+    attributeId: attribute-4
+    value: 0.35
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-41
+    attributeId: attribute-5
+    value: 16.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-41
+    attributeId: attribute-6
+    value: 8.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-41
+    attributeId: attribute-7
+    value: 0.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-41
+    attributeId: attribute-8
+    value: 7.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-41
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-4
+    difficulty: null
+  - itemId: item-41
+    attributeId: attribute-9
+    value:
+      en: Peru
+      nl: Peru
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-42
+    attributeId: attribute-1
+    value:
+      en: Chestnuts
+      nl: Kastanjes
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-42
+    attributeId: attribute-2
+    value:
+      default: 🌰
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-42
+    attributeId: attribute-3
+    value: 213
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-42
+    attributeId: attribute-4
+    value: 1.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-42
+    attributeId: attribute-5
+    value: 45.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-42
+    attributeId: attribute-6
+    value: 2.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-42
+    attributeId: attribute-7
+    value: 2.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-42
+    attributeId: attribute-8
+    value: 8.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-42
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-42
+    attributeId: attribute-9
+    value:
+      en: Turkey
+      nl: Turkije
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-43
+    attributeId: attribute-1
+    value:
+      en: Ginger
+      nl: Gember
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-43
+    attributeId: attribute-2
+    value:
+      default: 🫚
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-43
+    attributeId: attribute-3
+    value: 80
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-43
+    attributeId: attribute-4
+    value: 0.95
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-43
+    attributeId: attribute-5
+    value: 17.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-43
+    attributeId: attribute-6
+    value: 1.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-43
+    attributeId: attribute-7
+    value: 0.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-43
+    attributeId: attribute-8
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-43
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-43
+    attributeId: attribute-9
+    value:
+      en: China
+      nl: China
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-44
+    attributeId: attribute-1
+    value:
+      en: Green peas
+      nl: Doperwten
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-44
+    attributeId: attribute-2
+    value:
+      default: 🫛
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-44
+    attributeId: attribute-3
+    value: 65
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-44
+    attributeId: attribute-4
+    value: 0.35
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-44
+    attributeId: attribute-5
+    value: 10
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-44
+    attributeId: attribute-6
+    value: 4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-44
+    attributeId: attribute-7
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-44
+    attributeId: attribute-8
+    value: 4.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-44
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-4
+    difficulty: null
+  - itemId: item-44
+    attributeId: attribute-9
+    value:
+      en: Turkey
+      nl: Turkije
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-45
+    attributeId: attribute-1
+    value:
+      en: Brown mushroom
+      nl: Kastanjechampignon
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-45
+    attributeId: attribute-2
+    value:
+      default: 🍄‍🟫
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-45
+    attributeId: attribute-3
+    value: 22
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-45
+    attributeId: attribute-4
+    value: 0.65
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-45
+    attributeId: attribute-5
+    value: 3.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-45
+    attributeId: attribute-6
+    value: 3.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-45
+    attributeId: attribute-7
+    value: 0.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-45
+    attributeId: attribute-8
+    value: 1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-45
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-45
+    attributeId: attribute-9
+    value:
+      en: France
+      nl: Frankrijk
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-46
+    attributeId: attribute-1
+    value:
+      en: Beetroot
+      nl: Rode biet
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-46
+    attributeId: attribute-2
+    value:
+      default: 🫜
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-46
+    attributeId: attribute-3
+    value: 43
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-46
+    attributeId: attribute-4
+    value: 0.25
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-46
+    attributeId: attribute-5
+    value: 8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-46
+    attributeId: attribute-6
+    value: 1.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-46
+    attributeId: attribute-7
+    value: 0.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-46
+    attributeId: attribute-8
+    value: 2.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-46
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-46
+    attributeId: attribute-9
+    value:
+      en: Italy
+      nl: Italië
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-47
+    attributeId: attribute-1
+    value:
+      en: Bread
+      nl: Brood
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-47
+    attributeId: attribute-2
+    value:
+      default: 🍞
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-47
+    attributeId: attribute-3
+    value: 231
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-47
+    attributeId: attribute-4
+    value: 0.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-47
+    attributeId: attribute-5
+    value: 35.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-47
+    attributeId: attribute-6
+    value: 10.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-47
+    attributeId: attribute-7
+    value: 3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-47
+    attributeId: attribute-8
+    value: 9.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-47
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-2
+    difficulty: null
+  - itemId: item-47
+    attributeId: attribute-9
+    value:
+      en: Egypt
+      nl: Egypte
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-48
+    attributeId: attribute-1
+    value:
+      en: Croissant
+      nl: Croissant
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-48
+    attributeId: attribute-2
+    value:
+      default: 🥐
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-48
+    attributeId: attribute-3
+    value: 406
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-48
+    attributeId: attribute-4
+    value: 0.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-48
+    attributeId: attribute-5
+    value: 45.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-48
+    attributeId: attribute-6
+    value: 8.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-48
+    attributeId: attribute-7
+    value: 21
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-48
+    attributeId: attribute-8
+    value: 2.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-48
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-48
+    attributeId: attribute-9
+    value:
+      en: Austria
+      nl: Oostenrijk
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-49
+    attributeId: attribute-1
+    value:
+      en: Baguette
+      nl: Stokbrood
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-49
+    attributeId: attribute-2
+    value:
+      default: 🥖
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-49
+    attributeId: attribute-3
+    value: 274
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-49
+    attributeId: attribute-4
+    value: 0.35
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-49
+    attributeId: attribute-5
+    value: 53
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-49
+    attributeId: attribute-6
+    value: 8.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-49
+    attributeId: attribute-7
+    value: 2.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-49
+    attributeId: attribute-8
+    value: 2.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-49
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-49
+    attributeId: attribute-9
+    value:
+      en: France
+      nl: Frankrijk
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-50
+    attributeId: attribute-1
+    value:
+      en: Flatbread
+      nl: Platbrood
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-50
+    attributeId: attribute-2
+    value:
+      default: 🫓
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-50
+    attributeId: attribute-3
+    value: 275
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-50
+    attributeId: attribute-4
+    value: 0.45
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-50
+    attributeId: attribute-5
+    value: 55
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-50
+    attributeId: attribute-6
+    value: 9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-50
+    attributeId: attribute-7
+    value: 1.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-50
+    attributeId: attribute-8
+    value: 2.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-50
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-50
+    attributeId: attribute-9
+    value:
+      en: Lebanon
+      nl: Libanon
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-51
+    attributeId: attribute-1
+    value:
+      en: Pretzel
+      nl: Pretzel
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-51
+    attributeId: attribute-2
+    value:
+      default: 🥨
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-51
+    attributeId: attribute-3
+    value: 380
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-51
+    attributeId: attribute-4
+    value: 0.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-51
+    attributeId: attribute-5
+    value: 74
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-51
+    attributeId: attribute-6
+    value: 10
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-51
+    attributeId: attribute-7
+    value: 4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-51
+    attributeId: attribute-8
+    value: 3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-51
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-51
+    attributeId: attribute-9
+    value:
+      en: Germany
+      nl: Duitsland
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-52
+    attributeId: attribute-1
+    value:
+      en: Bagel
+      nl: Bagel
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-52
+    attributeId: attribute-2
+    value:
+      default: 🥯
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-52
+    attributeId: attribute-3
+    value: 250
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-52
+    attributeId: attribute-4
+    value: 0.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-52
+    attributeId: attribute-5
+    value: 48
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-52
+    attributeId: attribute-6
+    value: 10
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-52
+    attributeId: attribute-7
+    value: 1.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-52
+    attributeId: attribute-8
+    value: 2.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-52
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-52
+    attributeId: attribute-9
+    value:
+      en: Poland
+      nl: Polen
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-53
+    attributeId: attribute-1
+    value:
+      en: Pancake
+      nl: Pannenkoek
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-53
+    attributeId: attribute-2
+    value:
+      default: 🥞
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-53
+    attributeId: attribute-3
+    value: 227
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-53
+    attributeId: attribute-4
+    value: 0.55
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-53
+    attributeId: attribute-5
+    value: 28
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-53
+    attributeId: attribute-6
+    value: 6.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-53
+    attributeId: attribute-7
+    value: 10
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-53
+    attributeId: attribute-8
+    value: 1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-53
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-53
+    attributeId: attribute-9
+    value:
+      en: Netherlands
+      nl: Nederland
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-54
+    attributeId: attribute-1
+    value:
+      en: Waffle
+      nl: Wafel
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-54
+    attributeId: attribute-2
+    value:
+      default: 🧇
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-54
+    attributeId: attribute-3
+    value: 291
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-54
+    attributeId: attribute-4
+    value: 0.75
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-54
+    attributeId: attribute-5
+    value: 33
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-54
+    attributeId: attribute-6
+    value: 7.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-54
+    attributeId: attribute-7
+    value: 14
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-54
+    attributeId: attribute-8
+    value: 1.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-54
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-54
+    attributeId: attribute-9
+    value:
+      en: Belgium
+      nl: België
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-55
+    attributeId: attribute-1
+    value:
+      en: Gouda cheese
+      nl: Goudse kaas
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-55
+    attributeId: attribute-2
+    value:
+      default: 🧀
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-55
+    attributeId: attribute-3
+    value: 369
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-55
+    attributeId: attribute-4
+    value: 1.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-55
+    attributeId: attribute-5
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-55
+    attributeId: attribute-6
+    value: 22.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-55
+    attributeId: attribute-7
+    value: 30.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-55
+    attributeId: attribute-8
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-55
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-55
+    attributeId: attribute-9
+    value:
+      en: Netherlands
+      nl: Nederland
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-56
+    attributeId: attribute-1
+    value:
+      en: Pork chop
+      nl: Varkenskotelet
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-56
+    attributeId: attribute-2
+    value:
+      default: 🍖
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-56
+    attributeId: attribute-3
+    value: 242
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-56
+    attributeId: attribute-4
+    value: 1.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-56
+    attributeId: attribute-5
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-56
+    attributeId: attribute-6
+    value: 27
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-56
+    attributeId: attribute-7
+    value: 15
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-56
+    attributeId: attribute-8
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-56
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-4
+    difficulty: null
+  - itemId: item-56
+    attributeId: attribute-9
+    value:
+      en: Germany
+      nl: Duitsland
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-57
+    attributeId: attribute-1
+    value:
+      en: Chicken leg
+      nl: Kippenbout
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-57
+    attributeId: attribute-2
+    value:
+      default: 🍗
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-57
+    attributeId: attribute-3
+    value: 215
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-57
+    attributeId: attribute-4
+    value: 0.85
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-57
+    attributeId: attribute-5
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-57
+    attributeId: attribute-6
+    value: 27
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-57
+    attributeId: attribute-7
+    value: 12
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-57
+    attributeId: attribute-8
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-57
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-4
+    difficulty: null
+  - itemId: item-57
+    attributeId: attribute-9
+    value:
+      en: India
+      nl: India
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-58
+    attributeId: attribute-1
+    value:
+      en: Beef steak
+      nl: Biefstuk
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-58
+    attributeId: attribute-2
+    value:
+      default: 🥩
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-58
+    attributeId: attribute-3
+    value: 250
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-58
+    attributeId: attribute-4
+    value: 2.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-58
+    attributeId: attribute-5
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-58
+    attributeId: attribute-6
+    value: 26
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-58
+    attributeId: attribute-7
+    value: 17
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-58
+    attributeId: attribute-8
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-58
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-4
+    difficulty: null
+  - itemId: item-58
+    attributeId: attribute-9
+    value:
+      en: United States of America
+      nl: Verenigde Staten
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-59
+    attributeId: attribute-1
+    value:
+      en: Bacon
+      nl: Spek
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-59
+    attributeId: attribute-2
+    value:
+      default: 🥓
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-59
+    attributeId: attribute-3
+    value: 541
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-59
+    attributeId: attribute-4
+    value: 1.35
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-59
+    attributeId: attribute-5
+    value: 1.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-59
+    attributeId: attribute-6
+    value: 37
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-59
+    attributeId: attribute-7
+    value: 42
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-59
+    attributeId: attribute-8
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-59
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-59
+    attributeId: attribute-9
+    value:
+      en: United Kingdom
+      nl: Verenigd Koninkrijk
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-60
+    attributeId: attribute-1
+    value:
+      en: Hamburger
+      nl: Hamburger
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-60
+    attributeId: attribute-2
+    value:
+      default: 🍔
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-60
+    attributeId: attribute-3
+    value: 295
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-60
+    attributeId: attribute-4
+    value: 1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-60
+    attributeId: attribute-5
+    value: 24
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-60
+    attributeId: attribute-6
+    value: 17
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-60
+    attributeId: attribute-7
+    value: 15
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-60
+    attributeId: attribute-8
+    value: 1.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-60
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-60
+    attributeId: attribute-9
+    value:
+      en: United States of America
+      nl: Verenigde Staten
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-61
+    attributeId: attribute-1
+    value:
+      en: French fries
+      nl: Friet
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-61
+    attributeId: attribute-2
+    value:
+      default: 🍟
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-61
+    attributeId: attribute-3
+    value: 312
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-61
+    attributeId: attribute-4
+    value: 0.55
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-61
+    attributeId: attribute-5
+    value: 41
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-61
+    attributeId: attribute-6
+    value: 3.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-61
+    attributeId: attribute-7
+    value: 15
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-61
+    attributeId: attribute-8
+    value: 3.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-61
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-61
+    attributeId: attribute-9
+    value:
+      en: Belgium
+      nl: België
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-62
+    attributeId: attribute-1
+    value:
+      en: Pizza
+      nl: Pizza
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-62
+    attributeId: attribute-2
+    value:
+      default: 🍕
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-62
+    attributeId: attribute-3
+    value: 221
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-62
+    attributeId: attribute-4
+    value: 0.95
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-62
+    attributeId: attribute-5
+    value: 27.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-62
+    attributeId: attribute-6
+    value: 8.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-62
+    attributeId: attribute-7
+    value: 8.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-62
+    attributeId: attribute-8
+    value: 1.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-62
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-62
+    attributeId: attribute-9
+    value:
+      en: Italy
+      nl: Italië
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-63
+    attributeId: attribute-1
+    value:
+      en: Hot dog
+      nl: Hotdog
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-63
+    attributeId: attribute-2
+    value:
+      default: 🌭
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-63
+    attributeId: attribute-3
+    value: 290
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-63
+    attributeId: attribute-4
+    value: 0.85
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-63
+    attributeId: attribute-5
+    value: 24
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-63
+    attributeId: attribute-6
+    value: 11
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-63
+    attributeId: attribute-7
+    value: 17
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-63
+    attributeId: attribute-8
+    value: 1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-63
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-63
+    attributeId: attribute-9
+    value:
+      en: Germany
+      nl: Duitsland
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-64
+    attributeId: attribute-1
+    value:
+      en: Sandwich
+      nl: Sandwich
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-64
+    attributeId: attribute-2
+    value:
+      default: 🥪
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-64
+    attributeId: attribute-3
+    value: 250
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-64
+    attributeId: attribute-4
+    value: 0.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-64
+    attributeId: attribute-5
+    value: 30
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-64
+    attributeId: attribute-6
+    value: 12
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-64
+    attributeId: attribute-7
+    value: 9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-64
+    attributeId: attribute-8
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-64
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-64
+    attributeId: attribute-9
+    value:
+      en: United Kingdom
+      nl: Verenigd Koninkrijk
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-65
+    attributeId: attribute-1
+    value:
+      en: Taco
+      nl: Taco
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-65
+    attributeId: attribute-2
+    value:
+      default: 🌮
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-65
+    attributeId: attribute-3
+    value: 226
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-65
+    attributeId: attribute-4
+    value: 1.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-65
+    attributeId: attribute-5
+    value: 20
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-65
+    attributeId: attribute-6
+    value: 9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-65
+    attributeId: attribute-7
+    value: 12
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-65
+    attributeId: attribute-8
+    value: 3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-65
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-65
+    attributeId: attribute-9
+    value:
+      en: Mexico
+      nl: Mexico
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-66
+    attributeId: attribute-1
+    value:
+      en: Burrito
+      nl: Burrito
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-66
+    attributeId: attribute-2
+    value:
+      default: 🌯
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-66
+    attributeId: attribute-3
+    value: 206
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-66
+    attributeId: attribute-4
+    value: 0.95
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-66
+    attributeId: attribute-5
+    value: 26
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-66
+    attributeId: attribute-6
+    value: 8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-66
+    attributeId: attribute-7
+    value: 8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-66
+    attributeId: attribute-8
+    value: 3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-66
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-66
+    attributeId: attribute-9
+    value:
+      en: Mexico
+      nl: Mexico
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-67
+    attributeId: attribute-1
+    value:
+      en: Tamale
+      nl: Tamale
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-67
+    attributeId: attribute-2
+    value:
+      default: 🫔
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-67
+    attributeId: attribute-3
+    value: 153
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-67
+    attributeId: attribute-4
+    value: 0.85
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-67
+    attributeId: attribute-5
+    value: 18
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-67
+    attributeId: attribute-6
+    value: 7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-67
+    attributeId: attribute-7
+    value: 6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-67
+    attributeId: attribute-8
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-67
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-67
+    attributeId: attribute-9
+    value:
+      en: Mexico
+      nl: Mexico
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-68
+    attributeId: attribute-1
+    value:
+      en: Falafel pita
+      nl: Pitabroodje met falafel
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-68
+    attributeId: attribute-2
+    value:
+      default: 🥙
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-68
+    attributeId: attribute-3
+    value: 240
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-68
+    attributeId: attribute-4
+    value: 0.85
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-68
+    attributeId: attribute-5
+    value: 35
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-68
+    attributeId: attribute-6
+    value: 9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-68
+    attributeId: attribute-7
+    value: 8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-68
+    attributeId: attribute-8
+    value: 6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-68
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-68
+    attributeId: attribute-9
+    value:
+      en: Lebanon
+      nl: Libanon
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-69
+    attributeId: attribute-1
+    value:
+      en: Falafel
+      nl: Falafel
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-69
+    attributeId: attribute-2
+    value:
+      default: 🧆
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-69
+    attributeId: attribute-3
+    value: 333
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-69
+    attributeId: attribute-4
+    value: 0.95
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-69
+    attributeId: attribute-5
+    value: 31.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-69
+    attributeId: attribute-6
+    value: 13.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-69
+    attributeId: attribute-7
+    value: 17.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-69
+    attributeId: attribute-8
+    value: 4.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-69
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-69
+    attributeId: attribute-9
+    value:
+      en: Egypt
+      nl: Egypte
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-70
+    attributeId: attribute-1
+    value:
+      en: Boiled egg
+      nl: Gekookt ei
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-70
+    attributeId: attribute-2
+    value:
+      default: 🥚
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-70
+    attributeId: attribute-3
+    value: 155
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-70
+    attributeId: attribute-4
+    value: 0.55
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-70
+    attributeId: attribute-5
+    value: 1.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-70
+    attributeId: attribute-6
+    value: 12.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-70
+    attributeId: attribute-7
+    value: 10.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-70
+    attributeId: attribute-8
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-70
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-4
+    difficulty: null
+  - itemId: item-70
+    attributeId: attribute-9
+    value:
+      en: India
+      nl: India
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-71
+    attributeId: attribute-1
+    value:
+      en: Fried egg
+      nl: Gebakken ei
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-71
+    attributeId: attribute-2
+    value:
+      default: 🍳
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-71
+    attributeId: attribute-3
+    value: 196
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-71
+    attributeId: attribute-4
+    value: 0.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-71
+    attributeId: attribute-5
+    value: 0.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-71
+    attributeId: attribute-6
+    value: 13.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-71
+    attributeId: attribute-7
+    value: 15.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-71
+    attributeId: attribute-8
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-71
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-4
+    difficulty: null
+  - itemId: item-71
+    attributeId: attribute-9
+    value:
+      en: United States of America
+      nl: Verenigde Staten
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-72
+    attributeId: attribute-1
+    value:
+      en: Paella
+      nl: Paella
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-72
+    attributeId: attribute-2
+    value:
+      default: 🥘
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-72
+    attributeId: attribute-3
+    value: 158
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-72
+    attributeId: attribute-4
+    value: 1.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-72
+    attributeId: attribute-5
+    value: 19
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-72
+    attributeId: attribute-6
+    value: 7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-72
+    attributeId: attribute-7
+    value: 5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-72
+    attributeId: attribute-8
+    value: 1.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-72
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-72
+    attributeId: attribute-9
+    value:
+      en: Spain
+      nl: Spanje
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-73
+    attributeId: attribute-1
+    value:
+      en: Beef stew
+      nl: Runderstoofpot
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-73
+    attributeId: attribute-2
+    value:
+      default: 🍲
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-73
+    attributeId: attribute-3
+    value: 125
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-73
+    attributeId: attribute-4
+    value: 1.05
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-73
+    attributeId: attribute-5
+    value: 8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-73
+    attributeId: attribute-6
+    value: 10
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-73
+    attributeId: attribute-7
+    value: 6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-73
+    attributeId: attribute-8
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-73
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-73
+    attributeId: attribute-9
+    value:
+      en: France
+      nl: Frankrijk
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-74
+    attributeId: attribute-1
+    value:
+      en: Cheese fondue
+      nl: Kaasfondue
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-74
+    attributeId: attribute-2
+    value:
+      default: 🫕
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-74
+    attributeId: attribute-3
+    value: 229
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-74
+    attributeId: attribute-4
+    value: 1.45
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-74
+    attributeId: attribute-5
+    value: 2.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-74
+    attributeId: attribute-6
+    value: 14
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-74
+    attributeId: attribute-7
+    value: 18
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-74
+    attributeId: attribute-8
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-74
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-74
+    attributeId: attribute-9
+    value:
+      en: Switzerland
+      nl: Zwitserland
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-75
+    attributeId: attribute-1
+    value:
+      en: Breakfast cereal
+      nl: Ontbijtgranen
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-75
+    attributeId: attribute-2
+    value:
+      default: 🥣
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-75
+    attributeId: attribute-3
+    value: 370
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-75
+    attributeId: attribute-4
+    value: 0.55
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-75
+    attributeId: attribute-5
+    value: 74
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-75
+    attributeId: attribute-6
+    value: 8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-75
+    attributeId: attribute-7
+    value: 4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-75
+    attributeId: attribute-8
+    value: 8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-75
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-2
+    difficulty: null
+  - itemId: item-75
+    attributeId: attribute-9
+    value:
+      en: United States of America
+      nl: Verenigde Staten
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-76
+    attributeId: attribute-1
+    value:
+      en: Mixed salad
+      nl: Gemengde salade
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-76
+    attributeId: attribute-2
+    value:
+      default: 🥗
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-76
+    attributeId: attribute-3
+    value: 45
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-76
+    attributeId: attribute-4
+    value: 0.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-76
+    attributeId: attribute-5
+    value: 6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-76
+    attributeId: attribute-6
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-76
+    attributeId: attribute-7
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-76
+    attributeId: attribute-8
+    value: 3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-76
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-76
+    attributeId: attribute-9
+    value:
+      en: Italy
+      nl: Italië
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-77
+    attributeId: attribute-1
+    value:
+      en: Popcorn
+      nl: Popcorn
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-77
+    attributeId: attribute-2
+    value:
+      default: 🍿
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-77
+    attributeId: attribute-3
+    value: 374
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-77
+    attributeId: attribute-4
+    value: 0.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-77
+    attributeId: attribute-5
+    value: 71
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-77
+    attributeId: attribute-6
+    value: 11
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-77
+    attributeId: attribute-7
+    value: 4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-77
+    attributeId: attribute-8
+    value: 5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-77
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-77
+    attributeId: attribute-9
+    value:
+      en: Mexico
+      nl: Mexico
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-78
+    attributeId: attribute-1
+    value:
+      en: Butter
+      nl: Boter
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-78
+    attributeId: attribute-2
+    value:
+      default: 🧈
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-78
+    attributeId: attribute-3
+    value: 717
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-78
+    attributeId: attribute-4
+    value: 1.15
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-78
+    attributeId: attribute-5
+    value: 0.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-78
+    attributeId: attribute-6
+    value: 0.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-78
+    attributeId: attribute-7
+    value: 81.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-78
+    attributeId: attribute-8
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-78
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-78
+    attributeId: attribute-9
+    value:
+      en: France
+      nl: Frankrijk
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-79
+    attributeId: attribute-1
+    value:
+      en: Salt
+      nl: Zout
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-79
+    attributeId: attribute-2
+    value:
+      default: 🧂
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-79
+    attributeId: attribute-3
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-79
+    attributeId: attribute-4
+    value: 0.08
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-79
+    attributeId: attribute-5
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-79
+    attributeId: attribute-6
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-79
+    attributeId: attribute-7
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-79
+    attributeId: attribute-8
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-79
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-79
+    attributeId: attribute-9
+    value:
+      en: Austria
+      nl: Oostenrijk
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-80
+    attributeId: attribute-1
+    value:
+      en: Canned tomatoes
+      nl: Tomaten uit blik
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-80
+    attributeId: attribute-2
+    value:
+      default: 🥫
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-80
+    attributeId: attribute-3
+    value: 24
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-80
+    attributeId: attribute-4
+    value: 0.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-80
+    attributeId: attribute-5
+    value: 3.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-80
+    attributeId: attribute-6
+    value: 1.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-80
+    attributeId: attribute-7
+    value: 0.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-80
+    attributeId: attribute-8
+    value: 0.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-80
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-1
+    difficulty: null
+  - itemId: item-80
+    attributeId: attribute-9
+    value:
+      en: Italy
+      nl: Italië
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-81
+    attributeId: attribute-1
+    value:
+      en: Bento
+      nl: Bento
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-81
+    attributeId: attribute-2
+    value:
+      default: 🍱
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-81
+    attributeId: attribute-3
+    value: 170
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-81
+    attributeId: attribute-4
+    value: 1.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-81
+    attributeId: attribute-5
+    value: 25
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-81
+    attributeId: attribute-6
+    value: 7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-81
+    attributeId: attribute-7
+    value: 5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-81
+    attributeId: attribute-8
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-81
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-81
+    attributeId: attribute-9
+    value:
+      en: Japan
+      nl: Japan
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-82
+    attributeId: attribute-1
+    value:
+      en: Rice cracker
+      nl: Rijstcracker
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-82
+    attributeId: attribute-2
+    value:
+      default: 🍘
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-82
+    attributeId: attribute-3
+    value: 387
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-82
+    attributeId: attribute-4
+    value: 0.85
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-82
+    attributeId: attribute-5
+    value: 82
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-82
+    attributeId: attribute-6
+    value: 7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-82
+    attributeId: attribute-7
+    value: 2.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-82
+    attributeId: attribute-8
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-82
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-82
+    attributeId: attribute-9
+    value:
+      en: Japan
+      nl: Japan
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-83
+    attributeId: attribute-1
+    value:
+      en: Rice ball
+      nl: Onigiri
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-83
+    attributeId: attribute-2
+    value:
+      default: 🍙
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-83
+    attributeId: attribute-3
+    value: 180
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-83
+    attributeId: attribute-4
+    value: 0.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-83
+    attributeId: attribute-5
+    value: 37
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-83
+    attributeId: attribute-6
+    value: 3.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-83
+    attributeId: attribute-7
+    value: 1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-83
+    attributeId: attribute-8
+    value: 1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-83
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-83
+    attributeId: attribute-9
+    value:
+      en: Japan
+      nl: Japan
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-84
+    attributeId: attribute-1
+    value:
+      en: White rice
+      nl: Witte rijst
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-84
+    attributeId: attribute-2
+    value:
+      default: 🍚
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-84
+    attributeId: attribute-3
+    value: 146
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-84
+    attributeId: attribute-4
+    value: 0.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-84
+    attributeId: attribute-5
+    value: 32.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-84
+    attributeId: attribute-6
+    value: 3.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-84
+    attributeId: attribute-7
+    value: 0.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-84
+    attributeId: attribute-8
+    value: 0.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-84
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-84
+    attributeId: attribute-9
+    value:
+      en: China
+      nl: China
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-85
+    attributeId: attribute-1
+    value:
+      en: Curry rice
+      nl: Curryrijst
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-85
+    attributeId: attribute-2
+    value:
+      default: 🍛
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-85
+    attributeId: attribute-3
+    value: 160
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-85
+    attributeId: attribute-4
+    value: 0.75
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-85
+    attributeId: attribute-5
+    value: 24
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-85
+    attributeId: attribute-6
+    value: 4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-85
+    attributeId: attribute-7
+    value: 5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-85
+    attributeId: attribute-8
+    value: 1.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-85
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-85
+    attributeId: attribute-9
+    value:
+      en: Japan
+      nl: Japan
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-86
+    attributeId: attribute-1
+    value:
+      en: Ramen
+      nl: Ramen
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-86
+    attributeId: attribute-2
+    value:
+      default: 🍜
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-86
+    attributeId: attribute-3
+    value: 188
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-86
+    attributeId: attribute-4
+    value: 0.85
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-86
+    attributeId: attribute-5
+    value: 27
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-86
+    attributeId: attribute-6
+    value: 5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-86
+    attributeId: attribute-7
+    value: 7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-86
+    attributeId: attribute-8
+    value: 1.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-86
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-86
+    attributeId: attribute-9
+    value:
+      en: Japan
+      nl: Japan
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-87
+    attributeId: attribute-1
+    value:
+      en: Spaghetti
+      nl: Spaghetti
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-87
+    attributeId: attribute-2
+    value:
+      default: 🍝
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-87
+    attributeId: attribute-3
+    value: 142
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-87
+    attributeId: attribute-4
+    value: 0.35
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-87
+    attributeId: attribute-5
+    value: 27.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-87
+    attributeId: attribute-6
+    value: 5.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-87
+    attributeId: attribute-7
+    value: 0.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-87
+    attributeId: attribute-8
+    value: 1.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-87
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-87
+    attributeId: attribute-9
+    value:
+      en: Italy
+      nl: Italië
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-88
+    attributeId: attribute-1
+    value:
+      en: Sweet potato
+      nl: Zoete aardappel
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-88
+    attributeId: attribute-2
+    value:
+      default: 🍠
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-88
+    attributeId: attribute-3
+    value: 94
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-88
+    attributeId: attribute-4
+    value: 0.35
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-88
+    attributeId: attribute-5
+    value: 21
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-88
+    attributeId: attribute-6
+    value: 1.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-88
+    attributeId: attribute-7
+    value: 0.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-88
+    attributeId: attribute-8
+    value: 3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-88
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-2
+    difficulty: null
+  - itemId: item-88
+    attributeId: attribute-9
+    value:
+      en: Peru
+      nl: Peru
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-89
+    attributeId: attribute-1
+    value:
+      en: Oden
+      nl: Oden
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-89
+    attributeId: attribute-2
+    value:
+      default: 🍢
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-89
+    attributeId: attribute-3
+    value: 95
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-89
+    attributeId: attribute-4
+    value: 1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-89
+    attributeId: attribute-5
+    value: 10
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-89
+    attributeId: attribute-6
+    value: 7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-89
+    attributeId: attribute-7
+    value: 3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-89
+    attributeId: attribute-8
+    value: 1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-89
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-89
+    attributeId: attribute-9
+    value:
+      en: Japan
+      nl: Japan
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-90
+    attributeId: attribute-1
+    value:
+      en: Sushi
+      nl: Sushi
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-90
+    attributeId: attribute-2
+    value:
+      default: 🍣
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-90
+    attributeId: attribute-3
+    value: 150
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-90
+    attributeId: attribute-4
+    value: 1.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-90
+    attributeId: attribute-5
+    value: 28
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-90
+    attributeId: attribute-6
+    value: 5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-90
+    attributeId: attribute-7
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-90
+    attributeId: attribute-8
+    value: 1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-90
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-90
+    attributeId: attribute-9
+    value:
+      en: Japan
+      nl: Japan
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-91
+    attributeId: attribute-1
+    value:
+      en: Fried shrimp
+      nl: Gefrituurde garnaal
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-91
+    attributeId: attribute-2
+    value:
+      default: 🍤
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-91
+    attributeId: attribute-3
+    value: 245
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-91
+    attributeId: attribute-4
+    value: 1.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-91
+    attributeId: attribute-5
+    value: 20
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-91
+    attributeId: attribute-6
+    value: 12
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-91
+    attributeId: attribute-7
+    value: 13
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-91
+    attributeId: attribute-8
+    value: 1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-91
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-91
+    attributeId: attribute-9
+    value:
+      en: Japan
+      nl: Japan
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-92
+    attributeId: attribute-1
+    value:
+      en: Fish cake
+      nl: Viskoekje
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-92
+    attributeId: attribute-2
+    value:
+      default: 🍥
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-92
+    attributeId: attribute-3
+    value: 95
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-92
+    attributeId: attribute-4
+    value: 1.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-92
+    attributeId: attribute-5
+    value: 13
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-92
+    attributeId: attribute-6
+    value: 8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-92
+    attributeId: attribute-7
+    value: 0.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-92
+    attributeId: attribute-8
+    value: 0.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-92
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-92
+    attributeId: attribute-9
+    value:
+      en: Japan
+      nl: Japan
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-93
+    attributeId: attribute-1
+    value:
+      en: Mooncake
+      nl: Maancake
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-93
+    attributeId: attribute-2
+    value:
+      default: 🥮
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-93
+    attributeId: attribute-3
+    value: 400
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-93
+    attributeId: attribute-4
+    value: 1.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-93
+    attributeId: attribute-5
+    value: 58
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-93
+    attributeId: attribute-6
+    value: 8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-93
+    attributeId: attribute-7
+    value: 16
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-93
+    attributeId: attribute-8
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-93
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-93
+    attributeId: attribute-9
+    value:
+      en: China
+      nl: China
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-94
+    attributeId: attribute-1
+    value:
+      en: Dango
+      nl: Dango
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-94
+    attributeId: attribute-2
+    value:
+      default: 🍡
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-94
+    attributeId: attribute-3
+    value: 187
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-94
+    attributeId: attribute-4
+    value: 1.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-94
+    attributeId: attribute-5
+    value: 44
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-94
+    attributeId: attribute-6
+    value: 3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-94
+    attributeId: attribute-7
+    value: 0.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-94
+    attributeId: attribute-8
+    value: 1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-94
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-94
+    attributeId: attribute-9
+    value:
+      en: Japan
+      nl: Japan
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-95
+    attributeId: attribute-1
+    value:
+      en: Dumplings
+      nl: Dumplings
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-95
+    attributeId: attribute-2
+    value:
+      default: 🥟
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-95
+    attributeId: attribute-3
+    value: 220
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-95
+    attributeId: attribute-4
+    value: 1.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-95
+    attributeId: attribute-5
+    value: 30
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-95
+    attributeId: attribute-6
+    value: 9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-95
+    attributeId: attribute-7
+    value: 7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-95
+    attributeId: attribute-8
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-95
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-95
+    attributeId: attribute-9
+    value:
+      en: China
+      nl: China
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-96
+    attributeId: attribute-1
+    value:
+      en: Fortune cookie
+      nl: Gelukskoekje
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-96
+    attributeId: attribute-2
+    value:
+      default: 🥠
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-96
+    attributeId: attribute-3
+    value: 378
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-96
+    attributeId: attribute-4
+    value: 1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-96
+    attributeId: attribute-5
+    value: 84
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-96
+    attributeId: attribute-6
+    value: 4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-96
+    attributeId: attribute-7
+    value: 4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-96
+    attributeId: attribute-8
+    value: 1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-96
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-96
+    attributeId: attribute-9
+    value:
+      en: United States of America
+      nl: Verenigde Staten
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-97
+    attributeId: attribute-1
+    value:
+      en: Chinese takeout noodles
+      nl: Chinese afhaalnoedels
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-97
+    attributeId: attribute-2
+    value:
+      default: 🥡
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-97
+    attributeId: attribute-3
+    value: 180
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-97
+    attributeId: attribute-4
+    value: 0.95
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-97
+    attributeId: attribute-5
+    value: 27
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-97
+    attributeId: attribute-6
+    value: 6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-97
+    attributeId: attribute-7
+    value: 6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-97
+    attributeId: attribute-8
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-97
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-97
+    attributeId: attribute-9
+    value:
+      en: United States of America
+      nl: Verenigde Staten
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-98
+    attributeId: attribute-1
+    value:
+      en: Crab
+      nl: Krab
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-98
+    attributeId: attribute-2
+    value:
+      default: 🦀
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-98
+    attributeId: attribute-3
+    value: 97
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-98
+    attributeId: attribute-4
+    value: 2.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-98
+    attributeId: attribute-5
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-98
+    attributeId: attribute-6
+    value: 19
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-98
+    attributeId: attribute-7
+    value: 0.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-98
+    attributeId: attribute-8
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-98
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-4
+    difficulty: null
+  - itemId: item-98
+    attributeId: attribute-9
+    value:
+      en: Japan
+      nl: Japan
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-99
+    attributeId: attribute-1
+    value:
+      en: Lobster
+      nl: Kreeft
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-99
+    attributeId: attribute-2
+    value:
+      default: 🦞
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-99
+    attributeId: attribute-3
+    value: 89
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-99
+    attributeId: attribute-4
+    value: 3.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-99
+    attributeId: attribute-5
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-99
+    attributeId: attribute-6
+    value: 19
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-99
+    attributeId: attribute-7
+    value: 0.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-99
+    attributeId: attribute-8
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-99
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-4
+    difficulty: null
+  - itemId: item-99
+    attributeId: attribute-9
+    value:
+      en: Canada
+      nl: Canada
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-100
+    attributeId: attribute-1
+    value:
+      en: Prawns
+      nl: Garnalen
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-100
+    attributeId: attribute-2
+    value:
+      default: 🦐
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-100
+    attributeId: attribute-3
+    value: 99
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-100
+    attributeId: attribute-4
+    value: 2.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-100
+    attributeId: attribute-5
+    value: 0.2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-100
+    attributeId: attribute-6
+    value: 24
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-100
+    attributeId: attribute-7
+    value: 0.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-100
+    attributeId: attribute-8
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-100
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-4
+    difficulty: null
+  - itemId: item-100
+    attributeId: attribute-9
+    value:
+      en: Thailand
+      nl: Thailand
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-101
+    attributeId: attribute-1
+    value:
+      en: Squid
+      nl: Inktvis
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-101
+    attributeId: attribute-2
+    value:
+      default: 🦑
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-101
+    attributeId: attribute-3
+    value: 92
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-101
+    attributeId: attribute-4
+    value: 1.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-101
+    attributeId: attribute-5
+    value: 3.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-101
+    attributeId: attribute-6
+    value: 15.6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-101
+    attributeId: attribute-7
+    value: 1.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-101
+    attributeId: attribute-8
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-101
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-4
+    difficulty: null
+  - itemId: item-101
+    attributeId: attribute-9
+    value:
+      en: Japan
+      nl: Japan
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-102
+    attributeId: attribute-1
+    value:
+      en: Oyster
+      nl: Oester
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-102
+    attributeId: attribute-2
+    value:
+      default: 🦪
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-102
+    attributeId: attribute-3
+    value: 68
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-102
+    attributeId: attribute-4
+    value: 2.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-102
+    attributeId: attribute-5
+    value: 3.9
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-102
+    attributeId: attribute-6
+    value: 7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-102
+    attributeId: attribute-7
+    value: 2.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-102
+    attributeId: attribute-8
+    value: 0
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-102
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-4
+    difficulty: null
+  - itemId: item-102
+    attributeId: attribute-9
+    value:
+      en: France
+      nl: Frankrijk
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-103
+    attributeId: attribute-1
+    value:
+      en: Soft serve ice cream
+      nl: Softijs
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-103
+    attributeId: attribute-2
+    value:
+      default: 🍦
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-103
+    attributeId: attribute-3
+    value: 207
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-103
+    attributeId: attribute-4
+    value: 0.65
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-103
+    attributeId: attribute-5
+    value: 24
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-103
+    attributeId: attribute-6
+    value: 3.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-103
+    attributeId: attribute-7
+    value: 11
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-103
+    attributeId: attribute-8
+    value: 0.7
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-103
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-103
+    attributeId: attribute-9
+    value:
+      en: United States of America
+      nl: Verenigde Staten
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-104
+    attributeId: attribute-1
+    value:
+      en: Doughnut
+      nl: Donut
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-104
+    attributeId: attribute-2
+    value:
+      default: 🍩
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-104
+    attributeId: attribute-3
+    value: 358
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-104
+    attributeId: attribute-4
+    value: 0.8
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-104
+    attributeId: attribute-5
+    value: 35.5
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-104
+    attributeId: attribute-6
+    value: 6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-104
+    attributeId: attribute-7
+    value: 21.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-104
+    attributeId: attribute-8
+    value: 1.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-104
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-104
+    attributeId: attribute-9
+    value:
+      en: United States of America
+      nl: Verenigde Staten
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-105
+    attributeId: attribute-1
+    value:
+      en: Cookie
+      nl: Koekje
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-105
+    attributeId: attribute-2
+    value:
+      default: 🍪
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-105
+    attributeId: attribute-3
+    value: 480
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-105
+    attributeId: attribute-4
+    value: 0.75
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-105
+    attributeId: attribute-5
+    value: 64
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-105
+    attributeId: attribute-6
+    value: 6
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-105
+    attributeId: attribute-7
+    value: 22
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-105
+    attributeId: attribute-8
+    value: 2
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-105
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-105
+    attributeId: attribute-9
+    value:
+      en: United States of America
+      nl: Verenigde Staten
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-106
+    attributeId: attribute-1
+    value:
+      en: Milk chocolate
+      nl: Melkchocolade
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-106
+    attributeId: attribute-2
+    value:
+      default: 🍫
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-106
+    attributeId: attribute-3
+    value: 535
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-106
+    attributeId: attribute-4
+    value: 1.1
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-106
+    attributeId: attribute-5
+    value: 59
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-106
+    attributeId: attribute-6
+    value: 7.3
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-106
+    attributeId: attribute-7
+    value: 30
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-106
+    attributeId: attribute-8
+    value: 3.4
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-106
+    attributeId: attribute-10
+    value: null
+    referencedItemId: item-6
+    difficulty: null
+  - itemId: item-106
+    attributeId: attribute-9
+    value:
+      en: Switzerland
+      nl: Zwitserland
+    referencedItemId: null
+    difficulty: null

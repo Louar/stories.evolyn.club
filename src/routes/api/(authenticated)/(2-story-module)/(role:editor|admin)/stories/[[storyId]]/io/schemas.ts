@@ -33,7 +33,7 @@ const announcementSchema = z.object({
 const answerOptionSchema = z.object({
 	id: z.string().min(1).optional(),
 	order: z.number(),
-	value: z.string(),
+	value: z.union([z.string(), z.number()]),
 	label: translatableValidator
 });
 

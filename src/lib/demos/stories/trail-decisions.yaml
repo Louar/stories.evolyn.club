@@ -1,0 +1,163 @@
+# Standalone branching story; no taxonomy dependencies.
+
+slug: trail-decisions
+name:
+  en: Trail Decisions
+  nl: Keuzes op het wandelpad
+isPublished: false
+isPublic: true
+defaultBackgroundColor: '#10251f'
+configuration: null
+videos: []
+stills:
+  - id: forest
+    color: '#10251f'
+    image: null
+    style: null
+  - id: shelter
+    color: '#243448'
+    image: null
+    style: null
+announcements:
+  - id: welcome
+    name: A change in the weather
+    title:
+      en: A change in the weather
+      nl: Het weer slaat om
+    message:
+      en:
+        You are walking a forest trail when thunder rolls over the ridge. Decide how to get your group
+        home safely.
+      nl: Je wandelt door het bos wanneer het begint te onweren. Breng je groep veilig naar huis.
+  - id: rethink
+    name: Rethink the ridge
+    title:
+      en: The ridge is exposed
+      nl: De bergkam is onbeschut
+    message:
+      en:
+        High ground and isolated trees are dangerous during lightning. Return to the junction and choose
+        a safer route.
+      nl:
+        Hoog terrein en alleenstaande bomen zijn gevaarlijk bij bliksem. Ga terug en kies een veiligere
+        route.
+  - id: finish
+    name: Home safely
+    title:
+      en: Everyone is accounted for
+      nl: Iedereen is veilig
+    message:
+      en:
+        You reached a substantial building, checked your group, and waited for the storm to pass. Good
+        decisions matter more than finishing the planned route.
+      nl: Je bereikte een stevig gebouw, controleerde je groep en wachtte tot het onweer voorbij was.
+quizzes:
+  - id: route
+    name: Choose a route
+    doRandomize: false
+    questions:
+      - id: route-question
+        order: 1
+        answerTemplateSlug: select-single
+        title:
+          en: Which way do you go?
+          nl: Welke route kies je?
+        isRequired: true
+        answerGroup:
+          doRandomize: false
+        answerOptions:
+          - id: ridge-answer
+            order: 1
+            value: ridge
+            label:
+              en: Cross the open ridge
+              nl: Over de open bergkam
+          - id: shelter-answer
+            order: 2
+            value: shelter
+            label:
+              en: Return to the visitor centre
+              nl: Terug naar het bezoekerscentrum
+parts:
+  - id: introduction
+    isInitial: true
+    terminationStrategy: NONE
+    position:
+      x: 0
+      y: 0
+    backgroundType: still
+    backgroundConfiguration: null
+    stillId: forest
+    videoId: null
+    defaultNextPartId: junction
+    foregroundType: announcement
+    foregroundConfiguration: null
+    announcementTemplateId: welcome
+    quizTemplateId: null
+    quizLogicForPartId: null
+    quizLogicForPart: null
+    taxonomyDraftForPartId: null
+  - id: junction
+    isInitial: false
+    terminationStrategy: NONE
+    position:
+      x: 400
+      y: 0
+    backgroundType: still
+    backgroundConfiguration: null
+    stillId: forest
+    videoId: null
+    defaultNextPartId: null
+    foregroundType: quiz
+    foregroundConfiguration: null
+    announcementTemplateId: null
+    quizTemplateId: route
+    quizLogicForPartId: route-logic
+    quizLogicForPart:
+      hitpolicy: first
+      quizTemplateId: route
+      defaultNextPartId: exposed-ridge
+      rules:
+        - order: 1
+          name: Choose shelter
+          nextPartId: safe-arrival
+          inputs:
+            - quizQuestionTemplateId: route-question
+              quizQuestionTemplateAnswerItemId: shelter-answer
+    taxonomyDraftForPartId: null
+  - id: exposed-ridge
+    isInitial: false
+    terminationStrategy: NONE
+    position:
+      x: 800
+      y: 200
+    backgroundType: still
+    backgroundConfiguration: null
+    stillId: forest
+    videoId: null
+    defaultNextPartId: junction
+    foregroundType: announcement
+    foregroundConfiguration: null
+    announcementTemplateId: rethink
+    quizTemplateId: null
+    quizLogicForPartId: null
+    quizLogicForPart: null
+    taxonomyDraftForPartId: null
+  - id: safe-arrival
+    isInitial: false
+    terminationStrategy: COMPLETE_STORY
+    position:
+      x: 800
+      y: -200
+    backgroundType: still
+    backgroundConfiguration: null
+    stillId: shelter
+    videoId: null
+    defaultNextPartId: null
+    foregroundType: announcement
+    foregroundConfiguration: null
+    announcementTemplateId: finish
+    quizTemplateId: null
+    quizLogicForPartId: null
+    quizLogicForPart: null
+    taxonomyDraftForPartId: null

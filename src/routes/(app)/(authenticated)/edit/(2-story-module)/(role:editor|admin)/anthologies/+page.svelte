@@ -2,6 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import Header from '$lib/components/app/header/app-header.svelte';
+	import DemoCards from '$lib/components/app/demo-cards.svelte';
 	import {
 		createDataGridPersistenceIdentity,
 		createEndpointDataGridAdapter,
@@ -324,6 +325,7 @@
 </AlertDialog.Root>
 
 <div class="mx-auto mt-4 w-full max-w-6xl space-y-4 px-4">
+	<DemoCards kind="anthologies" />
 	<DataGridToolbar {table} enableSearch={!!dataGridProps.searchState}>
 		{#snippet actions()}
 			<label class="flex items-center gap-2 text-xs text-muted-foreground">

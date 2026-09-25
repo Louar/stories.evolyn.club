@@ -1,0 +1,419 @@
+# Originally derived from the Quiz of Cities seed migration.
+
+slug: quiz-of-cities
+name:
+  en: Quiz of Cities
+  nl: Stedenquiz
+configuration: null
+isPublished: true
+isPublic: true
+videos:
+  - id: video-1
+    name: Play/Pause
+    source:
+      default:
+        collection: externals
+        filename: https://assets.evolyn.club/videos/play-pause/stream.m3u8
+    thumbnail:
+      default:
+        collection: externals
+        filename: https://assets.evolyn.club/videos/play-pause.jpg
+    captions: null
+    duration: 15
+  - id: video-2
+    name: Countdown
+    source:
+      default:
+        collection: externals
+        filename: https://assets.evolyn.club/videos/countdown/stream.m3u8
+    thumbnail:
+      default:
+        collection: externals
+        filename: https://assets.evolyn.club/videos/countdown.jpg
+    captions: null
+    duration: 10
+  - id: video-3
+    name: City of Barcelona
+    source:
+      default:
+        collection: externals
+        filename: https://assets.evolyn.club/videos/city-Barcelona/stream.m3u8
+    thumbnail: null
+    captions: null
+    duration: 5
+  - id: video-4
+    name: Thumbs-down
+    source:
+      default:
+        collection: externals
+        filename: https://assets.evolyn.club/videos/thumbs-down/stream.m3u8
+    thumbnail: null
+    captions: null
+    duration: 9
+  - id: video-5
+    name: Thumbs-up
+    source:
+      default:
+        collection: externals
+        filename: https://assets.evolyn.club/videos/thumbs-up/stream.m3u8
+    thumbnail: null
+    captions: null
+    duration: 5
+  - id: video-6
+    name: City of Luzern
+    source:
+      default:
+        collection: externals
+        filename: https://assets.evolyn.club/videos/city-Luzern/stream.m3u8
+    thumbnail: null
+    captions: null
+    duration: 5
+  - id: video-7
+    name: Game over
+    source:
+      default:
+        collection: externals
+        filename: https://assets.evolyn.club/videos/game-over/stream.m3u8
+    thumbnail: null
+    captions: null
+    duration: 10
+announcements:
+  - id: announcementTemplate-1
+    name: Welcome to quiz
+    title:
+      en: Welcome to the quiz!
+    message:
+      en: And good luck!
+quizzes:
+  - id: quizTemplate-1
+    name: Are you ready?-quiz
+    doRandomize: false
+    questions:
+      - id: quizQuestionTemplate-1
+        order: 1
+        answerTemplateSlug: select-single
+        title:
+          en: Are you ready?
+        instruction: null
+        placeholder: null
+        configuration: null
+        isRequired: true
+        answerGroup:
+          id: quizQuestionTemplateAnswerGroup-1
+          doRandomize: true
+        answerOptions:
+          - id: quizQuestionTemplateAnswerItem-1
+            order: 1
+            value: 1
+            label:
+              en: Yes
+          - id: quizQuestionTemplateAnswerItem-2
+            order: 2
+            value: 0
+            label:
+              en: No
+      - id: quizQuestionTemplate-2
+        order: 2
+        answerTemplateSlug: select-single
+        title:
+          en: Are you sure?
+        instruction: null
+        placeholder: null
+        configuration: null
+        isRequired: true
+        answerGroup:
+          id: quizQuestionTemplateAnswerGroup-2
+          doRandomize: false
+        answerOptions:
+          - id: quizQuestionTemplateAnswerItem-3
+            order: 1
+            value: YES
+            label:
+              en: Yes
+          - id: quizQuestionTemplateAnswerItem-4
+            order: 2
+            value: NO
+            label:
+              en: No
+  - id: quizTemplate-2
+    name: City of Barcelona quiz
+    doRandomize: false
+    questions:
+      - id: quizQuestionTemplate-3
+        order: 1
+        answerTemplateSlug: select-single
+        title:
+          en: Which city is this?
+        instruction: null
+        placeholder: null
+        configuration: null
+        isRequired: true
+        answerGroup:
+          id: quizQuestionTemplateAnswerGroup-3
+          doRandomize: false
+        answerOptions:
+          - id: quizQuestionTemplateAnswerItem-5
+            order: 1
+            value: Barcelona
+            label:
+              en: Barcelona
+          - id: quizQuestionTemplateAnswerItem-6
+            order: 2
+            value: Amsterdam
+            label:
+              en: Amsterdam
+          - id: quizQuestionTemplateAnswerItem-7
+            order: 3
+            value: Malaga
+            label:
+              en: Malaga
+          - id: quizQuestionTemplateAnswerItem-8
+            order: 4
+            value: Bari
+            label:
+              en: Bari
+  - id: quizTemplate-3
+    name: City of Luzern quiz
+    doRandomize: false
+    questions:
+      - id: quizQuestionTemplate-4
+        order: 1
+        answerTemplateSlug: select-single
+        title:
+          en: Which city is this?
+        instruction: null
+        placeholder: null
+        configuration: null
+        isRequired: true
+        answerGroup:
+          id: quizQuestionTemplateAnswerGroup-4
+          doRandomize: false
+        answerOptions:
+          - id: quizQuestionTemplateAnswerItem-9
+            order: 1
+            value: Luzern
+            label:
+              en: Luzern
+          - id: quizQuestionTemplateAnswerItem-10
+            order: 2
+            value: Munich
+            label:
+              en: Munich
+          - id: quizQuestionTemplateAnswerItem-11
+            order: 3
+            value: Berlin
+            label:
+              en: Berlin
+          - id: quizQuestionTemplateAnswerItem-12
+            order: 4
+            value: Zurich
+            label:
+              en: Zurich
+  - id: quizTemplate-4
+    name: Game over quiz
+    doRandomize: false
+    questions: []
+parts:
+  - id: part-1
+    position:
+      x: 0
+      y: 0
+    backgroundType: video
+    backgroundConfiguration:
+      start: 0.05
+      end: 0.45
+    foregroundType: quiz
+    foregroundConfiguration:
+      start: 0.15
+    videoId: video-1
+    announcementTemplateId: null
+    defaultNextPartId: null
+    quizLogicForPartId: quizLogicForPart-1
+    taxonomyDraftForPartId: null
+    isInitial: true
+    terminationStrategy: NONE
+    quizTemplateId: quizTemplate-1
+    quizLogicForPart:
+      hitpolicy: first
+      quizTemplateId: quizTemplate-1
+      defaultNextPartId: part-1
+      rules:
+        - id: quizLogicRule-1
+          order: 1
+          name: Is ready
+          nextPartId: part-2
+          inputs:
+            - quizQuestionTemplateId: quizQuestionTemplate-1
+              quizQuestionTemplateAnswerItemId: quizQuestionTemplateAnswerItem-1
+              value: null
+            - quizQuestionTemplateId: quizQuestionTemplate-2
+              quizQuestionTemplateAnswerItemId: quizQuestionTemplateAnswerItem-3
+              value: null
+  - id: part-2
+    position:
+      x: 400
+      y: -200
+    backgroundType: video
+    backgroundConfiguration:
+      start: 0.5
+    foregroundType: announcement
+    foregroundConfiguration:
+      start: 0.75
+    videoId: video-2
+    announcementTemplateId: announcementTemplate-1
+    defaultNextPartId: part-3
+    quizLogicForPartId: null
+    taxonomyDraftForPartId: null
+    isInitial: false
+    terminationStrategy: NONE
+    quizTemplateId: null
+    quizLogicForPart: null
+  - id: part-3
+    position:
+      x: 800
+      y: 0
+    backgroundType: video
+    backgroundConfiguration: null
+    foregroundType: quiz
+    foregroundConfiguration:
+      start: 1
+    videoId: video-3
+    announcementTemplateId: null
+    defaultNextPartId: null
+    quizLogicForPartId: quizLogicForPart-2
+    taxonomyDraftForPartId: null
+    isInitial: false
+    terminationStrategy: NONE
+    quizTemplateId: quizTemplate-2
+    quizLogicForPart:
+      hitpolicy: first
+      quizTemplateId: quizTemplate-2
+      defaultNextPartId: part-4
+      rules:
+        - id: quizLogicRule-2
+          order: 1
+          name: 'Correct: Barcelona'
+          nextPartId: part-5
+          inputs:
+            - quizQuestionTemplateId: quizQuestionTemplate-3
+              quizQuestionTemplateAnswerItemId: quizQuestionTemplateAnswerItem-5
+              value: null
+  - id: part-4
+    position:
+      x: 1200
+      y: 200
+    backgroundType: video
+    backgroundConfiguration:
+      end: 0.5
+    foregroundType: null
+    foregroundConfiguration: null
+    videoId: video-4
+    announcementTemplateId: null
+    defaultNextPartId: part-3
+    quizLogicForPartId: null
+    taxonomyDraftForPartId: null
+    isInitial: false
+    terminationStrategy: NONE
+    quizTemplateId: null
+    quizLogicForPart: null
+  - id: part-5
+    position:
+      x: 1200
+      y: -200
+    backgroundType: video
+    backgroundConfiguration:
+      end: 1
+    foregroundType: null
+    foregroundConfiguration: null
+    videoId: video-5
+    announcementTemplateId: null
+    defaultNextPartId: part-6
+    quizLogicForPartId: null
+    taxonomyDraftForPartId: null
+    isInitial: false
+    terminationStrategy: NONE
+    quizTemplateId: null
+    quizLogicForPart: null
+  - id: part-6
+    position:
+      x: 1600
+      y: 0
+    backgroundType: video
+    backgroundConfiguration: null
+    foregroundType: quiz
+    foregroundConfiguration:
+      start: 1
+    videoId: video-6
+    announcementTemplateId: null
+    defaultNextPartId: null
+    quizLogicForPartId: quizLogicForPart-3
+    taxonomyDraftForPartId: null
+    isInitial: false
+    terminationStrategy: NONE
+    quizTemplateId: quizTemplate-3
+    quizLogicForPart:
+      hitpolicy: first
+      quizTemplateId: quizTemplate-3
+      defaultNextPartId: part-7
+      rules:
+        - id: quizLogicRule-3
+          order: 1
+          name: 'Correct: Luzern'
+          nextPartId: part-8
+          inputs:
+            - quizQuestionTemplateId: quizQuestionTemplate-4
+              quizQuestionTemplateAnswerItemId: quizQuestionTemplateAnswerItem-9
+              value: null
+  - id: part-7
+    position:
+      x: 2000
+      y: 200
+    backgroundType: video
+    backgroundConfiguration:
+      end: 0.4
+    foregroundType: null
+    foregroundConfiguration: null
+    videoId: video-4
+    announcementTemplateId: null
+    defaultNextPartId: part-6
+    quizLogicForPartId: null
+    taxonomyDraftForPartId: null
+    isInitial: false
+    terminationStrategy: FAIL_STORY
+    quizTemplateId: null
+    quizLogicForPart: null
+  - id: part-8
+    position:
+      x: 2000
+      y: -200
+    backgroundType: video
+    backgroundConfiguration:
+      end: 0.8
+    foregroundType: null
+    foregroundConfiguration: null
+    videoId: video-5
+    announcementTemplateId: null
+    defaultNextPartId: part-9
+    quizLogicForPartId: null
+    taxonomyDraftForPartId: null
+    isInitial: false
+    terminationStrategy: NONE
+    quizTemplateId: null
+    quizLogicForPart: null
+  - id: part-9
+    position:
+      x: 2400
+      y: 0
+    backgroundType: video
+    backgroundConfiguration: null
+    foregroundType: null
+    foregroundConfiguration: null
+    videoId: video-7
+    announcementTemplateId: null
+    defaultNextPartId: null
+    quizLogicForPartId: null
+    taxonomyDraftForPartId: null
+    isInitial: false
+    terminationStrategy: COMPLETE_STORY
+    quizTemplateId: null
+    quizLogicForPart: null
