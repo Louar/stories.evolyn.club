@@ -353,8 +353,20 @@
 	$effect(() => {
 		if (!pid || isEnded || !isActiveStory) return;
 		const activePart = story.parts.find((part) => part.id === pid);
-		if (!activePart || activePart.terminationStrategy === PartTerminationStrategy.none) return;
+		if (!activePart) return;
 		if (activePart.backgroundType === 'video' || activePart.backgroundType === 'animation') return;
+		if (
+			activePart.backgroundType === 'still' &&
+			(!activePart.foregroundType || activePart.foregroundType === 'announcement')
+		) {
+			const duration = activePart.background?.duration;
+			if (typeof duration === 'number' && Number.isFinite(duration) && duration >= 0) {
+				const expectedVisit = visit;
+				const timer = setTimeout(() => finishPart(activePart.id, expectedVisit), duration * 1000);
+				return () => clearTimeout(timer);
+			}
+		}
+		if (activePart.terminationStrategy === PartTerminationStrategy.none) return;
 		finishPart(activePart.id, visit);
 	});
 

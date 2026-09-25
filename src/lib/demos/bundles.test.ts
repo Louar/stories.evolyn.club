@@ -32,6 +32,22 @@ describe('demo bundles', { timeout: 20000 }, () => {
 		}
 	});
 
+	it('preserves timed trail announcements while leaving the route choice interactive', () => {
+		const story = storySchema.parse(load('stories', 'trail-decisions'));
+		expect(story.parts.map((part) => [part.id, part.backgroundConfiguration?.duration])).toEqual([
+			['introduction', 8],
+			['junction', undefined],
+			['exposed-ridge', 8],
+			['safe-arrival', 10]
+		]);
+		expect(
+			story.parts
+				.filter((part) => part.backgroundConfiguration?.duration)
+				.every((part) => part.backgroundType === 'still' && part.foregroundType === 'announcement')
+		).toBe(true);
+		expect(story.parts.find((part) => part.id === 'junction')?.foregroundType).toBe('quiz');
+	});
+
 	it('includes city quiz assets, numeric answers, and fail/success branches', () => {
 		const story = storySchema.parse(load('stories', 'quiz-of-cities'));
 		expect(story.parts).toHaveLength(9);

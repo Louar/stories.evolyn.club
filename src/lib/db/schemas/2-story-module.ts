@@ -185,6 +185,7 @@ type Part = {
 	storyId: string;
 	backgroundType: string | null;
 	backgroundConfiguration: JSONColumnType<{
+		duration?: number;
 		start?: number;
 		end?: number;
 		[x: string]: unknown;

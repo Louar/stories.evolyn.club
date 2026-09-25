@@ -523,7 +523,8 @@ stories:
           x: 0
           y: 0
         backgroundType: still
-        backgroundConfiguration: null
+        backgroundConfiguration:
+          duration: 8
         stillId: forest
         videoId: null
         defaultNextPartId: junction
@@ -569,7 +570,8 @@ stories:
           x: 800
           y: 200
         backgroundType: still
-        backgroundConfiguration: null
+        backgroundConfiguration:
+          duration: 8
         stillId: forest
         videoId: null
         defaultNextPartId: junction
@@ -587,7 +589,8 @@ stories:
           x: 800
           y: -200
         backgroundType: still
-        backgroundConfiguration: null
+        backgroundConfiguration:
+          duration: 10
         stillId: shelter
         videoId: null
         defaultNextPartId: null

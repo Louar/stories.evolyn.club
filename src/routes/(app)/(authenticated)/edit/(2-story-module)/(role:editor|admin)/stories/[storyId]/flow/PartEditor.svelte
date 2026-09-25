@@ -5,6 +5,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Command from '$lib/components/ui/command/index.js';
 	import * as Field from '$lib/components/ui/field/index.js';
+	import { Input } from '$lib/components/ui/input/index.js';
 	import * as Popover from '$lib/components/ui/popover/index.js';
 	import * as Scrubbable from '$lib/components/ui/scrubbable/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
@@ -375,6 +376,9 @@
 		draft.backgroundType =
 			value === 'still' || value === 'video' || value === 'animation' ? value : null;
 		if (draft.backgroundType !== 'still') draft.stillId = null;
+		if (draft.backgroundType !== 'still' && draft.backgroundConfiguration) {
+			delete draft.backgroundConfiguration.duration;
+		}
 		if (draft.backgroundType !== 'video') draft.videoId = null;
 		if (draft.backgroundType !== 'animation') draft.animationId = null;
 		scheduleAutosave();
@@ -652,6 +656,29 @@
 						<PencilIcon />
 					</Button>
 				</div>
+			</Field.Field>
+			<Field.Field>
+				<Field.Label for="still-duration">Duration (seconds)</Field.Label>
+				<Input
+					id="still-duration"
+					type="number"
+					min={0}
+					step="any"
+					value={draft.backgroundConfiguration?.duration ?? ''}
+					oninput={(event) => {
+						const input = event.currentTarget;
+						if (input.value !== '' && !input.validity.valid) return;
+						draft.backgroundConfiguration = {
+							...draft.backgroundConfiguration,
+							duration: input.value === '' ? undefined : input.valueAsNumber
+						} as typeof draft.backgroundConfiguration;
+						scheduleAutosave();
+					}}
+				/>
+				<Field.Description>
+					Advance after this duration when showing an announcement or no foreground. Quizzes and
+					taxonomy games wait for interaction. Leave blank for no timer.
+				</Field.Description>
 			</Field.Field>
 		{:else if draft.backgroundType === 'animation'}
 			<Field.Field>
