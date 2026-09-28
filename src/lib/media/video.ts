@@ -225,7 +225,10 @@ export const createYouTubePlayer = async (
 	if (!videoId) throw new Error('Invalid YouTube URL.');
 
 	const YT = await loadYouTubeIframeApi();
-	return new YT.Player(element, {
+	// YouTube replaces its mount; keep the framework-owned container intact.
+	const mount = document.createElement('div');
+	element.replaceChildren(mount);
+	return new YT.Player(mount, {
 		videoId,
 		host: 'https://www.youtube-nocookie.com',
 		playerVars: {

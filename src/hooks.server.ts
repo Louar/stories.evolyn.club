@@ -20,6 +20,12 @@ import { sequence } from '@sveltejs/kit/hooks';
 
 const ALLOWED_ROLES = new Set<string>([...Object.values(UserRole), 'client']);
 
+const handleReferrerPolicy: Handle = async ({ event, resolve }) => {
+	const response = await resolve(event);
+	response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+	return response;
+};
+
 const handleAuthorization: Handle = async ({ event, resolve }) => {
 	const isApiRoute = event.url.pathname === '/api' || event.url.pathname.startsWith('/api/');
 
@@ -175,4 +181,4 @@ const handleParaglide: Handle = ({ event, resolve }) =>
 		});
 	});
 
-export const handle = sequence(handleParaglide, handleAuthorization);
+export const handle = sequence(handleReferrerPolicy, handleParaglide, handleAuthorization);

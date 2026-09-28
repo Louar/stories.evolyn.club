@@ -11,9 +11,7 @@
 		partId: string;
 
 		questions: Extract<
-			NonNullable<
-				Awaited<ReturnType<typeof findOneStoryBySlug>>
-			>['parts'][number]['foreground'],
+			NonNullable<Awaited<ReturnType<typeof findOneStoryBySlug>>>['parts'][number]['foreground'],
 			{ questions: unknown }
 		>['questions'];
 
@@ -44,13 +42,12 @@
 	let i = $state(0);
 	let input: InputFromLogic<Logic> = $state({});
 
-	const next = async () => {
+	const next = () => {
 		if (!questions?.length || i === -1) return;
 
 		if (i < questions?.length - 1) i++;
 		else {
 			i = -1;
-			await new Promise((resolve) => setTimeout(resolve, 250));
 			submit(logic, input);
 		}
 	};
@@ -85,7 +82,7 @@
 	{#if i === ii}
 		<div
 			class={cn(
-				'scrollbar-none absolute inset-0 z-30 flex overflow-y-auto p-8 text-white md:py-20',
+				'absolute inset-0 z-30 flex scrollbar-none overflow-y-auto p-8 text-white md:py-20',
 				className
 			)}
 		>

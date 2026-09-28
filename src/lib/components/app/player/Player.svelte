@@ -3,8 +3,8 @@
 	import { MediaCollection, type Media } from '$lib/db/schemas/0-utils';
 	import {
 		createYouTubePlayer,
-		getYouTubeVideoId,
 		getVideoSourceType,
+		getYouTubeVideoId,
 		isYouTubeShort,
 		warmYouTubeConnections,
 		type YouTubePlayer,
@@ -241,7 +241,17 @@
 		}
 
 		const timeLeft = clipDuration - time;
-		if (!almostEnded && timeLeft <= 30) almostEnded = true;
+		if (
+			!almostEnded &&
+			PLAYERS.didUserInteract &&
+			isActive &&
+			isPlaying &&
+			clipDuration > 0 &&
+			timeLeft <= 30
+		) {
+			almostEnded = true;
+			bufferNext();
+		}
 		if (!isEnded && clipDuration > 0 && time >= clipDuration - cueTolerance) handleEnded();
 	};
 
@@ -278,6 +288,11 @@
 	const pauseWatching = () => {
 		isPlaying = false;
 		PLAYERS.isAnyPartPlaying = false;
+		stopWatchingTimers();
+		updateProgress();
+	};
+
+	const stopWatchingTimers = () => {
 		stopAmbientVideo();
 		paintAmbientVideo();
 		stopProgressTimer();
@@ -285,6 +300,10 @@
 		stopClipEndTimer();
 		if (watchTimer) clearInterval(watchTimer);
 		watchTimer = undefined;
+	};
+
+	const bufferWatching = () => {
+		stopWatchingTimers();
 		updateProgress();
 	};
 
@@ -319,7 +338,8 @@
 		if (state === 1 && !isActive) pauseMedia();
 		else if (state === 1) startWatching();
 		else if (state === 0) handleEnded();
-		else if (state === 2 || state === 3) pauseWatching();
+		else if (state === 2) pauseWatching();
+		else if (state === 3) bufferWatching();
 	};
 
 	const initializeNativeVideo = () => {
@@ -352,13 +372,14 @@
 					iframe.style.left = isShort ? '-450%' : '0';
 					iframe.style.top = isShort ? '0' : '-450%';
 					if (!isActive) player.pauseVideo();
+					// Metadata can remain unavailable until playback starts; do not gate play on it.
+					canPlay = true;
 					const markReady = () => {
 						const duration = player.getDuration();
 						if (duration <= 0) return;
 
 						mediaDuration = duration;
 						player.setPlaybackRate(playbackRate ?? 1);
-						canPlay = true;
 						if (youtubeReadyTimer) clearInterval(youtubeReadyTimer);
 						youtubeReadyTimer = undefined;
 					};
@@ -432,10 +453,6 @@
 	$effect(() => {
 		if (!doBuffer) return;
 		load();
-	});
-
-	$effect(() => {
-		if (PLAYERS.didUserInteract && almostEnded) bufferNext();
 	});
 
 	$effect(() => {
@@ -537,8 +554,8 @@
 			onplay={startWatching}
 			onplaying={startWatching}
 			onpause={pauseWatching}
-			onwaiting={pauseWatching}
-			onseeking={pauseWatching}
+			onwaiting={bufferWatching}
+			onseeking={bufferWatching}
 			onseeked={() => {
 				updateProgress();
 				if (!video.paused) startWatching();
@@ -585,7 +602,7 @@
 			>
 				{#if !isOverlaid && !isPlaying}
 					<div
-						class="grid size-24 cursor-pointer place-items-center rounded-full bg-black/50 text-white ring-black backdrop-blur-md transition-colors outline-none group-hover/control:bg-black/30 group-focus/control:ring-4"
+						class="grid size-24 cursor-pointer place-items-center rounded-full bg-black/50 text-white ring-primary backdrop-blur-md transition-colors outline-none group-hover/control:bg-black/30 group-focus/control:ring-2"
 					>
 						<PlayIcon
 							class="size-12 opacity-80 transition-opacity group-hover/control:opacity-100"
