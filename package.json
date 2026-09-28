@@ -13,6 +13,10 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"test:e2e": "npx bddgen && npx playwright test",
+		"test:e2e:media": "npx bddgen && E2E_EXTERNAL_MEDIA=1 npx playwright test",
+		"test:e2e:check": "tsc -p tsconfig.e2e.json && node --experimental-strip-types --test e2e/support/environment.test.ts",
+		"test:e2e:cleanup": "node --experimental-strip-types --test e2e/support/database.test.ts",
+		"test:e2e:db": "docker run --rm --name stories-e2e-postgres -e POSTGRES_DB=stories_e2e -e POSTGRES_USER=stories_e2e -e POSTGRES_PASSWORD=stories-e2e-local-only -p 127.0.0.1:55433:5432 postgres:18.4",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
 		"test:unit": "vitest"
 	},

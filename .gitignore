@@ -25,6 +25,8 @@ vite.config.ts.timestamp-*
 
 # Playwright
 test-results
+playwright-report
+.features-gen
 
 # Paraglide
 src/lib/paraglide
