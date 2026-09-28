@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import Header from '$lib/components/app/header/app-header.svelte';
+	import { resolve } from '$app/paths';
 	import DemoCards from '$lib/components/app/demo-cards.svelte';
+	import Header from '$lib/components/app/header/app-header.svelte';
 	import {
 		createDataGridPersistenceIdentity,
 		DataGrid,
@@ -16,16 +17,21 @@
 	import DataGridLanguageSelectMenu from '$lib/components/data-grid/data-grid-language-select-menu.svelte';
 	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
 	import DataGridUploadMenu from '$lib/components/data-grid/data-grid-upload-menu.svelte';
+	import { AvatarMedia } from '$lib/components/ui/avatar-media/index.js';
+	import { Badge } from '$lib/components/ui/badge/index.js';
 	import BreadcrumbMenu from '$lib/components/ui/breadcrumb-menu/breadcrumb-menu.svelte';
 	import { MEGABYTE } from '$lib/components/ui/file-drop-zone';
+	import { MediaFile } from '$lib/components/ui/media-file';
 	import { renderComponent } from '$lib/components/ui/table-tanstack/index.js';
 	import {
 		MediaCollection,
+		translateLocalizedField,
 		translateLocalizedMediaField,
 		type Media
 	} from '$lib/db/schemas/0-utils.js';
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
 	import { UI } from '$lib/states/ui.svelte';
+	import BookOpenIcon from '@lucide/svelte/icons/book-open';
 	import ChartIcon from '@lucide/svelte/icons/chart-no-axes-combined';
 	import ImageUpIcon from '@lucide/svelte/icons/image-up';
 	import SquarePenIcon from '@lucide/svelte/icons/square-pen';
@@ -291,5 +297,50 @@
 			</div>
 		{/snippet}
 	</DataGridToolbar>
-	<DataGrid {...dataGridProps} {table} height={gridHeight} />
+	<DataGrid
+		{...dataGridProps}
+		{table}
+		height={gridHeight}
+		display="grid"
+		cardFields={['name', 'slug', 'isPublished', 'isPublic']}
+	>
+		{#snippet card(story, fields)}
+			{@const thumbnail = translateLocalizedMediaField(story.thumbnail, UI.language)}
+			<a
+				href={resolve(`/edit/stories/${story.id}/flow`)}
+				aria-label={`Edit flow: ${translateLocalizedField(story.name, UI.language) || 'Untitled story'}`}
+				class="block focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+			>
+				<div class="relative grid aspect-video place-items-center overflow-hidden bg-muted">
+					{#if thumbnail}
+						<MediaFile
+							src={thumbnail}
+							class="absolute inset-0 h-full w-full scale-110 object-cover opacity-50 blur-xl"
+						/>
+						<MediaFile src={thumbnail} class="relative h-full w-full object-contain" />
+					{:else}
+						<BookOpenIcon class="size-10 text-muted-foreground/60" />
+					{/if}
+				</div>
+			</a>
+			{@render fields()}
+			<div
+				class="flex flex-wrap gap-x-3 gap-y-2 border-t px-3 py-2 text-xs text-muted-foreground [&>a]:hover:text-foreground"
+			>
+				<a href={resolve(`/edit/stories/${story.id}/permissions`)}>Permissions</a>
+				<a href={resolve(`/edit/stories/${story.id}/assets`)}>Assets</a>
+				<a href={resolve(`/edit/stories/${story.id}/analytics`)}>Analytics</a>
+				<a href={resolve(`/s/${story.slug}`)}>View story</a>
+			</div>
+			<div
+				class="flex flex-wrap items-center gap-x-1 gap-y-2 border-t px-3 py-2 text-xs text-muted-foreground [&>a]:hover:text-foreground [&>a]:hover:underline"
+			>
+				<span>Last updated at {story.updatedAt.toLocaleString()} by </span>
+				<Badge variant="secondary" class="h-5 gap-1 px-1.5 text-xs">
+					<AvatarMedia src={story.updatedBy?.image} class="size-4 rounded-full border" />
+					<span class="max-w-32 truncate">{story.updatedBy?.label}</span>
+				</Badge>
+			</div>
+		{/snippet}
+	</DataGrid>
 </div>

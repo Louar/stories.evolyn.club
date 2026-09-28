@@ -77,6 +77,8 @@
 	const isCopied = $derived.by(() => table.options.meta?.copiedCellsSet?.has(cellKey) ?? false);
 	const showCopiedHighlight = $derived(isCopied && !showSelectionHighlight && !isEditing);
 	const columnIndex = $derived.by(() => {
+		const cardColumns = table.options.meta?.cardColumnIds;
+		if (cardColumns) return cardColumns.indexOf(columnId) + 1;
 		const orderedColumns = [
 			...table.getStartVisibleLeafColumns(),
 			...table.getCenterVisibleLeafColumns(),

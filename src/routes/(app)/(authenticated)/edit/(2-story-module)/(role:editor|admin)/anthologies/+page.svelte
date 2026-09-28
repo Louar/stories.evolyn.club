@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import Header from '$lib/components/app/header/app-header.svelte';
 	import DemoCards from '$lib/components/app/demo-cards.svelte';
+	import Header from '$lib/components/app/header/app-header.svelte';
 	import {
 		createDataGridPersistenceIdentity,
 		createEndpointDataGridAdapter,
@@ -20,12 +21,17 @@
 	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
 	import DataGridUploadMenu from '$lib/components/data-grid/data-grid-upload-menu.svelte';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
+	import { AvatarMedia } from '$lib/components/ui/avatar-media/index.js';
+	import { Badge } from '$lib/components/ui/badge/index.js';
 	import BreadcrumbMenu from '$lib/components/ui/breadcrumb-menu/breadcrumb-menu.svelte';
 	import { MEGABYTE } from '$lib/components/ui/file-drop-zone';
 	import { Switch } from '$lib/components/ui/switch';
 	import { renderComponent } from '$lib/components/ui/table-tanstack/index.js';
+	import { translateLocalizedField } from '$lib/db/schemas/0-utils';
 	import { AnthologyVisualization } from '$lib/db/schemas/2-story-module';
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
+	import { UI } from '$lib/states/ui.svelte';
+	import LibraryIcon from '@lucide/svelte/icons/library';
 	import LoaderCircleIcon from '@lucide/svelte/icons/loader-circle';
 	import SquarePenIcon from '@lucide/svelte/icons/square-pen';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
@@ -247,6 +253,7 @@
 			positions: []
 		}),
 		onRowsDelete: requestRowsDelete,
+		enableDeleteConfirmation: false,
 		onDataChange: (nextRows) => (rows = nextRows),
 		onDownload: true,
 		enableSearch: true,
@@ -343,5 +350,50 @@
 			</div>
 		{/snippet}
 	</DataGridToolbar>
-	<DataGrid {...dataGridProps} {table} height={gridHeight} />
+	<DataGrid
+		{...dataGridProps}
+		{table}
+		height={gridHeight}
+		display="grid"
+		cardFields={['nameRaw', 'slug', 'visualization', 'isPublished', 'isPublic']}
+	>
+		{#snippet card(anthology, fields)}
+			<a
+				href={resolve(`/edit/anthologies/${anthology.id}/stories`)}
+				aria-label={`Edit stories: ${translateLocalizedField(anthology.nameRaw, UI.language) || 'Untitled anthology'}`}
+				class="block focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+			>
+				<div class="grid aspect-video place-items-center bg-muted">
+					<LibraryIcon class="size-10 text-muted-foreground/60" />
+				</div>
+				<div class="p-3">
+					<p class="mt-1 text-xs text-muted-foreground">
+						{anthology.positions.length}
+						{anthology.positions.length === 1 ? 'story' : 'stories'}
+					</p>
+				</div>
+			</a>
+			{@render fields()}
+			<div
+				class="flex flex-wrap gap-3 border-t px-3 py-2 text-xs text-muted-foreground [&>a]:hover:text-foreground [&>a]:hover:underline"
+			>
+				<a href={resolve(`/edit/anthologies/${anthology.id}/permissions`)}>Permissions</a>
+				<a
+					href={resolve('/(app)/(public)/(2-story-module)/[anthologySlug]/[...settings]', {
+						anthologySlug: anthology.slug,
+						settings: ''
+					})}>View anthology</a
+				>
+			</div>
+			<div
+				class="flex flex-wrap items-center gap-x-1 gap-y-2 border-t px-3 py-2 text-xs text-muted-foreground [&>a]:hover:text-foreground [&>a]:hover:underline"
+			>
+				<span>Last updated at {anthology.updatedAt.toLocaleString()} by </span>
+				<Badge variant="secondary" class="h-5 gap-1 px-1.5 text-xs">
+					<AvatarMedia src={anthology.updatedBy?.image} class="size-4 rounded-full border" />
+					<span class="max-w-32 truncate">{anthology.updatedBy?.label}</span>
+				</Badge>
+			</div>
+		{/snippet}
+	</DataGrid>
 </div>

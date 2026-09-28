@@ -408,6 +408,7 @@ declare module '@tanstack/table-core' {
 		searchMatchSet?: SvelteSet<string>;
 		activeSearchMatch?: CellPosition | null;
 		rowHeight?: RowHeightValue;
+		cardColumnIds?: readonly string[] | null;
 		rowHeightRemeasureVersion?: number;
 		preferences?: DataGridPreferencesController;
 		onRowHeightChange?: (value: RowHeightValue) => void;
@@ -484,6 +485,9 @@ export const ROW_HEIGHT_VALUES: Record<RowHeightValue, number> = ROW_HEIGHTS;
 export type DataGridProps<TData extends RowData> =
 	import('$lib/hooks/use-custom-data-grid.svelte.js').UseDataGridReturn<TData> &
 		DataGridStatusProps & {
+			display?: 'table' | 'grid';
+			card?: Snippet<[TData, Snippet]>;
+			cardFields?: readonly string[];
 			height?: number;
 			class?: string;
 		};

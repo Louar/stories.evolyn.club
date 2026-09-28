@@ -349,6 +349,8 @@ export interface UseDataGridOptions<TData extends RowData> extends DataGridStatu
 		rows: TData[],
 		rowIndices: number[]
 	) => DataGridDeleteResult | boolean | Promise<DataGridDeleteResult | boolean>;
+	/** Disable when onRowsDelete provides its own confirmation dialog. */
+	enableDeleteConfirmation?: boolean;
 	/**
 	 * Duplicates persisted rows and their owned child relations. Returned rows are appended to the grid.
 	 * Pass `true` to use `dataAdapter.duplicate`.
@@ -413,7 +415,7 @@ export interface UseDataGridReturn<TData extends RowData> {
 	) => Promise<Partial<CellPosition> | DataGridCreateResult<TData> | void>;
 
 	// Setters for refs (for bind:this)
-	setDataGridRef: (el: HTMLDivElement | null) => void;
+	setDataGridRef: (el: HTMLDivElement | null, cardColumnIds?: readonly string[]) => void;
 	setHeaderRef: (el: HTMLDivElement | null) => void;
 	setFooterRef: (el: HTMLDivElement | null) => void;
 }
@@ -461,6 +463,7 @@ export function useDataGrid<TData extends RowData>(
 		onRowsAdd: onRowsAddProp,
 		onRowChange: onRowChangeProp,
 		onRowsDelete: onRowsDeleteProp,
+		enableDeleteConfirmation = true,
 		onRowsDuplicate: onRowsDuplicateProp,
 		rowDuplicateTargets: rowDuplicateTargetsProp = [],
 		onDownload: onDownloadProp,
@@ -1233,6 +1236,7 @@ export function useDataGrid<TData extends RowData>(
 
 	// Refs
 	let dataGridRef = $state<HTMLDivElement | null>(null);
+	let cardColumnIds = $state<readonly string[] | null>(null);
 	let headerRef = $state<HTMLDivElement | null>(null);
 	let footerRef = $state<HTMLDivElement | null>(null);
 	const rowMapRef = new SvelteMap<number, HTMLDivElement>();
@@ -1602,14 +1606,15 @@ export function useDataGrid<TData extends RowData>(
 	// ========================================
 
 	function getNavigableColumns() {
-		return table
-			.getAllColumns()
-			.filter(
-				(col) =>
-					col.getIsVisible() &&
-					col.columnDef.meta?.navigable !== false &&
-					col.columnDef.meta?.cell?.variant !== 'row-select'
-			);
+		const columns = cardColumnIds
+			? cardColumnIds.flatMap((id) => table.getAllLeafColumns().filter((col) => col.id === id))
+			: table.getAllColumns();
+		return columns.filter(
+			(col) =>
+				(cardColumnIds !== null || col.getIsVisible()) &&
+				col.columnDef.meta?.navigable !== false &&
+				col.columnDef.meta?.cell?.variant !== 'row-select'
+		);
 	}
 
 	function getFirstNavigableColumnId(): string | null {
@@ -2440,14 +2445,15 @@ export function useDataGrid<TData extends RowData>(
 		});
 		if (pendingDeleteRowIds.length === 0) return;
 		deleteDialog = {
-			open: true,
+			open: enableDeleteConfirmation,
 			rowCount: pendingDeleteRowIds.length,
 			isDeleting: false
 		};
+		if (!enableDeleteConfirmation) void confirmRowsDelete();
 	}
 
 	async function confirmRowsDelete() {
-		if (!deleteDialog.open || deleteDialog.isDeleting) return;
+		if (pendingDeleteRowIds.length === 0 || deleteDialog.isDeleting) return;
 		const rows = table.getRowModel().rows;
 		const pendingRowIdSet = new SvelteSet(pendingDeleteRowIds);
 		const rowIndices = rows.flatMap((row, rowIndex) =>
@@ -2681,6 +2687,13 @@ export function useDataGrid<TData extends RowData>(
 	// ========================================
 
 	function handleKeyDown(event: KeyboardEvent) {
+		if (event.defaultPrevented) return;
+		// Card links, selection controls and editors keep their native keyboard behavior.
+		if (cardColumnIds && event.target instanceof Element) {
+			const target = event.target;
+			if (target.closest('a, button, input, select, textarea, [contenteditable="true"]')) return;
+			if (!target.closest('[data-slot="grid-cell-wrapper"]') && target !== dataGridRef) return;
+		}
 		// Search shortcut
 		if ((event.ctrlKey || event.metaKey) && event.key === 'f' && enableSearch) {
 			event.preventDefault();
@@ -3168,6 +3181,9 @@ export function useDataGrid<TData extends RowData>(
 	// Create a reactive meta object using getters so that components always get fresh values
 	// This is critical - without getters, the meta values are captured at creation time and never update
 	const meta = {
+		get cardColumnIds() {
+			return cardColumnIds;
+		},
 		get dataGridRef() {
 			return dataGridRef;
 		},
@@ -3549,10 +3565,12 @@ export function useDataGrid<TData extends RowData>(
 	$effect(() => {
 		const query = searchQuery;
 		const revision = searchRevision;
+		const searchColumns = cardColumnIds;
 		if (!query) return;
 
 		queueMicrotask(() => {
-			if (searchQuery !== query || searchRevision !== revision) return;
+			if (searchQuery !== query || searchRevision !== revision || searchColumns !== cardColumnIds)
+				return;
 			untrack(() => performSearch(query, false));
 		});
 	});
@@ -3598,7 +3616,7 @@ export function useDataGrid<TData extends RowData>(
 	// Effect to create virtualizer when ref becomes available
 	$effect(() => {
 		const ref = dataGridRef;
-		if (!ref) return;
+		if (!ref || cardColumnIds) return;
 
 		// Only create virtualizer once
 		if (virtualizer) return;
@@ -3697,10 +3715,11 @@ export function useDataGrid<TData extends RowData>(
 
 	// Setup keyboard handler on data grid element
 	$effect(() => {
-		if (dataGridRef) {
-			dataGridRef.addEventListener('keydown', handleKeyDown);
+		const ref = dataGridRef;
+		if (ref) {
+			ref.addEventListener('keydown', handleKeyDown);
 			return () => {
-				dataGridRef?.removeEventListener('keydown', handleKeyDown);
+				ref.removeEventListener('keydown', handleKeyDown);
 			};
 		}
 	});
@@ -3880,8 +3899,9 @@ export function useDataGrid<TData extends RowData>(
 		preferences: preferencesController,
 		status,
 		onRowAdd: resolvedOnRowAdd ? handleRowAdd : undefined,
-		setDataGridRef: (el: HTMLDivElement | null) => {
+		setDataGridRef: (el: HTMLDivElement | null, columnIds?: readonly string[]) => {
 			dataGridRef = el;
+			cardColumnIds = columnIds ?? null;
 		},
 		setHeaderRef: (el: HTMLDivElement | null) => {
 			headerRef = el;

@@ -122,6 +122,8 @@
 	const cellOpts = $derived(cell.column.columnDef.meta?.cell);
 	const variant = $derived(cellOpts?.variant ?? null);
 	const columnIndex = $derived.by(() => {
+		const cardColumns = table.options.meta?.cardColumnIds;
+		if (cardColumns) return cardColumns.indexOf(columnId) + 1;
 		const orderedColumns = [
 			...table.getStartVisibleLeafColumns(),
 			...table.getCenterVisibleLeafColumns(),
