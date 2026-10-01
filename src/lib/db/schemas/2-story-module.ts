@@ -109,6 +109,8 @@ type Anthology = {
 	clientId: string;
 	slug: string;
 	name: TranslatableColumn;
+	thumbnail: TranslatableMediaColumn | null;
+	description: TranslatableColumn | null;
 	visualization: ColumnType<
 		AnthologyVisualization,
 		AnthologyVisualization | null | undefined,

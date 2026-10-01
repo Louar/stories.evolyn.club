@@ -29,6 +29,8 @@ const findOneAnthologyById = async (clientId: string, anthologyId: string) => {
 			'anthology.slug',
 			'anthology.name',
 			'anthology.name as nameRaw',
+			'anthology.thumbnail',
+			'anthology.description',
 			'anthology.visualization',
 			'anthology.configuration',
 			'anthology.isPublished',
@@ -176,7 +178,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 	const parsed = await parseBody(request, createSchema, locals.language);
 	if (!parsed.ok) return parsed.response;
 
-	const { slug, nameRaw, positions, configuration, ...rest } = parsed.data;
+	const { slug, nameRaw, thumbnail, description, positions, configuration, ...rest } = parsed.data;
 
 	try {
 		const anthologyId = await db.transaction().execute(async (trx) => {
@@ -186,6 +188,8 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 					clientId,
 					slug,
 					name: JSON.stringify(nameRaw),
+					thumbnail: thumbnail ? JSON.stringify(thumbnail) : null,
+					description: description ? JSON.stringify(description) : null,
 					configuration: configuration ? JSON.stringify(configuration) : null,
 					createdBy: authUserId,
 					updatedBy: authUserId,
@@ -238,7 +242,7 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 	const parsed = await parseBody(request, patchSchema, locals.language);
 	if (!parsed.ok) return parsed.response;
 
-	const { slug, nameRaw, positions, configuration, ...rest } = parsed.data;
+	const { slug, nameRaw, thumbnail, description, positions, configuration, ...rest } = parsed.data;
 
 	try {
 		await db.transaction().execute(async (trx) => {
@@ -249,6 +253,12 @@ export const PATCH: RequestHandler = async ({ locals, params, request }) => {
 				.set({
 					...(slug !== undefined ? { slug } : {}),
 					...(nameRaw !== undefined ? { name: JSON.stringify(nameRaw) } : {}),
+					...(thumbnail !== undefined
+						? { thumbnail: thumbnail ? JSON.stringify(thumbnail) : null }
+						: {}),
+					...(description !== undefined
+						? { description: description ? JSON.stringify(description) : null }
+						: {}),
 					...(configuration !== undefined
 						? { configuration: configuration ? JSON.stringify(configuration) : null }
 						: {}),

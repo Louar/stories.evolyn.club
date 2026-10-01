@@ -279,7 +279,9 @@ export const InitStoryModule: Migration = {
 			)
 			.addColumn('still_id', 'uuid', (col) => col.references('still.id').onDelete('set null'))
 			.addColumn('video_id', 'uuid', (col) => col.references('video.id').onDelete('set null'))
-			.addColumn('animation_id', 'uuid', (col) => col.references('animation.id').onDelete('set null'))
+			.addColumn('animation_id', 'uuid', (col) =>
+				col.references('animation.id').onDelete('set null')
+			)
 			.addColumn('announcement_template_id', 'uuid', (col) =>
 				col.references('announcement_template.id').onDelete('set null')
 			)
@@ -379,7 +381,9 @@ export const InitStoryModule: Migration = {
 					.defaultTo(sql`uuidv7()`)
 					.notNull()
 			)
-			.addColumn('story_id', 'uuid', (col) => col.references('story.id').onDelete('cascade').notNull())
+			.addColumn('story_id', 'uuid', (col) =>
+				col.references('story.id').onDelete('cascade').notNull()
+			)
 			.addColumn('animation_id', 'uuid', (col) =>
 				col.references('animation.id').onDelete('cascade').notNull()
 			)
@@ -453,6 +457,8 @@ export const InitStoryModule: Migration = {
 			)
 			.addColumn('slug', 'text', (col) => col.notNull())
 			.addColumn('name', 'jsonb', (col) => col.notNull())
+			.addColumn('thumbnail', 'jsonb')
+			.addColumn('description', 'jsonb')
 			.addColumn('visualization', sql`anthology_visualization`, (col) =>
 				col.defaultTo(AnthologyVisualization.grid).notNull()
 			)

@@ -308,6 +308,21 @@ Then('both copies contain the expected three stories in order', async ({ world }
 		expect(demo.stories.map((story) => story.name)).toEqual(collectionNames);
 });
 
+Then('each copy keeps the anthology description and thumbnail', async ({ world }) => {
+	const rows = (
+		await world.db.query<{ description: string | null; thumbnail: string | null }>(
+			`SELECT description->>'en' AS description, thumbnail->'default'->>'filename' AS thumbnail
+			 FROM anthology WHERE id = ANY($1::uuid[])`,
+			[storyState(world).demos.map((demo) => demo.root.id)]
+		)
+	).rows;
+	expect(rows).toHaveLength(storyState(world).demos.length);
+	for (const row of rows) {
+		expect(row.description).toContain('ordered anthology');
+		expect(row.thumbnail).toBe('https://assets.evolyn.club/videos/play-pause.jpg');
+	}
+});
+
 Then(
 	'each copy resolves its taxonomy references to its own imported taxonomies',
 	async ({ world }) => {

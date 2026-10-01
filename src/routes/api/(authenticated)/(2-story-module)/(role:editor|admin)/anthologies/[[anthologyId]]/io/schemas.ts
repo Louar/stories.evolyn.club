@@ -1,4 +1,4 @@
-import { translatableValidator } from '$lib/db/schemas/0-utils';
+import { translatableMediaValidator, translatableValidator } from '$lib/db/schemas/0-utils';
 import { AnthologyVisualization } from '$lib/db/schemas/2-story-module';
 import z from 'zod/v4';
 import { schema as storySchema } from '../../../stories/[[storyId]]/io/schemas';
@@ -28,6 +28,8 @@ export const schema = z.object({
 	id: z.string().min(1).optional(),
 	slug: z.string().min(1),
 	name: z.preprocess(parseJsonString, translatableValidator),
+	thumbnail: z.preprocess(parseJsonString, translatableMediaValidator.nullable()).default(null),
+	description: z.preprocess(parseJsonString, translatableValidator.nullable()).default(null),
 	visualization: z.enum(Object.values(AnthologyVisualization)).default(AnthologyVisualization.grid),
 	configuration: configurationSchema,
 	isPublished: z.boolean(),

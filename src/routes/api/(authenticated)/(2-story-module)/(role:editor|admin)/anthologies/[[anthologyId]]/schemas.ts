@@ -1,4 +1,8 @@
-import { formObjectPreprocessor, translatableValidator } from '$lib/db/schemas/0-utils';
+import {
+	formObjectPreprocessor,
+	translatableMediaValidator,
+	translatableValidator
+} from '$lib/db/schemas/0-utils';
 import { AnthologyVisualization } from '$lib/db/schemas/2-story-module';
 import { z } from 'zod/v4';
 
@@ -13,6 +17,10 @@ const anthologyPositionSchema = z.object({
 const anthologyFieldsSchema = z.object({
 	slug: z.string().min(1),
 	nameRaw: z.preprocess(formObjectPreprocessor, translatableValidator),
+	thumbnail: z
+		.preprocess(formObjectPreprocessor, translatableMediaValidator.nullable())
+		.default(null),
+	description: z.preprocess(formObjectPreprocessor, translatableValidator.nullable()).default(null),
 	visualization: z.enum(Object.values(AnthologyVisualization)),
 	configuration: z.object({ showPerformanceOverview: z.boolean() }).nullable(),
 	isPublished: z.boolean(),

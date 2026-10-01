@@ -6,6 +6,7 @@ Feature: Publish independent demo collections
     Given an editor is authenticated for story authoring
     When the editor creates two copies of "Discovery Collection"
     Then both copies contain the expected three stories in order
+    And each copy keeps the anthology description and thumbnail
     And each copy resolves its taxonomy references to its own imported taxonomies
     And the copies have different anthology, story, and taxonomy identities
     When the editor unpublishes "Trail Decisions" in the first copy

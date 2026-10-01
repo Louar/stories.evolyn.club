@@ -4,6 +4,13 @@ slug: discovery-collection
 name:
   en: Discovery Collection
   nl: Ontdekkingscollectie
+thumbnail:
+  default:
+    collection: externals
+    filename: https://assets.evolyn.club/videos/play-pause.jpg
+description:
+  en: An ordered anthology containing Quiz of Cities, Trail Decisions, and World Food Expedition with their taxonomy dependencies and a performance overview.
+  nl: Een geordende anthologie met Stedenquiz, Trail Decisions en World Food Expedition met hun taxonomie-afhankelijkheden en een prestatieoverzicht.
 visualization: GRID
 configuration:
   showPerformanceOverview: true

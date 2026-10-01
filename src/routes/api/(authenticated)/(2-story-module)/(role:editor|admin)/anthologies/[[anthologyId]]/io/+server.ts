@@ -45,6 +45,8 @@ const findOneAnthologyById = async (clientId: string, anthologyId: string) =>
 			'anthology.id',
 			'anthology.slug',
 			'anthology.name',
+			'anthology.thumbnail',
+			'anthology.description',
 			'anthology.visualization',
 			'anthology.configuration',
 			'anthology.isPublished',
@@ -93,7 +95,12 @@ export const GET = (async ({ locals, params, url }) => {
 	const storyIds = [...new Set(positions.map((position) => position.storyId))];
 	const yaml = YAML.stringify({
 		...restAnthology,
-		positions: positions.map(({ storyId: _storyId, ...position }) => position),
+		positions: positions.map(({ id, order, storySlug, configuration }) => ({
+			id,
+			order,
+			storySlug,
+			configuration
+		})),
 		...(includeStories
 			? {
 					stories: await Promise.all(storyIds.map((storyId) => findOneStoryById(clientId, storyId)))
@@ -186,6 +193,8 @@ export const POST = (async ({ locals, request, fetch }) => {
 				clientId,
 				slug: anthologySlug,
 				name: JSON.stringify(anthologyRaw.name),
+				thumbnail: anthologyRaw.thumbnail ? JSON.stringify(anthologyRaw.thumbnail) : null,
+				description: anthologyRaw.description ? JSON.stringify(anthologyRaw.description) : null,
 				visualization: anthologyRaw.visualization,
 				configuration: anthologyRaw.configuration
 					? JSON.stringify(anthologyRaw.configuration)

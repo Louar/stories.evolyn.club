@@ -213,6 +213,8 @@ classDiagram
   class Anthology {
       slug: string
       name: Translatable
+      thumbnail: TranslatableMedia?
+      description: Translatable?
       visualization: AnthologyVisualization
       configuration: jsonb?
       isPublished: boolean
