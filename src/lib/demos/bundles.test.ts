@@ -340,8 +340,7 @@ describe('demo bundles', { timeout: 20000 }, () => {
 					const taxonomy = taxonomySchema.parse(load('taxonomies', draft.taxonomySlug));
 					expect(draft.draftedCategoryIds).toEqual([]);
 					expect(draft.draftedItemIds).toEqual([]);
-					for (const id of draft.draftedAttributeIds ?? []) {
-						const slug = draft.attributeOptions?.find((option) => option.id === id)?.slug;
+					for (const slug of draft.draftedAttributeSlugs ?? []) {
 						const attribute = taxonomy.attributes.find((attribute) => attribute.slug === slug)!;
 						expect(attribute).toBeDefined();
 						expect(['number', 'translatable_category', 'item_reference']).toContain(attribute.type);

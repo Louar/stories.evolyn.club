@@ -164,8 +164,8 @@ parts:
       maxMistakes: null
       difficulty: null
       defaultNextPartId: field-notes
-      draftedAttributeIds:
-        - country-name
+      draftedAttributeSlugs:
+        - name
       attributeOptions:
         - id: country-name
           slug: name
@@ -207,7 +207,7 @@ parts:
       maxMistakes: null
       difficulty: null
       defaultNextPartId: field-notes
-      draftedAttributeIds:
+      draftedAttributeSlugs:
         - population
       attributeOptions:
         - id: population
@@ -250,8 +250,8 @@ parts:
       maxMistakes: null
       difficulty: null
       defaultNextPartId: field-notes
-      draftedAttributeIds:
-        - origins
+      draftedAttributeSlugs:
+        - countryOfOrigin
       attributeOptions:
         - id: origins
           slug: countryOfOrigin
@@ -293,11 +293,11 @@ parts:
       maxMistakes: null
       difficulty: null
       defaultNextPartId: field-notes
-      draftedAttributeIds:
+      draftedAttributeSlugs:
         - calories
         - protein
         - fiber
-        - price
+        - averagePrice
       attributeOptions:
         - id: calories
           slug: calories
@@ -345,8 +345,8 @@ parts:
       maxMistakes: null
       difficulty: null
       defaultNextPartId: field-notes
-      draftedAttributeIds:
-        - wheel
+      draftedAttributeSlugs:
+        - wheelOfFive
       attributeOptions:
         - id: wheel
           slug: wheelOfFive

@@ -9898,18 +9898,18 @@ paths:
                   message:
                     type: string
                     enum:
-                      - Some drafted attributes are missing from attributeOptions
+                      - Some drafted attributes do not exist
                   taxonomySlugs:
                     type: array
                     items:
                       type: string
-                  attributeIds:
+                  attributeSlugs:
                     type: array
                     items:
                       type: string
                 required:
                   - message
-                  - attributeIds
+                  - attributeSlugs
       parameters:
         - name: storyId
           in: path

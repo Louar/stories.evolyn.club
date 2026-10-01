@@ -9,6 +9,7 @@ import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import YAML from 'yaml';
 import type { RequestHandler } from './$types';
 import { schema } from './schemas';
+import { serializeStoryForIo } from '../../../stories/[[storyId]]/io/story-io';
 
 const parseBody = async (request: Request) => {
 	const body = await request.text();
@@ -103,7 +104,11 @@ export const GET = (async ({ locals, params, url }) => {
 		})),
 		...(includeStories
 			? {
-					stories: await Promise.all(storyIds.map((storyId) => findOneStoryById(clientId, storyId)))
+					stories: await Promise.all(
+						storyIds.map(async (storyId) =>
+							serializeStoryForIo(await findOneStoryById(clientId, storyId))
+						)
+					)
 				}
 			: {})
 	});

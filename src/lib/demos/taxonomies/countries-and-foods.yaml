@@ -6,7 +6,7 @@ name:
   nl: Landen en voeding
 description:
   en: Demo taxonomy with countries and foods
-  en: Demotaxonomie met landen en voedingsmiddelen
+  nl: Demotaxonomie met landen en voedingsmiddelen
 categories:
   - id: category-1
     name:

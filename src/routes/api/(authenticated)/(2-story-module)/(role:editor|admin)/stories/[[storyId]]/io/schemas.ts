@@ -111,7 +111,7 @@ const taxonomyDraftForPartSchema = z.object({
 	maxMistakes: z.number().int().nullable(),
 	difficulty: z.number().int().nullable(),
 	defaultNextPartId: z.string().min(1).nullable(),
-	draftedAttributeIds: z.array(z.string().min(1)).nullish().default([]),
+	draftedAttributeSlugs: z.array(z.string().min(1)).nullish().default([]),
 	attributeOptions: z.array(taxonomyDraftAttributeOptionSchema).nullish().default([]),
 	draftedCategoryIds: z.array(z.string().min(1)).nullish().default([]),
 	draftedItemIds: z.array(z.string().min(1)).nullish().default([]),
