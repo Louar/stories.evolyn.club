@@ -38,7 +38,7 @@ export const demos = {
 			slug: 'foods-and-wheel-of-five',
 			name: 'Foods and the Wheel of Five',
 			description:
-				'The full food taxonomy with nutrition, prices, origins, and linked Wheel of Five groups, including their map geometry.'
+				'The full food taxonomy with nutrition, prices, origins, and linked Wheel of Five groups backed by reusable map assets.'
 		}
 	],
 	anthologies: [

@@ -16,7 +16,8 @@ import {
 	prepareReader,
 	rescued,
 	storyCard,
-	storyState
+	storyState,
+	taxonomyAnswers
 } from '../support/stories';
 
 const taxonomyDraftResponseKey = 'taxonomy draft response';
@@ -234,19 +235,22 @@ When('I finish the stretching exercise', async ({ page }) => {
 	});
 });
 
-When('I choose an incorrect location in the first country round', async ({ page, world }) => {
+When('I choose an incorrect map region in the first location round', async ({ page, world }) => {
 	const game = page.locator('[data-taxonomy-game]');
 	await localUntil(page, game);
 	await expect(game.getByLabel('Round 1 of 5', { exact: true })).toBeVisible();
 	const target = await game.getByRole('heading', { level: 1 }).innerText();
 	storyState(world).firstCountry = target;
-	const wrong = game.locator('path[role="button"]');
-	const names = await wrong.evaluateAll((paths) =>
-		paths.map((path) => path.getAttribute('aria-label'))
-	);
-	const name = names.find((name) => name && name !== target);
-	expect(name).toBeTruthy();
-	const region = game.getByRole('button', { name: name!, exact: true }).first();
+	const answers = await taxonomyAnswers(world);
+	const correct = answers.find((answer) => answer.slug === 'name' && answer.item === target);
+	expect(correct, `Imported map answer for ${target}`).toBeDefined();
+	const region = game
+		.locator(
+			`[role="button"][data-map-item-id]:not([data-map-item-id="${correct!.referencedId ?? correct!.id}"])`
+		)
+		.first();
+	await expect(region).toHaveAttribute('aria-label', /^Region \d+$/);
+	await expect(region).not.toHaveAttribute('aria-label', target);
 	await region.focus();
 	await region.press('Enter');
 });

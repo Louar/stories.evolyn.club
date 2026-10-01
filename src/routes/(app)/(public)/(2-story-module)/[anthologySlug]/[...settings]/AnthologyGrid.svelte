@@ -4,12 +4,11 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import Header from '$lib/components/app/header/app-header-blank.svelte';
+	import AppHeaderControls from '$lib/components/app/header/app-header-controls.svelte';
 	import StoryPlayer from '$lib/components/app/player/Story.svelte';
 	import type { Player } from '$lib/components/app/player/types';
-	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import { LanguageSwitcher } from '$lib/components/ui/language-switcher';
 	import { MediaFile } from '$lib/components/ui/media-file';
 	import type { Media } from '$lib/db/schemas/0-utils';
 	import * as m from '$lib/paraglide/messages';
@@ -18,13 +17,12 @@
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import ArrowUpRightIcon from '@lucide/svelte/icons/arrow-up-right';
 	import FlagIcon from '@lucide/svelte/icons/flag';
-	import MoonIcon from '@lucide/svelte/icons/moon';
-	import SunIcon from '@lucide/svelte/icons/sun';
-	import { toggleMode } from 'mode-watcher';
 	import { onMount, tick } from 'svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+	let authclient = $derived(data.client);
+	let user = $derived(data.authusr);
 	let anthology = $derived(data.anthology);
 	let progressStorage = $derived(
 		anthology?.slug?.length ? `anthology-progress:${anthology.slug}` : undefined
@@ -233,15 +231,7 @@
 		<h1 class="overflow-hidden text-base whitespace-nowrap">
 			{anthology.name ?? anthology.slug}
 		</h1>
-		<div class="ml-auto">
-			{#if page.data.client?.locales?.length > 1}
-				<LanguageSwitcher class="ml-auto" />
-			{/if}
-			<Button onclick={toggleMode} size="icon" variant="outline">
-				<SunIcon class="scale-100 transition-all! dark:scale-0 dark:-rotate-90" />
-				<MoonIcon class="absolute scale-0 transition-all! dark:scale-100 dark:rotate-0" />
-			</Button>
-		</div>
+		<AppHeaderControls client={authclient} authusr={user} />
 	</div>
 </Header>
 

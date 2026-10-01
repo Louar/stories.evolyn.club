@@ -7,12 +7,18 @@
 	import { onMount, untrack } from 'svelte';
 	import { quartOut } from 'svelte/easing';
 	import { fly, scale } from 'svelte/transition';
-	import Map from './Map.svelte';
+	import TaxonomyMap from './TaxonomyMap.svelte';
 	import NumericSlider from './NumericSlider.svelte';
 	import RoundFeedback from './RoundFeedback.svelte';
 	import SortableBoard from './SortableBoard.svelte';
-	import { createPlayableMap } from './map';
-	import type { CategoryMap, GuessResult, MapItem, ShapeArcs, TopoGeometry } from './map-types';
+	import { createPlayableMap } from './create-playable-map';
+	import type {
+		CategoryMapV2,
+		GuessResult,
+		MapItem,
+		MapShapeValue,
+		PlayableMapRegion
+	} from './playable-map.types';
 	import {
 		createNumericSliderSettings,
 		formatSliderValue,
@@ -24,7 +30,7 @@
 	import type { GamePerformance, SortableRoundItem, TaxonomyRound } from './types';
 
 	type SortableRound = NonNullable<ReturnType<typeof toSortableRound>>;
-	type MapRound = NonNullable<ReturnType<typeof toMapRound>>;
+	type MapRound = NonNullable<Awaited<ReturnType<typeof toMapRound>>>;
 	type NumericSliderRound = NonNullable<ReturnType<typeof toNumericSliderRound>>;
 	type GameRound = SortableRound | MapRound | NumericSliderRound;
 	type Feedback = {
@@ -50,25 +56,22 @@
 		oncomplete: (performance: GamePerformance) => void;
 	} = $props();
 
-	const playableRounds = untrack(() =>
-		filterUniqueTaxonomyRounds(rounds)
-			.map((round) => toGameRound(round, difficulty))
-			.filter(isGameRound)
-	);
+	const sourceRounds = untrack(() => filterUniqueTaxonomyRounds(rounds));
+	const synchronousRounds = sourceRounds
+		.map((round) => toNumericSliderRound(round, difficulty) ?? toSortableRound(round))
+		.filter(isSynchronousRound);
+	let playableRounds = $state<GameRound[]>(synchronousRounds);
+	let loading = $state(synchronousRounds.length !== sourceRounds.length);
 	let currentRoundIndex = $state(0);
-	let items = $state<SortableRoundItem[]>(
-		playableRounds[0]?.kind === 'sortable' ? [...playableRounds[0].items] : []
-	);
+	let items = $state<SortableRoundItem[]>([]);
 	let completed = $state(0);
 	let mistakes = $state(0);
 	let feedback = $state<Feedback | null>(null);
 	let mapWidth = $state(1);
 	let mapHeight = $state(1);
-	let foundFeatures = $state<TopoGeometry[]>([]);
+	let foundRegions = $state<PlayableMapRegion[]>([]);
 	let arrowRotation = $state<number | undefined>();
-	let sliderValue = $state(
-		playableRounds[0]?.kind === 'numeric-slider' ? playableRounds[0].settings.initialValue : 0
-	);
+	let sliderValue = $state(0);
 	let sliderChanged = $state(false);
 	let timeMs = $state(0);
 	let startedAt = 0;
@@ -77,6 +80,8 @@
 	let feedbackTimeoutToken = 0;
 	let didComplete = false;
 	const currentRound = $derived(playableRounds[currentRoundIndex] ?? null);
+	const loadingRound = $derived(sourceRounds[currentRoundIndex] ?? null);
+	const loadingQuestion = $derived(loadingRound ? questionForRound(loadingRound) : '');
 	const feedbackDuration = $derived(feedback ? getFeedbackDuration(feedback) : 0);
 	const question = $derived.by(() => {
 		if (!currentRound) return '';
@@ -88,24 +93,33 @@
 			return m.taxonomy_slider_prompt({ attribute: attribute ?? m.taxonomy_value() });
 		return m.taxonomy_sort_by({ attribute: attribute ?? m.taxonomy_value() });
 	});
-	const hintFeatures = $derived(
-		showHints && currentRound?.kind === 'map' ? [currentRound.targetGeometry] : []
+	const hintRegions = $derived(
+		showHints && currentRound?.kind === 'map' ? [currentRound.targetRegion] : []
 	);
-	const finished = $derived(currentRoundIndex >= playableRounds.length);
+	const finished = $derived(!loading && currentRoundIndex >= playableRounds.length);
 
 	onMount(() => {
 		startedAt = Date.now();
+		void initializeRounds();
 		intervalId = setInterval(() => {
 			if (!finished) timeMs = Date.now() - startedAt;
 		}, 250);
-
-		if (playableRounds.length === 0) completeGame();
 
 		return () => {
 			if (intervalId) clearInterval(intervalId);
 			clearFeedbackTimeout();
 		};
 	});
+
+	async function initializeRounds() {
+		const resolved = await Promise.all(sourceRounds.map((round) => toGameRound(round, difficulty)));
+		playableRounds = resolved.filter(isGameRound);
+		loading = false;
+		const first = playableRounds[0];
+		items = first?.kind === 'sortable' ? [...first.items] : [];
+		sliderValue = first?.kind === 'numeric-slider' ? first.settings.initialValue : 0;
+		if (!first) completeGame();
+	}
 
 	function observeSize(node: HTMLElement) {
 		const resizeObserver = new ResizeObserver(([entry]) => {
@@ -186,36 +200,39 @@
 		};
 	}
 
-	function toMapRound(round: TaxonomyRound) {
+	async function toMapRound(round: TaxonomyRound) {
 		if (round.attribute.type === AttributeType.number) return null;
 		const mapItems = round.mapItems.map(toMapItem).filter(isMapItem);
-		const map = round.map ? createPlayableMap(round.map as CategoryMap, mapItems) : null;
+		let map = null;
+		try {
+			map = round.map ? await createPlayableMap(round.map as CategoryMapV2, mapItems) : null;
+		} catch {
+			return null;
+		}
 		if (!map) return null;
 
 		const target = round.items.find((item) => {
 			const targetItemId = getMapTargetItemId(round.attribute.type, item);
-			return map.geometries.some((geometry) => geometry.properties.id === targetItemId);
+			return map.regions.some((region) => region.properties.id === targetItemId);
 		});
 		if (!target || typeof target.name !== 'string') return null;
 
 		const targetItemId = getMapTargetItemId(round.attribute.type, target);
 		if (!targetItemId) return null;
-		const targetGeometry = map.geometries.find(
-			(geometry) => geometry.properties.id === targetItemId
-		);
-		if (!targetGeometry) return null;
+		const targetRegion = map.regions.find((region) => region.properties.id === targetItemId);
+		if (!targetRegion) return null;
 
 		return {
 			kind: 'map' as const,
 			category: round.category,
 			attribute: round.attribute,
 			map,
-			targetGeometry,
+			targetRegion,
 			target: {
 				id: target.id,
 				name: target.name,
 				referencedItemId: targetItemId,
-				referencedName: targetGeometry.properties.name
+				referencedName: targetRegion.properties.name
 			}
 		};
 	}
@@ -228,7 +245,7 @@
 	}
 
 	function toMapItem(item: TaxonomyRound['mapItems'][number]): MapItem | null {
-		if (typeof item.id !== 'string' || typeof item.name !== 'string' || !isShapeArcs(item.shape)) {
+		if (typeof item.id !== 'string' || typeof item.name !== 'string' || !isMapShape(item.shape)) {
 			return null;
 		}
 		return {
@@ -249,8 +266,13 @@
 		return item !== null;
 	}
 
-	function isShapeArcs(value: unknown): value is ShapeArcs {
-		return Array.isArray(value) && value.length > 0;
+	function isMapShape(value: unknown): value is MapShapeValue {
+		if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+		const shape = value as Partial<MapShapeValue>;
+		if ('ref' in shape) return typeof shape.ref === 'string' && shape.ref.length > 0;
+		if (!('geometry' in shape) || !shape.geometry || typeof shape.geometry !== 'object')
+			return false;
+		return shape.geometry.type === 'Polygon' || shape.geometry.type === 'MultiPolygon';
 	}
 
 	function isCenter(value: unknown): value is [number, number] {
@@ -261,12 +283,30 @@
 		);
 	}
 
-	function toGameRound(round: TaxonomyRound, difficulty: number | null) {
-		return toNumericSliderRound(round, difficulty) ?? toSortableRound(round) ?? toMapRound(round);
+	async function toGameRound(round: TaxonomyRound, difficulty: number | null) {
+		return (
+			toNumericSliderRound(round, difficulty) ?? toSortableRound(round) ?? (await toMapRound(round))
+		);
 	}
 
-	function isGameRound(round: ReturnType<typeof toGameRound>): round is GameRound {
+	function isGameRound(round: Awaited<ReturnType<typeof toGameRound>>): round is GameRound {
 		return round !== null;
+	}
+
+	function isSynchronousRound(
+		round: ReturnType<typeof toNumericSliderRound> | ReturnType<typeof toSortableRound>
+	): round is NumericSliderRound | SortableRound {
+		return round !== null;
+	}
+
+	function questionForRound(round: TaxonomyRound) {
+		if (round.attribute.question) return round.attribute.question;
+		const attribute = round.attribute.name ?? m.taxonomy_value();
+		if (round.attribute.type !== AttributeType.number)
+			return m.taxonomy_map_prompt({ attribute: round.attribute.name ?? m.taxonomy_location() });
+		return round.items.length === 1
+			? m.taxonomy_slider_prompt({ attribute })
+			: m.taxonomy_sort_by({ attribute });
 	}
 
 	function submitOrder() {
@@ -309,7 +349,7 @@
 		clearFeedbackTimeout();
 		currentRoundIndex += 1;
 		feedback = null;
-		foundFeatures = [];
+		foundRegions = [];
 		arrowRotation = undefined;
 		const next = playableRounds[currentRoundIndex];
 		items = next?.kind === 'sortable' ? [...next.items] : [];
@@ -331,14 +371,14 @@
 		});
 	}
 
-	function clickMapFeature(feature: TopoGeometry): GuessResult {
+	function guessRegion(region: PlayableMapRegion): GuessResult {
 		if (!currentRound || currentRound.kind !== 'map' || feedback?.correct) {
 			return 'already_guessed';
 		}
-		const correct = feature.properties.id === currentRound.target.referencedItemId;
+		const correct = region.properties.id === currentRound.target.referencedItemId;
 		if (correct) {
 			completed += 1;
-			foundFeatures = [feature];
+			foundRegions = [region];
 			arrowRotation = undefined;
 			showFeedback({
 				correct: true,
@@ -352,7 +392,7 @@
 		}
 
 		mistakes += 1;
-		triggerDirectionIndicator(feature);
+		triggerDirectionIndicator(region);
 		showFeedback({
 			correct: false,
 			title: m.taxonomy_map_wrong_title(),
@@ -361,22 +401,22 @@
 		return 'wrong';
 	}
 
-	function triggerDirectionIndicator(feature: TopoGeometry) {
+	function triggerDirectionIndicator(region: PlayableMapRegion) {
 		if (!currentRound || currentRound.kind !== 'map') return;
-		const targetFeature = currentRound.map.geometries.find(
-			(geometry) => geometry.properties.id === currentRound.target.referencedItemId
+		const targetRegion = currentRound.map.regions.find(
+			(candidate) => candidate.properties.id === currentRound.target.referencedItemId
 		);
-		if (!targetFeature?.properties.center || !feature.properties.center) return;
-		const bearing = turf.bearingToAzimuth(
-			turf.rhumbBearing(
-				feature.properties.center.geometry.coordinates,
-				targetFeature.properties.center.geometry.coordinates
-			)
-		);
+		if (!targetRegion) return;
+		const [fromX, fromY] = region.properties.center.geometry.coordinates;
+		const [toX, toY] = targetRegion.properties.center.geometry.coordinates;
+		const bearing =
+			currentRound.map.projection === 'identity'
+				? (Math.atan2(toX - fromX, fromY - toY) * 180) / Math.PI + 360
+				: turf.bearingToAzimuth(turf.rhumbBearing([fromX, fromY], [toX, toY]));
 		arrowRotation = [360, 45, 90, 135, 180, 225, 270, 315][Math.round(bearing / 45) % 8];
 	}
 
-	function countryFocusedHandler() {}
+	function focusRegion() {}
 </script>
 
 <div
@@ -412,7 +452,11 @@
 		{/key}
 	{/if}
 
-	{#if playableRounds.length === 0}
+	{#if loading}
+		<div class="absolute inset-0" aria-busy="true">
+			<span class="sr-only">{loadingQuestion}</span>
+		</div>
+	{:else if playableRounds.length === 0}
 		<section
 			class="absolute top-1/2 left-1/2 z-2 w-[min(34rem,calc(100%-2rem))] -translate-x-1/2 -translate-y-1/2 rounded-md border border-game-danger bg-game-panel p-5 text-center shadow-panel"
 			role="alert"
@@ -438,15 +482,15 @@
 	{:else if currentRound}
 		{#if currentRound.kind === 'map'}
 			<div class="absolute inset-0 top-20" in:fly={{ y: 20, duration: 500 }}>
-				<Map
+				<TaxonomyMap
 					map={currentRound.map}
 					width={mapWidth}
 					height={mapHeight}
-					{foundFeatures}
-					{hintFeatures}
-					unfoundFeatures={currentRound.map.geometries}
-					clickCountryHandler={clickMapFeature}
-					{countryFocusedHandler}
+					{foundRegions}
+					{hintRegions}
+					unfoundRegions={currentRound.map.regions}
+					onRegionGuess={guessRegion}
+					onRegionFocus={focusRegion}
 				/>
 			</div>
 		{:else if currentRound.kind === 'numeric-slider'}

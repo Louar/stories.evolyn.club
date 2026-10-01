@@ -283,7 +283,7 @@ export async function completeExpedition(page: Page, world: ScenarioWorld, stage
 				expect(candidate, `Imported map answer for ${stages[stage]}: ${heading}`).toBeDefined();
 				const region = game
 					.locator(
-						`path[role="button"][data-map-item-id="${candidate!.referencedId ?? candidate!.id}"]`
+						`[role="button"][data-map-item-id="${candidate!.referencedId ?? candidate!.id}"]`
 					)
 					.first();
 				await region.focus();

@@ -1,40 +1,26 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import Header from '$lib/components/app/header/app-header-blank.svelte';
-	import AppIcon from '$lib/components/app/icon/app-icon.svelte';
+	import AppHeaderControls from '$lib/components/app/header/app-header-controls.svelte';
 	import AvatarMedia from '$lib/components/ui/avatar-media/avatar-media.svelte';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import { LanguageSwitcher } from '$lib/components/ui/language-switcher';
 	import MediaFile from '$lib/components/ui/media-file/media-file.svelte';
-	import { UserRole } from '$lib/db/schemas/1-client-user-module.js';
+	import * as m from '$lib/paraglide/messages';
 	import { cn } from '$lib/utils';
 	import ArrowUpRightIcon from '@lucide/svelte/icons/arrow-up-right';
-	import BookOpenIcon from '@lucide/svelte/icons/book-open';
-	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
 	import LibraryIcon from '@lucide/svelte/icons/library';
-	import LogOutIcon from '@lucide/svelte/icons/log-out';
-	import MoonIcon from '@lucide/svelte/icons/moon';
-	import PencilIcon from '@lucide/svelte/icons/pencil';
-	import SunIcon from '@lucide/svelte/icons/sun';
-	import { toggleMode } from 'mode-watcher';
+	import PlayIcon from '@lucide/svelte/icons/square-play';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
+	let authclient = $derived(data.authclient);
 	let client = $derived(data.client);
 	let anthologies = $derived(data.anthologies);
 	let user = $derived(data.authusr);
-	let canAuthenticateWithPassword = $derived(data.canAuthenticateWithPassword);
 	let title = $derived(client.name ?? 'Client information');
-	let userDisplayName = $derived(user?.name ?? user?.email ?? 'Signed in user');
-	let userInitials = $derived(user?.abbreviation ?? user?.email?.slice(0, 1).toUpperCase() ?? '?');
 	let clientInitials = $derived(client.name?.slice(0, 1).toUpperCase() ?? '?');
-	let canEdit = $derived(
-		user?.roles?.includes(UserRole.admin) || user?.roles?.includes(UserRole.editor)
-	);
 
 	const anthologyCardClass = (index: number) =>
 		cn(
@@ -54,77 +40,7 @@
 		<h1 class="overflow-hidden text-sm whitespace-nowrap">
 			{title}
 		</h1>
-		<div class="ml-auto flex items-center gap-2">
-			<LanguageSwitcher />
-			<Button onclick={toggleMode} size="icon" variant="outline" aria-label="Toggle theme">
-				<SunIcon class="scale-100 transition-all! dark:scale-0 dark:-rotate-90" />
-				<MoonIcon class="absolute scale-0 transition-all! dark:scale-100 dark:rotate-0" />
-			</Button>
-
-			{#if user}
-				<DropdownMenu.Root>
-					<DropdownMenu.Trigger>
-						{#snippet child({ props })}
-							<Button
-								{...props}
-								size="icon"
-								variant="outline"
-								aria-label={`Account: ${userDisplayName}`}
-							>
-								<AvatarMedia
-									src={user.picture}
-									fallback={userInitials}
-									class="size-7 border-0 shadow-none"
-								/>
-							</Button>
-						{/snippet}
-					</DropdownMenu.Trigger>
-					<DropdownMenu.Content class="min-w-64" align="end" sideOffset={6} collisionPadding={8}>
-						<DropdownMenu.Label class="p-0 font-normal">
-							<div class="flex items-center gap-3 px-2 py-2 text-left">
-								<AvatarMedia
-									src={user.picture}
-									fallback={userInitials}
-									class="size-10 rounded-full"
-								/>
-								<div class="grid min-w-0 flex-1 leading-tight">
-									<span class="truncate font-medium">{userDisplayName}</span>
-									<span class="truncate text-xs text-muted-foreground"
-										>{user.email ?? 'Signed in'}</span
-									>
-								</div>
-							</div>
-						</DropdownMenu.Label>
-						<DropdownMenu.Separator />
-						{#if canEdit}
-							<DropdownMenu.Item>
-								{#snippet child({ props })}
-									<a href={resolve('/edit/stories')} {...props}>
-										<PencilIcon />
-										<span>Open editor</span>
-										<ChevronRightIcon class="ml-auto" />
-									</a>
-								{/snippet}
-							</DropdownMenu.Item>
-						{/if}
-						<DropdownMenu.Item>
-							{#snippet child({ props })}
-								<a href={resolve('/auth/logout')} data-sveltekit-reload {...props}>
-									<LogOutIcon />
-									<span>Sign out</span>
-									<ChevronRightIcon class="ml-auto" />
-								</a>
-							{/snippet}
-						</DropdownMenu.Item>
-					</DropdownMenu.Content>
-				</DropdownMenu.Root>
-			{:else if canAuthenticateWithPassword}
-				<Button href={resolve('/auth')} variant="outline">
-					<AppIcon icon="User" />
-					<span class="hidden sm:inline">Sign in</span>
-				</Button>
-			{/if}
-		</div>
+		<AppHeaderControls client={authclient} authusr={user} />
 	</div>
 </Header>
 
@@ -153,17 +69,6 @@
 								{@html client.description}
 							</Card.Description>
 						{/if}
-					</div>
-				</div>
-				<div
-					class="flex shrink-0 items-center gap-3 rounded-2xl border border-primary-foreground/20 bg-primary-foreground/10 p-4 backdrop-blur-sm"
-				>
-					<LibraryIcon class="size-6" />
-					<div>
-						<p class="text-2xl leading-none font-semibold">{anthologies.length}</p>
-						<p class="mt-1 text-xs text-primary-foreground/70">
-							Public {anthologies.length === 1 ? 'anthology' : 'anthologies'}
-						</p>
 					</div>
 				</div>
 			</Card.Header>
@@ -202,9 +107,11 @@
 							variant="secondary"
 							class="absolute top-3 left-3 gap-1.5 border border-border/50 bg-background/85 shadow-sm backdrop-blur-md"
 						>
-							<BookOpenIcon class="size-3" />
+							<PlayIcon class="size-3" />
 							{anthology.storyCount}
-							{anthology.storyCount === 1 ? 'story' : 'stories'}
+							{anthology.storyCount === 1
+								? m.public_anthology_item_singular()
+								: m.public_anthology_item_plural()}
 						</Badge>
 					</div>
 
@@ -235,9 +142,9 @@
 				<Card.Content class="max-w-sm space-y-3 pt-6">
 					<LibraryIcon class="mx-auto size-10 text-muted-foreground/50" />
 					<div>
-						<p class="font-medium">No public anthologies yet</p>
+						<p class="font-medium">{m.public_anthologies_empty_title()}</p>
 						<p class="mt-1 text-sm text-muted-foreground">
-							Published anthologies will appear here.
+							{m.public_anthologies_empty_description()}
 						</p>
 					</div>
 				</Card.Content>

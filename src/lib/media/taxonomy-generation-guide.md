@@ -1,5 +1,7 @@
 # GameBus Taxonomy YAML — LLM Generation Guide
 
+> Map sections in this guide describe the generic map v2 contract: compact category map references, reusable map assets, and per-item `shape`/`center`/`color`/`icons` attributes.
+
 Generate one complete YAML document for the GameBus taxonomy import endpoint.
 
 Taxonomies are normalized graphs: categories, attributes, and items are separate arrays connected by
@@ -131,8 +133,10 @@ categories:
 Categories do not contain nested attributes or items. Connect them using
 `attributeOfCategories` and `itemOfCategories`.
 
-`map` is a geographic TopoJSON visualization definition. It is not a value-to-label lookup and does
-not define item names. See **Category maps** below.
+`map` selects a reusable geographic or diagrammatic map scene. It is not a value-to-label lookup and
+does not define item names. Heavy geometry and decorative artwork live in the referenced map asset;
+item-specific map bindings and overrides remain ordinary taxonomy attributes. See **Category maps**
+below.
 
 ---
 
@@ -351,87 +355,249 @@ this naming process. Map items use the same derived default name.
 
 ## 10. Category maps
 
-`Category.map` supplies the shared TopoJSON arcs and rendering options for geographic or diagrammatic
-map rounds. Individual item geometry and presentation are supplied by attributes with hard-coded
-slugs.
+A category map is a generic interactive spatial visualization. It may represent countries, a wheel,
+a seasonal diagram, an anatomical illustration, a floor plan, or another planar/geographic scene.
+The renderer must not depend on the map's subject matter.
 
-The import schema accepts any object, but a playable map requires:
+The taxonomy stores two different kinds of map data:
+
+1. **Shared scene data** lives in a reusable external map asset: reusable region geometry, projection,
+   coordinate system, and optional noninteractive decorative artwork.
+2. **Item-specific map data** remains in `AttributeOfItem.value`, using the standardized `shape`,
+   `center`, `color`, and `icons` attributes.
+
+This distinction keeps `Category.map` small while preserving dynamic item creation through the normal
+taxonomy graph.
+
+### 10.1 Category map configuration
+
+A playable mapped category uses this compact structure:
 
 ```yaml
 map:
-  type: topojson
-  projection: naturalEarth
-  showLabels: false
-  topology:
-    type: Topology
-    arcs: []
-    objects:
-      items:
-        type: GeometryCollection
-        geometries: []
+  version: 2
+  source:
+    collection: clients
+    filename: taxonomy-maps/example-map.3f71c8.json
+  scene: regions
+  showLabels: true
+  minTargetDiameter: 24
 ```
 
-### Effective map properties
+| Property            | Required | Type                         | Meaning |
+| ------------------- | -------- | ---------------------------- | ------- |
+| `version`           | yes      | literal `2`                  | Category-map configuration version |
+| `source`            | yes      | media object                 | Reusable map-asset JSON |
+| `scene`             | yes      | non-empty string             | Scene inside the referenced asset |
+| `showLabels`        | no       | boolean                      | Show item labels; default `false` |
+| `minTargetDiameter` | no       | finite nonnegative number    | Minimum rendered hit-target diameter in CSS pixels; default `24` |
 
-| Property     | Required for playback | Allowed/expected value                   | Default         |
-| ------------ | --------------------- | ---------------------------------------- | --------------- |
-| `type`       | yes                   | literal `topojson`                       | no playable map |
-| `projection` | no                    | `identity` or `naturalEarth`             | `naturalEarth`  |
-| `showLabels` | no                    | boolean                                  | `false`         |
-| `topology`   | yes                   | TopoJSON `Topology` object               | no playable map |
-| `object`     | no                    | string, but currently ignored at runtime | none            |
-
-The topology must have `type: Topology`, an `arcs` array, and an `objects` map. The runtime always
-creates or replaces `topology.objects.items`; it does not use `map.object`. Keep an empty `items`
-geometry collection in generated topology for clarity.
-
-Use `naturalEarth` for longitude/latitude world data. Use `identity` for already planar coordinates
-such as a custom diagram.
-
-### Specialized map attributes
-
-The runtime looks up these exact attribute slugs across the taxonomy:
-
-| Attribute slug | Required | Expected item `value`               | Missing/invalid behavior       |
-| -------------- | -------- | ----------------------------------- | ------------------------------ |
-| `shape`        | yes      | non-empty TopoJSON arc indexes      | item is absent from the map    |
-| `center`       | no       | exactly two finite numbers `[x, y]` | geometric center is calculated |
-| `color`        | no       | string                              | no item color                  |
-| `icons`        | no       | array containing only strings       | empty icon list                |
-
-Declare these as `custom` attributes and connect them to the mapped category. The runtime identifies
-them by slug, not by their portable IDs or display names.
-
-`shape` is an arc-index array:
+`source` uses the normal media-reference shape:
 
 ```yaml
-# Polygon using topology arc 0
-value: [[0]]
+source:
+  collection: internals
+  filename: taxonomy-maps/world-countries.8c28ad.json
 ```
 
+A map asset is a separate versioned artifact. It may contain multiple reusable scenes, for example
+`wheel-of-five` and `seasons`, or `animals` and `cuts`. The taxonomy selects exactly one scene.
+
+Do not embed large TopoJSON arc arrays, decorative SVG paths, or raster artwork directly in
+`Category.map`. If a new scene or artwork asset is required, create/import that map asset separately
+and then reference it from the taxonomy.
+
+### 10.2 Shared map attributes
+
+The runtime recognizes these exact attribute slugs across the taxonomy:
+
+| Attribute slug | Required for a drawable item | Expected item `value` | Missing behavior |
+| -------------- | ---------------------------- | --------------------- | ---------------- |
+| `shape`        | yes                          | region reference or inline Polygon/MultiPolygon | item is absent from the map |
+| `center`       | no                           | exactly two finite numbers `[x, y]` | asset center or geometric centroid is used |
+| `color`        | no                           | string | asset/scene/renderer default is used |
+| `icons`        | no                           | array containing only strings | asset default or empty array is used |
+
+Declare these once as `custom` attributes within the taxonomy and connect the same attributes to
+every mapped category that needs them. Attribute slugs are taxonomy-wide and must remain unique.
+Do not create category-specific copies such as `country-shape`, `season-shape`, or `animal-shape`.
+
+These attributes remain ordinary taxonomy data deliberately: `Item` itself has no map fields, so
+`AttributeOfItem.value` is what allows mapped items to be added dynamically without changing the
+database model or renderer.
+
+### 10.3 `shape` values
+
+`shape` no longer stores raw TopoJSON arc indexes. It supports two forms.
+
+#### Reusable region reference
+
+Use this whenever the selected scene already contains the desired region:
+
 ```yaml
-# MultiPolygon containing two polygons
 value:
-  - [[0]]
-  - [[1]]
+  ref: country.NLD
 ```
 
-Geometry type is inferred from this nesting. The arc coordinates themselves live in
-`category.map.topology.arcs`.
+Examples of useful stable region IDs:
 
-### Map selection for game attributes
+```text
+country.NLD
+wheel.vegetables-fruit
+season.winter
+beef.brisket
+```
+
+The referenced ID must exist in the category's selected scene. Region IDs are stable public
+identifiers; TopoJSON arc indexes are private implementation details of the map asset.
+
+#### Inline custom geometry
+
+Use inline GeoJSON only when a genuinely new item geometry does not exist in the reusable scene:
+
+```yaml
+value:
+  geometry:
+    type: Polygon
+    coordinates:
+      -
+        - [100, 100]
+        - [220, 100]
+        - [220, 220]
+        - [100, 220]
+        - [100, 100]
+```
+
+Supported inline geometry types are `Polygon` and `MultiPolygon`.
+
+For an `identity` scene, inline geometry and explicit `center` values use the scene's design
+coordinate system. For a `naturalEarth` scene, geometry uses ordinary longitude/latitude coordinates.
+
+Use a region reference instead of copying inline geometry when a reusable region exists.
+
+### 10.4 Item overrides and precedence
+
+`center`, `color`, and `icons` are optional item-specific overrides. Resolve presentation in this
+order:
+
+```text
+item AttributeOfItem value
+→ map-asset region default
+→ scene default
+→ renderer default
+```
+
+This lets an asset provide sensible defaults while allowing a taxonomy to customize individual
+items.
+
+For example:
+
+```yaml
+- itemId: winter
+  attributeId: map-shape
+  value:
+    ref: season.winter
+  referencedItemId: null
+  difficulty: null
+
+- itemId: winter
+  attributeId: map-color
+  value: '#7fb7d6'
+  referencedItemId: null
+  difficulty: null
+
+- itemId: winter
+  attributeId: map-icons
+  value: [❄️, 🧣, ☃️]
+  referencedItemId: null
+  difficulty: null
+```
+
+### 10.5 Decorative artwork
+
+Decorative artwork belongs to the referenced map asset, not to taxonomy items. Examples include:
+
+- Wheel of Five rings, textures, separators, shadows, and food motifs;
+- seasonal flowers, leaves, snow, sun, and decorative rings;
+- country-map ocean backgrounds, graticules, and map frames;
+- heads, hooves, horns, feathers, muscle contours, and cut lines in an anatomical diagram.
+
+Artwork is noninteractive and has no taxonomy item ID, scoring behavior, tab stop, or answer state.
+Do not create pseudo-items merely to complete an illustration.
+
+A region that should be a legitimate clickable distractor is different: keep it as a taxonomy item
+with a real `shape`.
+
+Do not bake translated answer labels into decorative artwork. `showLabels: false` can hide runtime
+labels, but it cannot hide text already embedded in an SVG or image.
+
+### 10.6 Dynamic mapped items
+
+Adding a mapped item uses the normal taxonomy graph.
+
+When a reusable region already exists:
+
+```yaml
+items:
+  - id: netherlands
+
+itemOfCategories:
+  - itemId: netherlands
+    categoryId: countries
+
+attributeOfItems:
+  - itemId: netherlands
+    attributeId: country-name
+    value: { en: Netherlands, nl: Nederland }
+    referencedItemId: null
+    difficulty: null
+
+  - itemId: netherlands
+    attributeId: map-shape
+    value:
+      ref: country.NLD
+    referencedItemId: null
+    difficulty: null
+```
+
+No `Category.map` update is required.
+
+For a genuinely new custom region, use `shape.geometry` instead. The renderer may mix asset-backed
+and inline item geometry in one category.
+
+### 10.7 Map selection for game attributes
+
+Map selection remains driven by the taxonomy game attribute:
 
 - For a `translatable_category` game attribute, the item's own category supplies the map and the
-  item's own ID selects its geometry.
+  item's own ID selects its mapped item.
 - For an `item_reference` game attribute, `referencedCategoryId` supplies the map and the item's
-  `referencedItemId` selects the geometry.
-- If the selected category has no playable map, the specialized values are unusable, the target has
-  no geometry, or the item has no derived name, no map round is produced. There is no automatic
-  text-only fallback for these attribute types.
+  `referencedItemId` selects the mapped target item.
+- The selected mapped item must have a localized derived name and a valid `shape`.
+- If the selected category has no playable map, its source/scene cannot be resolved, the selected
+  item has no valid geometry, or the item has no derived name, no map round is produced.
+
+The story does not select map scenes or artwork. Those belong to the referenced taxonomy category.
+
+### 10.8 Map assets and portability
+
+A taxonomy YAML may reference map assets that are not embedded in the YAML itself. For an importable
+package, include every referenced map-asset JSON file and its artwork media and rewrite media
+references during import as needed.
+
+Do not invent a map-asset filename when generating a production-ready taxonomy. Use a known/provided
+asset reference, or generate the required map asset as a separate artifact when the task explicitly
+includes it.
+
+For detailed map-asset authoring, use the separate **Taxonomy Map Asset Generation Guide** when
+available.
 
 ---
 
 ## 11. Complete minimal mapped taxonomy
+
+This example assumes the referenced map asset already exists and contains scene `regions` with a
+stable region ID `region.square`.
 
 ```yaml
 slug: simple-map
@@ -444,17 +610,13 @@ categories:
     image: null
     description: null
     map:
-      type: topojson
-      projection: identity
+      version: 2
+      source:
+        collection: clients
+        filename: taxonomy-maps/simple-regions.v1.json
+      scene: regions
       showLabels: true
-      topology:
-        type: Topology
-        arcs:
-          - [[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]
-        objects:
-          items:
-            type: GeometryCollection
-            geometries: []
+      minTargetDiameter: 24
 attributes:
   - id: region-name
     slug: name
@@ -465,16 +627,19 @@ attributes:
     type: translatable_category
     referencedCategoryId: null
     schema: null
-  - id: region-shape
+  - id: map-shape
     slug: shape
     name: { en: Shape }
     image: null
-    description: null
+    description: { en: Map region reference or inline geometry }
     question: null
     type: custom
     referencedCategoryId: null
-    schema: null
-  - id: region-center
+    schema:
+      oneOf:
+        - required: [ref]
+        - required: [geometry]
+  - id: map-center
     slug: center
     name: { en: Center }
     image: null
@@ -483,9 +648,18 @@ attributes:
     type: custom
     referencedCategoryId: null
     schema: null
-  - id: region-color
+  - id: map-color
     slug: color
     name: { en: Color }
+    image: null
+    description: null
+    question: null
+    type: custom
+    referencedCategoryId: null
+    schema: null
+  - id: map-icons
+    slug: icons
+    name: { en: Icons }
     image: null
     description: null
     question: null
@@ -499,18 +673,23 @@ attributeOfCategories:
     isRequired: true
     isDefault: true
   - categoryId: regions
-    attributeId: region-shape
+    attributeId: map-shape
     order: 2
     isRequired: true
     isDefault: false
   - categoryId: regions
-    attributeId: region-center
+    attributeId: map-center
     order: 3
     isRequired: false
     isDefault: false
   - categoryId: regions
-    attributeId: region-color
+    attributeId: map-color
     order: 4
+    isRequired: false
+    isDefault: false
+  - categoryId: regions
+    attributeId: map-icons
+    order: 5
     isRequired: false
     isDefault: false
 items:
@@ -525,24 +704,37 @@ attributeOfItems:
     referencedItemId: null
     difficulty: null
   - itemId: square-region
-    attributeId: region-shape
-    value: [[0]]
+    attributeId: map-shape
+    value:
+      ref: region.square
     referencedItemId: null
     difficulty: null
   - itemId: square-region
-    attributeId: region-center
-    value: [5, 5]
-    referencedItemId: null
-    difficulty: null
-  - itemId: square-region
-    attributeId: region-color
+    attributeId: map-color
     value: '#4f46e5'
     referencedItemId: null
     difficulty: null
 ```
 
-This is a complete import-valid taxonomy and demonstrates the actual map relationship. A story game
-must request one item per round for this one-item dataset.
+A story game must request one item per round for this one-item dataset.
+
+To make the square completely dynamic instead of using the reusable asset region, replace its
+`shape` value with:
+
+```yaml
+value:
+  geometry:
+    type: Polygon
+    coordinates:
+      -
+        - [0, 0]
+        - [10, 0]
+        - [10, 10]
+        - [0, 10]
+        - [0, 0]
+```
+
+The inline coordinates must use the selected scene's coordinate system.
 
 ---
 
@@ -636,9 +828,16 @@ preflight:
 8. Item values match their attribute's intended type and schema.
 9. Every item used by a game has at least one localized default-name value.
 10. Every required category attribute has an item value when applicable.
-11. Every map item has a valid `shape` whose arc indexes exist in the topology.
-12. Every category/attribute game combination has enough eligible items for the story's requested
-    `nrOfItemsPerRound`.
+11. `shape`, `center`, `color`, and `icons` each have at most one attribute definition per taxonomy;
+    mapped categories reuse those shared attributes.
+12. Every mapped category has a valid map configuration whose `source` and `scene` resolve.
+13. Every drawable map item has a valid `shape`.
+14. Every `shape.ref` exists in the selected map-asset scene.
+15. Every inline `shape.geometry` is a valid Polygon/MultiPolygon in the selected scene's coordinate
+    system.
+16. Item-specific `center`, `color`, and `icons` values satisfy their expected schemas.
+17. Every category/attribute game combination has enough named, drawable, eligible items for the
+    story's requested `nrOfItemsPerRound`.
 
 ---
 
@@ -654,16 +853,20 @@ Avoid:
 - forgetting `isDefault: true` on the category attribute that supplies item names;
 - assuming `isRequired` is enforced automatically;
 - using duplicate portable IDs or attribute slugs;
+- defining separate `shape`, `center`, `color`, or `icons` attributes for different mapped categories;
 - leaving dangling category, attribute, item, or reference IDs;
 - putting an item-reference target in the wrong category;
 - setting `referencedItemId` on a non-reference attribute;
-- assuming attribute `type` validates item `value`;
+- assuming attribute `type` alone validates an item `value`;
 - selecting `integer`, `translatable`, or `custom` as an independent game target;
 - treating `Category.map` as a label/value mapping;
-- storing item geometry directly in `map.topology.objects` instead of `shape` item values;
-- using specialized map slugs other than exactly `shape`, `center`, `color`, and `icons`;
-- relying on `map.object`, which the current player ignores;
-- expecting a map round without a valid TopoJSON map, shapes, and derived item names;
+- embedding large TopoJSON topology or decorative artwork directly in `Category.map`;
+- storing raw TopoJSON arc indexes in `shape`;
+- inventing a `shape.ref` that does not exist in the selected scene;
+- using inline geometry in a different coordinate system from the selected scene;
+- creating decorative pseudo-items when the visual belongs in map artwork;
+- baking answer labels into decorative artwork when the game may hide labels;
+- expecting a map round without a resolvable map source/scene, valid shapes, and derived item names;
 - JSON-encoding native YAML values unnecessarily.
 
 ---
@@ -676,10 +879,18 @@ When asked to create a taxonomy:
 2. Include all required top-level properties and arrays.
 3. Use unique, descriptive portable IDs and attribute slugs.
 4. Define categories, attributes, and items separately, then connect them with relation arrays.
-5. Make every reference resolve within the file, except external media filenames.
+5. Make every taxonomy reference resolve within the file, except external media/map-asset filenames.
 6. Define every usable item's name through ordered `isDefault` category attributes.
-7. Match item values and references to their attribute types.
-8. For maps, provide valid TopoJSON plus correctly slugged specialized item attributes.
-9. Ensure game-target attributes have enough named, eligible items.
-10. Do not add unknown properties or comments unless requested.
-11. Unless specifically requested otherwise, return pure YAML without explanatory prose.
+7. Match item values and references to their attribute types and schemas.
+8. For mapped categories, use compact map source/scene configuration.
+9. Define `shape`, `center`, `color`, and `icons` once per taxonomy and reuse them across mapped
+   categories.
+10. Prefer `shape.ref` for reusable map regions; use `shape.geometry` only for genuinely new custom
+    regions.
+11. Do not invent external map assets for a production-ready import. Use provided/known assets or
+    generate the required map asset separately when requested.
+12. Ensure game-target attributes have enough named, drawable, eligible items.
+13. Keep decorative artwork out of taxonomy items.
+14. Do not add unknown properties or comments unless requested.
+15. Unless specifically requested otherwise, return pure YAML without explanatory prose.
+

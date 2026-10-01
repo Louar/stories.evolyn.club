@@ -572,6 +572,10 @@ taxonomyDraftForPart:
 `taxonomyDraftForPartId`, like the quiz marker, only signals that a nested draft exists. Always
 include `taxonomyDraftForPart` with a non-null marker.
 
+The draft selects taxonomy content; it does not configure map rendering. If the chosen target
+attribute resolves to a mapped category, the taxonomy player uses that category's map configuration
+automatically.
+
 ### Taxonomy draft properties
 
 | Property              | Required | Type                        | Runtime null default  |
@@ -614,6 +618,29 @@ slug; a later conflicting mapping overwrites an earlier one.
 
 Only taxonomy attributes with runtime type `number`, `item_reference`, or `translatable_category`
 can create games, and they must have enough usable items.
+
+### Map-backed taxonomy rounds
+
+Map rendering is defined entirely by the referenced taxonomy. Story YAML does not select a map asset,
+scene, projection, artwork layer, region ID, color, icon, or geometry.
+
+For a map-backed round:
+
+- a `translatable_category` target uses the item's own category map and the item's own mapped shape;
+- an `item_reference` target uses its `referencedCategoryId` as the target map category and the
+  item's `referencedItemId` as the target mapped item;
+- the target mapped category must have a resolvable map source/scene;
+- the target item must have a valid `shape` (`ref` or inline geometry) and a localized derived name.
+
+The map asset may be geographic or diagrammatic. The story is deliberately domain-agnostic: the same
+taxonomy foreground works for countries, Wheel of Five groups, seasons, anatomy, floor plans, or
+other maps.
+
+Do not draft `shape`, `center`, `color`, or `icons` as gameplay attributes. They are specialized
+rendering metadata used by the taxonomy map player, not independent game targets.
+
+`showLabels`, target-size helpers, decorative artwork, and map-region styling are taxonomy/map-asset
+concerns. Do not duplicate those settings in story YAML.
 
 ### Taxonomy rules
 
@@ -795,6 +822,9 @@ Avoid:
 - expecting `captions`, quiz `instruction`, `placeholder`, or quiz `configuration` to render;
 - expecting animation autoplay/loop settings to control story playback;
 - embedding category/item taxonomy database IDs in a portable story;
+- putting map-asset, scene, geometry, artwork, `shape`, `center`, `color`, or `icons` configuration in story YAML;
+- drafting `shape`, `center`, `color`, or `icons` as independent taxonomy game targets;
+- assuming a map-based target works when its taxonomy category has no resolvable map scene or its target items have no valid shapes;
 - relying on permissive importer behavior that the player does not support.
 
 ---
@@ -812,5 +842,7 @@ When asked to create a story:
 7. Ensure media and interaction references match their declared assets.
 8. Use sensible positive durations, normalized timing fractions, and ordered ranges.
 9. Reference only taxonomies and taxonomy attribute slugs known to exist.
-10. Do not add unknown properties or comments unless requested.
-11. Unless specifically requested otherwise, return pure YAML without explanatory prose.
+10. When a taxonomy interaction is intended to render as a map, verify that the target attribute resolves to a mapped category with enough drawable items.
+11. Keep map configuration and artwork in the taxonomy/map asset, not the story.
+12. Do not add unknown properties or comments unless requested.
+13. Unless specifically requested otherwise, return pure YAML without explanatory prose.
