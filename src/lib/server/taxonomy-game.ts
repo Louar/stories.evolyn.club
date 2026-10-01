@@ -37,17 +37,23 @@ export async function loadTaxonomyGame(clientId: string, draftId: string, langua
 			sql<string[]>`coalesce((
 				select jsonb_agg(drafted_category.category_id)
 				from drafted_category
+				inner join category on category.id = drafted_category.category_id
 				where drafted_category.taxonomy_draft_for_part_id = ${eb.ref('taxonomyDraftForPart.id')}
+					and category.taxonomy_id = ${eb.ref('taxonomyDraftForPart.taxonomyId')}
 			), '[]'::jsonb)`.as('categories'),
 			sql<string[]>`coalesce((
 				select jsonb_agg(drafted_attribute.attribute_id)
 				from drafted_attribute
+				inner join attribute on attribute.id = drafted_attribute.attribute_id
 				where drafted_attribute.taxonomy_draft_for_part_id = ${eb.ref('taxonomyDraftForPart.id')}
+					and attribute.taxonomy_id = ${eb.ref('taxonomyDraftForPart.taxonomyId')}
 			), '[]'::jsonb)`.as('attributes'),
 			sql<string[]>`coalesce((
 				select jsonb_agg(drafted_item.item_id)
 				from drafted_item
+				inner join item on item.id = drafted_item.item_id
 				where drafted_item.taxonomy_draft_for_part_id = ${eb.ref('taxonomyDraftForPart.id')}
+					and item.taxonomy_id = ${eb.ref('taxonomyDraftForPart.taxonomyId')}
 			), '[]'::jsonb)`.as('items')
 		])
 		.executeTakeFirst();

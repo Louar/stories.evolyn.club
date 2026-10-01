@@ -17,6 +17,7 @@ const testDir = defineBddConfig({
 
 export default defineConfig({
 	testDir,
+	snapshotPathTemplate: 'e2e/snapshots/{projectName}/{platform}/{arg}{ext}',
 	outputDir: externalMedia ? 'test-results/media' : 'test-results/core',
 	fullyParallel: true,
 	workers: externalMedia ? 1 : 2,

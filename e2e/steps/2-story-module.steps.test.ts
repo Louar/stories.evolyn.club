@@ -13,6 +13,7 @@ import {
 	junction,
 	localUntil,
 	patchDemo,
+	plainItemName,
 	prepareReader,
 	rescued,
 	storyCard,
@@ -22,6 +23,7 @@ import {
 
 const taxonomyDraftResponseKey = 'taxonomy draft response';
 const taxonomyDraftExpectedItemKey = 'taxonomy draft expected item';
+const expeditionBrowserErrorsKey = 'expedition browser errors';
 
 Given('an editor is authenticated for story authoring', async ({ world }) => {
 	const editor = await world.actor('Editor Alpha');
@@ -37,6 +39,14 @@ Given('I am an anonymous reader using English', async ({ page, world }) => {
 });
 
 Given('I open the standalone {string} story', async ({ page, world }, name: string) => {
+	if (name === 'World Food Expedition') {
+		const errors: string[] = [];
+		world.entities.set(expeditionBrowserErrorsKey, errors);
+		page.on('pageerror', (error) => errors.push(error.message));
+		page.on('console', (message) => {
+			if (message.type() === 'error') errors.push(message.text());
+		});
+	}
 	const response = await page.goto(`/s/${demoStory(world, name).slug}`);
 	expect(response?.status()).toBe(200);
 	await expect(page).toHaveTitle(name);
@@ -150,6 +160,8 @@ Then(
 	'the standalone player reports successful completion and offers a restart',
 	async ({ page, world }) => {
 		await assertCompletion(page, world, true);
+		const browserErrors = world.entities.get(expeditionBrowserErrorsKey);
+		if (browserErrors) expect(browserErrors, 'Expedition browser runtime errors').toEqual([]);
 	}
 );
 
@@ -242,7 +254,9 @@ When('I choose an incorrect map region in the first location round', async ({ pa
 	const target = await game.getByRole('heading', { level: 1 }).innerText();
 	storyState(world).firstCountry = target;
 	const answers = await taxonomyAnswers(world);
-	const correct = answers.find((answer) => answer.slug === 'name' && answer.item === target);
+	const correct = answers.find(
+		(answer) => answer.slug === 'name' && answer.item === plainItemName(target)
+	);
 	expect(correct, `Imported map answer for ${target}`).toBeDefined();
 	const region = game
 		.locator(
@@ -250,6 +264,8 @@ When('I choose an incorrect map region in the first location round', async ({ pa
 		)
 		.first();
 	await expect(region).toHaveAttribute('aria-label', /^Region \d+$/);
+	await expect(region).toHaveAttribute('d', /^M/);
+	await expect(region).not.toHaveAttribute('d', /NaN|Infinity/);
 	await expect(region).not.toHaveAttribute('aria-label', target);
 	await region.focus();
 	await region.press('Enter');

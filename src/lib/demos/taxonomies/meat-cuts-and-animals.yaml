@@ -1,0 +1,2242 @@
+slug: meat-cuts-and-animals
+name:
+  en: Meat cuts and animals
+  nl: Vleesdelen en dieren
+description:
+  en: Types of meat matched to their source animal or to the correct butcher-chart region.
+  nl: Vleessoorten gekoppeld aan het brondier of aan het juiste gebied op een slagerskaart.
+categories:
+- id: animals-map
+  name:
+    en: Animals
+    nl: Dieren
+  image: null
+  description:
+    en: Illustrated cattle, chicken, pig and lamb for the animal-identification round.
+    nl: Geïllustreerde runderen, kip, varken en lam voor de ronde waarin je het dier kiest.
+  map:
+    version: 2
+    source:
+      collection: externals
+      filename: /taxonomy-maps/meat-cuts-and-animals.101feb4f.json
+    scene: animals
+    showLabels: true
+    minTargetDiameter: 24
+- id: cuts-map
+  name:
+    en: Butcher chart
+    nl: Slagerskaart
+  image: null
+  description:
+    en: Educational schematic with 44 selectable regions, not a precise butchery guide.
+    nl: Educatief schema met 44 selecteerbare gebieden, geen nauwkeurige slagershandleiding.
+  map:
+    version: 2
+    source:
+      collection: externals
+      filename: /taxonomy-maps/meat-cuts-and-animals.101feb4f.json
+    scene: cuts
+    showLabels: false
+    minTargetDiameter: 24
+- id: meat-types
+  name:
+    en: Types of meat
+    nl: Soorten vlees
+  image: null
+  description:
+    en: Meat products to match to an animal or to a precise butcher-chart region.
+    nl: Vleessoorten die je koppelt aan een dier of aan een precies vleesdeel op de slagerskaart.
+  map: null
+attributes:
+- id: animal-name
+  slug: animalName
+  name:
+    en: Animal
+    nl: Dier
+  image: null
+  description:
+    en: Animal displayed in the easy map
+    nl: Dier op de eenvoudige kaart
+  question: null
+  type: translatable
+  referencedCategoryId: null
+  schema: null
+- id: cut-name
+  slug: cutName
+  name:
+    en: Cut
+    nl: Vleesdeel
+  image: null
+  description:
+    en: Butcher-chart region name
+    nl: Naam van het vleesdeel op de slagerskaart
+  question: null
+  type: translatable
+  referencedCategoryId: null
+  schema: null
+- id: map-shape
+  slug: shape
+  name:
+    en: Shape
+    nl: Vorm
+  image: null
+  description:
+    en: Stable region reference in a map asset
+    nl: Stabiele verwijzing naar een gebied in een kaartbestand
+  question: null
+  type: custom
+  referencedCategoryId: null
+  schema:
+    oneOf:
+    - type: object
+      required:
+      - ref
+      properties:
+        ref:
+          type: string
+          minLength: 1
+      additionalProperties: false
+    - type: object
+      required:
+      - geometry
+      properties:
+        geometry:
+          type: object
+          required:
+          - type
+          - coordinates
+          properties:
+            type:
+              enum:
+              - Polygon
+              - MultiPolygon
+            coordinates: {}
+      additionalProperties: false
+- id: map-center
+  slug: center
+  name:
+    en: Center
+    nl: Middelpunt
+  image: null
+  description:
+    en: Center point used for a mapped item
+    nl: Middelpunt voor een kaartitem
+  question: null
+  type: custom
+  referencedCategoryId: null
+  schema:
+    type: array
+    minItems: 2
+    maxItems: 2
+    items:
+      type: number
+- id: map-color
+  slug: color
+  name:
+    en: Color
+    nl: Kleur
+  image: null
+  description:
+    en: Fill color used for a mapped item
+    nl: Vulkleur voor een kaartitem
+  question: null
+  type: custom
+  referencedCategoryId: null
+  schema:
+    type: string
+    minLength: 1
+- id: map-icons
+  slug: icons
+  name:
+    en: Icons
+    nl: Iconen
+  image: null
+  description:
+    en: Decorative icons displayed on a mapped item
+    nl: Decoratieve iconen op een kaartitem
+  question: null
+  type: custom
+  referencedCategoryId: null
+  schema:
+    type: array
+    items:
+      type: string
+    maxItems: 12
+- id: meat-name
+  slug: meatName
+  name:
+    en: Meat type
+    nl: Vleessoort
+  image: null
+  description:
+    en: Displayed meat type in the game
+    nl: Getoonde vleessoort in het spel
+  question: null
+  type: translatable
+  referencedCategoryId: null
+  schema: null
+- id: meat-icon
+  slug: meatIcon
+  name:
+    en: Icon
+    nl: Icoon
+  image: null
+  description:
+    en: Visual cue for the meat type
+    nl: Visuele hint voor de vleessoort
+  question: null
+  type: translatable
+  referencedCategoryId: null
+  schema: null
+- id: source-animal
+  slug: sourceAnimal
+  name:
+    en: Source animal
+    nl: Brondier
+  image: null
+  description:
+    en: Animal the meat comes from
+    nl: Dier waar het vlees vandaan komt
+  question:
+    en: Which animal does this meat come from?
+    nl: Van welk dier komt dit vlees?
+  type: item_reference
+  referencedCategoryId: animals-map
+  schema: null
+- id: source-cut
+  slug: sourceCut
+  name:
+    en: Source cut
+    nl: Brondeel
+  image: null
+  description:
+    en: Part of the animal the meat comes from
+    nl: Deel van het dier waar het vlees vandaan komt
+  question:
+    en: Click the correct part on the correct animal.
+    nl: Klik op het juiste deel van het juiste dier.
+  type: item_reference
+  referencedCategoryId: cuts-map
+  schema: null
+attributeOfCategories:
+- categoryId: animals-map
+  attributeId: animal-name
+  order: 0
+  isRequired: true
+  isDefault: true
+- categoryId: animals-map
+  attributeId: map-shape
+  order: 1
+  isRequired: true
+  isDefault: false
+- categoryId: animals-map
+  attributeId: map-center
+  order: 2
+  isRequired: false
+  isDefault: false
+- categoryId: animals-map
+  attributeId: map-color
+  order: 3
+  isRequired: false
+  isDefault: false
+- categoryId: animals-map
+  attributeId: map-icons
+  order: 4
+  isRequired: false
+  isDefault: false
+- categoryId: cuts-map
+  attributeId: cut-name
+  order: 0
+  isRequired: true
+  isDefault: true
+- categoryId: cuts-map
+  attributeId: map-shape
+  order: 1
+  isRequired: true
+  isDefault: false
+- categoryId: cuts-map
+  attributeId: map-center
+  order: 2
+  isRequired: false
+  isDefault: false
+- categoryId: cuts-map
+  attributeId: map-color
+  order: 3
+  isRequired: false
+  isDefault: false
+- categoryId: cuts-map
+  attributeId: map-icons
+  order: 4
+  isRequired: false
+  isDefault: false
+- categoryId: meat-types
+  attributeId: meat-name
+  order: 0
+  isRequired: true
+  isDefault: true
+- categoryId: meat-types
+  attributeId: meat-icon
+  order: 1
+  isRequired: true
+  isDefault: false
+- categoryId: meat-types
+  attributeId: source-animal
+  order: 2
+  isRequired: true
+  isDefault: false
+- categoryId: meat-types
+  attributeId: source-cut
+  order: 3
+  isRequired: true
+  isDefault: false
+items:
+- id: animal-beef-cattle
+- id: animal-chicken
+- id: animal-pig
+- id: animal-lamb
+- id: cut-beef-round
+- id: cut-beef-rump
+- id: cut-beef-top-sirloin
+- id: cut-beef-tenderloin
+- id: cut-beef-bottom-sirloin
+- id: cut-beef-short-loin
+- id: cut-beef-ribeye
+- id: cut-beef-chuck
+- id: cut-beef-neck
+- id: cut-beef-flank
+- id: cut-beef-plate
+- id: cut-beef-short-ribs
+- id: cut-beef-brisket
+- id: cut-beef-hind-shank
+- id: cut-beef-front-shank
+- id: cut-chicken-neck
+- id: cut-chicken-back
+- id: cut-chicken-breast
+- id: cut-chicken-wing
+- id: cut-chicken-thigh
+- id: cut-chicken-leg
+- id: cut-chicken-tail
+- id: cut-pig-ham
+- id: cut-pig-back-fat
+- id: cut-pig-loin
+- id: cut-pig-clear-plate
+- id: cut-pig-butt
+- id: cut-pig-spare-ribs
+- id: cut-pig-bacon
+- id: cut-pig-shoulder
+- id: cut-pig-picnic
+- id: cut-pig-jowl
+- id: cut-pig-hind-hock
+- id: cut-pig-front-hock
+- id: cut-lamb-neck
+- id: cut-lamb-shoulder
+- id: cut-lamb-rack
+- id: cut-lamb-loin
+- id: cut-lamb-tenderloin
+- id: cut-lamb-leg
+- id: cut-lamb-breast
+- id: cut-lamb-flank
+- id: cut-lamb-fore-shank
+- id: cut-lamb-hind-shank
+- id: meat-ribeye
+- id: meat-tenderloin
+- id: meat-brisket
+- id: meat-burger
+- id: meat-chicken-breast
+- id: meat-chicken-wings
+- id: meat-chicken-drumsticks
+- id: meat-bacon
+- id: meat-ham
+- id: meat-pork-chop
+- id: meat-pulled-pork
+- id: meat-lamb-chops
+- id: meat-leg-of-lamb
+- id: meat-lamb-shoulder-roast
+itemOfCategories:
+- itemId: animal-beef-cattle
+  categoryId: animals-map
+- itemId: animal-chicken
+  categoryId: animals-map
+- itemId: animal-pig
+  categoryId: animals-map
+- itemId: animal-lamb
+  categoryId: animals-map
+- itemId: cut-beef-round
+  categoryId: cuts-map
+- itemId: cut-beef-rump
+  categoryId: cuts-map
+- itemId: cut-beef-top-sirloin
+  categoryId: cuts-map
+- itemId: cut-beef-tenderloin
+  categoryId: cuts-map
+- itemId: cut-beef-bottom-sirloin
+  categoryId: cuts-map
+- itemId: cut-beef-short-loin
+  categoryId: cuts-map
+- itemId: cut-beef-ribeye
+  categoryId: cuts-map
+- itemId: cut-beef-chuck
+  categoryId: cuts-map
+- itemId: cut-beef-neck
+  categoryId: cuts-map
+- itemId: cut-beef-flank
+  categoryId: cuts-map
+- itemId: cut-beef-plate
+  categoryId: cuts-map
+- itemId: cut-beef-short-ribs
+  categoryId: cuts-map
+- itemId: cut-beef-brisket
+  categoryId: cuts-map
+- itemId: cut-beef-hind-shank
+  categoryId: cuts-map
+- itemId: cut-beef-front-shank
+  categoryId: cuts-map
+- itemId: cut-chicken-neck
+  categoryId: cuts-map
+- itemId: cut-chicken-back
+  categoryId: cuts-map
+- itemId: cut-chicken-breast
+  categoryId: cuts-map
+- itemId: cut-chicken-wing
+  categoryId: cuts-map
+- itemId: cut-chicken-thigh
+  categoryId: cuts-map
+- itemId: cut-chicken-leg
+  categoryId: cuts-map
+- itemId: cut-chicken-tail
+  categoryId: cuts-map
+- itemId: cut-pig-ham
+  categoryId: cuts-map
+- itemId: cut-pig-back-fat
+  categoryId: cuts-map
+- itemId: cut-pig-loin
+  categoryId: cuts-map
+- itemId: cut-pig-clear-plate
+  categoryId: cuts-map
+- itemId: cut-pig-butt
+  categoryId: cuts-map
+- itemId: cut-pig-spare-ribs
+  categoryId: cuts-map
+- itemId: cut-pig-bacon
+  categoryId: cuts-map
+- itemId: cut-pig-shoulder
+  categoryId: cuts-map
+- itemId: cut-pig-picnic
+  categoryId: cuts-map
+- itemId: cut-pig-jowl
+  categoryId: cuts-map
+- itemId: cut-pig-hind-hock
+  categoryId: cuts-map
+- itemId: cut-pig-front-hock
+  categoryId: cuts-map
+- itemId: cut-lamb-neck
+  categoryId: cuts-map
+- itemId: cut-lamb-shoulder
+  categoryId: cuts-map
+- itemId: cut-lamb-rack
+  categoryId: cuts-map
+- itemId: cut-lamb-loin
+  categoryId: cuts-map
+- itemId: cut-lamb-tenderloin
+  categoryId: cuts-map
+- itemId: cut-lamb-leg
+  categoryId: cuts-map
+- itemId: cut-lamb-breast
+  categoryId: cuts-map
+- itemId: cut-lamb-flank
+  categoryId: cuts-map
+- itemId: cut-lamb-fore-shank
+  categoryId: cuts-map
+- itemId: cut-lamb-hind-shank
+  categoryId: cuts-map
+- itemId: meat-ribeye
+  categoryId: meat-types
+- itemId: meat-tenderloin
+  categoryId: meat-types
+- itemId: meat-brisket
+  categoryId: meat-types
+- itemId: meat-burger
+  categoryId: meat-types
+- itemId: meat-chicken-breast
+  categoryId: meat-types
+- itemId: meat-chicken-wings
+  categoryId: meat-types
+- itemId: meat-chicken-drumsticks
+  categoryId: meat-types
+- itemId: meat-bacon
+  categoryId: meat-types
+- itemId: meat-ham
+  categoryId: meat-types
+- itemId: meat-pork-chop
+  categoryId: meat-types
+- itemId: meat-pulled-pork
+  categoryId: meat-types
+- itemId: meat-lamb-chops
+  categoryId: meat-types
+- itemId: meat-leg-of-lamb
+  categoryId: meat-types
+- itemId: meat-lamb-shoulder-roast
+  categoryId: meat-types
+attributeOfItems:
+- itemId: animal-beef-cattle
+  attributeId: animal-name
+  value:
+    en: Beef cattle
+    nl: Rund
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-chicken
+  attributeId: animal-name
+  value:
+    en: Chicken
+    nl: Kip
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-pig
+  attributeId: animal-name
+  value:
+    en: Pig
+    nl: Varken
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-lamb
+  attributeId: animal-name
+  value:
+    en: Lamb
+    nl: Lam
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-ribeye
+  attributeId: meat-name
+  value:
+    en: Ribeye steak
+    nl: Ribeye
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-ribeye
+  attributeId: meat-icon
+  value:
+    default: 🥩
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-ribeye
+  attributeId: source-animal
+  value: null
+  referencedItemId: animal-beef-cattle
+  difficulty: null
+- itemId: meat-ribeye
+  attributeId: source-cut
+  value: null
+  referencedItemId: cut-beef-ribeye
+  difficulty: null
+- itemId: meat-tenderloin
+  attributeId: meat-name
+  value:
+    en: Beef tenderloin
+    nl: Ossenhaas
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-tenderloin
+  attributeId: meat-icon
+  value:
+    default: 🥩
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-tenderloin
+  attributeId: source-animal
+  value: null
+  referencedItemId: animal-beef-cattle
+  difficulty: null
+- itemId: meat-tenderloin
+  attributeId: source-cut
+  value: null
+  referencedItemId: cut-beef-tenderloin
+  difficulty: null
+- itemId: meat-brisket
+  attributeId: meat-name
+  value:
+    en: Brisket
+    nl: Brisket
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-brisket
+  attributeId: meat-icon
+  value:
+    default: 🥩
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-brisket
+  attributeId: source-animal
+  value: null
+  referencedItemId: animal-beef-cattle
+  difficulty: null
+- itemId: meat-brisket
+  attributeId: source-cut
+  value: null
+  referencedItemId: cut-beef-brisket
+  difficulty: null
+- itemId: meat-burger
+  attributeId: meat-name
+  value:
+    en: Ground beef for a burger
+    nl: Rundergehakt voor een burger
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-burger
+  attributeId: meat-icon
+  value:
+    default: 🍔
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-burger
+  attributeId: source-animal
+  value: null
+  referencedItemId: animal-beef-cattle
+  difficulty: null
+- itemId: meat-burger
+  attributeId: source-cut
+  value: null
+  referencedItemId: cut-beef-chuck
+  difficulty: null
+- itemId: meat-chicken-breast
+  attributeId: meat-name
+  value:
+    en: Chicken breast
+    nl: Kippenborst
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-chicken-breast
+  attributeId: meat-icon
+  value:
+    default: 🍗
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-chicken-breast
+  attributeId: source-animal
+  value: null
+  referencedItemId: animal-chicken
+  difficulty: null
+- itemId: meat-chicken-breast
+  attributeId: source-cut
+  value: null
+  referencedItemId: cut-chicken-breast
+  difficulty: null
+- itemId: meat-chicken-wings
+  attributeId: meat-name
+  value:
+    en: Chicken wings
+    nl: Kippenvleugels
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-chicken-wings
+  attributeId: meat-icon
+  value:
+    default: 🍗
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-chicken-wings
+  attributeId: source-animal
+  value: null
+  referencedItemId: animal-chicken
+  difficulty: null
+- itemId: meat-chicken-wings
+  attributeId: source-cut
+  value: null
+  referencedItemId: cut-chicken-wing
+  difficulty: null
+- itemId: meat-chicken-drumsticks
+  attributeId: meat-name
+  value:
+    en: Chicken drumsticks
+    nl: Kippenpoten
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-chicken-drumsticks
+  attributeId: meat-icon
+  value:
+    default: 🍗
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-chicken-drumsticks
+  attributeId: source-animal
+  value: null
+  referencedItemId: animal-chicken
+  difficulty: null
+- itemId: meat-chicken-drumsticks
+  attributeId: source-cut
+  value: null
+  referencedItemId: cut-chicken-leg
+  difficulty: null
+- itemId: meat-bacon
+  attributeId: meat-name
+  value:
+    en: Bacon
+    nl: Bacon
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-bacon
+  attributeId: meat-icon
+  value:
+    default: 🥓
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-bacon
+  attributeId: source-animal
+  value: null
+  referencedItemId: animal-pig
+  difficulty: null
+- itemId: meat-bacon
+  attributeId: source-cut
+  value: null
+  referencedItemId: cut-pig-bacon
+  difficulty: null
+- itemId: meat-ham
+  attributeId: meat-name
+  value:
+    en: Ham
+    nl: Ham
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-ham
+  attributeId: meat-icon
+  value:
+    default: 🥓
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-ham
+  attributeId: source-animal
+  value: null
+  referencedItemId: animal-pig
+  difficulty: null
+- itemId: meat-ham
+  attributeId: source-cut
+  value: null
+  referencedItemId: cut-pig-ham
+  difficulty: null
+- itemId: meat-pork-chop
+  attributeId: meat-name
+  value:
+    en: Pork chop
+    nl: Varkenskotelet
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-pork-chop
+  attributeId: meat-icon
+  value:
+    default: 🥓
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-pork-chop
+  attributeId: source-animal
+  value: null
+  referencedItemId: animal-pig
+  difficulty: null
+- itemId: meat-pork-chop
+  attributeId: source-cut
+  value: null
+  referencedItemId: cut-pig-loin
+  difficulty: null
+- itemId: meat-pulled-pork
+  attributeId: meat-name
+  value:
+    en: Pulled pork
+    nl: Pulled pork
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-pulled-pork
+  attributeId: meat-icon
+  value:
+    default: 🥓
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-pulled-pork
+  attributeId: source-animal
+  value: null
+  referencedItemId: animal-pig
+  difficulty: null
+- itemId: meat-pulled-pork
+  attributeId: source-cut
+  value: null
+  referencedItemId: cut-pig-shoulder
+  difficulty: null
+- itemId: meat-lamb-chops
+  attributeId: meat-name
+  value:
+    en: Lamb chops
+    nl: Lamskoteletten
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-lamb-chops
+  attributeId: meat-icon
+  value:
+    default: 🍖
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-lamb-chops
+  attributeId: source-animal
+  value: null
+  referencedItemId: animal-lamb
+  difficulty: null
+- itemId: meat-lamb-chops
+  attributeId: source-cut
+  value: null
+  referencedItemId: cut-lamb-rack
+  difficulty: null
+- itemId: meat-leg-of-lamb
+  attributeId: meat-name
+  value:
+    en: Leg of lamb
+    nl: Lamsbout
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-leg-of-lamb
+  attributeId: meat-icon
+  value:
+    default: 🍖
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-leg-of-lamb
+  attributeId: source-animal
+  value: null
+  referencedItemId: animal-lamb
+  difficulty: null
+- itemId: meat-leg-of-lamb
+  attributeId: source-cut
+  value: null
+  referencedItemId: cut-lamb-leg
+  difficulty: null
+- itemId: meat-lamb-shoulder-roast
+  attributeId: meat-name
+  value:
+    en: Lamb shoulder roast
+    nl: Gebraden lamsschouder
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-lamb-shoulder-roast
+  attributeId: meat-icon
+  value:
+    default: 🍖
+  referencedItemId: null
+  difficulty: null
+- itemId: meat-lamb-shoulder-roast
+  attributeId: source-animal
+  value: null
+  referencedItemId: animal-lamb
+  difficulty: null
+- itemId: meat-lamb-shoulder-roast
+  attributeId: source-cut
+  value: null
+  referencedItemId: cut-lamb-shoulder
+  difficulty: null
+- itemId: animal-beef-cattle
+  attributeId: map-shape
+  value:
+    ref: animal.beef-cattle
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-beef-cattle
+  attributeId: map-center
+  value:
+  - 156.8
+  - 478.96
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-beef-cattle
+  attributeId: map-color
+  value: '#c27b63'
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-beef-cattle
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-chicken
+  attributeId: map-shape
+  value:
+    ref: animal.chicken
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-chicken
+  attributeId: map-center
+  value:
+  - 546.75
+  - 500
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-chicken
+  attributeId: map-color
+  value: '#d7ad5f'
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-chicken
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-pig
+  attributeId: map-shape
+  value:
+    ref: animal.pig
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-pig
+  attributeId: map-center
+  value:
+  - 150
+  - 743.6
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-pig
+  attributeId: map-color
+  value: '#d4868e'
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-pig
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-lamb
+  attributeId: map-shape
+  value:
+    ref: animal.lamb
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-lamb
+  attributeId: map-center
+  value:
+  - 532
+  - 747.5
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-lamb
+  attributeId: map-color
+  value: '#a97d9a'
+  referencedItemId: null
+  difficulty: null
+- itemId: animal-lamb
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-round
+  attributeId: cut-name
+  value:
+    en: Round
+    nl: Bovenbil / round
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-round
+  attributeId: map-shape
+  value:
+    ref: beef.round
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-round
+  attributeId: map-center
+  value:
+  - 168
+  - 300
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-round
+  attributeId: map-color
+  value: '#c99179'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-round
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-rump
+  attributeId: cut-name
+  value:
+    en: Rump
+    nl: Staartstuk
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-rump
+  attributeId: map-shape
+  value:
+    ref: beef.rump
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-rump
+  attributeId: map-center
+  value:
+  - 224
+  - 272
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-rump
+  attributeId: map-color
+  value: '#c48770'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-rump
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-top-sirloin
+  attributeId: cut-name
+  value:
+    en: Top sirloin
+    nl: Bovenlende
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-top-sirloin
+  attributeId: map-shape
+  value:
+    ref: beef.top-sirloin
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-top-sirloin
+  attributeId: map-center
+  value:
+  - 267
+  - 271
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-top-sirloin
+  attributeId: map-color
+  value: '#bd7c67'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-top-sirloin
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-tenderloin
+  attributeId: cut-name
+  value:
+    en: Tenderloin
+    nl: Ossenhaas
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-tenderloin
+  attributeId: map-shape
+  value:
+    ref: beef.tenderloin
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-tenderloin
+  attributeId: map-center
+  value:
+  - 257
+  - 301
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-tenderloin
+  attributeId: map-color
+  value: '#ca927e'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-tenderloin
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-bottom-sirloin
+  attributeId: cut-name
+  value:
+    en: Bottom sirloin
+    nl: Onderlende
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-bottom-sirloin
+  attributeId: map-shape
+  value:
+    ref: beef.bottom-sirloin
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-bottom-sirloin
+  attributeId: map-center
+  value:
+  - 219
+  - 328
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-bottom-sirloin
+  attributeId: map-color
+  value: '#b96e5a'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-bottom-sirloin
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-short-loin
+  attributeId: cut-name
+  value:
+    en: Short loin
+    nl: Korte lende
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-short-loin
+  attributeId: map-shape
+  value:
+    ref: beef.short-loin
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-short-loin
+  attributeId: map-center
+  value:
+  - 317
+  - 282
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-short-loin
+  attributeId: map-color
+  value: '#d09b86'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-short-loin
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-ribeye
+  attributeId: cut-name
+  value:
+    en: Rib / ribeye
+    nl: Rib / ribeye
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-ribeye
+  attributeId: map-shape
+  value:
+    ref: beef.ribeye
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-ribeye
+  attributeId: map-center
+  value:
+  - 372
+  - 291
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-ribeye
+  attributeId: map-color
+  value: '#c5826d'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-ribeye
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-chuck
+  attributeId: cut-name
+  value:
+    en: Chuck / shoulder
+    nl: Runderschouder / nek
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-chuck
+  attributeId: map-shape
+  value:
+    ref: beef.chuck
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-chuck
+  attributeId: map-center
+  value:
+  - 435
+  - 301
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-chuck
+  attributeId: map-color
+  value: '#c99179'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-chuck
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-neck
+  attributeId: cut-name
+  value:
+    en: Neck
+    nl: Nek
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-neck
+  attributeId: map-shape
+  value:
+    ref: beef.neck
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-neck
+  attributeId: map-center
+  value:
+  - 482
+  - 295
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-neck
+  attributeId: map-color
+  value: '#c48770'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-neck
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-flank
+  attributeId: cut-name
+  value:
+    en: Flank
+    nl: Flank
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-flank
+  attributeId: map-shape
+  value:
+    ref: beef.flank
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-flank
+  attributeId: map-center
+  value:
+  - 214
+  - 360
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-flank
+  attributeId: map-color
+  value: '#bd7c67'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-flank
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-plate
+  attributeId: cut-name
+  value:
+    en: Plate
+    nl: Plate / buik
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-plate
+  attributeId: map-shape
+  value:
+    ref: beef.plate
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-plate
+  attributeId: map-center
+  value:
+  - 294
+  - 348
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-plate
+  attributeId: map-color
+  value: '#ca927e'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-plate
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-short-ribs
+  attributeId: cut-name
+  value:
+    en: Short ribs
+    nl: Korte ribben
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-short-ribs
+  attributeId: map-shape
+  value:
+    ref: beef.short-ribs
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-short-ribs
+  attributeId: map-center
+  value:
+  - 373
+  - 350
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-short-ribs
+  attributeId: map-color
+  value: '#b96e5a'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-short-ribs
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-brisket
+  attributeId: cut-name
+  value:
+    en: Brisket
+    nl: Brisket
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-brisket
+  attributeId: map-shape
+  value:
+    ref: beef.brisket
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-brisket
+  attributeId: map-center
+  value:
+  - 439
+  - 351
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-brisket
+  attributeId: map-color
+  value: '#d09b86'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-brisket
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-hind-shank
+  attributeId: cut-name
+  value:
+    en: Hind shank
+    nl: Achterschenkel
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-hind-shank
+  attributeId: map-shape
+  value:
+    ref: beef.hind-shank
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-hind-shank
+  attributeId: map-center
+  value:
+  - 198
+  - 411
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-hind-shank
+  attributeId: map-color
+  value: '#c5826d'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-hind-shank
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-front-shank
+  attributeId: cut-name
+  value:
+    en: Front shank
+    nl: Voorschenkel
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-front-shank
+  attributeId: map-shape
+  value:
+    ref: beef.front-shank
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-front-shank
+  attributeId: map-center
+  value:
+  - 462
+  - 405
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-front-shank
+  attributeId: map-color
+  value: '#c99179'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-beef-front-shank
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-neck
+  attributeId: cut-name
+  value:
+    en: Neck
+    nl: Nek
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-neck
+  attributeId: map-shape
+  value:
+    ref: chicken.neck
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-neck
+  attributeId: map-center
+  value:
+  - 729
+  - 292
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-neck
+  attributeId: map-color
+  value: '#d6b169'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-neck
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-back
+  attributeId: cut-name
+  value:
+    en: Back
+    nl: Rug
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-back
+  attributeId: map-shape
+  value:
+    ref: chicken.back
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-back
+  attributeId: map-center
+  value:
+  - 781
+  - 300
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-back
+  attributeId: map-color
+  value: '#cfa65d'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-back
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-breast
+  attributeId: cut-name
+  value:
+    en: Breast
+    nl: Kippenborst
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-breast
+  attributeId: map-shape
+  value:
+    ref: chicken.breast
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-breast
+  attributeId: map-center
+  value:
+  - 736
+  - 345
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-breast
+  attributeId: map-color
+  value: '#e0bd77'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-breast
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-wing
+  attributeId: cut-name
+  value:
+    en: Wing
+    nl: Vleugel
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-wing
+  attributeId: map-shape
+  value:
+    ref: chicken.wing
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-wing
+  attributeId: map-center
+  value:
+  - 802
+  - 332
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-wing
+  attributeId: map-color
+  value: '#c99447'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-wing
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-thigh
+  attributeId: cut-name
+  value:
+    en: Thigh
+    nl: Dij
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-thigh
+  attributeId: map-shape
+  value:
+    ref: chicken.thigh
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-thigh
+  attributeId: map-center
+  value:
+  - 816
+  - 375
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-thigh
+  attributeId: map-color
+  value: '#d4aa62'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-thigh
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-leg
+  attributeId: cut-name
+  value:
+    en: Drumstick / leg
+    nl: Poot / drumstick
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-leg
+  attributeId: map-shape
+  value:
+    ref: chicken.leg
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-leg
+  attributeId: map-center
+  value:
+  - 795
+  - 405
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-leg
+  attributeId: map-color
+  value: '#e5c783'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-leg
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-tail
+  attributeId: cut-name
+  value:
+    en: Tail
+    nl: Staart
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-tail
+  attributeId: map-shape
+  value:
+    ref: chicken.tail
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-tail
+  attributeId: map-center
+  value:
+  - 887
+  - 309
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-tail
+  attributeId: map-color
+  value: '#d6b169'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-chicken-tail
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-ham
+  attributeId: cut-name
+  value:
+    en: Ham / leg
+    nl: Ham / achterbout
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-ham
+  attributeId: map-shape
+  value:
+    ref: pork.ham
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-ham
+  attributeId: map-center
+  value:
+  - 173
+  - 624
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-ham
+  attributeId: map-color
+  value: '#d89197'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-ham
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-back-fat
+  attributeId: cut-name
+  value:
+    en: Back fat
+    nl: Rugvet
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-back-fat
+  attributeId: map-shape
+  value:
+    ref: pork.back-fat
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-back-fat
+  attributeId: map-center
+  value:
+  - 277
+  - 572
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-back-fat
+  attributeId: map-color
+  value: '#cf7f87'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-back-fat
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-loin
+  attributeId: cut-name
+  value:
+    en: Loin
+    nl: Varkenslende
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-loin
+  attributeId: map-shape
+  value:
+    ref: pork.loin
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-loin
+  attributeId: map-center
+  value:
+  - 284
+  - 598
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-loin
+  attributeId: map-color
+  value: '#db969c'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-loin
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-clear-plate
+  attributeId: cut-name
+  value:
+    en: Clear plate
+    nl: Schouderplaat
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-clear-plate
+  attributeId: map-shape
+  value:
+    ref: pork.clear-plate
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-clear-plate
+  attributeId: map-center
+  value:
+  - 389
+  - 581
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-clear-plate
+  attributeId: map-color
+  value: '#c66f7b'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-clear-plate
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-butt
+  attributeId: cut-name
+  value:
+    en: Boston butt
+    nl: Schouder / butt
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-butt
+  attributeId: map-shape
+  value:
+    ref: pork.butt
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-butt
+  attributeId: map-center
+  value:
+  - 436
+  - 606
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-butt
+  attributeId: map-color
+  value: '#df9fa4'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-butt
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-spare-ribs
+  attributeId: cut-name
+  value:
+    en: Spare ribs
+    nl: Spareribs
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-spare-ribs
+  attributeId: map-shape
+  value:
+    ref: pork.spare-ribs
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-spare-ribs
+  attributeId: map-center
+  value:
+  - 275
+  - 636
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-spare-ribs
+  attributeId: map-color
+  value: '#d4848d'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-spare-ribs
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-bacon
+  attributeId: cut-name
+  value:
+    en: Belly / bacon
+    nl: Buik / bacon
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-bacon
+  attributeId: map-shape
+  value:
+    ref: pork.bacon
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-bacon
+  attributeId: map-center
+  value:
+  - 305
+  - 674
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-bacon
+  attributeId: map-color
+  value: '#d89197'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-bacon
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-shoulder
+  attributeId: cut-name
+  value:
+    en: Shoulder
+    nl: Varkensschouder
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-shoulder
+  attributeId: map-shape
+  value:
+    ref: pork.shoulder
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-shoulder
+  attributeId: map-center
+  value:
+  - 378
+  - 624
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-shoulder
+  attributeId: map-color
+  value: '#cf7f87'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-shoulder
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-picnic
+  attributeId: cut-name
+  value:
+    en: Picnic ham
+    nl: Picnic ham
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-picnic
+  attributeId: map-shape
+  value:
+    ref: pork.picnic
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-picnic
+  attributeId: map-center
+  value:
+  - 436
+  - 656
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-picnic
+  attributeId: map-color
+  value: '#db969c'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-picnic
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-jowl
+  attributeId: cut-name
+  value:
+    en: Jowl
+    nl: Wang
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-jowl
+  attributeId: map-shape
+  value:
+    ref: pork.jowl
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-jowl
+  attributeId: map-center
+  value:
+  - 505
+  - 641
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-jowl
+  attributeId: map-color
+  value: '#c66f7b'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-jowl
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-hind-hock
+  attributeId: cut-name
+  value:
+    en: Hind hock
+    nl: Achterhock
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-hind-hock
+  attributeId: map-shape
+  value:
+    ref: pork.hind-hock
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-hind-hock
+  attributeId: map-center
+  value:
+  - 194
+  - 715
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-hind-hock
+  attributeId: map-color
+  value: '#df9fa4'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-hind-hock
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-front-hock
+  attributeId: cut-name
+  value:
+    en: Front hock
+    nl: Voorhock
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-front-hock
+  attributeId: map-shape
+  value:
+    ref: pork.front-hock
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-front-hock
+  attributeId: map-center
+  value:
+  - 440
+  - 712
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-front-hock
+  attributeId: map-color
+  value: '#d4848d'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-pig-front-hock
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-neck
+  attributeId: cut-name
+  value:
+    en: Neck
+    nl: Nek
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-neck
+  attributeId: map-shape
+  value:
+    ref: lamb.neck
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-neck
+  attributeId: map-center
+  value:
+  - 687
+  - 607
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-neck
+  attributeId: map-color
+  value: '#aa7f9c'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-neck
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-shoulder
+  attributeId: cut-name
+  value:
+    en: Shoulder
+    nl: Lamsschouder
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-shoulder
+  attributeId: map-shape
+  value:
+    ref: lamb.shoulder
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-shoulder
+  attributeId: map-center
+  value:
+  - 726
+  - 613
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-shoulder
+  attributeId: map-color
+  value: '#b48aa5'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-shoulder
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-rack
+  attributeId: cut-name
+  value:
+    en: Rack / ribs
+    nl: Lamsrack / rib
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-rack
+  attributeId: map-shape
+  value:
+    ref: lamb.rack
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-rack
+  attributeId: map-center
+  value:
+  - 773
+  - 591
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-rack
+  attributeId: map-color
+  value: '#bd96ae'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-rack
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-loin
+  attributeId: cut-name
+  value:
+    en: Loin
+    nl: Lamslende
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-loin
+  attributeId: map-shape
+  value:
+    ref: lamb.loin
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-loin
+  attributeId: map-center
+  value:
+  - 826
+  - 584
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-loin
+  attributeId: map-color
+  value: '#a97592'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-loin
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-tenderloin
+  attributeId: cut-name
+  value:
+    en: Tenderloin
+    nl: Lamsfilet
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-tenderloin
+  attributeId: map-shape
+  value:
+    ref: lamb.tenderloin
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-tenderloin
+  attributeId: map-center
+  value:
+  - 825
+  - 627
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-tenderloin
+  attributeId: map-color
+  value: '#c19db4'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-tenderloin
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-leg
+  attributeId: cut-name
+  value:
+    en: Leg
+    nl: Lamsbout
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-leg
+  attributeId: map-shape
+  value:
+    ref: lamb.leg
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-leg
+  attributeId: map-center
+  value:
+  - 879
+  - 618
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-leg
+  attributeId: map-color
+  value: '#b087a3'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-leg
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-breast
+  attributeId: cut-name
+  value:
+    en: Breast
+    nl: Lamsborst
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-breast
+  attributeId: map-shape
+  value:
+    ref: lamb.breast
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-breast
+  attributeId: map-center
+  value:
+  - 770
+  - 652
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-breast
+  attributeId: map-color
+  value: '#aa7f9c'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-breast
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-flank
+  attributeId: cut-name
+  value:
+    en: Flank
+    nl: Lamsflank
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-flank
+  attributeId: map-shape
+  value:
+    ref: lamb.flank
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-flank
+  attributeId: map-center
+  value:
+  - 830
+  - 659
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-flank
+  attributeId: map-color
+  value: '#b48aa5'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-flank
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-fore-shank
+  attributeId: cut-name
+  value:
+    en: Fore shank
+    nl: Voorschenkel
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-fore-shank
+  attributeId: map-shape
+  value:
+    ref: lamb.fore-shank
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-fore-shank
+  attributeId: map-center
+  value:
+  - 702
+  - 695
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-fore-shank
+  attributeId: map-color
+  value: '#bd96ae'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-fore-shank
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-hind-shank
+  attributeId: cut-name
+  value:
+    en: Hind shank
+    nl: Achterschenkel
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-hind-shank
+  attributeId: map-shape
+  value:
+    ref: lamb.hind-shank
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-hind-shank
+  attributeId: map-center
+  value:
+  - 876
+  - 702
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-hind-shank
+  attributeId: map-color
+  value: '#a97592'
+  referencedItemId: null
+  difficulty: null
+- itemId: cut-lamb-hind-shank
+  attributeId: map-icons
+  value: []
+  referencedItemId: null
+  difficulty: null

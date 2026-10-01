@@ -1,0 +1,1388 @@
+slug: meat-cuts-game
+name:
+  en: 'Match the meat: butcher chart'
+  nl: 'Koppel het vlees: slagerskaart'
+defaultBackgroundColor: '#f6efe4'
+thumbnail: null
+isPublished: true
+isPublic: true
+videos: []
+animations:
+- id: meat-cuts-intro
+  name: Butcher chart intro
+  texts:
+    title:
+      en: MEAT CUTTING
+      nl: VLEESDELEN
+    subtitle:
+      en: Match each meat to the right animal — or the right cut.
+      nl: Koppel elk stuk vlees aan het juiste dier — of aan het juiste vleesdeel.
+    phaseEasy:
+      en: 'First round: choose the animal.'
+      nl: 'Eerste ronde: kies het dier.'
+    phaseHard:
+      en: 'Second round: click the correct cut.'
+      nl: 'Tweede ronde: klik op het juiste vleesdeel.'
+  configuration:
+    version: 1
+    composition:
+      viewBoxWidth: 720
+      viewBoxHeight: 1280
+      fps: 30
+      durationInFrames: 240
+      background: '#f6efe4'
+    playback:
+      autoplay: false
+      loop: false
+    motions:
+      fadeUp:
+        duration: 24
+        easing: easeOutCubic
+        animate:
+          opacity:
+          - 0
+          - 1
+          y:
+            values:
+            - 24
+            - 0
+            relative: true
+      fadeIn:
+        duration: 20
+        easing: easeOutCubic
+        animate:
+          opacity:
+          - 0
+          - 1
+    layers:
+    - type: rectangle
+      name: Paper background
+      props:
+        x: 360
+        y: 640
+        width: 720
+        height: 1280
+        fill: '#f6efe4'
+      from: 0
+      duration: 240
+    - type: text
+      name: Title
+      props:
+        x: 360
+        y: 84
+        text: ${title}
+        fontSize: 34
+        fontFamily: Georgia
+        fontWeight: 700
+        color: '#a7532d'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 0
+      duration: 240
+      motion: fadeUp
+    - type: line
+      name: Title line left
+      props:
+        x: 170
+        y: 86
+        x1: -50
+        y1: 0
+        x2: 50
+        y2: 0
+        stroke: '#a7532d'
+        lineWidth: 3
+        opacity: 0
+      from: 6
+      duration: 234
+      motion: fadeIn
+    - type: line
+      name: Title line right
+      props:
+        x: 550
+        y: 86
+        x1: -50
+        y1: 0
+        x2: 50
+        y2: 0
+        stroke: '#a7532d'
+        lineWidth: 3
+        opacity: 0
+      from: 6
+      duration: 234
+      motion: fadeIn
+    - type: polygon
+      name: Cow body
+      props:
+        x: 185
+        y: 350
+        points:
+        - - -150
+          - 30
+        - - -90
+          - -5
+        - - -20
+          - 0
+        - - 50
+          - -10
+        - - 130
+          - 0
+        - - 160
+          - 20
+        - - 165
+          - 55
+        - - 135
+          - 58
+        - - 125
+          - 120
+        - - 95
+          - 120
+        - - 92
+          - 60
+        - - -55
+          - 60
+        - - -65
+          - 120
+        - - -95
+          - 120
+        - - -95
+          - 58
+        - - -140
+          - 52
+        fill: rgba(0,0,0,0)
+        stroke: '#b55b33'
+        lineWidth: 4
+        opacity: 0
+      from: 14
+      duration: 226
+      motion: fadeIn
+    - type: line
+      name: Cow cut A dash 1
+      from: 26
+      duration: 214
+      motion: fadeIn
+      props:
+        x: 160
+        y: 350
+        x1: -70.0
+        y1: 0.0
+        x2: -70.0
+        y2: 10.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Cow cut A dash 2
+      from: 26
+      duration: 214
+      motion: fadeIn
+      props:
+        x: 160
+        y: 350
+        x1: -70.0
+        y1: 18.0
+        x2: -70.0
+        y2: 28.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Cow cut A dash 3
+      from: 26
+      duration: 214
+      motion: fadeIn
+      props:
+        x: 160
+        y: 350
+        x1: -70.0
+        y1: 36.0
+        x2: -70.0
+        y2: 46.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Cow cut A dash 4
+      from: 26
+      duration: 214
+      motion: fadeIn
+      props:
+        x: 160
+        y: 350
+        x1: -70.0
+        y1: 54.0
+        x2: -70.0
+        y2: 60.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Cow cut B dash 1
+      from: 28
+      duration: 212
+      motion: fadeIn
+      props:
+        x: 190
+        y: 350
+        x1: 0.0
+        y1: -4.0
+        x2: 0.0
+        y2: 6.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Cow cut B dash 2
+      from: 28
+      duration: 212
+      motion: fadeIn
+      props:
+        x: 190
+        y: 350
+        x1: 0.0
+        y1: 14.0
+        x2: 0.0
+        y2: 24.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Cow cut B dash 3
+      from: 28
+      duration: 212
+      motion: fadeIn
+      props:
+        x: 190
+        y: 350
+        x1: 0.0
+        y1: 32.0
+        x2: 0.0
+        y2: 42.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Cow cut B dash 4
+      from: 28
+      duration: 212
+      motion: fadeIn
+      props:
+        x: 190
+        y: 350
+        x1: 0.0
+        y1: 50.0
+        x2: 0.0
+        y2: 60.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Cow cut C dash 1
+      from: 30
+      duration: 210
+      motion: fadeIn
+      props:
+        x: 235
+        y: 350
+        x1: 44.0
+        y1: -2.0
+        x2: 44.0
+        y2: 8.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Cow cut C dash 2
+      from: 30
+      duration: 210
+      motion: fadeIn
+      props:
+        x: 235
+        y: 350
+        x1: 44.0
+        y1: 16.0
+        x2: 44.0
+        y2: 26.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Cow cut C dash 3
+      from: 30
+      duration: 210
+      motion: fadeIn
+      props:
+        x: 235
+        y: 350
+        x1: 44.0
+        y1: 34.0
+        x2: 44.0
+        y2: 44.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Cow cut C dash 4
+      from: 30
+      duration: 210
+      motion: fadeIn
+      props:
+        x: 235
+        y: 350
+        x1: 44.0
+        y1: 52.0
+        x2: 44.0
+        y2: 58.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: text
+      name: Cow label
+      props:
+        x: 90
+        y: 355
+        text: ROUND
+        fontSize: 22
+        fontFamily: Georgia
+        fontWeight: 500
+        color: '#b55b33'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 34
+      duration: 206
+      motion: fadeUp
+    - type: text
+      name: Cow label 2
+      props:
+        x: 205
+        y: 312
+        text: SIRLOIN
+        fontSize: 16
+        fontFamily: Georgia
+        fontWeight: 500
+        color: '#b55b33'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 36
+      duration: 204
+      motion: fadeUp
+    - type: text
+      name: Cow label 3
+      props:
+        x: 286
+        y: 330
+        text: CHUCK
+        fontSize: 18
+        fontFamily: Georgia
+        fontWeight: 500
+        color: '#b55b33'
+        align: center
+        baseline: middle
+        rotation: -90
+        opacity: 0
+      from: 38
+      duration: 202
+      motion: fadeUp
+    - type: polygon
+      name: Chicken body
+      props:
+        x: 540
+        y: 410
+        points:
+        - - -60
+          - 30
+        - - -25
+          - -25
+        - - 20
+          - -30
+        - - 60
+          - -5
+        - - 95
+          - 10
+        - - 105
+          - 45
+        - - 65
+          - 55
+        - - 45
+          - 110
+        - - 5
+          - 125
+        - - -30
+          - 120
+        - - -55
+          - 95
+        - - -70
+          - 50
+        fill: rgba(0,0,0,0)
+        stroke: '#b55b33'
+        lineWidth: 4
+        opacity: 0
+      from: 24
+      duration: 216
+      motion: fadeIn
+    - type: line
+      name: Chicken cut A dash 1
+      from: 40
+      duration: 200
+      motion: fadeIn
+      props:
+        x: 540
+        y: 410
+        x1: -10.0
+        y1: 10.0
+        x2: -1.5634
+        y2: 15.3688
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Chicken cut A dash 2
+      from: 40
+      duration: 200
+      motion: fadeIn
+      props:
+        x: 540
+        y: 410
+        x1: 5.1859
+        y1: 19.6638
+        x2: 13.6225
+        y2: 25.0325
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Chicken cut A dash 3
+      from: 40
+      duration: 200
+      motion: fadeIn
+      props:
+        x: 540
+        y: 410
+        x1: 20.3718
+        y1: 29.3275
+        x2: 28.8084
+        y2: 34.6963
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Chicken cut A dash 4
+      from: 40
+      duration: 200
+      motion: fadeIn
+      props:
+        x: 540
+        y: 410
+        x1: 35.5577
+        y1: 38.9913
+        x2: 43.9943
+        y2: 44.36
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Chicken cut B dash 1
+      from: 42
+      duration: 198
+      motion: fadeIn
+      props:
+        x: 540
+        y: 410
+        x1: -10.0
+        y1: 10.0
+        x2: -7.7096
+        y2: 19.7342
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Chicken cut B dash 2
+      from: 42
+      duration: 198
+      motion: fadeIn
+      props:
+        x: 540
+        y: 410
+        x1: -5.8773
+        y1: 27.5215
+        x2: -3.5869
+        y2: 37.2557
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Chicken cut B dash 3
+      from: 42
+      duration: 198
+      motion: fadeIn
+      props:
+        x: 540
+        y: 410
+        x1: -1.7546
+        y1: 45.043
+        x2: 0.5358
+        y2: 54.7772
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Chicken cut B dash 4
+      from: 42
+      duration: 198
+      motion: fadeIn
+      props:
+        x: 540
+        y: 410
+        x1: 2.3681
+        y1: 62.5645
+        x2: 4.6585
+        y2: 72.2987
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Chicken cut B dash 5
+      from: 42
+      duration: 198
+      motion: fadeIn
+      props:
+        x: 540
+        y: 410
+        x1: 6.4908
+        y1: 80.086
+        x2: 8.7812
+        y2: 89.8202
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: text
+      name: Chicken label 1
+      props:
+        x: 532
+        y: 432
+        text: BREAST
+        fontSize: 18
+        fontFamily: Georgia
+        fontWeight: 500
+        color: '#b55b33'
+        align: center
+        baseline: middle
+        rotation: 90
+        opacity: 0
+      from: 46
+      duration: 194
+      motion: fadeUp
+    - type: text
+      name: Chicken label 2
+      props:
+        x: 585
+        y: 415
+        text: WING
+        fontSize: 18
+        fontFamily: Georgia
+        fontWeight: 500
+        color: '#b55b33'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 48
+      duration: 192
+      motion: fadeUp
+    - type: polygon
+      name: Pig body
+      props:
+        x: 180
+        y: 835
+        points:
+        - - -130
+          - 10
+        - - -80
+          - -12
+        - - -20
+          - -10
+        - - 50
+          - -6
+        - - 115
+          - 5
+        - - 145
+          - 25
+        - - 145
+          - 60
+        - - 110
+          - 85
+        - - 30
+          - 92
+        - - -20
+          - 88
+        - - -42
+          - 150
+        - - -70
+          - 150
+        - - -70
+          - 90
+        - - -120
+          - 90
+        - - -122
+          - 150
+        - - -148
+          - 150
+        - - -148
+          - 92
+        - - -160
+          - 65
+        - - -165
+          - 35
+        fill: rgba(0,0,0,0)
+        stroke: '#b55b33'
+        lineWidth: 4
+        opacity: 0
+      from: 52
+      duration: 188
+      motion: fadeIn
+    - type: line
+      name: Pig cut A dash 1
+      from: 62
+      duration: 178
+      motion: fadeIn
+      props:
+        x: 180
+        y: 835
+        x1: -60.0
+        y1: 0.0
+        x2: -60.0
+        y2: 10.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Pig cut A dash 2
+      from: 62
+      duration: 178
+      motion: fadeIn
+      props:
+        x: 180
+        y: 835
+        x1: -60.0
+        y1: 18.0
+        x2: -60.0
+        y2: 28.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Pig cut A dash 3
+      from: 62
+      duration: 178
+      motion: fadeIn
+      props:
+        x: 180
+        y: 835
+        x1: -60.0
+        y1: 36.0
+        x2: -60.0
+        y2: 46.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Pig cut A dash 4
+      from: 62
+      duration: 178
+      motion: fadeIn
+      props:
+        x: 180
+        y: 835
+        x1: -60.0
+        y1: 54.0
+        x2: -60.0
+        y2: 64.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Pig cut A dash 5
+      from: 62
+      duration: 178
+      motion: fadeIn
+      props:
+        x: 180
+        y: 835
+        x1: -60.0
+        y1: 72.0
+        x2: -60.0
+        y2: 82.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Pig cut B dash 1
+      from: 64
+      duration: 176
+      motion: fadeIn
+      props:
+        x: 180
+        y: 835
+        x1: 20.0
+        y1: -2.0
+        x2: 20.0
+        y2: 8.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Pig cut B dash 2
+      from: 64
+      duration: 176
+      motion: fadeIn
+      props:
+        x: 180
+        y: 835
+        x1: 20.0
+        y1: 16.0
+        x2: 20.0
+        y2: 26.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Pig cut B dash 3
+      from: 64
+      duration: 176
+      motion: fadeIn
+      props:
+        x: 180
+        y: 835
+        x1: 20.0
+        y1: 34.0
+        x2: 20.0
+        y2: 44.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Pig cut B dash 4
+      from: 64
+      duration: 176
+      motion: fadeIn
+      props:
+        x: 180
+        y: 835
+        x1: 20.0
+        y1: 52.0
+        x2: 20.0
+        y2: 62.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Pig cut B dash 5
+      from: 64
+      duration: 176
+      motion: fadeIn
+      props:
+        x: 180
+        y: 835
+        x1: 20.0
+        y1: 70.0
+        x2: 20.0
+        y2: 80.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: text
+      name: Pig label 1
+      props:
+        x: 115
+        y: 840
+        text: HAM
+        fontSize: 22
+        fontFamily: Georgia
+        fontWeight: 500
+        color: '#b55b33'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 68
+      duration: 172
+      motion: fadeUp
+    - type: text
+      name: Pig label 2
+      props:
+        x: 225
+        y: 866
+        text: BACON
+        fontSize: 22
+        fontFamily: Georgia
+        fontWeight: 500
+        color: '#b55b33'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 70
+      duration: 170
+      motion: fadeUp
+    - type: polygon
+      name: Lamb body
+      props:
+        x: 535
+        y: 835
+        points:
+        - - -120
+          - 10
+        - - -65
+          - -5
+        - - -10
+          - -5
+        - - 50
+          - 0
+        - - 100
+          - 18
+        - - 120
+          - 50
+        - - 118
+          - 90
+        - - 88
+          - 105
+        - - 70
+          - 150
+        - - 45
+          - 150
+        - - 38
+          - 100
+        - - -28
+          - 100
+        - - -35
+          - 150
+        - - -60
+          - 150
+        - - -60
+          - 100
+        - - -95
+          - 92
+        - - -110
+          - 50
+        fill: rgba(0,0,0,0)
+        stroke: '#b55b33'
+        lineWidth: 4
+        opacity: 0
+      from: 74
+      duration: 166
+      motion: fadeIn
+    - type: line
+      name: Lamb cut A dash 1
+      from: 82
+      duration: 158
+      motion: fadeIn
+      props:
+        x: 535
+        y: 835
+        x1: -10.0
+        y1: 0.0
+        x2: -10.0
+        y2: 10.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Lamb cut A dash 2
+      from: 82
+      duration: 158
+      motion: fadeIn
+      props:
+        x: 535
+        y: 835
+        x1: -10.0
+        y1: 18.0
+        x2: -10.0
+        y2: 28.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Lamb cut A dash 3
+      from: 82
+      duration: 158
+      motion: fadeIn
+      props:
+        x: 535
+        y: 835
+        x1: -10.0
+        y1: 36.0
+        x2: -10.0
+        y2: 46.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Lamb cut A dash 4
+      from: 82
+      duration: 158
+      motion: fadeIn
+      props:
+        x: 535
+        y: 835
+        x1: -10.0
+        y1: 54.0
+        x2: -10.0
+        y2: 64.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Lamb cut A dash 5
+      from: 82
+      duration: 158
+      motion: fadeIn
+      props:
+        x: 535
+        y: 835
+        x1: -10.0
+        y1: 72.0
+        x2: -10.0
+        y2: 82.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Lamb cut A dash 6
+      from: 82
+      duration: 158
+      motion: fadeIn
+      props:
+        x: 535
+        y: 835
+        x1: -10.0
+        y1: 90.0
+        x2: -10.0
+        y2: 100.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Lamb cut B dash 1
+      from: 84
+      duration: 156
+      motion: fadeIn
+      props:
+        x: 535
+        y: 835
+        x1: 48.0
+        y1: 2.0
+        x2: 48.0
+        y2: 12.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Lamb cut B dash 2
+      from: 84
+      duration: 156
+      motion: fadeIn
+      props:
+        x: 535
+        y: 835
+        x1: 48.0
+        y1: 20.0
+        x2: 48.0
+        y2: 30.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Lamb cut B dash 3
+      from: 84
+      duration: 156
+      motion: fadeIn
+      props:
+        x: 535
+        y: 835
+        x1: 48.0
+        y1: 38.0
+        x2: 48.0
+        y2: 48.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Lamb cut B dash 4
+      from: 84
+      duration: 156
+      motion: fadeIn
+      props:
+        x: 535
+        y: 835
+        x1: 48.0
+        y1: 56.0
+        x2: 48.0
+        y2: 66.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Lamb cut B dash 5
+      from: 84
+      duration: 156
+      motion: fadeIn
+      props:
+        x: 535
+        y: 835
+        x1: 48.0
+        y1: 74.0
+        x2: 48.0
+        y2: 84.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: line
+      name: Lamb cut B dash 6
+      from: 84
+      duration: 156
+      motion: fadeIn
+      props:
+        x: 535
+        y: 835
+        x1: 48.0
+        y1: 92.0
+        x2: 48.0
+        y2: 100.0
+        stroke: '#b55b33'
+        lineWidth: 3
+        opacity: 0
+    - type: text
+      name: Lamb label 1
+      props:
+        x: 485
+        y: 826
+        text: SHOULDER
+        fontSize: 18
+        fontFamily: Georgia
+        fontWeight: 500
+        color: '#b55b33'
+        align: center
+        baseline: middle
+        rotation: -18
+        opacity: 0
+      from: 88
+      duration: 152
+      motion: fadeUp
+    - type: text
+      name: Lamb label 2
+      props:
+        x: 590
+        y: 855
+        text: LEG
+        fontSize: 24
+        fontFamily: Georgia
+        fontWeight: 500
+        color: '#b55b33'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 90
+      duration: 150
+      motion: fadeUp
+    - type: text
+      name: Subtitle
+      props:
+        x: 360
+        y: 1140
+        text: ${subtitle}
+        fontSize: 24
+        fontFamily: system-ui
+        fontWeight: 600
+        color: '#6a4a34'
+        align: center
+        baseline: middle
+        maxWidth: 620
+        opacity: 0
+      from: 98
+      duration: 142
+      motion: fadeUp
+    - type: text
+      name: Phase easy
+      props:
+        x: 360
+        y: 1188
+        text: ${phaseEasy}
+        fontSize: 20
+        fontFamily: system-ui
+        fontWeight: 500
+        color: '#7c5335'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 116
+      duration: 124
+      motion: fadeUp
+    - type: text
+      name: Phase hard
+      props:
+        x: 360
+        y: 1218
+        text: ${phaseHard}
+        fontSize: 20
+        fontFamily: system-ui
+        fontWeight: 500
+        color: '#7c5335'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 144
+      duration: 96
+      motion: fadeUp
+stills:
+- id: animal-game-bg
+  color: '#f6efe4'
+  image: null
+  style: null
+- id: cut-game-bg
+  color: '#f1e7d7'
+  image: null
+  style: null
+- id: success-bg
+  color: '#eef7ef'
+  image: null
+  style: null
+- id: good-bg
+  color: '#fff7e8'
+  image: null
+  style: null
+- id: practice-bg
+  color: '#fbefe6'
+  image: null
+  style: null
+announcements:
+- id: welcome
+  name: Welcome
+  title:
+    en: From animal to cut
+    nl: Van dier naar vleesdeel
+  message:
+    en: <p>You will play in two phases. First, match each meat to the right animal. Then, take on the butcher-chart challenge and click the correct cut.</p>
+    nl: <p>Je speelt in twee rondes. Koppel eerst elk stuk vlees aan het juiste dier. Ga daarna de slagerskaart-uitdaging aan en klik op het juiste vleesdeel.</p>
+- id: phase-two
+  name: Phase two
+  title:
+    en: 'Round two: the butcher chart'
+    nl: 'Ronde twee: de slagerskaart'
+  message:
+    en: '<p>Use the animal silhouettes and unlabelled sections to choose each cut.</p><p>This is an educational schematic, not a precise butchery guide. Regions are simplified and separated for learning; real cuts can overlap and vary by tradition.</p>'
+    nl: '<p>Gebruik de diercontouren en de vakken zonder labels om elk vleesdeel te kiezen.</p><p>Dit is een educatief schema, geen nauwkeurige slagershandleiding. Gebieden zijn vereenvoudigd en gescheiden om te oefenen; echte vleesdelen kunnen overlappen en verschillen per traditie.</p>'
+- id: success
+  name: Excellent result
+  title:
+    en: Sharp eye for meat cuts
+    nl: Scherp oog voor vleesdelen
+  message:
+    en: <p>You recognized both the animals and the cuts behind most meat types.</p>
+    nl: <p>Je herkende bij de meeste vleessoorten zowel het dier als het juiste vleesdeel.</p>
+- id: good
+  name: Good result
+  title:
+    en: You know quite a lot already
+    nl: Je weet al behoorlijk veel
+  message:
+    en: <p>You matched many meat types correctly. The exact cuts are the trickiest part.</p>
+    nl: <p>Je koppelde veel vleessoorten goed. Vooral de precieze vleesdelen zijn het lastigst.</p>
+- id: practice
+  name: Practice result
+  title:
+    en: Time for another round
+    nl: Tijd voor nog een ronde
+  message:
+    en: <p>You probably know the meats from the shop, but butcher-chart knowledge takes practice.</p>
+    nl: <p>Je kent de vleessoorten waarschijnlijk uit de winkel, maar kennis van slagersdelen vraagt oefening.</p>
+quizzes: []
+parts:
+- id: intro
+  isInitial: true
+  terminationStrategy: NONE
+  position:
+    x: 0
+    y: 0
+  backgroundType: animation
+  backgroundConfiguration: null
+  videoId: null
+  animationId: meat-cuts-intro
+  stillId: null
+  defaultNextPartId: animal-game
+  foregroundType: announcement
+  foregroundConfiguration:
+    start: 0.74
+  announcementTemplateId: welcome
+  quizTemplateId: null
+  quizLogicForPartId: null
+  quizLogicForPart: null
+  taxonomyDraftForPartId: null
+  taxonomyDraftForPart: null
+- id: animal-game
+  isInitial: false
+  terminationStrategy: NONE
+  position:
+    x: 420
+    y: 0
+  backgroundType: still
+  backgroundConfiguration: null
+  videoId: null
+  animationId: null
+  stillId: animal-game-bg
+  defaultNextPartId: cut-intro
+  foregroundType: taxonomy
+  foregroundConfiguration: null
+  announcementTemplateId: null
+  quizTemplateId: null
+  quizLogicForPartId: null
+  quizLogicForPart: null
+  taxonomyDraftForPartId: animal-mode-draft
+  taxonomyDraftForPart:
+    taxonomySlug: meat-cuts-and-animals
+    nrOfRounds: 10
+    nrOfItemsPerRound: 1
+    goal: 8
+    maxMistakes: null
+    difficulty: null
+    defaultNextPartId: cut-intro
+    draftedAttributeSlugs:
+    - sourceAnimal
+    draftedCategoryIds: []
+    draftedItemIds: []
+    rules: []
+- id: cut-intro
+  isInitial: false
+  terminationStrategy: NONE
+  position:
+    x: 840
+    y: 0
+  backgroundType: still
+  backgroundConfiguration:
+    duration: 4
+  videoId: null
+  animationId: null
+  stillId: cut-game-bg
+  defaultNextPartId: cut-game
+  foregroundType: announcement
+  foregroundConfiguration: null
+  announcementTemplateId: phase-two
+  quizTemplateId: null
+  quizLogicForPartId: null
+  quizLogicForPart: null
+  taxonomyDraftForPartId: null
+  taxonomyDraftForPart: null
+- id: cut-game
+  isInitial: false
+  terminationStrategy: NONE
+  position:
+    x: 1260
+    y: 0
+  backgroundType: still
+  backgroundConfiguration: null
+  videoId: null
+  animationId: null
+  stillId: cut-game-bg
+  defaultNextPartId: null
+  foregroundType: taxonomy
+  foregroundConfiguration: null
+  announcementTemplateId: null
+  quizTemplateId: null
+  quizLogicForPartId: null
+  quizLogicForPart: null
+  taxonomyDraftForPartId: cut-mode-draft
+  taxonomyDraftForPart:
+    taxonomySlug: meat-cuts-and-animals
+    nrOfRounds: 10
+    nrOfItemsPerRound: 1
+    goal: 7
+    maxMistakes: 4
+    difficulty: null
+    defaultNextPartId: practice-result
+    draftedAttributeSlugs:
+    - sourceCut
+    draftedCategoryIds: []
+    draftedItemIds: []
+    rules:
+    - id: cut-strong
+      order: 1
+      name: Seven or more correct rounds
+      nextPartId: success-result
+      nrOfRounds: null
+      score:
+      - 7
+      - null
+      mistakes: null
+      duration: null
+    - id: cut-good
+      order: 2
+      name: Five to six correct rounds
+      nextPartId: good-result
+      nrOfRounds: null
+      score:
+      - 5
+      - 6
+      mistakes: null
+      duration: null
+- id: success-result
+  isInitial: false
+  terminationStrategy: COMPLETE_STORY
+  position:
+    x: 1680
+    y: -180
+  backgroundType: still
+  backgroundConfiguration:
+    duration: 4
+  videoId: null
+  animationId: null
+  stillId: success-bg
+  defaultNextPartId: null
+  foregroundType: announcement
+  foregroundConfiguration: null
+  announcementTemplateId: success
+  quizTemplateId: null
+  quizLogicForPartId: null
+  quizLogicForPart: null
+  taxonomyDraftForPartId: null
+  taxonomyDraftForPart: null
+- id: good-result
+  isInitial: false
+  terminationStrategy: COMPLETE_STORY
+  position:
+    x: 1680
+    y: 0
+  backgroundType: still
+  backgroundConfiguration:
+    duration: 4
+  videoId: null
+  animationId: null
+  stillId: good-bg
+  defaultNextPartId: null
+  foregroundType: announcement
+  foregroundConfiguration: null
+  announcementTemplateId: good
+  quizTemplateId: null
+  quizLogicForPartId: null
+  quizLogicForPart: null
+  taxonomyDraftForPartId: null
+  taxonomyDraftForPart: null
+- id: practice-result
+  isInitial: false
+  terminationStrategy: COMPLETE_STORY
+  position:
+    x: 1680
+    y: 180
+  backgroundType: still
+  backgroundConfiguration:
+    duration: 4
+  videoId: null
+  animationId: null
+  stillId: practice-bg
+  defaultNextPartId: null
+  foregroundType: announcement
+  foregroundConfiguration: null
+  announcementTemplateId: practice
+  quizTemplateId: null
+  quizLogicForPartId: null
+  quizLogicForPart: null
+  taxonomyDraftForPartId: null
+  taxonomyDraftForPart: null
+configuration: null

@@ -172,11 +172,21 @@ export const POST = async ({ locals, params, request }) => {
 					.set({ taxonomyDraftForPartId: draft.id })
 					.executeTakeFirstOrThrow();
 			} else {
-				await trx
+				const changedDraft = await trx
 					.updateTable('taxonomyDraftForPart')
 					.where('id', '=', initialTaxonomyDraftForPartId)
+					.where('taxonomyId', '!=', taxonomyId)
 					.set({ taxonomyId })
-					.executeTakeFirstOrThrow();
+					.returning('id')
+					.executeTakeFirst();
+				if (changedDraft) {
+					for (const table of ['draftedCategory', 'draftedAttribute', 'draftedItem'] as const) {
+						await trx
+							.deleteFrom(table)
+							.where('taxonomyDraftForPartId', '=', changedDraft.id)
+							.execute();
+					}
+				}
 			}
 		}
 

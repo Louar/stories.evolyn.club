@@ -13,7 +13,6 @@
 	import SortableBoard from './SortableBoard.svelte';
 	import { createPlayableMap } from './create-playable-map';
 	import type {
-		CategoryMapV2,
 		GuessResult,
 		MapItem,
 		MapShapeValue,
@@ -60,7 +59,8 @@
 	const synchronousRounds = sourceRounds
 		.map((round) => toNumericSliderRound(round, difficulty) ?? toSortableRound(round))
 		.filter(isSynchronousRound);
-	let playableRounds = $state<GameRound[]>(synchronousRounds);
+	// Resolved rounds and their GeoJSON are immutable, not deeply reactive data.
+	let playableRounds = $state.raw<GameRound[]>(synchronousRounds);
 	let loading = $state(synchronousRounds.length !== sourceRounds.length);
 	let currentRoundIndex = $state(0);
 	let items = $state<SortableRoundItem[]>([]);
@@ -69,7 +69,7 @@
 	let feedback = $state<Feedback | null>(null);
 	let mapWidth = $state(1);
 	let mapHeight = $state(1);
-	let foundRegions = $state<PlayableMapRegion[]>([]);
+	let foundRegions = $state.raw<PlayableMapRegion[]>([]);
 	let arrowRotation = $state<number | undefined>();
 	let sliderValue = $state(0);
 	let sliderChanged = $state(false);
@@ -79,6 +79,7 @@
 	let feedbackTimeoutId: ReturnType<typeof setTimeout> | undefined;
 	let feedbackTimeoutToken = 0;
 	let didComplete = false;
+	let destroyed = false;
 	const currentRound = $derived(playableRounds[currentRoundIndex] ?? null);
 	const loadingRound = $derived(sourceRounds[currentRoundIndex] ?? null);
 	const loadingQuestion = $derived(loadingRound ? questionForRound(loadingRound) : '');
@@ -106,6 +107,7 @@
 		}, 250);
 
 		return () => {
+			destroyed = true;
 			if (intervalId) clearInterval(intervalId);
 			clearFeedbackTimeout();
 		};
@@ -113,12 +115,12 @@
 
 	async function initializeRounds() {
 		const resolved = await Promise.all(sourceRounds.map((round) => toGameRound(round, difficulty)));
+		if (destroyed) return;
 		playableRounds = resolved.filter(isGameRound);
 		loading = false;
 		const first = playableRounds[0];
 		items = first?.kind === 'sortable' ? [...first.items] : [];
 		sliderValue = first?.kind === 'numeric-slider' ? first.settings.initialValue : 0;
-		if (!first) completeGame();
 	}
 
 	function observeSize(node: HTMLElement) {
@@ -205,8 +207,9 @@
 		const mapItems = round.mapItems.map(toMapItem).filter(isMapItem);
 		let map = null;
 		try {
-			map = round.map ? await createPlayableMap(round.map as CategoryMapV2, mapItems) : null;
-		} catch {
+			map = round.map ? await createPlayableMap(round.map, mapItems) : null;
+		} catch (error) {
+			console.error('Unable to initialize taxonomy map', error);
 			return null;
 		}
 		if (!map) return null;

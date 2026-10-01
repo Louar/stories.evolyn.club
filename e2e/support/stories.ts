@@ -215,6 +215,9 @@ export async function taxonomyAnswers(world: ScenarioWorld) {
 	).rows;
 }
 
+export const plainItemName = (name: string) =>
+	name.replace(/[\p{Extended_Pictographic}\p{Regional_Indicator}\uFE0F\u200D]/gu, '').trim();
+
 export async function completeExpedition(page: Page, world: ScenarioWorld, stages: string[]) {
 	expect(stages).toEqual([
 		'Locate countries',
@@ -232,8 +235,6 @@ export async function completeExpedition(page: Page, world: ScenarioWorld, stage
 		['wheelOfFive']
 	];
 	const game = page.locator('[data-taxonomy-game]');
-	const plainItemName = (name: string) =>
-		name.replace(/[\p{Extended_Pictographic}\p{Regional_Indicator}\uFE0F\u200D]/gu, '').trim();
 	for (let stage = 0; stage < stages.length; stage++) {
 		const taxonomy = storyState(world).demos[0].taxonomies.find((entry) =>
 			entry.slug.startsWith(stage < 3 ? 'countries-and-foods-' : 'foods-and-wheel-of-five-')

@@ -46,7 +46,7 @@
 					.geoPath()
 					.projection(projection)
 					.pointRadius(map.minTargetDiameter / 2),
-				strokeWidth: 1.5 / scale
+				strokeWidth: 1.5
 			};
 		}
 		const boundsProjection = d3.geoNaturalEarth1().rotate([-11, 0]).scale(1).translate([0, 0]);
@@ -69,7 +69,7 @@
 				.geoPath()
 				.projection(projection)
 				.pointRadius(map.minTargetDiameter / 2),
-			strokeWidth: 1.5 / scale
+			strokeWidth: 1.5
 		};
 	});
 	const mapData = $derived(
@@ -88,12 +88,19 @@
 			};
 		})
 	);
-	const labelWidth = $derived(Math.max(100, Math.min(220, Math.min(width, height) * 0.26)));
+	const labelWidth = $derived(
+		map.projection === 'identity'
+			? Math.max(56, Math.min(180, width * 0.2))
+			: Math.max(100, Math.min(220, Math.min(width, height) * 0.26))
+	);
 	const labelHeight = $derived(labelWidth * 0.62);
 	const labelFontSize = $derived(Math.max(11, Math.min(18, Math.min(width, height) * 0.02)));
 	const iconFontSize = $derived(labelFontSize * 1.75);
 	const sceneStyle = $derived(
 		[
+			map.defaults?.labelColor
+				? `--map-label-color: ${toCssValue(map.defaults.labelColor)}; --map-label-shadow: none`
+				: null,
 			map.defaults?.fill ? `--map-scene-fill: ${toCssValue(map.defaults.fill)}` : null,
 			map.defaults?.stroke ? `--map-scene-stroke: ${toCssValue(map.defaults.stroke)}` : null,
 			map.defaults?.strokeWidth !== undefined
@@ -211,14 +218,14 @@
 		justify-content: center;
 		flex-direction: column;
 		gap: 0.2rem;
-		color: white;
+		color: var(--map-label-color, white);
 		font-family: var(--font-sans);
 		font-size: var(--map-label-font-size);
 		font-weight: 800;
 		line-height: 1.05;
 		text-align: center;
 		text-wrap: balance;
-		text-shadow: 0 1px 3px rgb(0 0 0 / 55%);
+		text-shadow: var(--map-label-shadow, 0 1px 3px rgb(0 0 0 / 55%));
 	}
 	.map-label-icons {
 		font-size: var(--map-icon-font-size);

@@ -55,6 +55,7 @@ export type MapArtwork = {
 };
 
 export type MapSceneDefaults = {
+	labelColor?: string;
 	fill?: string;
 	stroke?: string;
 	strokeWidth?: number;

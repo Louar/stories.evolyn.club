@@ -22,7 +22,7 @@ type PreparedScene = {
 const preparedScenes = new WeakMap<TaxonomyMapAssetV1, Map<string, PreparedScene>>();
 
 export async function createPlayableMap(
-	categoryMap: CategoryMapV2,
+	categoryMap: unknown,
 	items: MapItem[],
 	loader: MapAssetLoader = browserMapAssetLoader
 ): Promise<LoadedPlayableMap | null> {

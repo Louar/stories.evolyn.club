@@ -1,0 +1,1169 @@
+slug: farm-to-table-origins
+name:
+  en: Farm-to-table origins
+  nl: Van boerderij tot bord
+description:
+  en: Ingredients and the types of farms they come from, for a map-based origin game.
+  nl: Ingrediënten en de soorten boerderijen waar ze vandaan komen, voor een kaartspel over herkomst.
+categories:
+- id: farm-types
+  name:
+    en: Farm landscape
+    nl: Boerderijlandschap
+  image: null
+  description:
+    en: Schematic farm-type plots used as map targets, not geographic locations.
+    nl: Schematische boerderijvakken als doelen op de kaart, geen geografische locaties.
+  map:
+    version: 2
+    source:
+      collection: externals
+      filename: /taxonomy-maps/farm-to-table-origins.897ccc90.json
+    scene: farm-origins
+    showLabels: true
+    minTargetDiameter: 24
+- id: dish-parts
+  name:
+    en: Dish ingredients
+    nl: Ingrediënten van gerechten
+  image: null
+  description:
+    en: Recognizable parts of hamburgers and other familiar dishes.
+    nl: Herkenbare onderdelen van hamburgers en andere bekende gerechten.
+  map: null
+attributes:
+- id: farm-name
+  slug: farmName
+  name:
+    en: Farm type
+    nl: Type boerderij
+  image: null
+  description:
+    en: Name of the farm type shown on the map
+    nl: Naam van het type boerderij op de kaart
+  question: null
+  type: translatable
+  referencedCategoryId: null
+  schema: null
+- id: farm-shape
+  slug: shape
+  name:
+    en: Shape
+    nl: Vorm
+  image: null
+  description:
+    en: Stable region reference in the farm map asset
+    nl: Stabiele verwijzing naar een gebied in het boerderijkaartbestand
+  question: null
+  type: custom
+  referencedCategoryId: null
+  schema:
+    oneOf:
+    - type: object
+      required:
+      - ref
+      properties:
+        ref:
+          type: string
+          minLength: 1
+      additionalProperties: false
+    - type: object
+      required:
+      - geometry
+      properties:
+        geometry:
+          type: object
+          required:
+          - type
+          - coordinates
+          properties:
+            type:
+              enum:
+              - Polygon
+              - MultiPolygon
+            coordinates: {}
+      additionalProperties: false
+- id: farm-center
+  slug: center
+  name:
+    en: Center
+    nl: Middelpunt
+  image: null
+  description:
+    en: Label and icon center for this farm area
+    nl: Middelpunt voor label en iconen van dit boerderijgebied
+  question: null
+  type: custom
+  referencedCategoryId: null
+  schema:
+    type: array
+    minItems: 2
+    maxItems: 2
+    items:
+      type: number
+- id: farm-color
+  slug: color
+  name:
+    en: Color
+    nl: Kleur
+  image: null
+  description:
+    en: Fill color for this farm area
+    nl: Vulkleur voor dit boerderijgebied
+  question: null
+  type: custom
+  referencedCategoryId: null
+  schema:
+    type: string
+    minLength: 1
+- id: farm-icons
+  slug: icons
+  name:
+    en: Icons
+    nl: Iconen
+  image: null
+  description:
+    en: Decorative icons shown on this farm area
+    nl: Decoratieve iconen op dit boerderijgebied
+  question: null
+  type: custom
+  referencedCategoryId: null
+  schema:
+    type: array
+    items:
+      type: string
+    maxItems: 12
+- id: ingredient-dish
+  slug: dish
+  name:
+    en: Dish
+    nl: Gerecht
+  image: null
+  description:
+    en: Dish in which this ingredient appears
+    nl: Gerecht waarin dit ingrediënt voorkomt
+  question: null
+  type: translatable
+  referencedCategoryId: null
+  schema: null
+- id: ingredient-name
+  slug: ingredientName
+  name:
+    en: Ingredient
+    nl: Ingrediënt
+  image: null
+  description:
+    en: Ingredient or dish component to place on the farm map
+    nl: Ingrediënt of onderdeel van een gerecht dat op de boerderijkaart wordt geplaatst
+  question: null
+  type: translatable
+  referencedCategoryId: null
+  schema: null
+- id: ingredient-icon
+  slug: ingredientIcon
+  name:
+    en: Icon
+    nl: Icoon
+  image: null
+  description:
+    en: Visual cue for the ingredient
+    nl: Visuele hint voor het ingrediënt
+  question: null
+  type: translatable
+  referencedCategoryId: null
+  schema: null
+- id: ingredient-origin
+  slug: originFarm
+  name:
+    en: Farm of origin
+    nl: Boerderij van herkomst
+  image: null
+  description:
+    en: Primary agricultural source for this ingredient
+    nl: Primaire agrarische herkomst van dit ingrediënt
+  question:
+    en: From which type of farm does this ingredient mainly come?
+    nl: Van welk type boerderij komt dit ingrediënt vooral?
+  type: item_reference
+  referencedCategoryId: farm-types
+  schema: null
+attributeOfCategories:
+- categoryId: farm-types
+  attributeId: farm-name
+  order: 0
+  isRequired: true
+  isDefault: true
+- categoryId: farm-types
+  attributeId: farm-shape
+  order: 1
+  isRequired: true
+  isDefault: false
+- categoryId: farm-types
+  attributeId: farm-center
+  order: 2
+  isRequired: false
+  isDefault: false
+- categoryId: farm-types
+  attributeId: farm-color
+  order: 3
+  isRequired: false
+  isDefault: false
+- categoryId: farm-types
+  attributeId: farm-icons
+  order: 4
+  isRequired: false
+  isDefault: false
+- categoryId: dish-parts
+  attributeId: ingredient-dish
+  order: 0
+  isRequired: true
+  isDefault: false
+- categoryId: dish-parts
+  attributeId: ingredient-name
+  order: 1
+  isRequired: true
+  isDefault: true
+- categoryId: dish-parts
+  attributeId: ingredient-icon
+  order: 2
+  isRequired: true
+  isDefault: false
+- categoryId: dish-parts
+  attributeId: ingredient-origin
+  order: 3
+  isRequired: true
+  isDefault: false
+items:
+- id: farm-fruit
+- id: farm-sugar-beet
+- id: farm-poultry
+- id: farm-dairy
+- id: farm-beef
+- id: farm-arable
+- id: farm-vegetable
+- id: farm-pig
+- id: hamburger-bun
+- id: hamburger-beef
+- id: hamburger-cheese
+- id: hamburger-lettuce
+- id: hamburger-tomato
+- id: hamburger-pickle
+- id: apple-pie-apple
+- id: apple-pie-sugar
+- id: apple-pie-egg
+- id: apple-pie-flour
+- id: apple-pie-butter
+- id: pancake-flour
+- id: pancake-milk
+- id: pancake-egg
+- id: pancake-sugar
+- id: pizza-dough
+- id: pizza-tomato
+- id: pizza-mozzarella
+- id: pizza-ham
+- id: fries-potato
+- id: fries-mayo-egg
+- id: yogurt-strawberry
+- id: yogurt-milk
+itemOfCategories:
+- itemId: farm-fruit
+  categoryId: farm-types
+- itemId: farm-sugar-beet
+  categoryId: farm-types
+- itemId: farm-poultry
+  categoryId: farm-types
+- itemId: farm-dairy
+  categoryId: farm-types
+- itemId: farm-beef
+  categoryId: farm-types
+- itemId: farm-arable
+  categoryId: farm-types
+- itemId: farm-vegetable
+  categoryId: farm-types
+- itemId: farm-pig
+  categoryId: farm-types
+- itemId: hamburger-bun
+  categoryId: dish-parts
+- itemId: hamburger-beef
+  categoryId: dish-parts
+- itemId: hamburger-cheese
+  categoryId: dish-parts
+- itemId: hamburger-lettuce
+  categoryId: dish-parts
+- itemId: hamburger-tomato
+  categoryId: dish-parts
+- itemId: hamburger-pickle
+  categoryId: dish-parts
+- itemId: apple-pie-apple
+  categoryId: dish-parts
+- itemId: apple-pie-sugar
+  categoryId: dish-parts
+- itemId: apple-pie-egg
+  categoryId: dish-parts
+- itemId: apple-pie-flour
+  categoryId: dish-parts
+- itemId: apple-pie-butter
+  categoryId: dish-parts
+- itemId: pancake-flour
+  categoryId: dish-parts
+- itemId: pancake-milk
+  categoryId: dish-parts
+- itemId: pancake-egg
+  categoryId: dish-parts
+- itemId: pancake-sugar
+  categoryId: dish-parts
+- itemId: pizza-dough
+  categoryId: dish-parts
+- itemId: pizza-tomato
+  categoryId: dish-parts
+- itemId: pizza-mozzarella
+  categoryId: dish-parts
+- itemId: pizza-ham
+  categoryId: dish-parts
+- itemId: fries-potato
+  categoryId: dish-parts
+- itemId: fries-mayo-egg
+  categoryId: dish-parts
+- itemId: yogurt-strawberry
+  categoryId: dish-parts
+- itemId: yogurt-milk
+  categoryId: dish-parts
+attributeOfItems:
+- itemId: farm-fruit
+  attributeId: farm-name
+  value:
+    en: Fruit orchard
+    nl: Fruitkweker
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-fruit
+  attributeId: farm-shape
+  value:
+    ref: farm.fruit-orchard
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-fruit
+  attributeId: farm-center
+  value:
+  - 168
+  - 450
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-fruit
+  attributeId: farm-color
+  value: '#86b96a'
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-fruit
+  attributeId: farm-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-sugar-beet
+  attributeId: farm-name
+  value:
+    en: Sugar beet farm
+    nl: Suikerbietenteler
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-sugar-beet
+  attributeId: farm-shape
+  value:
+    ref: farm.sugar-beet
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-sugar-beet
+  attributeId: farm-center
+  value:
+  - 389
+  - 450
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-sugar-beet
+  attributeId: farm-color
+  value: '#b7c85f'
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-sugar-beet
+  attributeId: farm-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-poultry
+  attributeId: farm-name
+  value:
+    en: Poultry farm
+    nl: Pluimveehouderij
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-poultry
+  attributeId: farm-shape
+  value:
+    ref: farm.poultry
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-poultry
+  attributeId: farm-center
+  value:
+  - 610
+  - 450
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-poultry
+  attributeId: farm-color
+  value: '#e8c96d'
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-poultry
+  attributeId: farm-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-dairy
+  attributeId: farm-name
+  value:
+    en: Dairy farm
+    nl: Melkveehouderij
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-dairy
+  attributeId: farm-shape
+  value:
+    ref: farm.dairy
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-dairy
+  attributeId: farm-center
+  value:
+  - 831
+  - 450
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-dairy
+  attributeId: farm-color
+  value: '#83b9d5'
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-dairy
+  attributeId: farm-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-beef
+  attributeId: farm-name
+  value:
+    en: Beef cattle farm
+    nl: Rundveehouderij
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-beef
+  attributeId: farm-shape
+  value:
+    ref: farm.beef-cattle
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-beef
+  attributeId: farm-center
+  value:
+  - 168
+  - 717
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-beef
+  attributeId: farm-color
+  value: '#b98262'
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-beef
+  attributeId: farm-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-arable
+  attributeId: farm-name
+  value:
+    en: Arable farm
+    nl: Akkerbouwbedrijf
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-arable
+  attributeId: farm-shape
+  value:
+    ref: farm.arable
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-arable
+  attributeId: farm-center
+  value:
+  - 389
+  - 717
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-arable
+  attributeId: farm-color
+  value: '#d7b85b'
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-arable
+  attributeId: farm-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-vegetable
+  attributeId: farm-name
+  value:
+    en: Vegetable farm
+    nl: Groenteteler
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-vegetable
+  attributeId: farm-shape
+  value:
+    ref: farm.vegetable
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-vegetable
+  attributeId: farm-center
+  value:
+  - 610
+  - 717
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-vegetable
+  attributeId: farm-color
+  value: '#62ad79'
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-vegetable
+  attributeId: farm-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-pig
+  attributeId: farm-name
+  value:
+    en: Pig farm
+    nl: Varkenshouderij
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-pig
+  attributeId: farm-shape
+  value:
+    ref: farm.pig
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-pig
+  attributeId: farm-center
+  value:
+  - 831
+  - 717
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-pig
+  attributeId: farm-color
+  value: '#d79a9c'
+  referencedItemId: null
+  difficulty: null
+- itemId: farm-pig
+  attributeId: farm-icons
+  value: []
+  referencedItemId: null
+  difficulty: null
+- itemId: hamburger-bun
+  attributeId: ingredient-dish
+  value:
+    en: Hamburger
+    nl: Hamburger
+  referencedItemId: null
+  difficulty: 2
+- itemId: hamburger-bun
+  attributeId: ingredient-name
+  value:
+    en: The bun of a hamburger
+    nl: Het broodje van een hamburger
+  referencedItemId: null
+  difficulty: 2
+- itemId: hamburger-bun
+  attributeId: ingredient-icon
+  value:
+    en: 🍞
+    nl: 🍞
+  referencedItemId: null
+  difficulty: 2
+- itemId: hamburger-bun
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-arable
+  difficulty: 2
+- itemId: hamburger-beef
+  attributeId: ingredient-dish
+  value:
+    en: Hamburger
+    nl: Hamburger
+  referencedItemId: null
+  difficulty: 1
+- itemId: hamburger-beef
+  attributeId: ingredient-name
+  value:
+    en: The beef patty in a hamburger
+    nl: De rundvleesburger in een hamburger
+  referencedItemId: null
+  difficulty: 1
+- itemId: hamburger-beef
+  attributeId: ingredient-icon
+  value:
+    en: 🥩
+    nl: 🥩
+  referencedItemId: null
+  difficulty: 1
+- itemId: hamburger-beef
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-beef
+  difficulty: 1
+- itemId: hamburger-cheese
+  attributeId: ingredient-dish
+  value:
+    en: Hamburger
+    nl: Hamburger
+  referencedItemId: null
+  difficulty: 2
+- itemId: hamburger-cheese
+  attributeId: ingredient-name
+  value:
+    en: The cheese on a hamburger
+    nl: De kaas op een hamburger
+  referencedItemId: null
+  difficulty: 2
+- itemId: hamburger-cheese
+  attributeId: ingredient-icon
+  value:
+    en: 🧀
+    nl: 🧀
+  referencedItemId: null
+  difficulty: 2
+- itemId: hamburger-cheese
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-dairy
+  difficulty: 2
+- itemId: hamburger-lettuce
+  attributeId: ingredient-dish
+  value:
+    en: Hamburger
+    nl: Hamburger
+  referencedItemId: null
+  difficulty: 1
+- itemId: hamburger-lettuce
+  attributeId: ingredient-name
+  value:
+    en: The lettuce on a hamburger
+    nl: De sla op een hamburger
+  referencedItemId: null
+  difficulty: 1
+- itemId: hamburger-lettuce
+  attributeId: ingredient-icon
+  value:
+    en: 🥬
+    nl: 🥬
+  referencedItemId: null
+  difficulty: 1
+- itemId: hamburger-lettuce
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-vegetable
+  difficulty: 1
+- itemId: hamburger-tomato
+  attributeId: ingredient-dish
+  value:
+    en: Hamburger
+    nl: Hamburger
+  referencedItemId: null
+  difficulty: 1
+- itemId: hamburger-tomato
+  attributeId: ingredient-name
+  value:
+    en: The tomato on a hamburger
+    nl: De tomaat op een hamburger
+  referencedItemId: null
+  difficulty: 1
+- itemId: hamburger-tomato
+  attributeId: ingredient-icon
+  value:
+    en: 🍅
+    nl: 🍅
+  referencedItemId: null
+  difficulty: 1
+- itemId: hamburger-tomato
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-vegetable
+  difficulty: 1
+- itemId: hamburger-pickle
+  attributeId: ingredient-dish
+  value:
+    en: Hamburger
+    nl: Hamburger
+  referencedItemId: null
+  difficulty: 2
+- itemId: hamburger-pickle
+  attributeId: ingredient-name
+  value:
+    en: The pickle on a hamburger
+    nl: De augurk op een hamburger
+  referencedItemId: null
+  difficulty: 2
+- itemId: hamburger-pickle
+  attributeId: ingredient-icon
+  value:
+    en: 🥒
+    nl: 🥒
+  referencedItemId: null
+  difficulty: 2
+- itemId: hamburger-pickle
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-vegetable
+  difficulty: 2
+- itemId: apple-pie-apple
+  attributeId: ingredient-dish
+  value:
+    en: Apple pie
+    nl: Appeltaart
+  referencedItemId: null
+  difficulty: 1
+- itemId: apple-pie-apple
+  attributeId: ingredient-name
+  value:
+    en: The apple in an apple pie
+    nl: De appel in een appeltaart
+  referencedItemId: null
+  difficulty: 1
+- itemId: apple-pie-apple
+  attributeId: ingredient-icon
+  value:
+    en: 🍎
+    nl: 🍎
+  referencedItemId: null
+  difficulty: 1
+- itemId: apple-pie-apple
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-fruit
+  difficulty: 1
+- itemId: apple-pie-sugar
+  attributeId: ingredient-dish
+  value:
+    en: Apple pie
+    nl: Appeltaart
+  referencedItemId: null
+  difficulty: 2
+- itemId: apple-pie-sugar
+  attributeId: ingredient-name
+  value:
+    en: The sugar in an apple pie
+    nl: De suiker in een appeltaart
+  referencedItemId: null
+  difficulty: 2
+- itemId: apple-pie-sugar
+  attributeId: ingredient-icon
+  value:
+    en: 🍬
+    nl: 🍬
+  referencedItemId: null
+  difficulty: 2
+- itemId: apple-pie-sugar
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-sugar-beet
+  difficulty: 2
+- itemId: apple-pie-egg
+  attributeId: ingredient-dish
+  value:
+    en: Apple pie
+    nl: Appeltaart
+  referencedItemId: null
+  difficulty: 1
+- itemId: apple-pie-egg
+  attributeId: ingredient-name
+  value:
+    en: The egg in an apple pie
+    nl: Het ei in een appeltaart
+  referencedItemId: null
+  difficulty: 1
+- itemId: apple-pie-egg
+  attributeId: ingredient-icon
+  value:
+    en: 🥚
+    nl: 🥚
+  referencedItemId: null
+  difficulty: 1
+- itemId: apple-pie-egg
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-poultry
+  difficulty: 1
+- itemId: apple-pie-flour
+  attributeId: ingredient-dish
+  value:
+    en: Apple pie
+    nl: Appeltaart
+  referencedItemId: null
+  difficulty: 2
+- itemId: apple-pie-flour
+  attributeId: ingredient-name
+  value:
+    en: The flour in an apple pie
+    nl: De bloem in een appeltaart
+  referencedItemId: null
+  difficulty: 2
+- itemId: apple-pie-flour
+  attributeId: ingredient-icon
+  value:
+    en: 🌾
+    nl: 🌾
+  referencedItemId: null
+  difficulty: 2
+- itemId: apple-pie-flour
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-arable
+  difficulty: 2
+- itemId: apple-pie-butter
+  attributeId: ingredient-dish
+  value:
+    en: Apple pie
+    nl: Appeltaart
+  referencedItemId: null
+  difficulty: 2
+- itemId: apple-pie-butter
+  attributeId: ingredient-name
+  value:
+    en: The butter in an apple pie
+    nl: De boter in een appeltaart
+  referencedItemId: null
+  difficulty: 2
+- itemId: apple-pie-butter
+  attributeId: ingredient-icon
+  value:
+    en: 🧈
+    nl: 🧈
+  referencedItemId: null
+  difficulty: 2
+- itemId: apple-pie-butter
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-dairy
+  difficulty: 2
+- itemId: pancake-flour
+  attributeId: ingredient-dish
+  value:
+    en: Pancakes
+    nl: Pannenkoeken
+  referencedItemId: null
+  difficulty: 2
+- itemId: pancake-flour
+  attributeId: ingredient-name
+  value:
+    en: The flour in pancakes
+    nl: De bloem in pannenkoeken
+  referencedItemId: null
+  difficulty: 2
+- itemId: pancake-flour
+  attributeId: ingredient-icon
+  value:
+    en: 🌾
+    nl: 🌾
+  referencedItemId: null
+  difficulty: 2
+- itemId: pancake-flour
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-arable
+  difficulty: 2
+- itemId: pancake-milk
+  attributeId: ingredient-dish
+  value:
+    en: Pancakes
+    nl: Pannenkoeken
+  referencedItemId: null
+  difficulty: 1
+- itemId: pancake-milk
+  attributeId: ingredient-name
+  value:
+    en: The milk in pancakes
+    nl: De melk in pannenkoeken
+  referencedItemId: null
+  difficulty: 1
+- itemId: pancake-milk
+  attributeId: ingredient-icon
+  value:
+    en: 🥛
+    nl: 🥛
+  referencedItemId: null
+  difficulty: 1
+- itemId: pancake-milk
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-dairy
+  difficulty: 1
+- itemId: pancake-egg
+  attributeId: ingredient-dish
+  value:
+    en: Pancakes
+    nl: Pannenkoeken
+  referencedItemId: null
+  difficulty: 1
+- itemId: pancake-egg
+  attributeId: ingredient-name
+  value:
+    en: The egg in pancakes
+    nl: Het ei in pannenkoeken
+  referencedItemId: null
+  difficulty: 1
+- itemId: pancake-egg
+  attributeId: ingredient-icon
+  value:
+    en: 🥚
+    nl: 🥚
+  referencedItemId: null
+  difficulty: 1
+- itemId: pancake-egg
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-poultry
+  difficulty: 1
+- itemId: pancake-sugar
+  attributeId: ingredient-dish
+  value:
+    en: Pancakes
+    nl: Pannenkoeken
+  referencedItemId: null
+  difficulty: 2
+- itemId: pancake-sugar
+  attributeId: ingredient-name
+  value:
+    en: The sugar in pancakes
+    nl: De suiker in pannenkoeken
+  referencedItemId: null
+  difficulty: 2
+- itemId: pancake-sugar
+  attributeId: ingredient-icon
+  value:
+    en: 🍬
+    nl: 🍬
+  referencedItemId: null
+  difficulty: 2
+- itemId: pancake-sugar
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-sugar-beet
+  difficulty: 2
+- itemId: pizza-dough
+  attributeId: ingredient-dish
+  value:
+    en: Pizza
+    nl: Pizza
+  referencedItemId: null
+  difficulty: 2
+- itemId: pizza-dough
+  attributeId: ingredient-name
+  value:
+    en: The dough of a pizza
+    nl: Het deeg van een pizza
+  referencedItemId: null
+  difficulty: 2
+- itemId: pizza-dough
+  attributeId: ingredient-icon
+  value:
+    en: 🍕
+    nl: 🍕
+  referencedItemId: null
+  difficulty: 2
+- itemId: pizza-dough
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-arable
+  difficulty: 2
+- itemId: pizza-tomato
+  attributeId: ingredient-dish
+  value:
+    en: Pizza
+    nl: Pizza
+  referencedItemId: null
+  difficulty: 2
+- itemId: pizza-tomato
+  attributeId: ingredient-name
+  value:
+    en: The tomato sauce on a pizza
+    nl: De tomatensaus op een pizza
+  referencedItemId: null
+  difficulty: 2
+- itemId: pizza-tomato
+  attributeId: ingredient-icon
+  value:
+    en: 🍅
+    nl: 🍅
+  referencedItemId: null
+  difficulty: 2
+- itemId: pizza-tomato
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-vegetable
+  difficulty: 2
+- itemId: pizza-mozzarella
+  attributeId: ingredient-dish
+  value:
+    en: Pizza
+    nl: Pizza
+  referencedItemId: null
+  difficulty: 2
+- itemId: pizza-mozzarella
+  attributeId: ingredient-name
+  value:
+    en: The mozzarella on a pizza
+    nl: De mozzarella op een pizza
+  referencedItemId: null
+  difficulty: 2
+- itemId: pizza-mozzarella
+  attributeId: ingredient-icon
+  value:
+    en: 🧀
+    nl: 🧀
+  referencedItemId: null
+  difficulty: 2
+- itemId: pizza-mozzarella
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-dairy
+  difficulty: 2
+- itemId: pizza-ham
+  attributeId: ingredient-dish
+  value:
+    en: Pizza
+    nl: Pizza
+  referencedItemId: null
+  difficulty: 1
+- itemId: pizza-ham
+  attributeId: ingredient-name
+  value:
+    en: The ham on a pizza
+    nl: De ham op een pizza
+  referencedItemId: null
+  difficulty: 1
+- itemId: pizza-ham
+  attributeId: ingredient-icon
+  value:
+    en: 🍖
+    nl: 🍖
+  referencedItemId: null
+  difficulty: 1
+- itemId: pizza-ham
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-pig
+  difficulty: 1
+- itemId: fries-potato
+  attributeId: ingredient-dish
+  value:
+    en: Fries
+    nl: Friet
+  referencedItemId: null
+  difficulty: 1
+- itemId: fries-potato
+  attributeId: ingredient-name
+  value:
+    en: The potato in fries
+    nl: De aardappel in friet
+  referencedItemId: null
+  difficulty: 1
+- itemId: fries-potato
+  attributeId: ingredient-icon
+  value:
+    en: 🥔
+    nl: 🥔
+  referencedItemId: null
+  difficulty: 1
+- itemId: fries-potato
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-arable
+  difficulty: 1
+- itemId: fries-mayo-egg
+  attributeId: ingredient-dish
+  value:
+    en: Fries with mayonnaise
+    nl: Friet met mayonaise
+  referencedItemId: null
+  difficulty: 3
+- itemId: fries-mayo-egg
+  attributeId: ingredient-name
+  value:
+    en: The egg in mayonnaise with fries
+    nl: Het ei in de mayonaise bij friet
+  referencedItemId: null
+  difficulty: 3
+- itemId: fries-mayo-egg
+  attributeId: ingredient-icon
+  value:
+    en: 🥚
+    nl: 🥚
+  referencedItemId: null
+  difficulty: 3
+- itemId: fries-mayo-egg
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-poultry
+  difficulty: 3
+- itemId: yogurt-strawberry
+  attributeId: ingredient-dish
+  value:
+    en: Strawberry yogurt
+    nl: Aardbeienyoghurt
+  referencedItemId: null
+  difficulty: 1
+- itemId: yogurt-strawberry
+  attributeId: ingredient-name
+  value:
+    en: The strawberries in strawberry yogurt
+    nl: De aardbeien in aardbeienyoghurt
+  referencedItemId: null
+  difficulty: 1
+- itemId: yogurt-strawberry
+  attributeId: ingredient-icon
+  value:
+    en: 🍓
+    nl: 🍓
+  referencedItemId: null
+  difficulty: 1
+- itemId: yogurt-strawberry
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-fruit
+  difficulty: 1
+- itemId: yogurt-milk
+  attributeId: ingredient-dish
+  value:
+    en: Strawberry yogurt
+    nl: Aardbeienyoghurt
+  referencedItemId: null
+  difficulty: 2
+- itemId: yogurt-milk
+  attributeId: ingredient-name
+  value:
+    en: The milk in strawberry yogurt
+    nl: De melk in aardbeienyoghurt
+  referencedItemId: null
+  difficulty: 2
+- itemId: yogurt-milk
+  attributeId: ingredient-icon
+  value:
+    en: 🥛
+    nl: 🥛
+  referencedItemId: null
+  difficulty: 2
+- itemId: yogurt-milk
+  attributeId: ingredient-origin
+  value: null
+  referencedItemId: farm-dairy
+  difficulty: 2

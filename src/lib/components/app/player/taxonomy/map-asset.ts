@@ -13,10 +13,16 @@ export const browserMapAssetLoader: MapAssetLoader = {
 		const key = `${reference.collection}\0${reference.filename}`;
 		let promise = assetPromises.get(key);
 		if (!promise) {
-			promise = fetch(mediaUrl(reference)).then(async (response) => {
-				if (!response.ok) throw new Error(`Unable to load taxonomy map asset (${response.status})`);
-				return (await response.json()) as TaxonomyMapAssetV1;
-			});
+			promise = fetch(mediaUrl(reference))
+				.then(async (response) => {
+					if (!response.ok)
+						throw new Error(`Unable to load taxonomy map asset (${response.status})`);
+					return (await response.json()) as TaxonomyMapAssetV1;
+				})
+				.catch((error) => {
+					assetPromises.delete(key);
+					throw error;
+				});
 			assetPromises.set(key, promise);
 		}
 		return promise;

@@ -1,0 +1,1921 @@
+slug: farm-to-table-pin-game
+name:
+  en: 'Farm to fork: pin the ingredient'
+  nl: 'Van boer tot bord: pin het ingrediënt'
+defaultBackgroundColor: '#fff8ed'
+thumbnail: null
+isPublished: true
+isPublic: true
+videos: []
+animations:
+- id: burger-assembly
+  name: Detailed farm-to-burger assembly intro
+  texts:
+    title:
+      en: FROM FARM TO FORK
+      nl: VAN BOER TOT BORD
+    subtitle:
+      en: One familiar meal. Many agricultural beginnings.
+      nl: Eén bekende maaltijd. Veel verschillende agrarische bronnen.
+    journey:
+      en: Ingredients travel from field and farm to your plate.
+      nl: Ingrediënten reizen van akker en boerderij naar je bord.
+    prompt:
+      en: Can you trace each ingredient back?
+      nl: Kun jij elk ingrediënt terugbrengen naar de bron?
+  configuration:
+    version: 1
+    composition:
+      viewBoxWidth: 720
+      viewBoxHeight: 1280
+      fps: 30
+      durationInFrames: 300
+      background: '#fff8ed'
+    playback:
+      autoplay: false
+      loop: false
+    motions:
+      fadeUp:
+        duration: 24
+        easing: easeOutCubic
+        animate:
+          opacity:
+          - 0
+          - 1
+          y:
+            values:
+            - 32
+            - 0
+            relative: true
+      fadeIn:
+        duration: 22
+        easing: easeOutCubic
+        animate:
+          opacity:
+          - 0
+          - 1
+      pop:
+        duration: 20
+        easing: easeOutCubic
+        animate:
+          opacity:
+          - 0
+          - 1
+          scale:
+          - 0.82
+          - 1.0
+    layers:
+    - type: rectangle
+      name: Sky panel
+      props:
+        x: 360
+        y: 330
+        width: 720
+        height: 660
+        fill: '#eaf5df'
+      from: 0
+      duration: 300
+    - type: rectangle
+      name: Earth
+      props:
+        x: 360
+        y: 555
+        width: 720
+        height: 210
+        fill: '#e8d7a5'
+      from: 0
+      duration: 300
+    - type: circle
+      name: Sun
+      props:
+        x: 610
+        y: 175
+        radius: 92
+        fill: '#f7d36f'
+        opacity: 0.72
+        blur: 3
+      from: 0
+      duration: 300
+      animate:
+        scale:
+          values:
+          - 0.96
+          - 1.04
+          - 0.96
+          easing: easeInOutSine
+    - type: polygon
+      name: Distant hill left
+      props:
+        x: 175
+        y: 430
+        points:
+        - - -230
+          - 90
+        - - -140
+          - 5
+        - - -70
+          - 48
+        - - 10
+          - -30
+        - - 90
+          - 36
+        - - 190
+          - -12
+        - - 280
+          - 90
+        fill: '#a9c985'
+      from: 0
+      duration: 300
+    - type: polygon
+      name: Distant hill right
+      props:
+        x: 535
+        y: 440
+        points:
+        - - -250
+          - 80
+        - - -175
+          - 15
+        - - -105
+          - 55
+        - - -25
+          - -25
+        - - 70
+          - 35
+        - - 150
+          - -5
+        - - 250
+          - 80
+        fill: '#8fb873'
+      from: 0
+      duration: 300
+    - type: ellipse
+      name: Cloud 1 base
+      props:
+        x: 135
+        y: 205
+        radiusX: 78.0
+        radiusY: 25.0
+        fill: '#ffffff'
+        opacity: 0.78
+      from: 0
+      duration: 300
+      animate:
+        x:
+          values:
+          - 135
+          - 160
+          - 135
+          easing: easeInOutSine
+    - type: circle
+      name: Cloud 1 puff A
+      props:
+        x: 101.0
+        y: 190.0
+        radius: 29.0
+        fill: '#ffffff'
+        opacity: 0.8
+      from: 0
+      duration: 300
+      animate:
+        x:
+          values:
+          - 101.0
+          - 126.0
+          - 101.0
+          easing: easeInOutSine
+    - type: circle
+      name: Cloud 1 puff B
+      props:
+        x: 150.0
+        y: 183.0
+        radius: 36.0
+        fill: '#ffffff'
+        opacity: 0.8
+      from: 0
+      duration: 300
+      animate:
+        x:
+          values:
+          - 150.0
+          - 175.0
+          - 150.0
+          easing: easeInOutSine
+    - type: ellipse
+      name: Cloud 2 base
+      props:
+        x: 330
+        y: 255
+        radiusX: 60.84
+        radiusY: 19.5
+        fill: '#ffffff'
+        opacity: 0.78
+      from: 0
+      duration: 300
+      animate:
+        x:
+          values:
+          - 330
+          - 355
+          - 330
+          easing: easeInOutSine
+    - type: circle
+      name: Cloud 2 puff A
+      props:
+        x: 303.48
+        y: 243.3
+        radius: 22.62
+        fill: '#ffffff'
+        opacity: 0.8
+      from: 0
+      duration: 300
+      animate:
+        x:
+          values:
+          - 303.48
+          - 322.98
+          - 303.48
+          easing: easeInOutSine
+    - type: circle
+      name: Cloud 2 puff B
+      props:
+        x: 341.7
+        y: 237.84
+        radius: 28.080000000000002
+        fill: '#ffffff'
+        opacity: 0.8
+      from: 0
+      duration: 300
+      animate:
+        x:
+          values:
+          - 341.7
+          - 361.2
+          - 341.7
+          easing: easeInOutSine
+    - type: line
+      name: Field furrow 1
+      props:
+        x: 180
+        y: 500
+        x1: -150
+        y1: 0
+        x2: 155
+        y2: -18
+        stroke: '#c09d62'
+        lineWidth: 2
+        lineCap: round
+        opacity: 0.7
+      from: 0
+      duration: 300
+    - type: line
+      name: Field furrow 2
+      props:
+        x: 180
+        y: 520
+        x1: -150
+        y1: 0
+        x2: 155
+        y2: -18
+        stroke: '#c09d62'
+        lineWidth: 2
+        lineCap: round
+        opacity: 0.7
+      from: 0
+      duration: 300
+    - type: line
+      name: Field furrow 3
+      props:
+        x: 180
+        y: 540
+        x1: -150
+        y1: 0
+        x2: 155
+        y2: -18
+        stroke: '#c09d62'
+        lineWidth: 2
+        lineCap: round
+        opacity: 0.7
+      from: 0
+      duration: 300
+    - type: line
+      name: Field furrow 4
+      props:
+        x: 180
+        y: 560
+        x1: -150
+        y1: 0
+        x2: 155
+        y2: -18
+        stroke: '#c09d62'
+        lineWidth: 2
+        lineCap: round
+        opacity: 0.7
+      from: 0
+      duration: 300
+    - type: line
+      name: Field furrow 5
+      props:
+        x: 180
+        y: 580
+        x1: -150
+        y1: 0
+        x2: 155
+        y2: -18
+        stroke: '#c09d62'
+        lineWidth: 2
+        lineCap: round
+        opacity: 0.7
+      from: 0
+      duration: 300
+    - type: text
+      name: Wheat stalk 1
+      props:
+        x: 78
+        y: 472
+        text: 🌾
+        fontSize: 26
+        fontFamily: system-ui
+        fontWeight: 500
+        color: '#1f2937'
+        align: center
+        baseline: middle
+        opacity: 0.0
+      from: 24
+      duration: 276
+      motion: pop
+    - type: text
+      name: Wheat stalk 2
+      props:
+        x: 116
+        y: 464
+        text: 🌾
+        fontSize: 26
+        fontFamily: system-ui
+        fontWeight: 500
+        color: '#1f2937'
+        align: center
+        baseline: middle
+        opacity: 0.0
+      from: 27
+      duration: 273
+      motion: pop
+    - type: text
+      name: Wheat stalk 3
+      props:
+        x: 154
+        y: 472
+        text: 🌾
+        fontSize: 26
+        fontFamily: system-ui
+        fontWeight: 500
+        color: '#1f2937'
+        align: center
+        baseline: middle
+        opacity: 0.0
+      from: 30
+      duration: 270
+      motion: pop
+    - type: text
+      name: Wheat stalk 4
+      props:
+        x: 192
+        y: 464
+        text: 🌾
+        fontSize: 26
+        fontFamily: system-ui
+        fontWeight: 500
+        color: '#1f2937'
+        align: center
+        baseline: middle
+        opacity: 0.0
+      from: 33
+      duration: 267
+      motion: pop
+    - type: text
+      name: Wheat stalk 5
+      props:
+        x: 230
+        y: 472
+        text: 🌾
+        fontSize: 26
+        fontFamily: system-ui
+        fontWeight: 500
+        color: '#1f2937'
+        align: center
+        baseline: middle
+        opacity: 0.0
+      from: 36
+      duration: 264
+      motion: pop
+    - type: text
+      name: Wheat stalk 6
+      props:
+        x: 268
+        y: 464
+        text: 🌾
+        fontSize: 26
+        fontFamily: system-ui
+        fontWeight: 500
+        color: '#1f2937'
+        align: center
+        baseline: middle
+        opacity: 0.0
+      from: 39
+      duration: 261
+      motion: pop
+    - type: rectangle
+      name: Orchard trunk 1
+      props:
+        x: 520
+        y: 511
+        width: 10
+        height: 50
+        fill: '#7c5338'
+        cornerRadius: 4
+      from: 18
+      duration: 282
+      motion: fadeIn
+    - type: circle
+      name: Orchard crown 1
+      props:
+        x: 520
+        y: 478
+        radius: 38
+        fill: '#4f8c4f'
+        opacity: 0
+      from: 20
+      duration: 280
+      motion: pop
+    - type: circle
+      name: Orchard apple 1a
+      props:
+        x: 508
+        y: 474
+        radius: 5
+        fill: '#dc4c3f'
+        opacity: 0
+      from: 35
+      duration: 265
+      motion: pop
+    - type: circle
+      name: Orchard apple 1b
+      props:
+        x: 534
+        y: 485
+        radius: 5
+        fill: '#dc4c3f'
+        opacity: 0
+      from: 38
+      duration: 262
+      motion: pop
+    - type: rectangle
+      name: Orchard trunk 2
+      props:
+        x: 575
+        y: 528
+        width: 10
+        height: 50
+        fill: '#7c5338'
+        cornerRadius: 4
+      from: 21
+      duration: 279
+      motion: fadeIn
+    - type: circle
+      name: Orchard crown 2
+      props:
+        x: 575
+        y: 495
+        radius: 38
+        fill: '#4f8c4f'
+        opacity: 0
+      from: 23
+      duration: 277
+      motion: pop
+    - type: circle
+      name: Orchard apple 2a
+      props:
+        x: 563
+        y: 491
+        radius: 5
+        fill: '#dc4c3f'
+        opacity: 0
+      from: 38
+      duration: 262
+      motion: pop
+    - type: circle
+      name: Orchard apple 2b
+      props:
+        x: 589
+        y: 502
+        radius: 5
+        fill: '#dc4c3f'
+        opacity: 0
+      from: 41
+      duration: 259
+      motion: pop
+    - type: rectangle
+      name: Orchard trunk 3
+      props:
+        x: 630
+        y: 503
+        width: 10
+        height: 50
+        fill: '#7c5338'
+        cornerRadius: 4
+      from: 24
+      duration: 276
+      motion: fadeIn
+    - type: circle
+      name: Orchard crown 3
+      props:
+        x: 630
+        y: 470
+        radius: 38
+        fill: '#4f8c4f'
+        opacity: 0
+      from: 26
+      duration: 274
+      motion: pop
+    - type: circle
+      name: Orchard apple 3a
+      props:
+        x: 618
+        y: 466
+        radius: 5
+        fill: '#dc4c3f'
+        opacity: 0
+      from: 41
+      duration: 259
+      motion: pop
+    - type: circle
+      name: Orchard apple 3b
+      props:
+        x: 644
+        y: 477
+        radius: 5
+        fill: '#dc4c3f'
+        opacity: 0
+      from: 44
+      duration: 256
+      motion: pop
+    - type: rectangle
+      name: Barn
+      props:
+        x: 390
+        y: 500
+        width: 135
+        height: 105
+        fill: '#b5543c'
+        cornerRadius: 5
+        stroke: '#8b3f30'
+        lineWidth: 3
+        opacity: 0
+      from: 32
+      duration: 268
+      motion: fadeUp
+    - type: polygon
+      name: Barn roof
+      props:
+        x: 390
+        y: 428
+        points:
+        - - -82
+          - 45
+        - - 0
+          - -15
+        - - 82
+          - 45
+        fill: '#7b3e2f'
+        stroke: '#663229'
+        lineWidth: 3
+        opacity: 0
+      from: 36
+      duration: 264
+      motion: fadeUp
+    - type: rectangle
+      name: Barn door
+      props:
+        x: 390
+        y: 525
+        width: 48
+        height: 55
+        fill: '#6e4938'
+        cornerRadius: 3
+        opacity: 0
+      from: 42
+      duration: 258
+      motion: fadeIn
+    - type: line
+      name: Barn door cross 1
+      props:
+        x: 390
+        y: 525
+        x1: -20
+        y1: -22
+        x2: 20
+        y2: 22
+        stroke: '#b78b69'
+        lineWidth: 3
+        lineCap: round
+        opacity: 0
+      from: 46
+      duration: 254
+      motion: fadeIn
+    - type: line
+      name: Barn door cross 2
+      props:
+        x: 390
+        y: 525
+        x1: -20
+        y1: 22
+        x2: 20
+        y2: -22
+        stroke: '#b78b69'
+        lineWidth: 3
+        lineCap: round
+        opacity: 0
+      from: 46
+      duration: 254
+      motion: fadeIn
+    - type: rectangle
+      name: Silo
+      props:
+        x: 470
+        y: 492
+        width: 48
+        height: 116
+        fill: '#c9c4b9'
+        cornerRadius: 10
+        stroke: '#98958e'
+        lineWidth: 2
+        opacity: 0
+      from: 38
+      duration: 262
+      motion: fadeUp
+    - type: ellipse
+      name: Silo cap
+      props:
+        x: 470
+        y: 435
+        radiusX: 24
+        radiusY: 14
+        fill: '#aaa69e'
+        stroke: '#8d8983'
+        lineWidth: 2
+        opacity: 0
+      from: 40
+      duration: 260
+      motion: fadeIn
+    - type: line
+      name: Fence post 1
+      props:
+        x: 300
+        y: 560
+        x1: 0
+        y1: -28
+        x2: 0
+        y2: 30
+        stroke: '#8a6748'
+        lineWidth: 4
+        lineCap: round
+        opacity: 0.75
+      from: 0
+      duration: 300
+    - type: line
+      name: Fence post 2
+      props:
+        x: 345
+        y: 560
+        x1: 0
+        y1: -28
+        x2: 0
+        y2: 30
+        stroke: '#8a6748'
+        lineWidth: 4
+        lineCap: round
+        opacity: 0.75
+      from: 0
+      duration: 300
+    - type: line
+      name: Fence post 3
+      props:
+        x: 500
+        y: 560
+        x1: 0
+        y1: -28
+        x2: 0
+        y2: 30
+        stroke: '#8a6748'
+        lineWidth: 4
+        lineCap: round
+        opacity: 0.75
+      from: 0
+      duration: 300
+    - type: line
+      name: Fence post 4
+      props:
+        x: 545
+        y: 560
+        x1: 0
+        y1: -28
+        x2: 0
+        y2: 30
+        stroke: '#8a6748'
+        lineWidth: 4
+        lineCap: round
+        opacity: 0.75
+      from: 0
+      duration: 300
+    - type: line
+      name: Fence post 5
+      props:
+        x: 590
+        y: 560
+        x1: 0
+        y1: -28
+        x2: 0
+        y2: 30
+        stroke: '#8a6748'
+        lineWidth: 4
+        lineCap: round
+        opacity: 0.75
+      from: 0
+      duration: 300
+    - type: line
+      name: Fence post 6
+      props:
+        x: 635
+        y: 560
+        x1: 0
+        y1: -28
+        x2: 0
+        y2: 30
+        stroke: '#8a6748'
+        lineWidth: 4
+        lineCap: round
+        opacity: 0.75
+      from: 0
+      duration: 300
+    - type: line
+      name: Fence rail A
+      props:
+        x: 468
+        y: 548
+        x1: -190
+        y1: 0
+        x2: 190
+        y2: 0
+        stroke: '#a67c55'
+        lineWidth: 4
+        lineCap: round
+        opacity: 0.65
+      from: 0
+      duration: 300
+    - type: line
+      name: Fence rail B
+      props:
+        x: 468
+        y: 566
+        x1: -190
+        y1: 0
+        x2: 190
+        y2: 0
+        stroke: '#a67c55'
+        lineWidth: 4
+        lineCap: round
+        opacity: 0.65
+      from: 0
+      duration: 300
+    - type: text
+      name: Cow
+      props:
+        x: 565
+        y: 540
+        text: 🐄
+        fontSize: 42
+        fontFamily: system-ui
+        fontWeight: 500
+        color: '#1f2937'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 55
+      duration: 245
+      motion: pop
+    - type: text
+      name: Chicken
+      props:
+        x: 328
+        y: 540
+        text: 🐔
+        fontSize: 34
+        fontFamily: system-ui
+        fontWeight: 500
+        color: '#1f2937'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 62
+      duration: 238
+      motion: pop
+    - type: text
+      name: Vegetable crate
+      props:
+        x: 255
+        y: 548
+        text: 🥬
+        fontSize: 34
+        fontFamily: system-ui
+        fontWeight: 500
+        color: '#1f2937'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 68
+      duration: 232
+      motion: pop
+    - type: text
+      name: Title
+      props:
+        x: 360
+        y: 92
+        text: ${title}
+        fontSize: 54
+        fontFamily: system-ui
+        fontWeight: 800
+        color: '#1f2937'
+        align: center
+        baseline: middle
+        maxWidth: 650
+        opacity: 0
+      from: 5
+      duration: 295
+      motion: fadeUp
+    - type: text
+      name: Subtitle
+      props:
+        x: 360
+        y: 148
+        text: ${subtitle}
+        fontSize: 24
+        fontFamily: system-ui
+        fontWeight: 550
+        color: '#5c6651'
+        align: center
+        baseline: middle
+        maxWidth: 620
+        opacity: 0
+      from: 17
+      duration: 283
+      motion: fadeUp
+    - type: text
+      name: Journey line
+      props:
+        x: 360
+        y: 610
+        text: ${journey}
+        fontSize: 23
+        fontFamily: system-ui
+        fontWeight: 550
+        color: '#6b5a45'
+        align: center
+        baseline: middle
+        maxWidth: 600
+        opacity: 0
+      from: 70
+      duration: 150
+      motion: fadeUp
+      animate:
+        opacity:
+          values:
+          - 0
+          - 1
+          - 1
+          - 0
+          at:
+          - 0
+          - 0.18
+          - 0.72
+          - 1
+          easing: easeInOutCubic
+    - type: ellipse
+      name: Plate shadow
+      props:
+        x: 360
+        y: 1110
+        radiusX: 260
+        radiusY: 38
+        fill: rgba(82,60,42,0.12)
+        blur: 8
+        opacity: 0
+      from: 92
+      duration: 208
+      motion: fadeIn
+    - type: ellipse
+      name: Plate rim
+      props:
+        x: 360
+        y: 1082
+        radiusX: 285
+        radiusY: 65
+        fill: '#f6f1e8'
+        stroke: '#d8d2c8'
+        lineWidth: 4
+        opacity: 0
+      from: 96
+      duration: 204
+      motion: fadeUp
+    - type: ellipse
+      name: Plate inner
+      props:
+        x: 360
+        y: 1080
+        radiusX: 235
+        radiusY: 46
+        fill: '#fffdfa'
+        stroke: '#ece7de'
+        lineWidth: 2
+        opacity: 0
+      from: 100
+      duration: 200
+      motion: fadeIn
+    - type: text
+      name: Wheat cue
+      props:
+        x: 110
+        y: 690
+        text: 🌾
+        fontSize: 34
+        fontFamily: system-ui
+        fontWeight: 500
+        color: '#1f2937'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 90
+      duration: 74
+      motion: pop
+      animate:
+        x:
+          values:
+          - 110
+          - 320
+          duration: 73
+          easing: easeInOutCubic
+        y:
+          values:
+          - 690
+          - 1010
+          duration: 73
+          easing: easeInOutCubic
+        opacity:
+          values:
+          - 0
+          - 1
+          - 1
+          - 0
+          at:
+          - 0
+          - 0.18
+          - 0.78
+          - 1
+          easing: easeInOutCubic
+        scale:
+          values:
+          - 0.8
+          - 1.12
+          - 0.9
+          easing: easeInOutSine
+    - type: text
+      name: Beef cue
+      props:
+        x: 610
+        y: 690
+        text: 🐄
+        fontSize: 34
+        fontFamily: system-ui
+        fontWeight: 500
+        color: '#1f2937'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 100
+      duration: 74
+      motion: pop
+      animate:
+        x:
+          values:
+          - 610
+          - 360
+          duration: 73
+          easing: easeInOutCubic
+        y:
+          values:
+          - 690
+          - 930
+          duration: 73
+          easing: easeInOutCubic
+        opacity:
+          values:
+          - 0
+          - 1
+          - 1
+          - 0
+          at:
+          - 0
+          - 0.18
+          - 0.78
+          - 1
+          easing: easeInOutCubic
+        scale:
+          values:
+          - 0.8
+          - 1.12
+          - 0.9
+          easing: easeInOutSine
+    - type: text
+      name: Dairy cue
+      props:
+        x: 575
+        y: 760
+        text: 🥛
+        fontSize: 34
+        fontFamily: system-ui
+        fontWeight: 500
+        color: '#1f2937'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 110
+      duration: 74
+      motion: pop
+      animate:
+        x:
+          values:
+          - 575
+          - 360
+          duration: 73
+          easing: easeInOutCubic
+        y:
+          values:
+          - 760
+          - 850
+          duration: 73
+          easing: easeInOutCubic
+        opacity:
+          values:
+          - 0
+          - 1
+          - 1
+          - 0
+          at:
+          - 0
+          - 0.18
+          - 0.78
+          - 1
+          easing: easeInOutCubic
+        scale:
+          values:
+          - 0.8
+          - 1.12
+          - 0.9
+          easing: easeInOutSine
+    - type: text
+      name: Greens cue
+      props:
+        x: 125
+        y: 765
+        text: 🥬
+        fontSize: 34
+        fontFamily: system-ui
+        fontWeight: 500
+        color: '#1f2937'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 120
+      duration: 74
+      motion: pop
+      animate:
+        x:
+          values:
+          - 125
+          - 350
+          duration: 73
+          easing: easeInOutCubic
+        y:
+          values:
+          - 765
+          - 790
+          duration: 73
+          easing: easeInOutCubic
+        opacity:
+          values:
+          - 0
+          - 1
+          - 1
+          - 0
+          at:
+          - 0
+          - 0.18
+          - 0.78
+          - 1
+          easing: easeInOutCubic
+        scale:
+          values:
+          - 0.8
+          - 1.12
+          - 0.9
+          easing: easeInOutSine
+    - type: text
+      name: Tomato cue
+      props:
+        x: 610
+        y: 820
+        text: 🍅
+        fontSize: 34
+        fontFamily: system-ui
+        fontWeight: 500
+        color: '#1f2937'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 130
+      duration: 74
+      motion: pop
+      animate:
+        x:
+          values:
+          - 610
+          - 360
+          duration: 73
+          easing: easeInOutCubic
+        y:
+          values:
+          - 820
+          - 745
+          duration: 73
+          easing: easeInOutCubic
+        opacity:
+          values:
+          - 0
+          - 1
+          - 1
+          - 0
+          at:
+          - 0
+          - 0.18
+          - 0.78
+          - 1
+          easing: easeInOutCubic
+        scale:
+          values:
+          - 0.8
+          - 1.12
+          - 0.9
+          easing: easeInOutSine
+    - type: text
+      name: Pickle cue
+      props:
+        x: 120
+        y: 835
+        text: 🥒
+        fontSize: 34
+        fontFamily: system-ui
+        fontWeight: 500
+        color: '#1f2937'
+        align: center
+        baseline: middle
+        opacity: 0
+      from: 140
+      duration: 74
+      motion: pop
+      animate:
+        x:
+          values:
+          - 120
+          - 360
+          duration: 73
+          easing: easeInOutCubic
+        y:
+          values:
+          - 835
+          - 700
+          duration: 73
+          easing: easeInOutCubic
+        opacity:
+          values:
+          - 0
+          - 1
+          - 1
+          - 0
+          at:
+          - 0
+          - 0.18
+          - 0.78
+          - 1
+          easing: easeInOutCubic
+        scale:
+          values:
+          - 0.8
+          - 1.12
+          - 0.9
+          easing: easeInOutSine
+    - type: ellipse
+      name: Bottom bun shadow
+      props:
+        x: 360
+        y: 1026
+        radiusX: 220
+        radiusY: 48
+        fill: '#b96e32'
+        opacity: 0
+      from: 145
+      duration: 155
+      motion: fadeUp
+    - type: ellipse
+      name: Bottom bun
+      props:
+        x: 360
+        y: 1008
+        radiusX: 225
+        radiusY: 58
+        fill: '#dfa052'
+        stroke: '#ad672f'
+        lineWidth: 4
+        opacity: 0
+      from: 150
+      duration: 150
+      motion: fadeUp
+    - type: ellipse
+      name: Bottom bun highlight
+      props:
+        x: 360
+        y: 992
+        radiusX: 180
+        radiusY: 24
+        fill: rgba(255,220,147,0.55)
+        opacity: 0
+      from: 154
+      duration: 146
+      motion: fadeIn
+    - type: rectangle
+      name: Patty
+      props:
+        x: 360
+        y: 930
+        width: 430
+        height: 92
+        fill: '#6f3b2d'
+        cornerRadius: 42
+        stroke: '#4e2a22'
+        lineWidth: 5
+        opacity: 0
+      from: 160
+      duration: 140
+      motion: fadeUp
+    - type: line
+      name: Patty sear 1
+      props:
+        x: 330
+        y: 910
+        x1: -95
+        y1: 0
+        x2: 95
+        y2: 0
+        stroke: '#98604b'
+        lineWidth: 5
+        lineCap: round
+        opacity: 0
+      from: 166
+      duration: 134
+      motion: fadeIn
+    - type: line
+      name: Patty sear 2
+      props:
+        x: 390
+        y: 938
+        x1: -75
+        y1: 0
+        x2: 75
+        y2: 0
+        stroke: '#4d2a22'
+        lineWidth: 4
+        lineCap: round
+        opacity: 0
+      from: 170
+      duration: 130
+      motion: fadeIn
+    - type: polygon
+      name: Cheese
+      props:
+        x: 360
+        y: 862
+        points:
+        - - -210
+          - -28
+        - - 205
+          - -28
+        - - 178
+          - 28
+        - - 92
+          - 17
+        - - 25
+          - 43
+        - - -42
+          - 18
+        - - -130
+          - 37
+        - - -195
+          - 20
+        fill: '#f6c945'
+        stroke: '#dcae24'
+        lineWidth: 3
+        opacity: 0
+      from: 174
+      duration: 126
+      motion: fadeUp
+    - type: polygon
+      name: Lettuce
+      props:
+        x: 360
+        y: 815
+        points:
+        - - -220
+          - 0
+        - - -180
+          - -23
+        - - -132
+          - 10
+        - - -80
+          - -20
+        - - -20
+          - 10
+        - - 42
+          - -17
+        - - 105
+          - 10
+        - - 160
+          - -19
+        - - 220
+          - 0
+        - - 188
+          - 35
+        - - -190
+          - 34
+        fill: '#5ea83d'
+        stroke: '#3f812c'
+        lineWidth: 3
+        opacity: 0
+      from: 182
+      duration: 118
+      motion: fadeUp
+    - type: ellipse
+      name: Tomato slice back
+      props:
+        x: 330
+        y: 765
+        radiusX: 125
+        radiusY: 30
+        fill: '#de493e'
+        stroke: '#bd352f'
+        lineWidth: 3
+        opacity: 0
+      from: 188
+      duration: 112
+      motion: fadeUp
+    - type: ellipse
+      name: Tomato slice front
+      props:
+        x: 410
+        y: 760
+        radiusX: 125
+        radiusY: 30
+        fill: '#ef5b4d'
+        stroke: '#c83d35'
+        lineWidth: 3
+        opacity: 0
+      from: 192
+      duration: 108
+      motion: fadeUp
+    - type: circle
+      name: Tomato seed 1
+      props:
+        x: 385
+        y: 756
+        radius: 5
+        fill: '#f7c98f'
+        opacity: 0
+      from: 198
+      duration: 102
+      motion: pop
+    - type: circle
+      name: Tomato seed 2
+      props:
+        x: 425
+        y: 768
+        radius: 5
+        fill: '#f7c98f'
+        opacity: 0
+      from: 200
+      duration: 100
+      motion: pop
+    - type: circle
+      name: Tomato seed 3
+      props:
+        x: 335
+        y: 761
+        radius: 5
+        fill: '#f7c98f'
+        opacity: 0
+      from: 202
+      duration: 98
+      motion: pop
+    - type: ellipse
+      name: Pickle 1
+      props:
+        x: 300
+        y: 715
+        radiusX: 62
+        radiusY: 17
+        fill: '#80a93f'
+        stroke: '#5f812f'
+        lineWidth: 3
+        opacity: 0
+      from: 202
+      duration: 98
+      motion: fadeUp
+    - type: ellipse
+      name: Pickle 2
+      props:
+        x: 410
+        y: 708
+        radiusX: 62
+        radiusY: 17
+        fill: '#8bb94c'
+        stroke: '#628a32'
+        lineWidth: 3
+        opacity: 0
+      from: 206
+      duration: 94
+      motion: fadeUp
+    - type: line
+      name: Pickle detail 1
+      props:
+        x: 300
+        y: 715
+        x1: -30
+        y1: 0
+        x2: 30
+        y2: 0
+        stroke: '#bad36f'
+        lineWidth: 2
+        lineCap: round
+        opacity: 0
+      from: 210
+      duration: 90
+      motion: fadeIn
+    - type: line
+      name: Pickle detail 2
+      props:
+        x: 410
+        y: 708
+        x1: -30
+        y1: 0
+        x2: 30
+        y2: 0
+        stroke: '#c4dd7b'
+        lineWidth: 2
+        lineCap: round
+        opacity: 0
+      from: 212
+      duration: 88
+      motion: fadeIn
+    - type: line
+      name: Sauce ribbon 1
+      props:
+        x: 360
+        y: 680
+        x1: -150
+        y1: 0
+        x2: -50
+        y2: 8
+        stroke: '#f4e6c8'
+        lineWidth: 8
+        lineCap: round
+        opacity: 0
+      from: 210
+      duration: 90
+      motion: fadeIn
+    - type: line
+      name: Sauce ribbon 2
+      props:
+        x: 360
+        y: 680
+        x1: -45
+        y1: 8
+        x2: 55
+        y2: -5
+        stroke: '#f4e6c8'
+        lineWidth: 8
+        lineCap: round
+        opacity: 0
+      from: 212
+      duration: 88
+      motion: fadeIn
+    - type: line
+      name: Sauce ribbon 3
+      props:
+        x: 360
+        y: 680
+        x1: 60
+        y1: -5
+        x2: 150
+        y2: 4
+        stroke: '#f4e6c8'
+        lineWidth: 8
+        lineCap: round
+        opacity: 0
+      from: 214
+      duration: 86
+      motion: fadeIn
+    - type: ellipse
+      name: Top bun
+      props:
+        x: 360
+        y: 635
+        radiusX: 225
+        radiusY: 105
+        fill: '#e6a454'
+        stroke: '#ac672f'
+        lineWidth: 5
+        opacity: 0
+        scale: 0.85
+      from: 216
+      duration: 84
+      motion:
+      - fadeUp
+      - pop
+    - type: ellipse
+      name: Top bun highlight
+      props:
+        x: 330
+        y: 606
+        radiusX: 142
+        radiusY: 48
+        fill: rgba(255,218,147,0.42)
+        opacity: 0
+      from: 222
+      duration: 78
+      motion: fadeIn
+    - type: ellipse
+      name: Sesame seed 1
+      props:
+        x: 290
+        y: 598
+        radiusX: 9
+        radiusY: 3
+        fill: '#fff0c2'
+        rotation: -18
+        opacity: 0
+      from: 228
+      duration: 72
+      motion: pop
+    - type: ellipse
+      name: Sesame seed 2
+      props:
+        x: 325
+        y: 575
+        radiusX: 9
+        radiusY: 3
+        fill: '#fff0c2'
+        rotation: 16
+        opacity: 0
+      from: 229
+      duration: 71
+      motion: pop
+    - type: ellipse
+      name: Sesame seed 3
+      props:
+        x: 365
+        y: 590
+        radiusX: 9
+        radiusY: 3
+        fill: '#fff0c2'
+        rotation: -8
+        opacity: 0
+      from: 230
+      duration: 70
+      motion: pop
+    - type: ellipse
+      name: Sesame seed 4
+      props:
+        x: 405
+        y: 570
+        radiusX: 9
+        radiusY: 3
+        fill: '#fff0c2'
+        rotation: 20
+        opacity: 0
+      from: 231
+      duration: 69
+      motion: pop
+    - type: ellipse
+      name: Sesame seed 5
+      props:
+        x: 438
+        y: 605
+        radiusX: 9
+        radiusY: 3
+        fill: '#fff0c2'
+        rotation: -18
+        opacity: 0
+      from: 232
+      duration: 68
+      motion: pop
+    - type: ellipse
+      name: Sesame seed 6
+      props:
+        x: 260
+        y: 625
+        radiusX: 9
+        radiusY: 3
+        fill: '#fff0c2'
+        rotation: 10
+        opacity: 0
+      from: 233
+      duration: 67
+      motion: pop
+    - type: ellipse
+      name: Sesame seed 7
+      props:
+        x: 345
+        y: 625
+        radiusX: 9
+        radiusY: 3
+        fill: '#fff0c2'
+        rotation: -25
+        opacity: 0
+      from: 234
+      duration: 66
+      motion: pop
+    - type: ellipse
+      name: Sesame seed 8
+      props:
+        x: 395
+        y: 625
+        radiusX: 9
+        radiusY: 3
+        fill: '#fff0c2'
+        rotation: 14
+        opacity: 0
+      from: 235
+      duration: 65
+      motion: pop
+    - type: ellipse
+      name: Sesame seed 9
+      props:
+        x: 455
+        y: 640
+        radiusX: 9
+        radiusY: 3
+        fill: '#fff0c2'
+        rotation: -10
+        opacity: 0
+      from: 236
+      duration: 64
+      motion: pop
+    - type: circle
+      name: Burger glow
+      props:
+        x: 360
+        y: 825
+        radius: 250
+        fill: rgba(247,211,111,0.16)
+        blur: 26
+        opacity: 0
+      from: 235
+      duration: 65
+      motion: fadeIn
+      animate:
+        opacity:
+          values:
+          - 0
+          - 0.8
+          - 0.35
+          easing: easeInOutSine
+        scale:
+          values:
+          - 0.9
+          - 1.1
+          - 1.0
+          easing: easeInOutSine
+    - type: text
+      name: Prompt
+      props:
+        x: 360
+        y: 1192
+        text: ${prompt}
+        fontSize: 28
+        fontFamily: system-ui
+        fontWeight: 700
+        color: '#374151'
+        align: center
+        baseline: middle
+        maxWidth: 620
+        opacity: 0
+      from: 250
+      duration: 50
+      motion: fadeUp
+stills:
+- id: game-background
+  color: '#f8f5ec'
+  image: null
+  style: null
+- id: success-background
+  color: '#ecfdf5'
+  image: null
+  style: null
+- id: close-background
+  color: '#fffbeb'
+  image: null
+  style: null
+- id: practice-background
+  color: '#fff7ed'
+  image: null
+  style: null
+announcements:
+- id: welcome
+  name: Farm origin intro
+  title:
+    en: Where did your meal begin?
+    nl: Waar begon jouw maaltijd?
+  message:
+    en: <p>You will see ingredients from a hamburger and other familiar dishes. Pin each ingredient to the type
+      of farm that is its main agricultural source.</p>
+    nl: <p>Je ziet ingrediënten uit een hamburger en andere bekende gerechten. Pin elk ingrediënt op het type boerderij
+      dat de belangrijkste agrarische herkomst is.</p>
+- id: success
+  name: Strong result
+  title:
+    en: From farm to fork — nicely traced
+    nl: Van boer tot bord — goed herleid
+  message:
+    en: <p>You connected most ingredients to the right farm type.</p>
+    nl: <p>Je koppelde de meeste ingrediënten aan het juiste type boerderij.</p>
+- id: close
+  name: Close result
+  title:
+    en: You are getting there
+    nl: Je bent goed op weg
+  message:
+    en: <p>You recognized many origins. A few processed ingredients make the route less obvious.</p>
+    nl: <p>Je herkende veel herkomsten. Bij een paar verwerkte ingrediënten is de route minder duidelijk.</p>
+- id: practice
+  name: Practice result
+  title:
+    en: Food has a longer journey than it looks
+    nl: Eten legt een langere weg af dan je denkt
+  message:
+    en: <p>Some ingredients hide their agricultural origin. Try noticing the crop or animal behind the product.</p>
+    nl: <p>Sommige ingrediënten verbergen hun agrarische herkomst. Kijk eens naar het gewas of dier achter het product.</p>
+quizzes: []
+parts:
+- id: intro
+  isInitial: true
+  terminationStrategy: NONE
+  position:
+    x: 0
+    y: 0
+  backgroundType: animation
+  backgroundConfiguration: null
+  videoId: null
+  animationId: burger-assembly
+  stillId: null
+  defaultNextPartId: farm-game
+  foregroundType: announcement
+  foregroundConfiguration:
+    start: 0.84
+  announcementTemplateId: welcome
+  quizTemplateId: null
+  quizLogicForPartId: null
+  quizLogicForPart: null
+  taxonomyDraftForPartId: null
+  taxonomyDraftForPart: null
+- id: farm-game
+  isInitial: false
+  terminationStrategy: NONE
+  position:
+    x: 420
+    y: 0
+  backgroundType: still
+  backgroundConfiguration: null
+  videoId: null
+  animationId: null
+  stillId: game-background
+  defaultNextPartId: null
+  foregroundType: taxonomy
+  foregroundConfiguration: null
+  announcementTemplateId: null
+  quizTemplateId: null
+  quizLogicForPartId: null
+  quizLogicForPart: null
+  taxonomyDraftForPartId: farm-origin-draft
+  taxonomyDraftForPart:
+    taxonomySlug: farm-to-table-origins
+    nrOfRounds: 12
+    nrOfItemsPerRound: 1
+    goal: 9
+    maxMistakes: 3
+    difficulty: null
+    defaultNextPartId: practice-result
+    draftedAttributeSlugs:
+    - originFarm
+    draftedCategoryIds: []
+    draftedItemIds: []
+    rules:
+    - id: strong-result-rule
+      order: 1
+      name: Nine or more correct rounds
+      nextPartId: success-result
+      nrOfRounds: null
+      score:
+      - 9
+      - null
+      mistakes: null
+      duration: null
+    - id: close-result-rule
+      order: 2
+      name: Six to eight correct rounds
+      nextPartId: close-result
+      nrOfRounds: null
+      score:
+      - 6
+      - 8
+      mistakes: null
+      duration: null
+- id: success-result
+  isInitial: false
+  terminationStrategy: COMPLETE_STORY
+  position:
+    x: 860
+    y: -180
+  backgroundType: still
+  backgroundConfiguration:
+    duration: 4
+  videoId: null
+  animationId: null
+  stillId: success-background
+  defaultNextPartId: null
+  foregroundType: announcement
+  foregroundConfiguration: null
+  announcementTemplateId: success
+  quizTemplateId: null
+  quizLogicForPartId: null
+  quizLogicForPart: null
+  taxonomyDraftForPartId: null
+  taxonomyDraftForPart: null
+- id: close-result
+  isInitial: false
+  terminationStrategy: COMPLETE_STORY
+  position:
+    x: 860
+    y: 0
+  backgroundType: still
+  backgroundConfiguration:
+    duration: 4
+  videoId: null
+  animationId: null
+  stillId: close-background
+  defaultNextPartId: null
+  foregroundType: announcement
+  foregroundConfiguration: null
+  announcementTemplateId: close
+  quizTemplateId: null
+  quizLogicForPartId: null
+  quizLogicForPart: null
+  taxonomyDraftForPartId: null
+  taxonomyDraftForPart: null
+- id: practice-result
+  isInitial: false
+  terminationStrategy: COMPLETE_STORY
+  position:
+    x: 860
+    y: 180
+  backgroundType: still
+  backgroundConfiguration:
+    duration: 4
+  videoId: null
+  animationId: null
+  stillId: practice-background
+  defaultNextPartId: null
+  foregroundType: announcement
+  foregroundConfiguration: null
+  announcementTemplateId: practice
+  quizTemplateId: null
+  quizLogicForPartId: null
+  quizLogicForPart: null
+  taxonomyDraftForPartId: null
+  taxonomyDraftForPart: null
+configuration: null
