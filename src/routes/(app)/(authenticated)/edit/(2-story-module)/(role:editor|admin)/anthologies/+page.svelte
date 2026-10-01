@@ -10,9 +10,11 @@
 		DataGrid,
 		DataGridAdapterError,
 		DataGridToolbar,
+		fileCellMediaToFileCellData,
 		getFilterFn,
 		hasTranslatableFields,
 		RowSelectHeader,
+		uploadMedia,
 		useDataGrid,
 		type DataGridDataAdapter,
 		type DataGridDeleteResult
@@ -25,9 +27,15 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import BreadcrumbMenu from '$lib/components/ui/breadcrumb-menu/breadcrumb-menu.svelte';
 	import { MEGABYTE } from '$lib/components/ui/file-drop-zone';
+	import { MediaFile } from '$lib/components/ui/media-file';
 	import { Switch } from '$lib/components/ui/switch';
 	import { renderComponent } from '$lib/components/ui/table-tanstack/index.js';
-	import { translateLocalizedField } from '$lib/db/schemas/0-utils';
+	import {
+		MediaCollection,
+		translateLocalizedField,
+		translateLocalizedMediaField,
+		type Media
+	} from '$lib/db/schemas/0-utils';
 	import { AnthologyVisualization } from '$lib/db/schemas/2-story-module';
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
 	import { UI } from '$lib/states/ui.svelte';
@@ -57,6 +65,19 @@
 	];
 	const windowSize = useWindowSize({ defaultHeight: 800 });
 	const gridHeight = $derived(Math.max(250, windowSize.height - 150));
+	const setThumbnail = (row: Row, value: unknown): Row => {
+		const file = (Array.isArray(value) ? value[0] : value) as Media | undefined;
+		const thumbnail = { ...(row.thumbnail ?? {}) };
+		const language =
+			file || thumbnail[UI.language] ? UI.language : thumbnail.default ? 'default' : 'en';
+		if (file) {
+			thumbnail[language] = { collection: file.collection, filename: file.filename };
+			if (!thumbnail.default && !thumbnail.en) thumbnail.default = thumbnail[language];
+		} else {
+			delete thumbnail[language];
+		}
+		return { ...row, thumbnail: Object.keys(thumbnail).length ? thumbnail : null };
+	};
 
 	const download = async (rowId: string) => {
 		const response = await fetch(
@@ -189,6 +210,27 @@
 			filterFn
 		},
 		{
+			accessorKey: 'thumbnail',
+			header: 'Thumbnail',
+			size: 240,
+			cell: ({ row }) =>
+				fileCellMediaToFileCellData(
+					translateLocalizedMediaField(row.original.thumbnail, UI.language) ?? null
+				),
+			meta: {
+				cell: { variant: 'file-or-url', accept: 'image/*', maxFiles: 1, multiple: false },
+				setValue: setThumbnail,
+				serializePatch: (row, value) => ({ thumbnail: setThumbnail(row, value).thumbnail })
+			},
+			filterFn
+		},
+		{
+			accessorKey: 'description',
+			header: 'Description',
+			meta: { cell: { variant: 'text-translated-long', markdown: true } },
+			filterFn
+		},
+		{
 			accessorKey: 'visualization',
 			header: 'Visualization',
 			meta: { cell: { variant: 'select-single', options: visualizationOptions() } },
@@ -246,6 +288,8 @@
 		dataAdapter,
 		defaultRow: () => ({
 			nameRaw: { en: 'New anthology' },
+			thumbnail: null,
+			description: null,
 			visualization: AnthologyVisualization.grid,
 			configuration: null,
 			isPublished: true,
@@ -255,6 +299,13 @@
 		onRowsDelete: requestRowsDelete,
 		enableDeleteConfirmation: false,
 		onDataChange: (nextRows) => (rows = nextRows),
+		onFilesUpload: async ({ files, columnId, rowId }) =>
+			uploadMedia({
+				collection: MediaCollection.clients,
+				files,
+				rowId,
+				columnId
+			}),
 		onDownload: true,
 		enableSearch: true,
 		enablePaste: true,
@@ -265,7 +316,7 @@
 				clientId: false,
 				createdAt: false,
 				createdBy: false,
-				configuration: false
+				configuration: false,
 			},
 			columnPinning: { start: ['select-row'], end: [] }
 		}
@@ -355,16 +406,21 @@
 		{table}
 		height={gridHeight}
 		display="grid"
-		cardFields={['nameRaw', 'slug', 'visualization', 'isPublished', 'isPublic']}
+		cardFields={['nameRaw', 'slug', 'description', 'visualization', 'isPublished', 'isPublic']}
 	>
 		{#snippet card(anthology, fields)}
+			{@const thumbnail = translateLocalizedMediaField(anthology.thumbnail, UI.language)}
 			<a
 				href={resolve(`/edit/anthologies/${anthology.id}/stories`)}
 				aria-label={`Edit stories: ${translateLocalizedField(anthology.nameRaw, UI.language) || 'Untitled anthology'}`}
 				class="block focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
 			>
 				<div class="grid aspect-video place-items-center bg-muted">
-					<LibraryIcon class="size-10 text-muted-foreground/60" />
+					{#if thumbnail}
+						<MediaFile src={thumbnail} class="h-full w-full object-cover" />
+					{:else}
+						<LibraryIcon class="size-10 text-muted-foreground/60" />
+					{/if}
 				</div>
 				<div class="p-3">
 					<p class="mt-1 text-xs text-muted-foreground">

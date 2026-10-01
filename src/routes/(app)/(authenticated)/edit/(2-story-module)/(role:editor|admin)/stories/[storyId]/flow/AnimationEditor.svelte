@@ -188,7 +188,7 @@
 		</AlertDialog.Footer>
 	</AlertDialog.Content>
 </AlertDialog.Root>
-<div class="flex h-full min-h-0 min-w-0 flex-col [overflow-wrap:anywhere]">
+<div class="flex h-full min-h-0 min-w-0 flex-col wrap-anywhere">
 	<HeaderBlank class="w-full shrink-0">
 		<div class="min-w-0">
 			<h1 class="text-sm font-medium">{id === 'new' ? 'New animation' : 'Edit animation'}</h1>
@@ -244,7 +244,7 @@
 					bind:value={configJson}
 					oninput={scheduleAutosave}
 					rows={10}
-					class="field-sizing-fixed h-48 min-w-0 resize-y font-mono text-xs [overflow-wrap:anywhere]"
+					class="field-sizing-fixed h-48 min-w-0 resize-y font-mono text-xs wrap-anywhere"
 					spellcheck={false}
 				/>
 				{#if validation.data}
@@ -273,7 +273,7 @@
 					bind:value={textsJson}
 					oninput={scheduleAutosave}
 					rows={5}
-					class="field-sizing-fixed h-28 min-w-0 resize-y font-mono text-xs [overflow-wrap:anywhere]"
+					class="field-sizing-fixed h-28 min-w-0 resize-y font-mono text-xs wrap-anywhere"
 					spellcheck={false}
 				/>
 			</Field.Field>

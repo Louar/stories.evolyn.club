@@ -298,6 +298,7 @@
 
 <svelte:head>
 	<title>{anthology.name ?? stories[active]?.name}</title>
+	{#if anthology.description}<meta name="description" content={anthology.description} />{/if}
 </svelte:head>
 
 <div class="relative h-dvh w-dvw overflow-hidden text-white">
@@ -306,7 +307,7 @@
 	<!-- Scroll container (snap) -->
 	<div
 		bind:this={container}
-		class="scrollbar-none h-full w-full snap-y snap-mandatory overflow-y-scroll overscroll-contain scroll-smooth"
+		class="h-full w-full snap-y snap-mandatory scrollbar-none overflow-y-scroll overscroll-contain scroll-smooth"
 	>
 		{#each stories as story, i (i)}
 			<section data-index={i} class="relative h-full w-full snap-start snap-always">

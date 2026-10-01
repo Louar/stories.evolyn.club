@@ -225,6 +225,7 @@
 
 <svelte:head>
 	<title>{anthology.name}</title>
+	{#if anthology.description}<meta name="description" content={anthology.description} />{/if}
 </svelte:head>
 
 <Header>
@@ -246,6 +247,32 @@
 
 <main class="min-h-dvh bg-background text-foreground">
 	<div class="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
+		<!-- <div
+			class="grid gap-6 overflow-hidden rounded-2xl border bg-card shadow-sm md:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]"
+		>
+			<div class="flex flex-col justify-center gap-3 p-6 sm:p-8">
+				<p class="text-sm font-medium tracking-wide text-muted-foreground uppercase">Anthology</p>
+				<h2 class="text-3xl font-semibold tracking-tight sm:text-4xl">
+					{anthology.name ?? anthology.slug}
+				</h2>
+				{#if anthology.description}
+					<p class="max-w-2xl text-base leading-7 text-muted-foreground">
+						{anthology.description}
+					</p>
+				{/if}
+			</div>
+			<div class="min-h-56 bg-muted md:min-h-0">
+				{#if anthology.thumbnail}
+					<MediaFile src={anthology.thumbnail} class="h-full w-full object-cover" />
+				{:else}
+					<div
+						class="grid h-full min-h-56 place-items-center bg-linear-to-br from-muted to-muted/40 text-sm font-medium text-muted-foreground"
+					>
+						{stories.length} stories
+					</div>
+				{/if}
+			</div>
+		</div> -->
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 			{#each stories as story, i (story.id)}
 				{@const thumbnail = getStoryThumbnail(story)}
