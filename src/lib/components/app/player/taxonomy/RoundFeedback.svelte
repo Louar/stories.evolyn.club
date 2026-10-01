@@ -2,10 +2,11 @@
 	import * as m from '$lib/paraglide/messages';
 	import type { Snippet } from 'svelte';
 
-	let { correct, title, description, children } = $props<{
+	let { correct, title, description, duration, children } = $props<{
 		correct: boolean;
 		title?: string;
 		description?: string;
+		duration: number;
 		children?: Snippet;
 	}>();
 </script>
@@ -22,6 +23,7 @@
 			class:!bg-game-success={correct}
 			class:!bg-game-danger={!correct}
 			class="feedback-progress bg-game-inverse h-full origin-left"
+			style:--feedback-duration={`${duration}ms`}
 		></div>
 	</div>
 	<div class="p-5">
@@ -42,7 +44,7 @@
 
 <style>
 	.feedback-progress {
-		animation: feedback-countdown 3000ms linear forwards;
+		animation: feedback-countdown var(--feedback-duration) linear forwards;
 	}
 
 	@keyframes feedback-countdown {

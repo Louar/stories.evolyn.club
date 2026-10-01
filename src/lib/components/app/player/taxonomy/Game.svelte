@@ -74,6 +74,7 @@
 	let feedbackTimeoutToken = 0;
 	let didComplete = false;
 	const currentRound = $derived(playableRounds[currentRoundIndex] ?? null);
+	const feedbackDuration = $derived(feedback ? getFeedbackDuration(feedback) : 0);
 	const question = $derived.by(() => {
 		if (!currentRound) return '';
 		if (currentRound.attribute.question) return currentRound.attribute.question;
@@ -123,13 +124,18 @@
 	function showFeedback(nextFeedback: Feedback) {
 		clearFeedbackTimeout();
 		feedback = nextFeedback;
+		const duration = getFeedbackDuration(nextFeedback);
 		const timeoutToken = feedbackTimeoutToken;
 		feedbackTimeoutId = setTimeout(() => {
 			if (timeoutToken !== feedbackTimeoutToken) return;
 			feedbackTimeoutId = undefined;
 			if (nextFeedback.correct) nextRound();
 			else feedback = null;
-		}, 3000);
+		}, duration);
+	}
+
+	function getFeedbackDuration(nextFeedback: Feedback) {
+		return nextFeedback.correct ? 1000 : 2000;
 	}
 
 	function numericValue(value: unknown) {
@@ -388,6 +394,7 @@
 						correct={feedback.correct}
 						title={feedback.title}
 						description={feedback.description}
+						duration={feedbackDuration}
 					>
 						{#if feedback.correct}
 							<Button type="button" size="lg" class="w-full text-lg font-black" onclick={nextRound}>
