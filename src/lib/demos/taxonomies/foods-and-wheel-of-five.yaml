@@ -346,6 +346,421 @@ categories:
           items:
             type: GeometryCollection
             geometries: []
+  - id: category-3
+    name:
+      en: Season
+      nl: Seizoen
+    image: null
+    description:
+      en: Primary produce season used to classify fruits and vegetables
+      nl: Primair seizoen waarmee groente en fruit wordt ingedeeld
+    map:
+      type: topojson
+      object: items
+      projection: identity
+      showLabels: true
+      topology:
+        type: Topology
+        arcs:
+          - - [0.0, 0.0]
+            - [0.9, 0.0]
+            - [0.8995181287287292, 0.029447174539598525]
+            - [0.8980730309147431, 0.05886281630712876]
+            - [0.8956662540049772, 0.08821542629660455]
+            - [0.8923003752364294, 0.11747357299804642]
+            - [0.8879789988763911, 0.14660592605512987]
+            - [0.8827067523629074, 0.17558128981451543]
+            - [0.8764892813496002, 0.20436863673093592]
+            - [0.8693332436601615, 0.23293714059226867]
+            - [0.861246302158988, 0.2612562095290161]
+            - [0.8522371165455951, 0.28929551877284543]
+            - [0.8423153340815932, 0.3170250431291102]
+            - [0.831491579260158, 0.3444150891285808]
+            - [0.8197774424290583, 0.3714363268239553]
+            - [0.8071854673794194, 0.3980598211971012]
+            - [0.7937291379135195, 0.4242570631433979]
+            - [0.7794228634059949, 0.44999999999999996]
+            - [0.7642819633739211, 0.4752610655853312]
+            - [0.7483226510722907, 0.500013209717642]
+            - [0.7315620161324538, 0.5242299271810219]
+            - [0.7140180062621116, 0.5478852861078486]
+            - [0.6957094080264633, 0.5709539557472809]
+            - [0.6766558267310797, 0.593411233590062]
+            - [0.656877665428052, 0.6152330718205842]
+            - [0.6363961030678928, 0.6363961030678927]
+            - [0.6152330718205843, 0.656877665428052]
+            - [0.593411233590062, 0.6766558267310797]
+            - [0.5709539557472809, 0.6957094080264633]
+            - [0.5478852861078486, 0.7140180062621116]
+            - [0.5242299271810219, 0.7315620161324538]
+            - [0.5000132097176421, 0.7483226510722907]
+            - [0.4752610655853313, 0.7642819633739211]
+            - [0.4500000000000001, 0.7794228634059948]
+            - [0.42425706314339784, 0.7937291379135195]
+            - [0.39805982119710115, 0.8071854673794195]
+            - [0.3714363268239553, 0.8197774424290583]
+            - [0.3444150891285809, 0.831491579260158]
+            - [0.31702504312911023, 0.8423153340815931]
+            - [0.28929551877284554, 0.8522371165455951]
+            - [0.2612562095290161, 0.861246302158988]
+            - [0.23293714059226867, 0.8693332436601615]
+            - [0.20436863673093592, 0.8764892813496002]
+            - [0.1755812898145155, 0.8827067523629074]
+            - [0.14660592605512995, 0.8879789988763911]
+            - [0.11747357299804655, 0.8923003752364294]
+            - [0.08821542629660449, 0.8956662540049772]
+            - [0.058862816307128744, 0.8980730309147431]
+            - [0.02944717453959855, 0.8995181287287292]
+            - [0.0, 0.9]
+            - [0.0, 0.0]
+          - - [0.0, 0.0]
+            - [0.0, 0.9]
+            - [-0.029447174539598435, 0.8995181287287292]
+            - [-0.05886281630712863, 0.8980730309147431]
+            - [-0.08821542629660459, 0.8956662540049772]
+            - [-0.11747357299804645, 0.8923003752364294]
+            - [-0.14660592605512984, 0.8879789988763911]
+            - [-0.17558128981451537, 0.8827067523629074]
+            - [-0.2043686367309358, 0.8764892813496002]
+            - [-0.23293714059226878, 0.8693332436601615]
+            - [-0.2612562095290162, 0.861246302158988]
+            - [-0.28929551877284543, 0.8522371165455951]
+            - [-0.3170250431291102, 0.8423153340815932]
+            - [-0.34441508912858076, 0.831491579260158]
+            - [-0.37143632682395517, 0.8197774424290584]
+            - [-0.39805982119710104, 0.8071854673794195]
+            - [-0.42425706314339795, 0.7937291379135195]
+            - [-0.44999999999999984, 0.7794228634059949]
+            - [-0.4752610655853312, 0.7642819633739211]
+            - [-0.5000132097176422, 0.7483226510722907]
+            - [-0.5242299271810219, 0.7315620161324538]
+            - [-0.5478852861078486, 0.7140180062621116]
+            - [-0.5709539557472808, 0.6957094080264634]
+            - [-0.593411233590062, 0.6766558267310797]
+            - [-0.6152330718205843, 0.656877665428052]
+            - [-0.6363961030678927, 0.6363961030678928]
+            - [-0.6568776654280521, 0.6152330718205842]
+            - [-0.6766558267310796, 0.5934112335900621]
+            - [-0.6957094080264633, 0.5709539557472809]
+            - [-0.7140180062621115, 0.5478852861078488]
+            - [-0.7315620161324536, 0.5242299271810219]
+            - [-0.7483226510722908, 0.500013209717642]
+            - [-0.764281963373921, 0.4752610655853313]
+            - [-0.7794228634059949, 0.44999999999999996]
+            - [-0.7937291379135195, 0.42425706314339806]
+            - [-0.8071854673794194, 0.3980598211971012]
+            - [-0.8197774424290584, 0.37143632682395517]
+            - [-0.831491579260158, 0.34441508912858093]
+            - [-0.8423153340815932, 0.3170250431291101]
+            - [-0.8522371165455951, 0.2892955187728456]
+            - [-0.861246302158988, 0.2612562095290162]
+            - [-0.8693332436601614, 0.23293714059226892]
+            - [-0.8764892813496002, 0.20436863673093597]
+            - [-0.8827067523629074, 0.17558128981451535]
+            - [-0.8879789988763911, 0.14660592605513]
+            - [-0.8923003752364294, 0.11747357299804642]
+            - [-0.8956662540049771, 0.08821542629660474]
+            - [-0.8980730309147431, 0.05886281630712881]
+            - [-0.8995181287287292, 0.029447174539598404]
+            - [-0.9, 0.0]
+            - [0.0, 0.0]
+          - - [0.0, 0.0]
+            - [-0.9, 0.0]
+            - [-0.8995181287287292, -0.029447174539598588]
+            - [-0.8980730309147431, -0.058862816307128585]
+            - [-0.8956662540049772, -0.08821542629660453]
+            - [-0.8923003752364295, -0.1174735729980462]
+            - [-0.8879789988763911, -0.1466059260551298]
+            - [-0.8827067523629074, -0.17558128981451554]
+            - [-0.8764892813496002, -0.20436863673093572]
+            - [-0.8693332436601615, -0.23293714059226872]
+            - [-0.861246302158988, -0.2612562095290159]
+            - [-0.8522371165455951, -0.2892955187728454]
+            - [-0.8423153340815931, -0.31702504312911023]
+            - [-0.8314915792601582, -0.3444150891285807]
+            - [-0.8197774424290583, -0.37143632682395533]
+            - [-0.8071854673794195, -0.398059821197101]
+            - [-0.7937291379135195, -0.4242570631433979]
+            - [-0.7794228634059948, -0.4500000000000001]
+            - [-0.7642819633739211, -0.4752610655853311]
+            - [-0.7483226510722907, -0.5000132097176421]
+            - [-0.7315620161324539, -0.5242299271810219]
+            - [-0.7140180062621116, -0.5478852861078486]
+            - [-0.6957094080264634, -0.5709539557472808]
+            - [-0.6766558267310797, -0.593411233590062]
+            - [-0.656877665428052, -0.6152330718205843]
+            - [-0.636396103067893, -0.6363961030678927]
+            - [-0.6152330718205842, -0.656877665428052]
+            - [-0.5934112335900622, -0.6766558267310796]
+            - [-0.5709539557472812, -0.695709408026463]
+            - [-0.5478852861078488, -0.7140180062621114]
+            - [-0.524229927181022, -0.7315620161324536]
+            - [-0.500013209717642, -0.7483226510722907]
+            - [-0.475261065585331, -0.7642819633739211]
+            - [-0.4500000000000004, -0.7794228634059945]
+            - [-0.4242570631433981, -0.7937291379135195]
+            - [-0.3980598211971012, -0.8071854673794194]
+            - [-0.3714363268239552, -0.8197774424290584]
+            - [-0.34441508912858054, -0.8314915792601582]
+            - [-0.31702504312911056, -0.842315334081593]
+            - [-0.28929551877284565, -0.8522371165455951]
+            - [-0.2612562095290162, -0.861246302158988]
+            - [-0.23293714059226858, -0.8693332436601615]
+            - [-0.20436863673093564, -0.8764892813496004]
+            - [-0.1755812898145158, -0.8827067523629073]
+            - [-0.14660592605513006, -0.8879789988763911]
+            - [-0.11747357299804646, -0.8923003752364294]
+            - [-0.08821542629660441, -0.8956662540049772]
+            - [-0.05886281630712846, -0.8980730309147431]
+            - [-0.02944717453959886, -0.8995181287287292]
+            - [0.0, -0.9]
+            - [0.0, 0.0]
+          - - [0.0, 0.0]
+            - [0.0, -0.9]
+            - [0.02944717453959853, -0.8995181287287292]
+            - [0.05886281630712893, -0.8980730309147431]
+            - [0.08821542629660409, -0.8956662540049772]
+            - [0.11747357299804614, -0.8923003752364295]
+            - [0.14660592605512973, -0.8879789988763911]
+            - [0.17558128981451548, -0.8827067523629074]
+            - [0.20436863673093608, -0.8764892813496002]
+            - [0.23293714059226828, -0.8693332436601616]
+            - [0.26125620952901585, -0.861246302158988]
+            - [0.2892955187728453, -0.8522371165455951]
+            - [0.3170250431291102, -0.8423153340815931]
+            - [0.344415089128581, -0.8314915792601579]
+            - [0.3714363268239549, -0.8197774424290585]
+            - [0.3980598211971009, -0.8071854673794197]
+            - [0.42425706314339784, -0.7937291379135195]
+            - [0.4500000000000001, -0.7794228634059948]
+            - [0.4752610655853314, -0.764281963373921]
+            - [0.5000132097176416, -0.7483226510722909]
+            - [0.5242299271810218, -0.7315620161324539]
+            - [0.5478852861078486, -0.7140180062621116]
+            - [0.570953955747281, -0.6957094080264632]
+            - [0.5934112335900622, -0.6766558267310795]
+            - [0.615233071820584, -0.6568776654280524]
+            - [0.6363961030678926, -0.636396103067893]
+            - [0.656877665428052, -0.6152330718205843]
+            - [0.6766558267310797, -0.5934112335900619]
+            - [0.6957094080264635, -0.5709539557472808]
+            - [0.7140180062621114, -0.5478852861078488]
+            - [0.7315620161324536, -0.524229927181022]
+            - [0.7483226510722907, -0.500013209717642]
+            - [0.7642819633739211, -0.4752610655853311]
+            - [0.7794228634059945, -0.4500000000000004]
+            - [0.7937291379135194, -0.42425706314339817]
+            - [0.8071854673794194, -0.39805982119710126]
+            - [0.8197774424290583, -0.3714363268239553]
+            - [0.8314915792601582, -0.3444150891285806]
+            - [0.842315334081593, -0.3170250431291106]
+            - [0.8522371165455951, -0.2892955187728457]
+            - [0.861246302158988, -0.26125620952901624]
+            - [0.8693332436601615, -0.2329371405922686]
+            - [0.8764892813496004, -0.2043686367309357]
+            - [0.8827067523629073, -0.17558128981451585]
+            - [0.8879789988763911, -0.14660592605513012]
+            - [0.8923003752364294, -0.11747357299804652]
+            - [0.8956662540049772, -0.08821542629660446]
+            - [0.8980730309147431, -0.05886281630712852]
+            - [0.8995181287287292, -0.029447174539598917]
+            - [0.9, 0.0]
+            - [0.0, 0.0]
+          - - [1.5, 0.18]
+            - [1.5176430852593208, 0.17913325080099543]
+            - [1.5351162579629032, 0.17654135047258146]
+            - [1.5522512419058032, 0.17224926043179759]
+            - [1.5688830178257163, 0.16629831585203161]
+            - [1.5848514126286797, 0.1587458275827039]
+            - [1.6000026419435285, 0.14966453021445814]
+            - [1.6141907911494562, 0.13914188160529264]
+            - [1.6272792206135787, 0.12727922061357855]
+            - [1.6391418816052927, 0.11419079114945618]
+            - [1.6496645302144581, 0.10000264194352838]
+            - [1.6587458275827038, 0.08485141262867957]
+            - [1.6662983158520317, 0.06888301782571615]
+            - [1.6722492604317976, 0.05225124190580322]
+            - [1.6765413504725815, 0.03511625796290308]
+            - [1.6791332508009955, 0.017643085259320908]
+            - [1.68, 0.0]
+            - [1.6791332508009955, -0.017643085259320908]
+            - [1.6765413504725815, -0.03511625796290308]
+            - [1.6722492604317976, -0.05225124190580322]
+            - [1.6662983158520317, -0.06888301782571615]
+            - [1.6587458275827038, -0.08485141262867957]
+            - [1.6496645302144581, -0.10000264194352838]
+            - [1.6391418816052927, -0.11419079114945618]
+            - [1.6272792206135787, -0.12727922061357855]
+            - [1.6141907911494562, -0.13914188160529264]
+            - [1.6000026419435285, -0.14966453021445814]
+            - [1.5848514126286797, -0.1587458275827039]
+            - [1.5688830178257163, -0.16629831585203161]
+            - [1.5522512419058032, -0.17224926043179759]
+            - [1.5351162579629032, -0.17654135047258146]
+            - [1.5176430852593208, -0.17913325080099543]
+            - [1.5, -0.18]
+            - [1.482356914740679, -0.17913325080099543]
+            - [1.464883742037097, -0.17654135047258146]
+            - [1.4477487580941968, -0.17224926043179759]
+            - [1.431116982174284, -0.16629831585203161]
+            - [1.4151485873713203, -0.1587458275827039]
+            - [1.3999973580564715, -0.1496645302144581]
+            - [1.3858092088505438, -0.13914188160529267]
+            - [1.3727207793864213, -0.12727922061357855]
+            - [1.3608581183947073, -0.11419079114945618]
+            - [1.3503354697855419, -0.10000264194352838]
+            - [1.3412541724172962, -0.08485141262867961]
+            - [1.3337016841479683, -0.06888301782571618]
+            - [1.3277507395682024, -0.05225124190580323]
+            - [1.3234586495274185, -0.03511625796290307]
+            - [1.3208667491990045, -0.01764308525932095]
+            - [1.32, 0.0]
+            - [1.3208667491990045, 0.017643085259320904]
+            - [1.3234586495274185, 0.0351162579629031]
+            - [1.3277507395682024, 0.05225124190580318]
+            - [1.3337016841479683, 0.06888301782571614]
+            - [1.3412541724172962, 0.08485141262867957]
+            - [1.3503354697855419, 0.10000264194352841]
+            - [1.3608581183947073, 0.11419079114945614]
+            - [1.3727207793864213, 0.12727922061357855]
+            - [1.3858092088505438, 0.1391418816052926]
+            - [1.3999973580564715, 0.14966453021445814]
+            - [1.4151485873713203, 0.1587458275827039]
+            - [1.431116982174284, 0.16629831585203161]
+            - [1.4477487580941968, 0.17224926043179759]
+            - [1.4648837420370968, 0.17654135047258146]
+            - [1.4823569147406792, 0.17913325080099543]
+            - [1.5, 0.18]
+        objects:
+          items:
+            type: GeometryCollection
+            geometries: []
+  - id: category-4
+    name:
+      en: Fruits
+      nl: Fruit
+    image: null
+    description:
+      en: Fruits and fruit-like foods
+      nl: Fruit en fruitachtige voedingsmiddelen
+    map: null
+  - id: category-5
+    name:
+      en: Vegetables
+      nl: Groenten
+    image: null
+    description:
+      en: Vegetables and vegetable-like foods
+      nl: Groenten en groenteachtige voedingsmiddelen
+    map: null
+  - id: category-6
+    name:
+      en: Mushrooms
+      nl: Paddenstoelen
+    image: null
+    description:
+      en: Edible mushrooms
+      nl: Eetbare paddenstoelen
+    map: null
+  - id: category-7
+    name:
+      en: Legumes
+      nl: Peulvruchten
+    image: null
+    description:
+      en: Legumes and legume-like foods
+      nl: Peulvruchten en peulvruchtachtige voedingsmiddelen
+    map: null
+  - id: category-8
+    name:
+      en: Nuts
+      nl: Noten
+    image: null
+    description:
+      en: Nuts and nut-like foods
+      nl: Noten en nootachtige voedingsmiddelen
+    map: null
+  - id: category-9
+    name:
+      en: Grain products
+      nl: Graanproducten
+    image: null
+    description:
+      en: Breads, cereals, rice, and related grain products
+      nl: Brood, ontbijtgranen, rijst en verwante graanproducten
+    map: null
+  - id: category-10
+    name:
+      en: Dairy
+      nl: Zuivel
+    image: null
+    description:
+      en: Dairy products and dairy-based foods
+      nl: Zuivelproducten en voedingsmiddelen op basis van zuivel
+    map: null
+  - id: category-11
+    name:
+      en: Eggs
+      nl: Eieren
+    image: null
+    description:
+      en: Egg foods
+      nl: Eivoedingsmiddelen
+    map: null
+  - id: category-12
+    name:
+      en: Meat
+      nl: Vlees
+    image: null
+    description:
+      en: Meat foods
+      nl: Vleesproducten
+    map: null
+  - id: category-13
+    name:
+      en: Fish & seafood
+      nl: Vis en zeevruchten
+    image: null
+    description:
+      en: Fish, shellfish, and seafood products
+      nl: Vis, schaal- en schelpdieren en zeevruchten
+    map: null
+  - id: category-14
+    name:
+      en: Dishes
+      nl: Gerechten
+    image: null
+    description:
+      en: Prepared meals and composed dishes
+      nl: Bereide maaltijden en samengestelde gerechten
+    map: null
+  - id: category-15
+    name:
+      en: Snacks
+      nl: Snacks
+    image: null
+    description:
+      en: Snack foods
+      nl: Snacks
+    map: null
+  - id: category-16
+    name:
+      en: Sweets
+      nl: Zoetigheden
+    image: null
+    description:
+      en: Sweet foods and desserts
+      nl: Zoetigheden en desserts
+    map: null
+  - id: category-17
+    name:
+      en: Seasoning
+      nl: Smaakmakers
+    image: null
+    description:
+      en: Seasonings and condiment-like foods
+      nl: Smaakmakers en voedingsmiddelen zoals condimenten
+    map: null
   - id: category-2
     name:
       en: Foods
@@ -458,18 +873,6 @@ attributes:
     type: number
     referencedCategoryId: null
     schema: null
-  - id: attribute-9
-    slug: countryOfOrigin
-    name:
-      en: Country of origin
-      nl: Land van oorsprong
-    image: null
-    description:
-      en: Representative country associated with the food for demo purposes
-      nl: Representatief land dat voor demodoeleinden met het voedsel wordt geassocieerd
-    type: translatable
-    referencedCategoryId: null
-    schema: null
   - id: attribute-10
     slug: wheelOfFive
     question:
@@ -532,6 +935,21 @@ attributes:
       nl: Kaartmiddelpunt geformatteerd als lengtegraad, breedtegraad
     type: custom
     referencedCategoryId: null
+    schema: null
+  - id: attribute-15
+    slug: primarySeason
+    question:
+      en: What is the primary season for this food?
+      nl: Wat is het primaire seizoen voor dit voedsel?
+    name:
+      en: Primary season
+      nl: Primair seizoen
+    image: null
+    description:
+      en: Primary season associated with this fruit or vegetable
+      nl: Primair seizoen dat bij deze groente of dit fruit hoort
+    type: item_reference
+    referencedCategoryId: category-3
     schema: null
 attributeOfCategories:
   - categoryId: category-1
@@ -600,15 +1018,180 @@ attributeOfCategories:
     isRequired: true
     isDefault: false
   - categoryId: category-2
-    attributeId: attribute-9
+    attributeId: attribute-10
     order: 8
     isRequired: true
     isDefault: false
   - categoryId: category-2
-    attributeId: attribute-10
+    attributeId: attribute-15
     order: 9
+    isRequired: false
+    isDefault: false
+  - categoryId: category-3
+    attributeId: attribute-1
+    order: 0
+    isRequired: true
+    isDefault: true
+  - categoryId: category-3
+    attributeId: attribute-11
+    order: 1
     isRequired: true
     isDefault: false
+  - categoryId: category-3
+    attributeId: attribute-12
+    order: 2
+    isRequired: true
+    isDefault: false
+  - categoryId: category-3
+    attributeId: attribute-13
+    order: 3
+    isRequired: true
+    isDefault: false
+  - categoryId: category-3
+    attributeId: attribute-14
+    order: 4
+    isRequired: true
+    isDefault: false
+  - categoryId: category-4
+    attributeId: attribute-1
+    order: 0
+    isRequired: true
+    isDefault: true
+  - categoryId: category-4
+    attributeId: attribute-2
+    order: 1
+    isRequired: true
+    isDefault: true
+  - categoryId: category-5
+    attributeId: attribute-1
+    order: 0
+    isRequired: true
+    isDefault: true
+  - categoryId: category-5
+    attributeId: attribute-2
+    order: 1
+    isRequired: true
+    isDefault: true
+  - categoryId: category-6
+    attributeId: attribute-1
+    order: 0
+    isRequired: true
+    isDefault: true
+  - categoryId: category-6
+    attributeId: attribute-2
+    order: 1
+    isRequired: true
+    isDefault: true
+  - categoryId: category-7
+    attributeId: attribute-1
+    order: 0
+    isRequired: true
+    isDefault: true
+  - categoryId: category-7
+    attributeId: attribute-2
+    order: 1
+    isRequired: true
+    isDefault: true
+  - categoryId: category-8
+    attributeId: attribute-1
+    order: 0
+    isRequired: true
+    isDefault: true
+  - categoryId: category-8
+    attributeId: attribute-2
+    order: 1
+    isRequired: true
+    isDefault: true
+  - categoryId: category-9
+    attributeId: attribute-1
+    order: 0
+    isRequired: true
+    isDefault: true
+  - categoryId: category-9
+    attributeId: attribute-2
+    order: 1
+    isRequired: true
+    isDefault: true
+  - categoryId: category-10
+    attributeId: attribute-1
+    order: 0
+    isRequired: true
+    isDefault: true
+  - categoryId: category-10
+    attributeId: attribute-2
+    order: 1
+    isRequired: true
+    isDefault: true
+  - categoryId: category-11
+    attributeId: attribute-1
+    order: 0
+    isRequired: true
+    isDefault: true
+  - categoryId: category-11
+    attributeId: attribute-2
+    order: 1
+    isRequired: true
+    isDefault: true
+  - categoryId: category-12
+    attributeId: attribute-1
+    order: 0
+    isRequired: true
+    isDefault: true
+  - categoryId: category-12
+    attributeId: attribute-2
+    order: 1
+    isRequired: true
+    isDefault: true
+  - categoryId: category-13
+    attributeId: attribute-1
+    order: 0
+    isRequired: true
+    isDefault: true
+  - categoryId: category-13
+    attributeId: attribute-2
+    order: 1
+    isRequired: true
+    isDefault: true
+  - categoryId: category-14
+    attributeId: attribute-1
+    order: 0
+    isRequired: true
+    isDefault: true
+  - categoryId: category-14
+    attributeId: attribute-2
+    order: 1
+    isRequired: true
+    isDefault: true
+  - categoryId: category-15
+    attributeId: attribute-1
+    order: 0
+    isRequired: true
+    isDefault: true
+  - categoryId: category-15
+    attributeId: attribute-2
+    order: 1
+    isRequired: true
+    isDefault: true
+  - categoryId: category-16
+    attributeId: attribute-1
+    order: 0
+    isRequired: true
+    isDefault: true
+  - categoryId: category-16
+    attributeId: attribute-2
+    order: 1
+    isRequired: true
+    isDefault: true
+  - categoryId: category-17
+    attributeId: attribute-1
+    order: 0
+    isRequired: true
+    isDefault: true
+  - categoryId: category-17
+    attributeId: attribute-2
+    order: 1
+    isRequired: true
+    isDefault: true
 items:
   - id: item-1
   - id: item-2
@@ -716,6 +1299,11 @@ items:
   - id: item-104
   - id: item-105
   - id: item-106
+  - id: item-107
+  - id: item-108
+  - id: item-109
+  - id: item-110
+  - id: item-111
 itemOfCategories:
   - itemId: item-1
     categoryId: category-1
@@ -929,6 +1517,224 @@ itemOfCategories:
     categoryId: category-2
   - itemId: item-106
     categoryId: category-2
+  - itemId: item-107
+    categoryId: category-3
+  - itemId: item-108
+    categoryId: category-3
+  - itemId: item-109
+    categoryId: category-3
+  - itemId: item-110
+    categoryId: category-3
+  - itemId: item-111
+    categoryId: category-3
+  - itemId: item-7
+    categoryId: category-4
+  - itemId: item-8
+    categoryId: category-4
+  - itemId: item-9
+    categoryId: category-4
+  - itemId: item-10
+    categoryId: category-4
+  - itemId: item-11
+    categoryId: category-4
+  - itemId: item-12
+    categoryId: category-4
+  - itemId: item-13
+    categoryId: category-4
+  - itemId: item-14
+    categoryId: category-4
+  - itemId: item-15
+    categoryId: category-4
+  - itemId: item-16
+    categoryId: category-4
+  - itemId: item-17
+    categoryId: category-4
+  - itemId: item-18
+    categoryId: category-4
+  - itemId: item-19
+    categoryId: category-4
+  - itemId: item-20
+    categoryId: category-4
+  - itemId: item-21
+    categoryId: category-4
+  - itemId: item-22
+    categoryId: category-4
+  - itemId: item-23
+    categoryId: category-4
+  - itemId: item-26
+    categoryId: category-4
+  - itemId: item-24
+    categoryId: category-5
+  - itemId: item-25
+    categoryId: category-5
+  - itemId: item-28
+    categoryId: category-5
+  - itemId: item-29
+    categoryId: category-5
+  - itemId: item-30
+    categoryId: category-5
+  - itemId: item-31
+    categoryId: category-5
+  - itemId: item-32
+    categoryId: category-5
+  - itemId: item-33
+    categoryId: category-5
+  - itemId: item-34
+    categoryId: category-5
+  - itemId: item-35
+    categoryId: category-5
+  - itemId: item-36
+    categoryId: category-5
+  - itemId: item-37
+    categoryId: category-5
+  - itemId: item-38
+    categoryId: category-5
+  - itemId: item-39
+    categoryId: category-5
+  - itemId: item-43
+    categoryId: category-5
+  - itemId: item-44
+    categoryId: category-5
+  - itemId: item-46
+    categoryId: category-5
+  - itemId: item-88
+    categoryId: category-5
+  - itemId: item-27
+    categoryId: category-6
+  - itemId: item-45
+    categoryId: category-6
+  - itemId: item-40
+    categoryId: category-7
+  - itemId: item-41
+    categoryId: category-7
+  - itemId: item-44
+    categoryId: category-7
+  - itemId: item-42
+    categoryId: category-8
+  - itemId: item-26
+    categoryId: category-8
+  - itemId: item-47
+    categoryId: category-9
+  - itemId: item-48
+    categoryId: category-9
+  - itemId: item-49
+    categoryId: category-9
+  - itemId: item-50
+    categoryId: category-9
+  - itemId: item-51
+    categoryId: category-9
+  - itemId: item-52
+    categoryId: category-9
+  - itemId: item-53
+    categoryId: category-9
+  - itemId: item-54
+    categoryId: category-9
+  - itemId: item-75
+    categoryId: category-9
+  - itemId: item-82
+    categoryId: category-9
+  - itemId: item-83
+    categoryId: category-9
+  - itemId: item-84
+    categoryId: category-9
+  - itemId: item-55
+    categoryId: category-10
+  - itemId: item-78
+    categoryId: category-10
+  - itemId: item-74
+    categoryId: category-10
+  - itemId: item-70
+    categoryId: category-11
+  - itemId: item-71
+    categoryId: category-11
+  - itemId: item-56
+    categoryId: category-12
+  - itemId: item-57
+    categoryId: category-12
+  - itemId: item-58
+    categoryId: category-12
+  - itemId: item-59
+    categoryId: category-12
+  - itemId: item-90
+    categoryId: category-13
+  - itemId: item-91
+    categoryId: category-13
+  - itemId: item-92
+    categoryId: category-13
+  - itemId: item-98
+    categoryId: category-13
+  - itemId: item-99
+    categoryId: category-13
+  - itemId: item-100
+    categoryId: category-13
+  - itemId: item-101
+    categoryId: category-13
+  - itemId: item-102
+    categoryId: category-13
+  - itemId: item-60
+    categoryId: category-14
+  - itemId: item-62
+    categoryId: category-14
+  - itemId: item-63
+    categoryId: category-14
+  - itemId: item-64
+    categoryId: category-14
+  - itemId: item-65
+    categoryId: category-14
+  - itemId: item-66
+    categoryId: category-14
+  - itemId: item-67
+    categoryId: category-14
+  - itemId: item-68
+    categoryId: category-14
+  - itemId: item-69
+    categoryId: category-14
+  - itemId: item-72
+    categoryId: category-14
+  - itemId: item-73
+    categoryId: category-14
+  - itemId: item-76
+    categoryId: category-14
+  - itemId: item-81
+    categoryId: category-14
+  - itemId: item-85
+    categoryId: category-14
+  - itemId: item-86
+    categoryId: category-14
+  - itemId: item-87
+    categoryId: category-14
+  - itemId: item-89
+    categoryId: category-14
+  - itemId: item-95
+    categoryId: category-14
+  - itemId: item-97
+    categoryId: category-14
+  - itemId: item-61
+    categoryId: category-14
+  - itemId: item-61
+    categoryId: category-15
+  - itemId: item-77
+    categoryId: category-15
+  - itemId: item-103
+    categoryId: category-16
+  - itemId: item-104
+    categoryId: category-16
+  - itemId: item-105
+    categoryId: category-16
+  - itemId: item-106
+    categoryId: category-16
+  - itemId: item-93
+    categoryId: category-16
+  - itemId: item-94
+    categoryId: category-16
+  - itemId: item-96
+    categoryId: category-16
+  - itemId: item-77
+    categoryId: category-16
+  - itemId: item-79
+    categoryId: category-17
+  - itemId: item-80
+    categoryId: category-17
 attributeOfItems:
   - itemId: item-1
     attributeId: attribute-1
@@ -1165,13 +1971,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-7
-    attributeId: attribute-9
-    value:
-      en: Georgia
-      nl: Georgië
-    referencedItemId: null
-    difficulty: null
   - itemId: item-8
     attributeId: attribute-1
     value:
@@ -1219,13 +2018,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-8
-    attributeId: attribute-9
-    value:
-      en: Iran
-      nl: Iran
-    referencedItemId: null
     difficulty: null
   - itemId: item-9
     attributeId: attribute-1
@@ -1275,13 +2067,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-9
-    attributeId: attribute-9
-    value:
-      en: South Africa
-      nl: Zuid-Afrika
-    referencedItemId: null
-    difficulty: null
   - itemId: item-10
     attributeId: attribute-1
     value:
@@ -1329,13 +2114,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-10
-    attributeId: attribute-9
-    value:
-      en: China
-      nl: China
-    referencedItemId: null
     difficulty: null
   - itemId: item-11
     attributeId: attribute-1
@@ -1385,13 +2163,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-11
-    attributeId: attribute-9
-    value:
-      en: India
-      nl: India
-    referencedItemId: null
-    difficulty: null
   - itemId: item-12
     attributeId: attribute-1
     value:
@@ -1439,13 +2210,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-12
-    attributeId: attribute-9
-    value:
-      en: India
-      nl: India
-    referencedItemId: null
     difficulty: null
   - itemId: item-13
     attributeId: attribute-1
@@ -1495,13 +2259,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-13
-    attributeId: attribute-9
-    value:
-      en: Papua New Guinea
-      nl: Papoea-Nieuw-Guinea
-    referencedItemId: null
-    difficulty: null
   - itemId: item-14
     attributeId: attribute-1
     value:
@@ -1549,13 +2306,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-14
-    attributeId: attribute-9
-    value:
-      en: Brazil
-      nl: Brazilië
-    referencedItemId: null
     difficulty: null
   - itemId: item-15
     attributeId: attribute-1
@@ -1605,13 +2355,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-15
-    attributeId: attribute-9
-    value:
-      en: India
-      nl: India
-    referencedItemId: null
-    difficulty: null
   - itemId: item-16
     attributeId: attribute-1
     value:
@@ -1659,13 +2402,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-16
-    attributeId: attribute-9
-    value:
-      en: Kazakhstan
-      nl: Kazachstan
-    referencedItemId: null
     difficulty: null
   - itemId: item-17
     attributeId: attribute-1
@@ -1715,13 +2451,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-17
-    attributeId: attribute-9
-    value:
-      en: Kazakhstan
-      nl: Kazachstan
-    referencedItemId: null
-    difficulty: null
   - itemId: item-18
     attributeId: attribute-1
     value:
@@ -1769,13 +2498,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-18
-    attributeId: attribute-9
-    value:
-      en: China
-      nl: China
-    referencedItemId: null
     difficulty: null
   - itemId: item-19
     attributeId: attribute-1
@@ -1825,13 +2547,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-19
-    attributeId: attribute-9
-    value:
-      en: China
-      nl: China
-    referencedItemId: null
-    difficulty: null
   - itemId: item-20
     attributeId: attribute-1
     value:
@@ -1879,13 +2594,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-20
-    attributeId: attribute-9
-    value:
-      en: Turkey
-      nl: Turkije
-    referencedItemId: null
     difficulty: null
   - itemId: item-21
     attributeId: attribute-1
@@ -1935,13 +2643,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-21
-    attributeId: attribute-9
-    value:
-      en: France
-      nl: Frankrijk
-    referencedItemId: null
-    difficulty: null
   - itemId: item-22
     attributeId: attribute-1
     value:
@@ -1989,13 +2690,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-22
-    attributeId: attribute-9
-    value:
-      en: United States of America
-      nl: Verenigde Staten
-    referencedItemId: null
     difficulty: null
   - itemId: item-23
     attributeId: attribute-1
@@ -2045,13 +2739,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-23
-    attributeId: attribute-9
-    value:
-      en: China
-      nl: China
-    referencedItemId: null
-    difficulty: null
   - itemId: item-24
     attributeId: attribute-1
     value:
@@ -2099,13 +2786,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-24
-    attributeId: attribute-9
-    value:
-      en: Mexico
-      nl: Mexico
-    referencedItemId: null
     difficulty: null
   - itemId: item-25
     attributeId: attribute-1
@@ -2155,13 +2835,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-25
-    attributeId: attribute-9
-    value:
-      en: Greece
-      nl: Griekenland
-    referencedItemId: null
-    difficulty: null
   - itemId: item-26
     attributeId: attribute-1
     value:
@@ -2209,13 +2882,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-26
-    attributeId: attribute-9
-    value:
-      en: Indonesia
-      nl: Indonesië
-    referencedItemId: null
     difficulty: null
   - itemId: item-27
     attributeId: attribute-1
@@ -2265,13 +2931,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-27
-    attributeId: attribute-9
-    value:
-      en: France
-      nl: Frankrijk
-    referencedItemId: null
-    difficulty: null
   - itemId: item-28
     attributeId: attribute-1
     value:
@@ -2319,13 +2978,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-28
-    attributeId: attribute-9
-    value:
-      en: Mexico
-      nl: Mexico
-    referencedItemId: null
     difficulty: null
   - itemId: item-29
     attributeId: attribute-1
@@ -2375,13 +3027,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-29
-    attributeId: attribute-9
-    value:
-      en: India
-      nl: India
-    referencedItemId: null
-    difficulty: null
   - itemId: item-30
     attributeId: attribute-1
     value:
@@ -2429,13 +3074,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-2
-    difficulty: null
-  - itemId: item-30
-    attributeId: attribute-9
-    value:
-      en: Peru
-      nl: Peru
-    referencedItemId: null
     difficulty: null
   - itemId: item-31
     attributeId: attribute-1
@@ -2485,13 +3123,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-31
-    attributeId: attribute-9
-    value:
-      en: Afghanistan
-      nl: Afghanistan
-    referencedItemId: null
-    difficulty: null
   - itemId: item-32
     attributeId: attribute-1
     value:
@@ -2539,13 +3170,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-32
-    attributeId: attribute-9
-    value:
-      en: Mexico
-      nl: Mexico
-    referencedItemId: null
     difficulty: null
   - itemId: item-33
     attributeId: attribute-1
@@ -2595,13 +3219,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-33
-    attributeId: attribute-9
-    value:
-      en: Mexico
-      nl: Mexico
-    referencedItemId: null
-    difficulty: null
   - itemId: item-34
     attributeId: attribute-1
     value:
@@ -2649,13 +3266,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-34
-    attributeId: attribute-9
-    value:
-      en: Mexico
-      nl: Mexico
-    referencedItemId: null
     difficulty: null
   - itemId: item-35
     attributeId: attribute-1
@@ -2705,13 +3315,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-35
-    attributeId: attribute-9
-    value:
-      en: India
-      nl: India
-    referencedItemId: null
-    difficulty: null
   - itemId: item-36
     attributeId: attribute-1
     value:
@@ -2759,13 +3362,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-36
-    attributeId: attribute-9
-    value:
-      en: Egypt
-      nl: Egypte
-    referencedItemId: null
     difficulty: null
   - itemId: item-37
     attributeId: attribute-1
@@ -2815,13 +3411,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-37
-    attributeId: attribute-9
-    value:
-      en: Italy
-      nl: Italië
-    referencedItemId: null
-    difficulty: null
   - itemId: item-38
     attributeId: attribute-1
     value:
@@ -2869,13 +3458,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-38
-    attributeId: attribute-9
-    value:
-      en: China
-      nl: China
-    referencedItemId: null
     difficulty: null
   - itemId: item-39
     attributeId: attribute-1
@@ -2925,13 +3507,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-39
-    attributeId: attribute-9
-    value:
-      en: Iran
-      nl: Iran
-    referencedItemId: null
-    difficulty: null
   - itemId: item-40
     attributeId: attribute-1
     value:
@@ -2979,13 +3554,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-4
-    difficulty: null
-  - itemId: item-40
-    attributeId: attribute-9
-    value:
-      en: Bolivia
-      nl: Bolivia
-    referencedItemId: null
     difficulty: null
   - itemId: item-41
     attributeId: attribute-1
@@ -3035,13 +3603,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-4
     difficulty: null
-  - itemId: item-41
-    attributeId: attribute-9
-    value:
-      en: Peru
-      nl: Peru
-    referencedItemId: null
-    difficulty: null
   - itemId: item-42
     attributeId: attribute-1
     value:
@@ -3089,13 +3650,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-42
-    attributeId: attribute-9
-    value:
-      en: Turkey
-      nl: Turkije
-    referencedItemId: null
     difficulty: null
   - itemId: item-43
     attributeId: attribute-1
@@ -3145,13 +3699,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-43
-    attributeId: attribute-9
-    value:
-      en: China
-      nl: China
-    referencedItemId: null
-    difficulty: null
   - itemId: item-44
     attributeId: attribute-1
     value:
@@ -3199,13 +3746,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-4
-    difficulty: null
-  - itemId: item-44
-    attributeId: attribute-9
-    value:
-      en: Turkey
-      nl: Turkije
-    referencedItemId: null
     difficulty: null
   - itemId: item-45
     attributeId: attribute-1
@@ -3255,13 +3795,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-1
     difficulty: null
-  - itemId: item-45
-    attributeId: attribute-9
-    value:
-      en: France
-      nl: Frankrijk
-    referencedItemId: null
-    difficulty: null
   - itemId: item-46
     attributeId: attribute-1
     value:
@@ -3309,13 +3842,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-46
-    attributeId: attribute-9
-    value:
-      en: Italy
-      nl: Italië
-    referencedItemId: null
     difficulty: null
   - itemId: item-47
     attributeId: attribute-1
@@ -3365,13 +3891,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-2
     difficulty: null
-  - itemId: item-47
-    attributeId: attribute-9
-    value:
-      en: Egypt
-      nl: Egypte
-    referencedItemId: null
-    difficulty: null
   - itemId: item-48
     attributeId: attribute-1
     value:
@@ -3419,13 +3938,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-48
-    attributeId: attribute-9
-    value:
-      en: Austria
-      nl: Oostenrijk
-    referencedItemId: null
     difficulty: null
   - itemId: item-49
     attributeId: attribute-1
@@ -3475,13 +3987,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-49
-    attributeId: attribute-9
-    value:
-      en: France
-      nl: Frankrijk
-    referencedItemId: null
-    difficulty: null
   - itemId: item-50
     attributeId: attribute-1
     value:
@@ -3529,13 +4034,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-50
-    attributeId: attribute-9
-    value:
-      en: Lebanon
-      nl: Libanon
-    referencedItemId: null
     difficulty: null
   - itemId: item-51
     attributeId: attribute-1
@@ -3585,13 +4083,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-51
-    attributeId: attribute-9
-    value:
-      en: Germany
-      nl: Duitsland
-    referencedItemId: null
-    difficulty: null
   - itemId: item-52
     attributeId: attribute-1
     value:
@@ -3639,13 +4130,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-52
-    attributeId: attribute-9
-    value:
-      en: Poland
-      nl: Polen
-    referencedItemId: null
     difficulty: null
   - itemId: item-53
     attributeId: attribute-1
@@ -3695,13 +4179,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-53
-    attributeId: attribute-9
-    value:
-      en: Netherlands
-      nl: Nederland
-    referencedItemId: null
-    difficulty: null
   - itemId: item-54
     attributeId: attribute-1
     value:
@@ -3749,13 +4226,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-54
-    attributeId: attribute-9
-    value:
-      en: Belgium
-      nl: België
-    referencedItemId: null
     difficulty: null
   - itemId: item-55
     attributeId: attribute-1
@@ -3805,13 +4275,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-55
-    attributeId: attribute-9
-    value:
-      en: Netherlands
-      nl: Nederland
-    referencedItemId: null
-    difficulty: null
   - itemId: item-56
     attributeId: attribute-1
     value:
@@ -3859,13 +4322,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-4
-    difficulty: null
-  - itemId: item-56
-    attributeId: attribute-9
-    value:
-      en: Germany
-      nl: Duitsland
-    referencedItemId: null
     difficulty: null
   - itemId: item-57
     attributeId: attribute-1
@@ -3915,13 +4371,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-4
     difficulty: null
-  - itemId: item-57
-    attributeId: attribute-9
-    value:
-      en: India
-      nl: India
-    referencedItemId: null
-    difficulty: null
   - itemId: item-58
     attributeId: attribute-1
     value:
@@ -3969,13 +4418,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-4
-    difficulty: null
-  - itemId: item-58
-    attributeId: attribute-9
-    value:
-      en: United States of America
-      nl: Verenigde Staten
-    referencedItemId: null
     difficulty: null
   - itemId: item-59
     attributeId: attribute-1
@@ -4025,13 +4467,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-59
-    attributeId: attribute-9
-    value:
-      en: United Kingdom
-      nl: Verenigd Koninkrijk
-    referencedItemId: null
-    difficulty: null
   - itemId: item-60
     attributeId: attribute-1
     value:
@@ -4079,13 +4514,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-60
-    attributeId: attribute-9
-    value:
-      en: United States of America
-      nl: Verenigde Staten
-    referencedItemId: null
     difficulty: null
   - itemId: item-61
     attributeId: attribute-1
@@ -4135,13 +4563,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-61
-    attributeId: attribute-9
-    value:
-      en: Belgium
-      nl: België
-    referencedItemId: null
-    difficulty: null
   - itemId: item-62
     attributeId: attribute-1
     value:
@@ -4189,13 +4610,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-62
-    attributeId: attribute-9
-    value:
-      en: Italy
-      nl: Italië
-    referencedItemId: null
     difficulty: null
   - itemId: item-63
     attributeId: attribute-1
@@ -4245,13 +4659,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-63
-    attributeId: attribute-9
-    value:
-      en: Germany
-      nl: Duitsland
-    referencedItemId: null
-    difficulty: null
   - itemId: item-64
     attributeId: attribute-1
     value:
@@ -4299,13 +4706,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-64
-    attributeId: attribute-9
-    value:
-      en: United Kingdom
-      nl: Verenigd Koninkrijk
-    referencedItemId: null
     difficulty: null
   - itemId: item-65
     attributeId: attribute-1
@@ -4355,13 +4755,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-65
-    attributeId: attribute-9
-    value:
-      en: Mexico
-      nl: Mexico
-    referencedItemId: null
-    difficulty: null
   - itemId: item-66
     attributeId: attribute-1
     value:
@@ -4409,13 +4802,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-66
-    attributeId: attribute-9
-    value:
-      en: Mexico
-      nl: Mexico
-    referencedItemId: null
     difficulty: null
   - itemId: item-67
     attributeId: attribute-1
@@ -4465,13 +4851,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-67
-    attributeId: attribute-9
-    value:
-      en: Mexico
-      nl: Mexico
-    referencedItemId: null
-    difficulty: null
   - itemId: item-68
     attributeId: attribute-1
     value:
@@ -4519,13 +4898,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-68
-    attributeId: attribute-9
-    value:
-      en: Lebanon
-      nl: Libanon
-    referencedItemId: null
     difficulty: null
   - itemId: item-69
     attributeId: attribute-1
@@ -4575,13 +4947,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-69
-    attributeId: attribute-9
-    value:
-      en: Egypt
-      nl: Egypte
-    referencedItemId: null
-    difficulty: null
   - itemId: item-70
     attributeId: attribute-1
     value:
@@ -4629,13 +4994,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-4
-    difficulty: null
-  - itemId: item-70
-    attributeId: attribute-9
-    value:
-      en: India
-      nl: India
-    referencedItemId: null
     difficulty: null
   - itemId: item-71
     attributeId: attribute-1
@@ -4685,13 +5043,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-4
     difficulty: null
-  - itemId: item-71
-    attributeId: attribute-9
-    value:
-      en: United States of America
-      nl: Verenigde Staten
-    referencedItemId: null
-    difficulty: null
   - itemId: item-72
     attributeId: attribute-1
     value:
@@ -4739,13 +5090,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-72
-    attributeId: attribute-9
-    value:
-      en: Spain
-      nl: Spanje
-    referencedItemId: null
     difficulty: null
   - itemId: item-73
     attributeId: attribute-1
@@ -4795,13 +5139,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-73
-    attributeId: attribute-9
-    value:
-      en: France
-      nl: Frankrijk
-    referencedItemId: null
-    difficulty: null
   - itemId: item-74
     attributeId: attribute-1
     value:
@@ -4849,13 +5186,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-74
-    attributeId: attribute-9
-    value:
-      en: Switzerland
-      nl: Zwitserland
-    referencedItemId: null
     difficulty: null
   - itemId: item-75
     attributeId: attribute-1
@@ -4905,13 +5235,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-2
     difficulty: null
-  - itemId: item-75
-    attributeId: attribute-9
-    value:
-      en: United States of America
-      nl: Verenigde Staten
-    referencedItemId: null
-    difficulty: null
   - itemId: item-76
     attributeId: attribute-1
     value:
@@ -4959,13 +5282,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-76
-    attributeId: attribute-9
-    value:
-      en: Italy
-      nl: Italië
-    referencedItemId: null
     difficulty: null
   - itemId: item-77
     attributeId: attribute-1
@@ -5015,13 +5331,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-77
-    attributeId: attribute-9
-    value:
-      en: Mexico
-      nl: Mexico
-    referencedItemId: null
-    difficulty: null
   - itemId: item-78
     attributeId: attribute-1
     value:
@@ -5069,13 +5378,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-78
-    attributeId: attribute-9
-    value:
-      en: France
-      nl: Frankrijk
-    referencedItemId: null
     difficulty: null
   - itemId: item-79
     attributeId: attribute-1
@@ -5125,13 +5427,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-79
-    attributeId: attribute-9
-    value:
-      en: Austria
-      nl: Oostenrijk
-    referencedItemId: null
-    difficulty: null
   - itemId: item-80
     attributeId: attribute-1
     value:
@@ -5179,13 +5474,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-1
-    difficulty: null
-  - itemId: item-80
-    attributeId: attribute-9
-    value:
-      en: Italy
-      nl: Italië
-    referencedItemId: null
     difficulty: null
   - itemId: item-81
     attributeId: attribute-1
@@ -5235,13 +5523,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-81
-    attributeId: attribute-9
-    value:
-      en: Japan
-      nl: Japan
-    referencedItemId: null
-    difficulty: null
   - itemId: item-82
     attributeId: attribute-1
     value:
@@ -5289,13 +5570,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-82
-    attributeId: attribute-9
-    value:
-      en: Japan
-      nl: Japan
-    referencedItemId: null
     difficulty: null
   - itemId: item-83
     attributeId: attribute-1
@@ -5345,13 +5619,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-83
-    attributeId: attribute-9
-    value:
-      en: Japan
-      nl: Japan
-    referencedItemId: null
-    difficulty: null
   - itemId: item-84
     attributeId: attribute-1
     value:
@@ -5399,13 +5666,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-84
-    attributeId: attribute-9
-    value:
-      en: China
-      nl: China
-    referencedItemId: null
     difficulty: null
   - itemId: item-85
     attributeId: attribute-1
@@ -5455,13 +5715,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-85
-    attributeId: attribute-9
-    value:
-      en: Japan
-      nl: Japan
-    referencedItemId: null
-    difficulty: null
   - itemId: item-86
     attributeId: attribute-1
     value:
@@ -5509,13 +5762,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-86
-    attributeId: attribute-9
-    value:
-      en: Japan
-      nl: Japan
-    referencedItemId: null
     difficulty: null
   - itemId: item-87
     attributeId: attribute-1
@@ -5565,13 +5811,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-87
-    attributeId: attribute-9
-    value:
-      en: Italy
-      nl: Italië
-    referencedItemId: null
-    difficulty: null
   - itemId: item-88
     attributeId: attribute-1
     value:
@@ -5619,13 +5858,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-2
-    difficulty: null
-  - itemId: item-88
-    attributeId: attribute-9
-    value:
-      en: Peru
-      nl: Peru
-    referencedItemId: null
     difficulty: null
   - itemId: item-89
     attributeId: attribute-1
@@ -5675,13 +5907,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-89
-    attributeId: attribute-9
-    value:
-      en: Japan
-      nl: Japan
-    referencedItemId: null
-    difficulty: null
   - itemId: item-90
     attributeId: attribute-1
     value:
@@ -5729,13 +5954,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-90
-    attributeId: attribute-9
-    value:
-      en: Japan
-      nl: Japan
-    referencedItemId: null
     difficulty: null
   - itemId: item-91
     attributeId: attribute-1
@@ -5785,13 +6003,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-91
-    attributeId: attribute-9
-    value:
-      en: Japan
-      nl: Japan
-    referencedItemId: null
-    difficulty: null
   - itemId: item-92
     attributeId: attribute-1
     value:
@@ -5839,13 +6050,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-92
-    attributeId: attribute-9
-    value:
-      en: Japan
-      nl: Japan
-    referencedItemId: null
     difficulty: null
   - itemId: item-93
     attributeId: attribute-1
@@ -5895,13 +6099,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-93
-    attributeId: attribute-9
-    value:
-      en: China
-      nl: China
-    referencedItemId: null
-    difficulty: null
   - itemId: item-94
     attributeId: attribute-1
     value:
@@ -5949,13 +6146,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-94
-    attributeId: attribute-9
-    value:
-      en: Japan
-      nl: Japan
-    referencedItemId: null
     difficulty: null
   - itemId: item-95
     attributeId: attribute-1
@@ -6005,13 +6195,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-95
-    attributeId: attribute-9
-    value:
-      en: China
-      nl: China
-    referencedItemId: null
-    difficulty: null
   - itemId: item-96
     attributeId: attribute-1
     value:
@@ -6059,13 +6242,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-96
-    attributeId: attribute-9
-    value:
-      en: United States of America
-      nl: Verenigde Staten
-    referencedItemId: null
     difficulty: null
   - itemId: item-97
     attributeId: attribute-1
@@ -6115,13 +6291,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-97
-    attributeId: attribute-9
-    value:
-      en: United States of America
-      nl: Verenigde Staten
-    referencedItemId: null
-    difficulty: null
   - itemId: item-98
     attributeId: attribute-1
     value:
@@ -6169,13 +6338,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-4
-    difficulty: null
-  - itemId: item-98
-    attributeId: attribute-9
-    value:
-      en: Japan
-      nl: Japan
-    referencedItemId: null
     difficulty: null
   - itemId: item-99
     attributeId: attribute-1
@@ -6225,13 +6387,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-4
     difficulty: null
-  - itemId: item-99
-    attributeId: attribute-9
-    value:
-      en: Canada
-      nl: Canada
-    referencedItemId: null
-    difficulty: null
   - itemId: item-100
     attributeId: attribute-1
     value:
@@ -6279,13 +6434,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-4
-    difficulty: null
-  - itemId: item-100
-    attributeId: attribute-9
-    value:
-      en: Thailand
-      nl: Thailand
-    referencedItemId: null
     difficulty: null
   - itemId: item-101
     attributeId: attribute-1
@@ -6335,13 +6483,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-4
     difficulty: null
-  - itemId: item-101
-    attributeId: attribute-9
-    value:
-      en: Japan
-      nl: Japan
-    referencedItemId: null
-    difficulty: null
   - itemId: item-102
     attributeId: attribute-1
     value:
@@ -6389,13 +6530,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-4
-    difficulty: null
-  - itemId: item-102
-    attributeId: attribute-9
-    value:
-      en: France
-      nl: Frankrijk
-    referencedItemId: null
     difficulty: null
   - itemId: item-103
     attributeId: attribute-1
@@ -6445,13 +6579,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-103
-    attributeId: attribute-9
-    value:
-      en: United States of America
-      nl: Verenigde Staten
-    referencedItemId: null
-    difficulty: null
   - itemId: item-104
     attributeId: attribute-1
     value:
@@ -6499,13 +6626,6 @@ attributeOfItems:
     attributeId: attribute-10
     value: null
     referencedItemId: item-6
-    difficulty: null
-  - itemId: item-104
-    attributeId: attribute-9
-    value:
-      en: United States of America
-      nl: Verenigde Staten
-    referencedItemId: null
     difficulty: null
   - itemId: item-105
     attributeId: attribute-1
@@ -6555,13 +6675,6 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-105
-    attributeId: attribute-9
-    value:
-      en: United States of America
-      nl: Verenigde Staten
-    referencedItemId: null
-    difficulty: null
   - itemId: item-106
     attributeId: attribute-1
     value:
@@ -6610,10 +6723,362 @@ attributeOfItems:
     value: null
     referencedItemId: item-6
     difficulty: null
-  - itemId: item-106
-    attributeId: attribute-9
+  - itemId: item-107
+    attributeId: attribute-1
     value:
-      en: Switzerland
-      nl: Zwitserland
+      en: Winter
+      nl: Winter
     referencedItemId: null
     difficulty: null
+  - itemId: item-107
+    attributeId: attribute-11
+    value: '#7fb7d6'
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-107
+    attributeId: attribute-12
+    value:
+      - ❄️
+      - 🧣
+      - ☃️
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-107
+    attributeId: attribute-13
+    value:
+      - [0]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-107
+    attributeId: attribute-14
+    value: [0.3181980515339464, 0.31819805153394637]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-108
+    attributeId: attribute-1
+    value:
+      en: Spring
+      nl: Lente
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-108
+    attributeId: attribute-11
+    value: '#78b856'
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-108
+    attributeId: attribute-12
+    value:
+      - 🌱
+      - 🌷
+      - 🐝
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-108
+    attributeId: attribute-13
+    value:
+      - [1]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-108
+    attributeId: attribute-14
+    value: [-0.31819805153394637, 0.3181980515339464]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-109
+    attributeId: attribute-1
+    value:
+      en: Summer
+      nl: Zomer
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-109
+    attributeId: attribute-11
+    value: '#f2b93f'
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-109
+    attributeId: attribute-12
+    value:
+      - ☀️
+      - 🏖️
+      - 🌻
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-109
+    attributeId: attribute-13
+    value:
+      - [2]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-109
+    attributeId: attribute-14
+    value: [-0.3181980515339465, -0.31819805153394637]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-110
+    attributeId: attribute-1
+    value:
+      en: Autumn
+      nl: Herfst
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-110
+    attributeId: attribute-11
+    value: '#c56a38'
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-110
+    attributeId: attribute-12
+    value:
+      - 🍂
+      - 🍁
+      - 🌰
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-110
+    attributeId: attribute-13
+    value:
+      - [3]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-110
+    attributeId: attribute-14
+    value: [0.3181980515339463, -0.3181980515339465]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-111
+    attributeId: attribute-1
+    value:
+      en: Year-round
+      nl: Jaarrond
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-111
+    attributeId: attribute-11
+    value: var(--map-helper-fill)
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-111
+    attributeId: attribute-12
+    value:
+      - 🌍
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-111
+    attributeId: attribute-13
+    value:
+      - [4]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-111
+    attributeId: attribute-14
+    value: [1.5, 0.0]
+    referencedItemId: null
+    difficulty: null
+  - itemId: item-7
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-110
+    difficulty: null
+  - itemId: item-8
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-109
+    difficulty: null
+  - itemId: item-9
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-109
+    difficulty: null
+  - itemId: item-10
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-107
+    difficulty: null
+  - itemId: item-11
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-107
+    difficulty: null
+  - itemId: item-12
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-111
+    difficulty: null
+  - itemId: item-13
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-111
+    difficulty: null
+  - itemId: item-14
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-111
+    difficulty: null
+  - itemId: item-15
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-111
+    difficulty: null
+  - itemId: item-16
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-110
+    difficulty: null
+  - itemId: item-17
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-110
+    difficulty: null
+  - itemId: item-18
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-110
+    difficulty: null
+  - itemId: item-19
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-109
+    difficulty: null
+  - itemId: item-20
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-109
+    difficulty: null
+  - itemId: item-21
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-109
+    difficulty: null
+  - itemId: item-22
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-109
+    difficulty: null
+  - itemId: item-23
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-107
+    difficulty: null
+  - itemId: item-24
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-109
+    difficulty: null
+  - itemId: item-25
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-110
+    difficulty: null
+  - itemId: item-26
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-111
+    difficulty: null
+  - itemId: item-28
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-111
+    difficulty: null
+  - itemId: item-29
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-109
+    difficulty: null
+  - itemId: item-30
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-110
+    difficulty: null
+  - itemId: item-31
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-110
+    difficulty: null
+  - itemId: item-32
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-109
+    difficulty: null
+  - itemId: item-33
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-109
+    difficulty: null
+  - itemId: item-34
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-109
+    difficulty: null
+  - itemId: item-35
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-109
+    difficulty: null
+  - itemId: item-36
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-108
+    difficulty: null
+  - itemId: item-37
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-110
+    difficulty: null
+  - itemId: item-38
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-109
+    difficulty: null
+  - itemId: item-39
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-110
+    difficulty: null
+  - itemId: item-40
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-110
+    difficulty: null
+  - itemId: item-41
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-109
+    difficulty: null
+  - itemId: item-42
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-110
+    difficulty: null
+  - itemId: item-43
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-111
+    difficulty: null
+  - itemId: item-44
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-108
+    difficulty: null
+  - itemId: item-45
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-110
+    difficulty: null
+  - itemId: item-46
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-110
+    difficulty: null
+  - itemId: item-27
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-110
+    difficulty: null
+  - itemId: item-88
+    attributeId: attribute-15
+    value: null
+    referencedItemId: item-110
+    difficulty: null
+  
