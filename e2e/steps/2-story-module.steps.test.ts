@@ -19,6 +19,9 @@ import {
 	storyState
 } from '../support/stories';
 
+const taxonomyDraftResponseKey = 'taxonomy draft response';
+const taxonomyDraftExpectedItemKey = 'taxonomy draft expected item';
+
 Given('an editor is authenticated for story authoring', async ({ world }) => {
 	const editor = await world.actor('Editor Alpha');
 	expect(editor.roles).toContain('editor');
@@ -59,6 +62,87 @@ When(
 
 Then('the story confirms Rowan was rescued', async ({ page }) => {
 	await expect(page.getByText(/They found the pump house\. Found me\./)).toBeVisible();
+});
+
+When(
+	'the editor requests a taxonomy draft with three rounds from one item and one attribute',
+	async ({ request, world }) => {
+		const demo = storyState(world).demos[0];
+		const draft = await world.db.query<{
+			draft_id: string;
+			attribute_id: string;
+			item_id: string;
+		}>(
+			`SELECT d.id AS draft_id, a.id AS attribute_id, i.id AS item_id
+			 FROM part p
+			 JOIN taxonomy_draft_for_part d ON d.id = p.taxonomy_draft_for_part_id
+			 JOIN attribute a ON a.taxonomy_id = d.taxonomy_id
+			 JOIN attribute_of_item v ON v.attribute_id = a.id
+			 JOIN item i ON i.id = v.item_id
+			 JOIN item_of_category ic ON ic.item_id = i.id
+			 JOIN attribute_of_category ac ON ac.category_id = ic.category_id AND ac.attribute_id = a.id
+			 WHERE p.story_id = ANY($1::uuid[])
+			 AND a.type = 'number'
+			 AND ac.is_default = false
+			 AND v.value IS NOT NULL
+			 AND EXISTS (
+				 SELECT 1
+				 FROM attribute_of_category default_attribute
+				 JOIN attribute_of_item name_attribute
+					 ON name_attribute.item_id = i.id
+					 AND name_attribute.attribute_id = default_attribute.attribute_id
+				 WHERE default_attribute.category_id = ic.category_id
+				 AND default_attribute.is_default = true
+				 AND coalesce(
+					 name_attribute.value->>'en',
+					 name_attribute.value->>'default',
+					 name_attribute.value->>'en'
+				 ) IS NOT NULL
+			 )
+			 ORDER BY d.id, a.slug, i.id
+			 LIMIT 1`,
+			[demo.stories.map((story) => story.id)]
+		);
+		expect(draft.rows).toHaveLength(1);
+		const [row] = draft.rows;
+
+		await world.db.query(
+			`UPDATE taxonomy_draft_for_part
+			 SET nr_of_rounds = 3, nr_of_items_per_round = 1, goal = 3
+			 WHERE id = $1`,
+			[row.draft_id]
+		);
+		await world.db.query('DELETE FROM drafted_attribute WHERE taxonomy_draft_for_part_id = $1', [
+			row.draft_id
+		]);
+		await world.db.query('DELETE FROM drafted_category WHERE taxonomy_draft_for_part_id = $1', [
+			row.draft_id
+		]);
+		await world.db.query('DELETE FROM drafted_item WHERE taxonomy_draft_for_part_id = $1', [
+			row.draft_id
+		]);
+		await world.db.query(
+			'INSERT INTO drafted_attribute (taxonomy_draft_for_part_id, attribute_id) VALUES ($1, $2)',
+			[row.draft_id, row.attribute_id]
+		);
+		await world.db.query(
+			'INSERT INTO drafted_item (taxonomy_draft_for_part_id, item_id) VALUES ($1, $2)',
+			[row.draft_id, row.item_id]
+		);
+
+		const response = await request.get(`/s/${demo.root.slug}`, {
+			headers: { Cookie: 'PARAGLIDE_LOCALE=en' }
+		});
+		expect(response.status()).toBe(200);
+		world.entities.set(taxonomyDraftResponseKey, await response.text());
+		world.entities.set(taxonomyDraftExpectedItemKey, row.item_id);
+	}
+);
+
+Then('the taxonomy draft returns one unique item-attribute question', async ({ world }) => {
+	const html = world.entities.get(taxonomyDraftResponseKey) as string;
+	const itemId = world.entities.get(taxonomyDraftExpectedItemKey) as string;
+	expect(html.match(new RegExp(itemId, 'g')) ?? []).toHaveLength(1);
 });
 
 Then(

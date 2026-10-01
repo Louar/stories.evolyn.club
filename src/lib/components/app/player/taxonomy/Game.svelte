@@ -19,6 +19,7 @@
 		getNumericSliderDirection,
 		isNumericSliderAnswerCorrect
 	} from './numeric-slider';
+	import { filterUniqueTaxonomyRounds } from './rounds';
 	import { formatTime } from './time';
 	import type { GamePerformance, SortableRoundItem, TaxonomyRound } from './types';
 
@@ -50,8 +51,10 @@
 	} = $props();
 
 	const playableRounds = untrack(() =>
-		rounds.map((round) => toGameRound(round, difficulty))
-	).filter(isGameRound);
+		filterUniqueTaxonomyRounds(rounds)
+			.map((round) => toGameRound(round, difficulty))
+			.filter(isGameRound)
+	);
 	let currentRoundIndex = $state(0);
 	let items = $state<SortableRoundItem[]>(
 		playableRounds[0]?.kind === 'sortable' ? [...playableRounds[0].items] : []
