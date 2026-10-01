@@ -108,7 +108,8 @@
 		opacity: 0.65;
 	}
 	.helper {
-		fill: var(--map-helper-fill);
+		/* fill: var(--map-helper-fill); */
+		fill: transparent;
 		stroke: var(--map-region-stroke);
 		stroke-width: var(--map-helper-stroke-width, 1.5);
 	}
