@@ -132,7 +132,7 @@ describe('demo bundles', { timeout: 20000 }, () => {
 		);
 	});
 
-	it.each(['general-taxonomy', 'food-taxonomy'])(
+	it.each(['countries-and-foods', 'foods-and-wheel-of-five'])(
 		'preserves translated questions and accepts legacy attributes in %s',
 		(slug) => {
 			const bundle = taxonomySchema.parse(load('taxonomies', slug));
@@ -262,7 +262,7 @@ describe('demo bundles', { timeout: 20000 }, () => {
 		}
 	});
 
-	it.each(['general-taxonomy', 'food-taxonomy'])(
+	it.each(['countries-and-foods', 'foods-and-wheel-of-five'])(
 		'contains valid taxonomy relations in %s',
 		(slug) => {
 			const bundle = taxonomySchema.parse(load('taxonomies', slug));

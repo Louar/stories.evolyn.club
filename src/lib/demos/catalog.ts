@@ -29,13 +29,13 @@ export const demos = {
 	],
 	taxonomies: [
 		{
-			slug: 'general-taxonomy',
+			slug: 'countries-and-foods',
 			name: 'Countries and Foods',
 			description:
 				'The full general taxonomy: country maps, populations, food nutrition, and food-to-country references, in English and Dutch.'
 		},
 		{
-			slug: 'food-taxonomy',
+			slug: 'foods-and-wheel-of-five',
 			name: 'Foods and the Wheel of Five',
 			description:
 				'The full food taxonomy with nutrition, prices, origins, and linked Wheel of Five groups, including their map geometry.'

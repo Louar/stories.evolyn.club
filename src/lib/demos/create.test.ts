@@ -131,9 +131,9 @@ describe('demo creation', { timeout: 20000 }, () => {
 
 	it('creates a standalone taxonomy copy', async () => {
 		const { calls, request } = mockImporter();
-		await createDemo('taxonomies', 'food-taxonomy', request);
+		await createDemo('taxonomies', 'foods-and-wheel-of-five', request);
 		expect(calls).toHaveLength(1);
-		expect(calls[0].body.slug).toMatch(/^food-taxonomy-/);
+		expect(calls[0].body.slug).toMatch(/^foods-and-wheel-of-five-/);
 		expect(calls[0].body.attributeOfItems.length).toBeGreaterThan(100);
 	});
 

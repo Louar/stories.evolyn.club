@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { invalidateAll } from '$app/navigation';
 	import Header from '$lib/components/app/header/app-header.svelte';
 	import DemoCards from '$lib/components/app/demo-cards.svelte';
+	import DataGridLanguageSelectMenu from '$lib/components/data-grid/data-grid-language-select-menu.svelte';
 	import {
 		DataGrid,
 		DataGridToolbar,
 		getFilterFn,
+		hasTranslatableFields,
 		RowSelectHeader
 	} from '$lib/components/data-grid';
 	import DataGridUploadMenu from '$lib/components/data-grid/data-grid-upload-menu.svelte';
@@ -14,6 +17,7 @@
 	import { useDataGrid } from '$lib/hooks/use-custom-data-grid.svelte';
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
 	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
+	import { MEGABYTE } from '$lib/components/ui/file-drop-zone/index.js';
 
 	let { data } = $props();
 	const endpoint = `/api/taxonomies`;
@@ -113,6 +117,7 @@
 	} as const);
 
 	const { table, ...dataGridProps } = dataGrid;
+	const showLanguageMenu = $derived(hasTranslatableFields(columns));
 </script>
 
 <svelte:head>
@@ -127,10 +132,16 @@
 	<DemoCards kind="taxonomies" />
 	<DataGridToolbar {table} enableSearch={!!dataGridProps.searchState}>
 		{#snippet actions()}
-			<DataGridUploadMenu
-				endpoint="{endpoint}/io"
-				description="Upload .YAMLs. Taxonomies are imported as new taxonomies with all categories, attributes, items, and relations preserved."
-			/>
+			<div class="ml-auto flex items-center gap-2">
+				<DataGridUploadMenu
+					endpoint="{endpoint}/io"
+					description="Upload .YAMLs. Taxonomies are imported as new taxonomies with all categories, attributes, items, and relations preserved."
+					maxFileSize={50 * MEGABYTE}
+					maxFiles={50}
+					onSuccess={invalidateAll}
+				/>
+				{#if showLanguageMenu}<DataGridLanguageSelectMenu />{/if}
+			</div>
 		{/snippet}
 	</DataGridToolbar>
 

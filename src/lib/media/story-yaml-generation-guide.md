@@ -545,7 +545,7 @@ A taxonomy foreground references a separately imported taxonomy by `slug`:
 foregroundType: taxonomy
 taxonomyDraftForPartId: country-game
 taxonomyDraftForPart:
-  taxonomySlug: general-taxonomy
+  taxonomySlug: countries-and-foods
   nrOfRounds: 5
   nrOfItemsPerRound: 4
   goal: 3

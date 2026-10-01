@@ -236,7 +236,7 @@ export async function completeExpedition(page: Page, world: ScenarioWorld, stage
 		name.replace(/[\p{Extended_Pictographic}\p{Regional_Indicator}\uFE0F\u200D]/gu, '').trim();
 	for (let stage = 0; stage < stages.length; stage++) {
 		const taxonomy = storyState(world).demos[0].taxonomies.find((entry) =>
-			entry.slug.startsWith(stage < 3 ? 'general-taxonomy-' : 'food-taxonomy-')
+			entry.slug.startsWith(stage < 3 ? 'countries-and-foods-' : 'foods-and-wheel-of-five-')
 		);
 		expect(taxonomy).toBeDefined();
 		const stageAnswers = answers.filter((answer) => answer.taxonomy === taxonomy!.id);
