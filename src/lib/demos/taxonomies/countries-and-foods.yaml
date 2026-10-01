@@ -1,10 +1,12 @@
 # Originally derived from the general taxonomy seed migration.
 
-slug: general-taxonomy
+slug: countries-and-foods
 name:
-  en: General taxonomy
+  en: Countries and foods
+  nl: Landen en voeding
 description:
   en: Demo taxonomy with countries and foods
+  en: Demotaxonomie met landen en voedingsmiddelen
 categories:
   - id: category-1
     name:

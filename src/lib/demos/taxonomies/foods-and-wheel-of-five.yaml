@@ -1,10 +1,10 @@
-# Originally derived from the food taxonomy seed migration.
-
-slug: food-taxonomy
+slug: foods-and-wheel-of-five
 name:
-  en: Food taxonomy
+  en: Foods and the Wheel of Five
+  nl: Voeding en de Schijf van Vijf
 description:
   en: Demo taxonomy with foods and Schijf van Vijf classifications
+  nl: Demo-taxonomie met voedingsmiddelen en Schijf van Vijf-classificaties
 categories:
   - id: category-1
     name:
