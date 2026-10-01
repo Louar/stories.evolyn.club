@@ -920,7 +920,7 @@ paths:
                 slug:
                   type: string
                   minLength: 1
-                nameRaw: &a7
+                nameRaw: &a6
                   type: object
                   properties:
                     en:
@@ -951,6 +951,11 @@ paths:
                       type: string
                     default:
                       type: string
+                description:
+                  oneOf:
+                    - type:
+                        - "null"
+                    - *a6
                 configuration:
                   oneOf:
                     - type:
@@ -976,10 +981,10 @@ paths:
                 - isPublic
                 - positions
       security:
-        - BearerAuthCookie: &a6
+        - BearerAuthCookie: &a7
             - editor
             - admin
-        - BearerAuthHeader: *a6
+        - BearerAuthHeader: *a7
       responses:
         "201":
           description: Created
@@ -1023,6 +1028,40 @@ paths:
                         type: string
                       sv:
                         type: string
+                  description:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          default:
+                            type: string
+                          en:
+                            type: string
+                          bg:
+                            type: string
+                          ca:
+                            type: string
+                          da:
+                            type: string
+                          de:
+                            type: string
+                          es:
+                            type: string
+                          fi:
+                            type: string
+                          fr:
+                            type: string
+                          it:
+                            type: string
+                          nl:
+                            type: string
+                          no:
+                            type: string
+                          pt:
+                            type: string
+                          sv:
+                            type: string
                   createdAt:
                     type: string
                     format: date-time
@@ -1031,6 +1070,222 @@ paths:
                     format: date-time
                   clientId:
                     type: string
+                  thumbnail:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          default:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          en:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          bg:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          ca:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          da:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          de:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          es:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          fi:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          fr:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          it:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          nl:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          no:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          pt:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          sv:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
                   visualization:
                     type: string
                     enum:
@@ -1176,9 +1431,11 @@ paths:
                   - id
                   - slug
                   - name
+                  - description
                   - createdAt
                   - updatedAt
                   - clientId
+                  - thumbnail
                   - visualization
                   - configuration
                   - isPublished
@@ -1233,7 +1490,12 @@ paths:
                 slug:
                   type: string
                   minLength: 1
-                nameRaw: *a7
+                nameRaw: *a6
+                description:
+                  oneOf:
+                    - type:
+                        - "null"
+                    - *a6
                 configuration:
                   oneOf:
                     - type:
@@ -1299,6 +1561,40 @@ paths:
                         type: string
                       sv:
                         type: string
+                  description:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          default:
+                            type: string
+                          en:
+                            type: string
+                          bg:
+                            type: string
+                          ca:
+                            type: string
+                          da:
+                            type: string
+                          de:
+                            type: string
+                          es:
+                            type: string
+                          fi:
+                            type: string
+                          fr:
+                            type: string
+                          it:
+                            type: string
+                          nl:
+                            type: string
+                          no:
+                            type: string
+                          pt:
+                            type: string
+                          sv:
+                            type: string
                   createdAt:
                     type: string
                     format: date-time
@@ -1307,6 +1603,222 @@ paths:
                     format: date-time
                   clientId:
                     type: string
+                  thumbnail:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          default:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          en:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          bg:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          ca:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          da:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          de:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          es:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          fi:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          fr:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          it:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          nl:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          no:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          pt:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          sv:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
                   visualization:
                     type: string
                     enum:
@@ -1452,9 +1964,11 @@ paths:
                   - id
                   - slug
                   - name
+                  - description
                   - createdAt
                   - updatedAt
                   - clientId
+                  - thumbnail
                   - visualization
                   - configuration
                   - isPublished
@@ -1670,6 +2184,256 @@ paths:
                         type: string
                       sv:
                         type: string
+                  description:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          default:
+                            type: string
+                          en:
+                            type: string
+                          bg:
+                            type: string
+                          ca:
+                            type: string
+                          da:
+                            type: string
+                          de:
+                            type: string
+                          es:
+                            type: string
+                          fi:
+                            type: string
+                          fr:
+                            type: string
+                          it:
+                            type: string
+                          nl:
+                            type: string
+                          no:
+                            type: string
+                          pt:
+                            type: string
+                          sv:
+                            type: string
+                  thumbnail:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          default:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          en:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          bg:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          ca:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          da:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          de:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          es:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          fi:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          fr:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          it:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          nl:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          no:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          pt:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
+                          sv:
+                            type: object
+                            properties:
+                              collection:
+                                type: string
+                                enum:
+                                  - externals
+                                  - internals
+                                  - clients
+                                  - users
+                              filename:
+                                type: string
+                            required:
+                              - collection
+                              - filename
                   visualization:
                     type: string
                     enum:
@@ -1718,6 +2482,8 @@ paths:
                   - id
                   - slug
                   - name
+                  - description
+                  - thumbnail
                   - visualization
                   - configuration
                   - isPublished
@@ -3309,7 +4075,7 @@ paths:
                 slug:
                   type: string
                   minLength: 1
-                name: *a7
+                name: *a6
                 defaultBackgroundColor:
                   oneOf:
                     - type:
@@ -4737,21 +5503,6 @@ paths:
                     format: date-time
                   clientId:
                     type: string
-                  configuration:
-                    oneOf:
-                      - type:
-                          - "null"
-                      - type: object
-                        additionalProperties: true
-                  isPublished:
-                    type: boolean
-                  isPublic:
-                    type: boolean
-                  defaultBackgroundColor:
-                    oneOf:
-                      - type:
-                          - "null"
-                      - type: string
                   thumbnail:
                     oneOf:
                       - type:
@@ -4968,6 +5719,21 @@ paths:
                             required:
                               - collection
                               - filename
+                  configuration:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        additionalProperties: true
+                  isPublished:
+                    type: boolean
+                  isPublic:
+                    type: boolean
+                  defaultBackgroundColor:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: string
                   permissions:
                     oneOf:
                       - type:
@@ -5050,11 +5816,11 @@ paths:
                   - createdAt
                   - updatedAt
                   - clientId
+                  - thumbnail
                   - configuration
                   - isPublished
                   - isPublic
                   - defaultBackgroundColor
-                  - thumbnail
                   - permissions
                   - createdBy
                   - updatedBy
@@ -6518,15 +7284,6 @@ paths:
                         type: string
                       sv:
                         type: string
-                  isPublished:
-                    type: boolean
-                  isPublic:
-                    type: boolean
-                  defaultBackgroundColor:
-                    oneOf:
-                      - type:
-                          - "null"
-                      - type: string
                   thumbnail:
                     oneOf:
                       - type:
@@ -6743,6 +7500,15 @@ paths:
                             required:
                               - collection
                               - filename
+                  isPublished:
+                    type: boolean
+                  isPublic:
+                    type: boolean
+                  defaultBackgroundColor:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: string
                   stills:
                     type: array
                     items:
@@ -7582,19 +8348,6 @@ paths:
                       properties:
                         id:
                           type: string
-                        position:
-                          oneOf:
-                            - type:
-                                - "null"
-                            - type: object
-                              properties:
-                                x:
-                                  type: number
-                                y:
-                                  type: number
-                              required:
-                                - x
-                                - y
                         stillId:
                           oneOf:
                             - type:
@@ -7664,6 +8417,19 @@ paths:
                             - type:
                                 - "null"
                             - type: string
+                        position:
+                          oneOf:
+                            - type:
+                                - "null"
+                            - type: object
+                              properties:
+                                x:
+                                  type: number
+                                y:
+                                  type: number
+                              required:
+                                - x
+                                - y
                         quizTemplateId:
                           oneOf:
                             - type:
@@ -8069,7 +8835,6 @@ paths:
                                 - rules
                       required:
                         - id
-                        - position
                         - stillId
                         - videoId
                         - animationId
@@ -8083,6 +8848,7 @@ paths:
                         - defaultNextPartId
                         - quizLogicForPartId
                         - taxonomyDraftForPartId
+                        - position
                         - quizTemplateId
                         - taxonomyId
                         - quizLogicForPart
@@ -8092,10 +8858,10 @@ paths:
                   - id
                   - slug
                   - name
+                  - thumbnail
                   - isPublished
                   - isPublic
                   - defaultBackgroundColor
-                  - thumbnail
                   - stills
                   - videos
                   - announcements
@@ -9286,19 +10052,6 @@ paths:
                 properties:
                   id:
                     type: string
-                  position:
-                    oneOf:
-                      - type:
-                          - "null"
-                      - type: object
-                        properties:
-                          x:
-                            type: number
-                          y:
-                            type: number
-                        required:
-                          - x
-                          - y
                   stillId:
                     oneOf:
                       - type:
@@ -9368,6 +10121,19 @@ paths:
                       - type:
                           - "null"
                       - type: string
+                  position:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        properties:
+                          x:
+                            type: number
+                          y:
+                            type: number
+                        required:
+                          - x
+                          - y
                   quizTemplateId:
                     oneOf:
                       - type:
@@ -9770,7 +10536,6 @@ paths:
                           - rules
                 required:
                   - id
-                  - position
                   - stillId
                   - videoId
                   - animationId
@@ -9784,6 +10549,7 @@ paths:
                   - defaultNextPartId
                   - quizLogicForPartId
                   - taxonomyDraftForPartId
+                  - position
                   - quizTemplateId
                   - taxonomyId
                   - quizLogicForPart
@@ -20920,12 +21686,12 @@ paths:
                   oneOf:
                     - type:
                         - "null"
-                    - *a7
+                    - *a6
                 message:
                   oneOf:
                     - type:
                         - "null"
-                    - *a7
+                    - *a6
               required:
                 - name
                 - title
@@ -29935,12 +30701,12 @@ paths:
                   oneOf:
                     - type:
                         - "null"
-                    - *a7
+                    - *a6
                 description:
                   oneOf:
                     - type:
                         - "null"
-                    - *a7
+                    - *a6
               required:
                 - slug
                 - name
@@ -30232,12 +30998,12 @@ paths:
                   oneOf:
                     - type:
                         - "null"
-                    - *a7
+                    - *a6
                 description:
                   oneOf:
                     - type:
                         - "null"
-                    - *a7
+                    - *a6
       security:
         - BearerAuthCookie: &a47
             - editor
@@ -38284,7 +39050,7 @@ paths:
                 slug:
                   type: string
                   minLength: 1
-                name: *a7
+                name: *a6
                 defaultBackgroundColor:
                   oneOf:
                     - type:
@@ -38359,21 +39125,6 @@ paths:
                     format: date-time
                   clientId:
                     type: string
-                  configuration:
-                    oneOf:
-                      - type:
-                          - "null"
-                      - type: object
-                        additionalProperties: true
-                  isPublished:
-                    type: boolean
-                  isPublic:
-                    type: boolean
-                  defaultBackgroundColor:
-                    oneOf:
-                      - type:
-                          - "null"
-                      - type: string
                   thumbnail:
                     oneOf:
                       - type:
@@ -38590,6 +39341,21 @@ paths:
                             required:
                               - collection
                               - filename
+                  configuration:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: object
+                        additionalProperties: true
+                  isPublished:
+                    type: boolean
+                  isPublic:
+                    type: boolean
+                  defaultBackgroundColor:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: string
                   permissions:
                     oneOf:
                       - type:
@@ -38672,11 +39438,11 @@ paths:
                   - createdAt
                   - updatedAt
                   - clientId
+                  - thumbnail
                   - configuration
                   - isPublished
                   - isPublic
                   - defaultBackgroundColor
-                  - thumbnail
                   - permissions
                   - createdBy
                   - updatedBy
