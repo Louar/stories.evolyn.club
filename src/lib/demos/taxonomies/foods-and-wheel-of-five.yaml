@@ -370,8 +370,8 @@ attributes:
       nl: Middelpunt
     image: null
     description:
-      en: Map center formatted as longitude, latitude
-      nl: Kaartmiddelpunt geformatteerd als lengtegraad, breedtegraad
+      en: "Map center as [x, y] in the referenced scene’s SVG coordinate system"
+      nl: "Kaartmiddelpunt als [x, y] in het SVG-coördinatenstelsel van de gekoppelde scène"
     type: custom
     referencedCategoryId: null
     schema:
@@ -1210,8 +1210,8 @@ attributeOfItems:
   - itemId: item-1
     attributeId: attribute-14
     value:
-      - -0.33553513225637355
-      - 0.3998751993081065
+      - 433.262
+      - 252.71
     referencedItemId: null
     difficulty: null
   - itemId: item-2
@@ -1243,8 +1243,8 @@ attributeOfItems:
   - itemId: item-2
     attributeId: attribute-14
     value:
-      - 0.36910973977937783
-      - 0.3691097397793778
+      - 205.319
+      - 415.301
     referencedItemId: null
     difficulty: null
   - itemId: item-3
@@ -1276,8 +1276,8 @@ attributeOfItems:
   - itemId: item-3
     attributeId: attribute-14
     value:
-      - -0.06813467233886696
-      - -0.517534217637129
+      - 237.71
+      - 221.738
     referencedItemId: null
     difficulty: null
   - itemId: item-4
@@ -1310,8 +1310,8 @@ attributeOfItems:
   - itemId: item-4
     attributeId: attribute-14
     value:
-      - 0.45206526077547676
-      - -0.26100000000000023
+      - 387.873
+      - 457.447
     referencedItemId: null
     difficulty: null
   - itemId: item-5
@@ -1343,8 +1343,8 @@ attributeOfItems:
   - itemId: item-5
     attributeId: attribute-14
     value:
-      - -0.4978402482905745
-      - -0.15696842734123054
+      - 489.006
+      - 410.246
     referencedItemId: null
     difficulty: null
   - itemId: item-6
@@ -1376,8 +1376,8 @@ attributeOfItems:
   - itemId: item-6
     attributeId: attribute-14
     value:
-      - 1.5
-      - 0
+      - 830
+      - 335
     referencedItemId: null
     difficulty: null
   - itemId: item-7
@@ -6209,8 +6209,8 @@ attributeOfItems:
   - itemId: item-107
     attributeId: attribute-14
     value:
-      - 0.3181980515339464
-      - 0.31819805153394637
+      - 295
+      - 265
     referencedItemId: null
     difficulty: null
   - itemId: item-108
@@ -6242,8 +6242,8 @@ attributeOfItems:
   - itemId: item-108
     attributeId: attribute-14
     value:
-      - -0.31819805153394637
-      - 0.3181980515339464
+      - 464
+      - 265
     referencedItemId: null
     difficulty: null
   - itemId: item-109
@@ -6275,8 +6275,8 @@ attributeOfItems:
   - itemId: item-109
     attributeId: attribute-14
     value:
-      - -0.3181980515339465
-      - -0.31819805153394637
+      - 633
+      - 265
     referencedItemId: null
     difficulty: null
   - itemId: item-110
@@ -6308,8 +6308,8 @@ attributeOfItems:
   - itemId: item-110
     attributeId: attribute-14
     value:
-      - 0.3181980515339463
-      - -0.3181980515339465
+      - 128
+      - 265
     referencedItemId: null
     difficulty: null
   - itemId: item-111
@@ -6339,8 +6339,8 @@ attributeOfItems:
   - itemId: item-111
     attributeId: attribute-14
     value:
-      - 1.5
-      - 0
+      - 372.33035935259204
+      - 545
     referencedItemId: null
     difficulty: null
   - itemId: item-7
