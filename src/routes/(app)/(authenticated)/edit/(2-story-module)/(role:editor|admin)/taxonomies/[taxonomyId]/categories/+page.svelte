@@ -3,15 +3,12 @@
 	import Header from '$lib/components/app/header/app-header.svelte';
 	import {
 		DataGrid,
-		DataGridFilterMenu,
-		DataGridKeyboardShortcuts,
-		DataGridRowHeightMenu,
-		DataGridSortMenu,
-		DataGridViewMenu,
+		DataGridToolbar,
 		getFilterFn,
 		RowSelectHeader
 	} from '$lib/components/data-grid';
 	import DataGridLanguageSelectMenu from '$lib/components/data-grid/data-grid-language-select-menu.svelte';
+	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
 	import BreadcrumbMenu from '$lib/components/ui/breadcrumb-menu/breadcrumb-menu.svelte';
 	import { renderComponent } from '$lib/components/ui/table-tanstack/index.js';
 	import { MediaCollection } from '$lib/db/schemas/0-utils.js';
@@ -22,7 +19,6 @@
 		useDataGrid
 	} from '$lib/hooks/use-custom-data-grid.svelte';
 	import { useWindowSize } from '$lib/hooks/use-window-size.svelte';
-	import type { ColumnDef } from '$lib/components/data-grid/data-grid-table.js';
 
 	let { data } = $props();
 	// svelte-ignore state_referenced_locally
@@ -146,18 +142,11 @@
 </Header>
 
 <div class="mx-auto mt-4 w-full max-w-6xl space-y-4 px-4">
-	<div role="toolbar" aria-orientation="horizontal" class="flex items-center justify-between">
-		<DataGridKeyboardShortcuts enableSearch={!!dataGridProps.searchState} />
-		<div class="flex w-full items-center gap-1">
-			<DataGridFilterMenu {table} />
-			<DataGridSortMenu {table} />
-			<DataGridRowHeightMenu {table} />
-			<DataGridViewMenu {table} />
-			{#if showLanguageMenu}
-				<DataGridLanguageSelectMenu class="ml-auto" />
-			{/if}
-		</div>
-	</div>
+	<DataGridToolbar {table} enableSearch={!!dataGridProps.searchState}>
+		{#snippet actions()}
+			{#if showLanguageMenu}<DataGridLanguageSelectMenu class="ml-auto" />{/if}
+		{/snippet}
+	</DataGridToolbar>
 
 	<DataGrid {...dataGridProps} {table} height={gridHeight} />
 </div>
