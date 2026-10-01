@@ -1,6 +1,8 @@
 # GameBus Taxonomy YAML — LLM Generation Guide
 
-> Map sections in this guide describe the generic map v2 contract: compact category map references, reusable map assets, and per-item `shape`/`center`/`color`/`icons` attributes.
+> Map sections in this guide describe the generic map v2 contract: compact category map references,
+> reusable map assets, optional illustration layers, and per-item `shape`/`center`/`color`/`icons`
+> attributes.
 
 Generate one complete YAML document for the GameBus taxonomy import endpoint.
 
@@ -361,13 +363,15 @@ The renderer must not depend on the map's subject matter.
 
 The taxonomy stores two different kinds of map data:
 
-1. **Shared scene data** lives in a reusable external map asset: reusable region geometry, projection,
-   coordinate system, and optional noninteractive decorative artwork.
+1. **Shared scene data** lives in a reusable map asset: reusable region geometry, projection,
+   coordinate system, presentation defaults, and optional noninteractive illustration layers.
 2. **Item-specific map data** remains in `AttributeOfItem.value`, using the standardized `shape`,
    `center`, `color`, and `icons` attributes.
 
 This distinction keeps `Category.map` small while preserving dynamic item creation through the normal
-taxonomy graph.
+taxonomy graph. A map asset can be stored as client media, internal/bundled media, or a same-origin
+external URL. Do not confuse this with item data: item names, answer mappings, and item-level map
+overrides remain in the taxonomy database after import.
 
 ### 10.1 Category map configuration
 
@@ -384,13 +388,13 @@ map:
   minTargetDiameter: 24
 ```
 
-| Property            | Required | Type                         | Meaning |
-| ------------------- | -------- | ---------------------------- | ------- |
-| `version`           | yes      | literal `2`                  | Category-map configuration version |
-| `source`            | yes      | media object                 | Reusable map-asset JSON |
-| `scene`             | yes      | non-empty string             | Scene inside the referenced asset |
-| `showLabels`        | no       | boolean                      | Show item labels; default `false` |
-| `minTargetDiameter` | no       | finite nonnegative number    | Minimum rendered hit-target diameter in CSS pixels; default `24` |
+| Property            | Required | Type                      | Meaning                                                          |
+| ------------------- | -------- | ------------------------- | ---------------------------------------------------------------- |
+| `version`           | yes      | literal `2`               | Category-map configuration version                               |
+| `source`            | yes      | media object              | Reusable map-asset JSON                                          |
+| `scene`             | yes      | non-empty string          | Scene inside the referenced asset                                |
+| `showLabels`        | no       | boolean                   | Show item labels; default `false`                                |
+| `minTargetDiameter` | no       | finite nonnegative number | Minimum rendered hit-target diameter in CSS pixels; default `24` |
 
 `source` uses the normal media-reference shape:
 
@@ -400,23 +404,42 @@ source:
   filename: taxonomy-maps/world-countries.8c28ad.json
 ```
 
+For packaged same-origin assets, `externals` may be used with an absolute application path:
+
+```yaml
+source:
+  collection: externals
+  filename: /taxonomy-maps/farm-to-table-origins.08612b47.json
+```
+
+With `collection: externals`, `filename` is treated as a URL and is fetched directly. With
+`clients`, `users`, or `internals`, the application fetches through its media endpoint. A generated
+taxonomy is portable only if the referenced asset is also supplied, uploaded, or already known to exist
+in the target environment.
+
 A map asset is a separate versioned artifact. It may contain multiple reusable scenes, for example
-`wheel-of-five` and `seasons`, or `animals` and `cuts`. The taxonomy selects exactly one scene.
+`wheel-of-five` and `seasons`, or `animals` and `cuts`. The taxonomy selects exactly one scene per
+mapped category.
 
 Do not embed large TopoJSON arc arrays, decorative SVG paths, or raster artwork directly in
 `Category.map`. If a new scene or artwork asset is required, create/import that map asset separately
-and then reference it from the taxonomy.
+and then reference it from the taxonomy. If a map should be fully database-managed, upload the map
+asset and its SVG artwork as media and reference those media records; do not rely on repository
+`static/` files for tenant-specific content.
+
+The player does not infer or generate missing map assets. If `source` cannot be fetched, `scene` does
+not exist, or a `shape.ref` does not exist in that scene, the affected map rounds are not playable.
 
 ### 10.2 Shared map attributes
 
 The runtime recognizes these exact attribute slugs across the taxonomy:
 
-| Attribute slug | Required for a drawable item | Expected item `value` | Missing behavior |
-| -------------- | ---------------------------- | --------------------- | ---------------- |
-| `shape`        | yes                          | region reference or inline Polygon/MultiPolygon | item is absent from the map |
-| `center`       | no                           | exactly two finite numbers `[x, y]` | asset center or geometric centroid is used |
-| `color`        | no                           | string | asset/scene/renderer default is used |
-| `icons`        | no                           | array containing only strings | asset default or empty array is used |
+| Attribute slug | Required for a drawable item | Expected item `value`                           | Missing behavior                           |
+| -------------- | ---------------------------- | ----------------------------------------------- | ------------------------------------------ |
+| `shape`        | yes                          | region reference or inline Polygon/MultiPolygon | item is absent from the map                |
+| `center`       | no                           | exactly two finite numbers `[x, y]`             | asset center or geometric centroid is used |
+| `color`        | no                           | string                                          | asset/scene/renderer default is used       |
+| `icons`        | no                           | array containing only strings                   | asset default or empty array is used       |
 
 Declare these once as `custom` attributes within the taxonomy and connect the same attributes to
 every mapped category that needs them. Attribute slugs are taxonomy-wide and must remain unique.
@@ -460,8 +483,7 @@ value:
   geometry:
     type: Polygon
     coordinates:
-      -
-        - [100, 100]
+      - - [100, 100]
         - [220, 100]
         - [220, 220]
         - [100, 220]
@@ -515,7 +537,8 @@ For example:
 
 ### 10.5 Decorative artwork
 
-Decorative artwork belongs to the referenced map asset, not to taxonomy items. Examples include:
+Decorative artwork belongs to the referenced map asset, not to taxonomy items. It should be supplied
+as noninteractive SVG/image media referenced by the map asset. Examples include:
 
 - Wheel of Five rings, textures, separators, shadows, and food motifs;
 - seasonal flowers, leaves, snow, sun, and decorative rings;
@@ -529,7 +552,23 @@ A region that should be a legitimate clickable distractor is different: keep it 
 with a real `shape`.
 
 Do not bake translated answer labels into decorative artwork. `showLabels: false` can hide runtime
-labels, but it cannot hide text already embedded in an SVG or image.
+labels, but it cannot hide text already embedded in an SVG or image. Decorative artwork may contain
+non-answer visual symbols, textures, paths, fences, buildings, animal features, or boundary accents.
+
+When generating illustrated maps, avoid placeholder geometry such as plain rectangles or crude animal
+silhouettes unless the user explicitly asks for a schematic placeholder. Interactive regions should
+follow the visual illustration closely enough that clicking the visible area feels natural. For
+educational diagrams whose geometry is approximate, describe that in the story or category copy rather
+than claiming precise technical or anatomical authority.
+
+For anatomical or butcher-chart style maps:
+
+1. include every referenced cut/region in the selected scene;
+2. use closed, non-self-intersecting `Polygon`/`MultiPolygon` regions;
+3. keep region boundaries aligned with the illustration;
+4. avoid visible answer labels when the game tests knowledge of the labels;
+5. keep the renderer generic: animal/cut concepts belong in the asset and taxonomy data, not in
+   production renderer logic.
 
 ### 10.6 Dynamic mapped items
 
@@ -582,12 +621,41 @@ The story does not select map scenes or artwork. Those belong to the referenced 
 ### 10.8 Map assets and portability
 
 A taxonomy YAML may reference map assets that are not embedded in the YAML itself. For an importable
-package, include every referenced map-asset JSON file and its artwork media and rewrite media
-references during import as needed.
+package, include every referenced map-asset JSON file and every artwork media file it references, then
+rewrite media references during import as needed.
+
+For example, this taxonomy reference:
+
+```yaml
+map:
+  version: 2
+  source:
+    collection: externals
+    filename: /taxonomy-maps/meat-cuts-and-animals.4d2a1c9b.json
+  scene: cuts
+```
+
+requires a matching asset whose selected scene contains all region IDs used by mapped items:
+
+```yaml
+- itemId: cut-beef-brisket
+  attributeId: shape
+  value:
+    ref: beef.brisket
+  referencedItemId: null
+  difficulty: null
+```
+
+and the asset must contain a geometry with `id: "beef.brisket"` in `scenes.cuts`.
 
 Do not invent a map-asset filename when generating a production-ready taxonomy. Use a known/provided
 asset reference, or generate the required map asset as a separate artifact when the task explicitly
-includes it.
+includes it. If you generate a map asset, content-version the filenames and update every taxonomy
+reference to match the generated filenames.
+
+Updating source YAML does not update already-imported database records. Existing imported stories or
+taxonomies must be re-imported or migrated separately so their persisted `Category.map` references and
+item values point to the new asset and region IDs.
 
 For detailed map-asset authoring, use the separate **Taxonomy Map Asset Generation Guide** when
 available.
@@ -726,8 +794,7 @@ value:
   geometry:
     type: Polygon
     coordinates:
-      -
-        - [0, 0]
+      - - [0, 0]
         - [10, 0]
         - [10, 10]
         - [0, 10]
@@ -893,4 +960,3 @@ When asked to create a taxonomy:
 13. Keep decorative artwork out of taxonomy items.
 14. Do not add unknown properties or comments unless requested.
 15. Unless specifically requested otherwise, return pure YAML without explanatory prose.
-
