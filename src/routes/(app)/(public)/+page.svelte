@@ -51,7 +51,7 @@
 <main class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
 	<section class="grid auto-rows-max gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
 		<Card.Root
-			class="relative overflow-hidden border-primary/20 bg-primary text-primary-foreground sm:col-span-2"
+			class="relative overflow-hidden border-accent/20 bg-accent text-accent-foreground sm:col-span-2"
 		>
 			<div
 				class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.3),transparent_42%),linear-gradient(135deg,rgba(255,255,255,0.16),transparent)]"
@@ -61,13 +61,13 @@
 					<AvatarMedia
 						src={client.logo}
 						fallback={clientInitials}
-						class="size-14 border-primary-foreground/30"
+						class="size-14 border-accent-foreground/30"
 					/>
 					<div class="space-y-2">
 						<Card.Title class="text-2xl tracking-tight sm:text-3xl">{client.name}</Card.Title>
 						{#if client.description}
 							<Card.Description
-								class="prose prose-sm line-clamp-3 max-w-2xl text-primary-foreground/75 prose-invert"
+								class="prose prose-sm max-w-2xl text-accent-foreground/75"
 							>
 								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 								{@html client.description}

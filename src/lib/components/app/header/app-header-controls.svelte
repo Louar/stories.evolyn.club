@@ -32,7 +32,9 @@
 </script>
 
 <div class="mr-4 ml-auto flex justify-center gap-2">
-	<LanguageSwitcher variant="ghost" />
+	{#if client?.locales?.length !== 1}
+		<LanguageSwitcher variant="ghost" />
+	{/if}
 	<Button variant="ghost" onclick={toggleMode}>
 		<SunIcon class="scale-100 transition-all! dark:scale-0 dark:-rotate-90" />
 		<MoonIcon class="absolute scale-0 transition-all! dark:scale-100 dark:rotate-0" />
