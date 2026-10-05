@@ -4,7 +4,7 @@ import { Language, type Media } from '$lib/db/schemas/0-utils.js';
 import { UserRole } from '$lib/db/schemas/1-client-user-module';
 import { StoryPermissionRole } from '$lib/db/schemas/2-story-module';
 import { error, json } from '@sveltejs/kit';
-import type { ExpressionBuilder, Kysely, Transaction } from 'kysely';
+import { sql, type ExpressionBuilder, type Kysely, type Transaction } from 'kysely';
 import { z } from 'zod/v4';
 import * as zodLocales from 'zod/v4/locales';
 
@@ -113,7 +113,8 @@ export const MEDIA_REFERENCE_LOCATIONS = [
 	'client.splash',
 	'client.hero',
 	'user.picture',
-	'story.thumbnail'
+	'story.thumbnail',
+	'animation.configuration'
 ] as const;
 
 type DatabaseExecutor = Kysely<Schema> | Transaction<Schema>;
@@ -162,7 +163,20 @@ export async function isMediaReferenced(
 					)
 				)
 			)
-			.select('s.id')
+			.select('s.id'),
+		db
+			.selectFrom('animation as a')
+			.innerJoin('animationAvailableToStory as aa', 'aa.animationId', 'a.id')
+			.innerJoin('story as s', 's.id', 'aa.storyId')
+			.where('s.clientId', '=', clientId)
+			.where(
+				sql<boolean>`jsonb_path_exists(
+					a.configuration,
+					'$.layers[*].props.source ? (@.collection == $collection && @.filename == $filename)',
+					jsonb_build_object('collection', ${media.collection}, 'filename', ${media.filename})
+				)`
+			)
+			.select('a.id')
 	];
 
 	for (const query of queries) {

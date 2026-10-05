@@ -1,4 +1,5 @@
 import {
+	mediaValidator,
 	translatableValidator,
 	translateLocalizedField,
 	type Language
@@ -177,31 +178,49 @@ const polygonLayerSchema = z
 			.strict()
 	})
 	.strict();
+const svgSourceSchema = z.union([
+	mediaValidator,
+	z
+		.object({
+			collection: z.literal('inline'),
+			file: z.string().trim().min(1)
+		})
+		.strict()
+]);
+const svgPathSchema = z
+	.object({
+		d: z.string().min(1),
+		fill: z.string().optional(),
+		stroke: z.string().optional(),
+		lineWidth: z.number().nonnegative().optional(),
+		fillRule: z.enum(['nonzero', 'evenodd']).optional()
+	})
+	.strict();
 const svgLayerSchema = z
 	.object({
 		type: z.literal('svg'),
 		...layerShape,
-		props: z
-			.object({
-				...transformShape,
-				width: z.number().nonnegative(),
-				height: z.number().nonnegative(),
-				viewBox: z.tuple([z.number(), z.number(), z.number().positive(), z.number().positive()]),
-				paths: z
-					.array(
-						z
-							.object({
-								d: z.string().min(1),
-								fill: z.string().optional(),
-								stroke: z.string().optional(),
-								lineWidth: z.number().nonnegative().optional(),
-								fillRule: z.enum(['nonzero', 'evenodd']).optional()
-							})
-							.strict()
-					)
-					.min(1)
-			})
-			.strict()
+		props: z.union([
+			z
+				.object({
+					...transformShape,
+					width: z.number().nonnegative(),
+					height: z.number().nonnegative(),
+					draw: z.number().min(0).max(1).optional(),
+					source: svgSourceSchema
+				})
+				.strict(),
+			z
+				.object({
+					...transformShape,
+					width: z.number().nonnegative(),
+					height: z.number().nonnegative(),
+					draw: z.number().min(0).max(1).optional(),
+					viewBox: z.tuple([z.number(), z.number(), z.number().positive(), z.number().positive()]),
+					paths: z.array(svgPathSchema).min(1)
+				})
+				.strict()
+		])
 	})
 	.strict();
 

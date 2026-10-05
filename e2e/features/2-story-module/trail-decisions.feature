@@ -7,10 +7,12 @@ Feature: Play Trail Decisions
     And I am an anonymous reader using English
 
   Scenario: Rewind a poor decision and complete the standalone story
-    Given I open the standalone "Trail Decisions" story
+    Given the rescue animation uses stored and inline SVG artwork
+    And I open the standalone "Trail Decisions" story
     When I choose the ridge and rewind to the junction
     And I guide Rowan to rescue using the service road, emergency call, and whistle
-    Then the story confirms Rowan was rescued
+    Then the rescue route is progressively drawn behind Rowan's message
+    And the story confirms Rowan was rescued
     And the standalone player reports successful completion and offers a restart
 
   Scenario: Restart after an unsuccessful attempt

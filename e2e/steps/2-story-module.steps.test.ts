@@ -24,6 +24,7 @@ import {
 const taxonomyDraftResponseKey = 'taxonomy draft response';
 const taxonomyDraftExpectedItemKey = 'taxonomy draft expected item';
 const expeditionBrowserErrorsKey = 'expedition browser errors';
+const storedSvgRequestKey = 'stored SVG request';
 
 Given('an editor is authenticated for story authoring', async ({ world }) => {
 	const editor = await world.actor('Editor Alpha');
@@ -36,6 +37,73 @@ Given('an editor has created a fresh {string} demo', async ({ world }, name: str
 
 Given('I am an anonymous reader using English', async ({ page, world }) => {
 	await prepareReader(page, world);
+});
+
+Given('the rescue animation uses stored and inline SVG artwork', async ({ page, world }) => {
+	const storedSvg = `
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+			<path d="M40 300 C160 40 430 40 600 300" fill="none" stroke="#22d3ee" stroke-width="12" stroke-linecap="round" />
+		</svg>`;
+	const inlineSvg = `
+		<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
+			<polygon points="100,260 320,80 540,260" fill="none" stroke="#fbbf24" stroke-width="10" stroke-linejoin="round" />
+		</svg>`;
+	world.entities.set(storedSvgRequestKey, false);
+	await page.route('**/api/media/internals/rescue-route.svg', async (route) => {
+		world.entities.set(storedSvgRequestKey, true);
+		await route.fulfill({ contentType: 'image/svg+xml', body: storedSvg });
+	});
+
+	const configuration = {
+		version: 1,
+		composition: {
+			viewBoxWidth: 1280,
+			viewBoxHeight: 720,
+			fps: 30,
+			durationInFrames: 540,
+			background: '#182934'
+		},
+		playback: { autoplay: true, loop: false },
+		layers: [
+			{
+				type: 'svg',
+				name: 'Stored rescue route',
+				props: {
+					x: 640,
+					y: 360,
+					width: 1120,
+					height: 630,
+					draw: 0,
+					source: { collection: 'internals', filename: 'rescue-route.svg' }
+				},
+				animate: { draw: { values: [0, 1], duration: 90, easing: 'easeInOutSine' } }
+			},
+			{
+				type: 'svg',
+				name: 'Inline rescue marker',
+				props: {
+					x: 640,
+					y: 360,
+					width: 1120,
+					height: 630,
+					draw: 0,
+					source: { collection: 'inline', file: inlineSvg }
+				},
+				animate: { draw: { values: [0, 1], duration: 90, easing: 'easeInOutSine' } }
+			}
+		]
+	};
+	const story = demoStory(world, 'Trail Decisions');
+	const result = await world.db.query(
+		`UPDATE animation a
+		 SET configuration = $1::jsonb
+		 FROM animation_available_to_story availability
+		 WHERE availability.animation_id = a.id
+		 AND availability.story_id = $2
+		 AND a.name = 'Lanterns through the trees'`,
+		[JSON.stringify(configuration), story.id]
+	);
+	expect(result.rowCount).toBe(1);
 });
 
 Given('I open the standalone {string} story', async ({ page, world }, name: string) => {
@@ -70,6 +138,40 @@ When(
 		await rescued(page, world);
 	}
 );
+
+Then("the rescue route is progressively drawn behind Rowan's message", async ({ page, world }) => {
+	const canvas = activePart(page).locator('canvas');
+	await expect(canvas).toHaveCount(1);
+	await expect.poll(() => world.entities.get(storedSvgRequestKey)).toBe(true);
+
+	const coloredPixels = () =>
+		canvas.evaluate((element) => {
+			const canvasElement = element as HTMLCanvasElement;
+			const context = canvasElement.getContext('2d');
+			if (!context) return { cyan: 0, amber: 0 };
+			const pixels = context.getImageData(0, 0, canvasElement.width, canvasElement.height).data;
+			let cyan = 0;
+			let amber = 0;
+			for (let index = 0; index < pixels.length; index += 4) {
+				const red = pixels[index];
+				const green = pixels[index + 1];
+				const blue = pixels[index + 2];
+				if (blue > 180 && green > 150 && red < 100) cyan += 1;
+				if (red > 180 && green > 140 && blue < 100) amber += 1;
+			}
+			return { cyan, amber };
+		});
+
+	const before = await coloredPixels();
+	await page.clock.runFor(1_500);
+	const partiallyDrawn = await coloredPixels();
+	await page.clock.runFor(2_000);
+	const completelyDrawn = await coloredPixels();
+	expect(partiallyDrawn.cyan).toBeGreaterThan(before.cyan + 100);
+	expect(partiallyDrawn.amber).toBeGreaterThan(before.amber + 100);
+	expect(completelyDrawn.cyan).toBeGreaterThan(partiallyDrawn.cyan + 100);
+	expect(completelyDrawn.amber).toBeGreaterThan(partiallyDrawn.amber + 100);
+});
 
 Then('the story confirms Rowan was rescued', async ({ page }) => {
 	await expect(page.getByText(/They found the pump house\. Found me\./)).toBeVisible();

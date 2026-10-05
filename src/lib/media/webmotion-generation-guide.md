@@ -10,7 +10,7 @@ The configuration supports:
 - ellipses
 - lines
 - polygons
-- SVG paths
+- SVG media and paths
 - reusable motion presets
 - keyframe animation
 - transforms
@@ -490,7 +490,111 @@ Supports paint and common transforms.
 
 ## SVG
 
-SVG layers contain one or more SVG paths.
+SVG layers normally reference an SVG file using a media source.
+
+```json
+{
+	"type": "svg",
+	"props": {
+		"x": 640,
+		"y": 360,
+		"width": 120,
+		"height": 120,
+		"source": {
+			"collection": "internals",
+			"filename": "marker.svg"
+		}
+	}
+}
+```
+
+Required:
+
+```text
+width
+height
+source
+```
+
+`source` uses the same media object as other story media:
+
+```json
+{
+	"collection": "internals",
+	"filename": "marker.svg"
+}
+```
+
+`collection` may be:
+
+```text
+externals
+internals
+clients
+users
+```
+
+For `externals`, `filename` is the complete SVG URL. Other collections resolve
+through the application's media endpoint.
+
+An SVG may also be embedded directly. Use the special `inline` collection and
+provide `file` instead of `filename`:
+
+```json
+{
+	"collection": "inline",
+	"file": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><path d=\"M12 2L22 22H2Z\" fill=\"none\" stroke=\"#818cf8\"/></svg>"
+}
+```
+
+The SVG must define a positive `viewBox`, or positive `width` and `height`.
+The renderer extracts visible SVG `path`, `polygon`, `polyline`, `line`, `rect`,
+`circle`, and `ellipse` geometry. It preserves the source `preserveAspectRatio`
+behavior, computed solid fill and stroke colors, stroke width, fill rule, line
+caps and joins, and element/group transforms. Scripts and `foreignObject`
+content are discarded; definitions and hidden geometry are not drawn.
+
+Keep source SVGs simple. Referenced elements (`use`), clipping, masks, filters,
+gradients, per-element opacity, existing dash patterns, and rounded rectangle
+corners are not reproduced by the canvas renderer.
+
+### Drawing an SVG
+
+SVG layers additionally support `draw`, a number from `0` to `1`:
+
+```json
+{
+	"type": "svg",
+	"props": {
+		"x": 640,
+		"y": 360,
+		"width": 600,
+		"height": 400,
+		"draw": 0,
+		"source": {
+			"collection": "internals",
+			"filename": "route.svg"
+		}
+	},
+	"animate": {
+		"draw": {
+			"values": [0, 1],
+			"duration": 90,
+			"easing": "easeInOutSine"
+		}
+	}
+}
+```
+
+`draw: 0` hides stroked geometry, `draw: 1` shows the complete strokes, and
+intermediate values reveal each stroke progressively using its measured path
+length. Drawing affects strokes only; fills remain visible. Use `fill="none"`
+for a conventional line-drawing effect. Geometry without a measurable path
+length appears when `draw` becomes greater than `0`.
+
+### Inline path-array compatibility
+
+Version 1 also accepts the original authored path-array form:
 
 ```json
 {
@@ -514,39 +618,14 @@ SVG layers contain one or more SVG paths.
 }
 ```
 
-Required:
-
-```text
-width
-height
-viewBox
-paths
-```
-
-`viewBox`:
-
-```json
-[minX, minY, width, height]
-```
-
-Each path supports:
-
-```text
-d
-fill
-stroke
-lineWidth
-fillRule
-```
-
-`fillRule`:
+Prefer media-backed SVGs for new configurations. Path-array `fillRule` may be:
 
 ```text
 nonzero
 evenodd
 ```
 
-Nested SVG properties can be animated using paths such as:
+Path-array properties can be animated using paths such as:
 
 ```text
 paths.0.fill
@@ -977,6 +1056,7 @@ x
 opacity
 scale
 fill
+draw
 paths.0.fill
 paths.0.stroke
 paths.1.lineWidth
@@ -1124,7 +1204,9 @@ When generating a configuration:
 15. Stagger `from` values to create visual rhythm.
 16. Ensure all animations remain within their layer duration.
 17. Use nested paths such as `paths.0.fill` for SVG path styling.
-18. Keep JSON valid: double quotes, no comments, no trailing commas.
+18. Reference new SVG layers with a media `source`; use `collection: "inline"` only when embedding SVG code is necessary.
+19. Animate SVG `draw` from `0` to `1` for progressive stroke drawing.
+20. Keep JSON valid: double quotes, no comments, no trailing commas.
 
 ---
 
@@ -1242,6 +1324,8 @@ When asked to create a WebMotion animation:
 - Use only supported layer types and properties.
 - Choose a sensible aspect ratio, timings, positions, sizes, and colors using the documented logical drawing coordinates.
 - Use reusable motions when animation patterns repeat.
+- Reference SVG files with media objects, including the special inline form when needed.
+- Use `draw` keyframes for SVG stroke-drawing animation.
 - Avoid unnecessary keyframe positions.
 - Keep all layer and track durations within the composition.
 - Prefer smooth, purposeful animation over excessive movement.
