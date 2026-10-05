@@ -951,6 +951,14 @@ paths:
                       type: string
                     default:
                       type: string
+                order:
+                  oneOf:
+                    - type:
+                        - "null"
+                    - type: number
+                thumbnail:
+                  type:
+                    - "null"
                 description:
                   oneOf:
                     - type:
@@ -976,6 +984,7 @@ paths:
               required:
                 - slug
                 - nameRaw
+                - order
                 - configuration
                 - isPublished
                 - isPublic
@@ -1070,6 +1079,11 @@ paths:
                     format: date-time
                   clientId:
                     type: string
+                  order:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: number
                   thumbnail:
                     oneOf:
                       - type:
@@ -1412,20 +1426,20 @@ paths:
                       properties:
                         id:
                           type: string
+                        order:
+                          type: number
                         configuration:
                           oneOf:
                             - type:
                                 - "null"
                             - type: object
                               additionalProperties: true
-                        order:
-                          type: number
                         storyId:
                           type: string
                       required:
                         - id
-                        - configuration
                         - order
+                        - configuration
                         - storyId
                 required:
                   - id
@@ -1435,6 +1449,7 @@ paths:
                   - createdAt
                   - updatedAt
                   - clientId
+                  - order
                   - thumbnail
                   - visualization
                   - configuration
@@ -1491,6 +1506,14 @@ paths:
                   type: string
                   minLength: 1
                 nameRaw: *a6
+                order:
+                  oneOf:
+                    - type:
+                        - "null"
+                    - type: number
+                thumbnail:
+                  type:
+                    - "null"
                 description:
                   oneOf:
                     - type:
@@ -1513,6 +1536,7 @@ paths:
                 positions:
                   type: array
                   items: {}
+              required: []
       security:
         - BearerAuthCookie: &a8
             - editor
@@ -1603,6 +1627,11 @@ paths:
                     format: date-time
                   clientId:
                     type: string
+                  order:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: number
                   thumbnail:
                     oneOf:
                       - type:
@@ -1945,20 +1974,20 @@ paths:
                       properties:
                         id:
                           type: string
+                        order:
+                          type: number
                         configuration:
                           oneOf:
                             - type:
                                 - "null"
                             - type: object
                               additionalProperties: true
-                        order:
-                          type: number
                         storyId:
                           type: string
                       required:
                         - id
-                        - configuration
                         - order
+                        - configuration
                         - storyId
                 required:
                   - id
@@ -1968,6 +1997,7 @@ paths:
                   - createdAt
                   - updatedAt
                   - clientId
+                  - order
                   - thumbnail
                   - visualization
                   - configuration
@@ -2218,6 +2248,11 @@ paths:
                             type: string
                           sv:
                             type: string
+                  order:
+                    oneOf:
+                      - type:
+                          - "null"
+                      - type: number
                   thumbnail:
                     oneOf:
                       - type:
@@ -2460,22 +2495,22 @@ paths:
                       properties:
                         id:
                           type: string
+                        order:
+                          type: number
                         configuration:
                           oneOf:
                             - type:
                                 - "null"
                             - type: object
                               additionalProperties: true
-                        order:
-                          type: number
                         storyId:
                           type: string
                         storySlug:
                           type: string
                       required:
                         - id
-                        - configuration
                         - order
+                        - configuration
                         - storyId
                         - storySlug
                 required:
@@ -2483,6 +2518,7 @@ paths:
                   - slug
                   - name
                   - description
+                  - order
                   - thumbnail
                   - visualization
                   - configuration
@@ -6934,57 +6970,115 @@ paths:
                                       - type: object
                                         properties:
                                           props:
-                                            type: object
-                                            properties:
-                                              width:
-                                                type: number
-                                              height:
-                                                type: number
-                                              viewBox:
-                                                type: array
-                                                items:
-                                                  type: number
-                                              paths:
-                                                type: array
-                                                items:
-                                                  type: object
-                                                  properties:
-                                                    d:
-                                                      type: string
-                                                    fill:
-                                                      type: string
-                                                    stroke:
-                                                      type: string
-                                                    lineWidth:
+                                            oneOf:
+                                              - type: object
+                                                properties:
+                                                  width:
+                                                    type: number
+                                                  height:
+                                                    type: number
+                                                  source:
+                                                    oneOf:
+                                                      - type: object
+                                                        properties:
+                                                          collection:
+                                                            type: string
+                                                            enum:
+                                                              - externals
+                                                              - internals
+                                                              - clients
+                                                              - users
+                                                          filename:
+                                                            type: string
+                                                        required:
+                                                          - collection
+                                                          - filename
+                                                      - type: object
+                                                        properties:
+                                                          collection:
+                                                            type: string
+                                                            enum:
+                                                              - inline
+                                                          file:
+                                                            type: string
+                                                        required:
+                                                          - collection
+                                                          - file
+                                                  draw:
+                                                    type: number
+                                                  x:
+                                                    type: number
+                                                  y:
+                                                    type: number
+                                                  rotation:
+                                                    type: number
+                                                  scale:
+                                                    type: number
+                                                  scaleX:
+                                                    type: number
+                                                  scaleY:
+                                                    type: number
+                                                  opacity:
+                                                    type: number
+                                                  blur:
+                                                    type: number
+                                                required:
+                                                  - width
+                                                  - height
+                                                  - source
+                                              - type: object
+                                                properties:
+                                                  width:
+                                                    type: number
+                                                  height:
+                                                    type: number
+                                                  viewBox:
+                                                    type: array
+                                                    items:
                                                       type: number
-                                                    fillRule:
-                                                      type: string
-                                                      enum:
-                                                        - nonzero
-                                                        - evenodd
-                                                  required:
-                                                    - d
-                                              x:
-                                                type: number
-                                              y:
-                                                type: number
-                                              rotation:
-                                                type: number
-                                              scale:
-                                                type: number
-                                              scaleX:
-                                                type: number
-                                              scaleY:
-                                                type: number
-                                              opacity:
-                                                type: number
-                                              blur:
-                                                type: number
-                                            required:
-                                              - width
-                                              - height
-                                              - viewBox
-                                              - paths
+                                                  paths:
+                                                    type: array
+                                                    items:
+                                                      type: object
+                                                      properties:
+                                                        d:
+                                                          type: string
+                                                        fill:
+                                                          type: string
+                                                        stroke:
+                                                          type: string
+                                                        lineWidth:
+                                                          type: number
+                                                        fillRule:
+                                                          type: string
+                                                          enum:
+                                                            - nonzero
+                                                            - evenodd
+                                                      required:
+                                                        - d
+                                                  draw:
+                                                    type: number
+                                                  x:
+                                                    type: number
+                                                  y:
+                                                    type: number
+                                                  rotation:
+                                                    type: number
+                                                  scale:
+                                                    type: number
+                                                  scaleX:
+                                                    type: number
+                                                  scaleY:
+                                                    type: number
+                                                  opacity:
+                                                    type: number
+                                                  blur:
+                                                    type: number
+                                                required:
+                                                  - width
+                                                  - height
+                                                  - viewBox
+                                                  - paths
                                           type:
                                             type: string
                                             enum:
@@ -8161,14 +8255,14 @@ paths:
                                     type: string
                                   sv:
                                     type: string
+                              order:
+                                type: number
                               configuration:
                                 oneOf:
                                   - type:
                                       - "null"
                                   - type: object
                                     additionalProperties: true
-                              order:
-                                type: number
                               answerTemplateSlug:
                                 type: string
                               instruction:
@@ -8281,8 +8375,8 @@ paths:
                             required:
                               - id
                               - title
-                              - configuration
                               - order
+                              - configuration
                               - answerTemplateSlug
                               - instruction
                               - isRequired
@@ -17850,57 +17944,115 @@ paths:
                                 - type: object
                                   properties:
                                     props:
-                                      type: object
-                                      properties:
-                                        width:
-                                          type: number
-                                        height:
-                                          type: number
-                                        viewBox:
-                                          type: array
-                                          items:
-                                            type: number
-                                        paths:
-                                          type: array
-                                          items:
-                                            type: object
-                                            properties:
-                                              d:
-                                                type: string
-                                              fill:
-                                                type: string
-                                              stroke:
-                                                type: string
-                                              lineWidth:
+                                      oneOf:
+                                        - type: object
+                                          properties:
+                                            width:
+                                              type: number
+                                            height:
+                                              type: number
+                                            source:
+                                              oneOf:
+                                                - type: object
+                                                  properties:
+                                                    collection:
+                                                      type: string
+                                                      enum:
+                                                        - externals
+                                                        - internals
+                                                        - clients
+                                                        - users
+                                                    filename:
+                                                      type: string
+                                                  required:
+                                                    - collection
+                                                    - filename
+                                                - type: object
+                                                  properties:
+                                                    collection:
+                                                      type: string
+                                                      enum:
+                                                        - inline
+                                                    file:
+                                                      type: string
+                                                  required:
+                                                    - collection
+                                                    - file
+                                            draw:
+                                              type: number
+                                            x:
+                                              type: number
+                                            y:
+                                              type: number
+                                            rotation:
+                                              type: number
+                                            scale:
+                                              type: number
+                                            scaleX:
+                                              type: number
+                                            scaleY:
+                                              type: number
+                                            opacity:
+                                              type: number
+                                            blur:
+                                              type: number
+                                          required:
+                                            - width
+                                            - height
+                                            - source
+                                        - type: object
+                                          properties:
+                                            width:
+                                              type: number
+                                            height:
+                                              type: number
+                                            viewBox:
+                                              type: array
+                                              items:
                                                 type: number
-                                              fillRule:
-                                                type: string
-                                                enum:
-                                                  - nonzero
-                                                  - evenodd
-                                            required:
-                                              - d
-                                        x:
-                                          type: number
-                                        y:
-                                          type: number
-                                        rotation:
-                                          type: number
-                                        scale:
-                                          type: number
-                                        scaleX:
-                                          type: number
-                                        scaleY:
-                                          type: number
-                                        opacity:
-                                          type: number
-                                        blur:
-                                          type: number
-                                      required:
-                                        - width
-                                        - height
-                                        - viewBox
-                                        - paths
+                                            paths:
+                                              type: array
+                                              items:
+                                                type: object
+                                                properties:
+                                                  d:
+                                                    type: string
+                                                  fill:
+                                                    type: string
+                                                  stroke:
+                                                    type: string
+                                                  lineWidth:
+                                                    type: number
+                                                  fillRule:
+                                                    type: string
+                                                    enum:
+                                                      - nonzero
+                                                      - evenodd
+                                                required:
+                                                  - d
+                                            draw:
+                                              type: number
+                                            x:
+                                              type: number
+                                            y:
+                                              type: number
+                                            rotation:
+                                              type: number
+                                            scale:
+                                              type: number
+                                            scaleX:
+                                              type: number
+                                            scaleY:
+                                              type: number
+                                            opacity:
+                                              type: number
+                                            blur:
+                                              type: number
+                                          required:
+                                            - width
+                                            - height
+                                            - viewBox
+                                            - paths
                                     type:
                                       type: string
                                       enum:
@@ -19070,57 +19222,115 @@ paths:
                           - type: object
                             properties:
                               props:
-                                type: object
-                                properties:
-                                  width:
-                                    type: number
-                                  height:
-                                    type: number
-                                  viewBox:
-                                    type: array
-                                    items:
-                                      type: number
-                                  paths:
-                                    type: array
-                                    items:
-                                      type: object
-                                      properties:
-                                        d:
-                                          type: string
-                                        fill:
-                                          type: string
-                                        stroke:
-                                          type: string
-                                        lineWidth:
+                                oneOf:
+                                  - type: object
+                                    properties:
+                                      width:
+                                        type: number
+                                      height:
+                                        type: number
+                                      source:
+                                        oneOf:
+                                          - type: object
+                                            properties:
+                                              collection:
+                                                type: string
+                                                enum:
+                                                  - externals
+                                                  - internals
+                                                  - clients
+                                                  - users
+                                              filename:
+                                                type: string
+                                            required:
+                                              - collection
+                                              - filename
+                                          - type: object
+                                            properties:
+                                              collection:
+                                                type: string
+                                                enum:
+                                                  - inline
+                                              file:
+                                                type: string
+                                            required:
+                                              - collection
+                                              - file
+                                      draw:
+                                        type: number
+                                      x:
+                                        type: number
+                                      y:
+                                        type: number
+                                      rotation:
+                                        type: number
+                                      scale:
+                                        type: number
+                                      scaleX:
+                                        type: number
+                                      scaleY:
+                                        type: number
+                                      opacity:
+                                        type: number
+                                      blur:
+                                        type: number
+                                    required:
+                                      - width
+                                      - height
+                                      - source
+                                  - type: object
+                                    properties:
+                                      width:
+                                        type: number
+                                      height:
+                                        type: number
+                                      viewBox:
+                                        type: array
+                                        items:
                                           type: number
-                                        fillRule:
-                                          type: string
-                                          enum:
-                                            - nonzero
-                                            - evenodd
-                                      required:
-                                        - d
-                                  x:
-                                    type: number
-                                  y:
-                                    type: number
-                                  rotation:
-                                    type: number
-                                  scale:
-                                    type: number
-                                  scaleX:
-                                    type: number
-                                  scaleY:
-                                    type: number
-                                  opacity:
-                                    type: number
-                                  blur:
-                                    type: number
-                                required:
-                                  - width
-                                  - height
-                                  - viewBox
-                                  - paths
+                                      paths:
+                                        type: array
+                                        items:
+                                          type: object
+                                          properties:
+                                            d:
+                                              type: string
+                                            fill:
+                                              type: string
+                                            stroke:
+                                              type: string
+                                            lineWidth:
+                                              type: number
+                                            fillRule:
+                                              type: string
+                                              enum:
+                                                - nonzero
+                                                - evenodd
+                                          required:
+                                            - d
+                                      draw:
+                                        type: number
+                                      x:
+                                        type: number
+                                      y:
+                                        type: number
+                                      rotation:
+                                        type: number
+                                      scale:
+                                        type: number
+                                      scaleX:
+                                        type: number
+                                      scaleY:
+                                        type: number
+                                      opacity:
+                                        type: number
+                                      blur:
+                                        type: number
+                                    required:
+                                      - width
+                                      - height
+                                      - viewBox
+                                      - paths
                               type:
                                 type: string
                                 enum:
@@ -20270,57 +20480,115 @@ paths:
                                 - type: object
                                   properties:
                                     props:
-                                      type: object
-                                      properties:
-                                        width:
-                                          type: number
-                                        height:
-                                          type: number
-                                        viewBox:
-                                          type: array
-                                          items:
-                                            type: number
-                                        paths:
-                                          type: array
-                                          items:
-                                            type: object
-                                            properties:
-                                              d:
-                                                type: string
-                                              fill:
-                                                type: string
-                                              stroke:
-                                                type: string
-                                              lineWidth:
+                                      oneOf:
+                                        - type: object
+                                          properties:
+                                            width:
+                                              type: number
+                                            height:
+                                              type: number
+                                            source:
+                                              oneOf:
+                                                - type: object
+                                                  properties:
+                                                    collection:
+                                                      type: string
+                                                      enum:
+                                                        - externals
+                                                        - internals
+                                                        - clients
+                                                        - users
+                                                    filename:
+                                                      type: string
+                                                  required:
+                                                    - collection
+                                                    - filename
+                                                - type: object
+                                                  properties:
+                                                    collection:
+                                                      type: string
+                                                      enum:
+                                                        - inline
+                                                    file:
+                                                      type: string
+                                                  required:
+                                                    - collection
+                                                    - file
+                                            draw:
+                                              type: number
+                                            x:
+                                              type: number
+                                            y:
+                                              type: number
+                                            rotation:
+                                              type: number
+                                            scale:
+                                              type: number
+                                            scaleX:
+                                              type: number
+                                            scaleY:
+                                              type: number
+                                            opacity:
+                                              type: number
+                                            blur:
+                                              type: number
+                                          required:
+                                            - width
+                                            - height
+                                            - source
+                                        - type: object
+                                          properties:
+                                            width:
+                                              type: number
+                                            height:
+                                              type: number
+                                            viewBox:
+                                              type: array
+                                              items:
                                                 type: number
-                                              fillRule:
-                                                type: string
-                                                enum:
-                                                  - nonzero
-                                                  - evenodd
-                                            required:
-                                              - d
-                                        x:
-                                          type: number
-                                        y:
-                                          type: number
-                                        rotation:
-                                          type: number
-                                        scale:
-                                          type: number
-                                        scaleX:
-                                          type: number
-                                        scaleY:
-                                          type: number
-                                        opacity:
-                                          type: number
-                                        blur:
-                                          type: number
-                                      required:
-                                        - width
-                                        - height
-                                        - viewBox
-                                        - paths
+                                            paths:
+                                              type: array
+                                              items:
+                                                type: object
+                                                properties:
+                                                  d:
+                                                    type: string
+                                                  fill:
+                                                    type: string
+                                                  stroke:
+                                                    type: string
+                                                  lineWidth:
+                                                    type: number
+                                                  fillRule:
+                                                    type: string
+                                                    enum:
+                                                      - nonzero
+                                                      - evenodd
+                                                required:
+                                                  - d
+                                            draw:
+                                              type: number
+                                            x:
+                                              type: number
+                                            y:
+                                              type: number
+                                            rotation:
+                                              type: number
+                                            scale:
+                                              type: number
+                                            scaleX:
+                                              type: number
+                                            scaleY:
+                                              type: number
+                                            opacity:
+                                              type: number
+                                            blur:
+                                              type: number
+                                          required:
+                                            - width
+                                            - height
+                                            - viewBox
+                                            - paths
                                     type:
                                       type: string
                                       enum:
@@ -23755,57 +24023,115 @@ paths:
                                   - type: object
                                     properties:
                                       props:
-                                        type: object
-                                        properties:
-                                          width:
-                                            type: number
-                                          height:
-                                            type: number
-                                          viewBox:
-                                            type: array
-                                            items:
-                                              type: number
-                                          paths:
-                                            type: array
-                                            items:
-                                              type: object
-                                              properties:
-                                                d:
-                                                  type: string
-                                                fill:
-                                                  type: string
-                                                stroke:
-                                                  type: string
-                                                lineWidth:
+                                        oneOf:
+                                          - type: object
+                                            properties:
+                                              width:
+                                                type: number
+                                              height:
+                                                type: number
+                                              source:
+                                                oneOf:
+                                                  - type: object
+                                                    properties:
+                                                      collection:
+                                                        type: string
+                                                        enum:
+                                                          - externals
+                                                          - internals
+                                                          - clients
+                                                          - users
+                                                      filename:
+                                                        type: string
+                                                    required:
+                                                      - collection
+                                                      - filename
+                                                  - type: object
+                                                    properties:
+                                                      collection:
+                                                        type: string
+                                                        enum:
+                                                          - inline
+                                                      file:
+                                                        type: string
+                                                    required:
+                                                      - collection
+                                                      - file
+                                              draw:
+                                                type: number
+                                              x:
+                                                type: number
+                                              y:
+                                                type: number
+                                              rotation:
+                                                type: number
+                                              scale:
+                                                type: number
+                                              scaleX:
+                                                type: number
+                                              scaleY:
+                                                type: number
+                                              opacity:
+                                                type: number
+                                              blur:
+                                                type: number
+                                            required:
+                                              - width
+                                              - height
+                                              - source
+                                          - type: object
+                                            properties:
+                                              width:
+                                                type: number
+                                              height:
+                                                type: number
+                                              viewBox:
+                                                type: array
+                                                items:
                                                   type: number
-                                                fillRule:
-                                                  type: string
-                                                  enum:
-                                                    - nonzero
-                                                    - evenodd
-                                              required:
-                                                - d
-                                          x:
-                                            type: number
-                                          y:
-                                            type: number
-                                          rotation:
-                                            type: number
-                                          scale:
-                                            type: number
-                                          scaleX:
-                                            type: number
-                                          scaleY:
-                                            type: number
-                                          opacity:
-                                            type: number
-                                          blur:
-                                            type: number
-                                        required:
-                                          - width
-                                          - height
-                                          - viewBox
-                                          - paths
+                                              paths:
+                                                type: array
+                                                items:
+                                                  type: object
+                                                  properties:
+                                                    d:
+                                                      type: string
+                                                    fill:
+                                                      type: string
+                                                    stroke:
+                                                      type: string
+                                                    lineWidth:
+                                                      type: number
+                                                    fillRule:
+                                                      type: string
+                                                      enum:
+                                                        - nonzero
+                                                        - evenodd
+                                                  required:
+                                                    - d
+                                              draw:
+                                                type: number
+                                              x:
+                                                type: number
+                                              y:
+                                                type: number
+                                              rotation:
+                                                type: number
+                                              scale:
+                                                type: number
+                                              scaleX:
+                                                type: number
+                                              scaleY:
+                                                type: number
+                                              opacity:
+                                                type: number
+                                              blur:
+                                                type: number
+                                            required:
+                                              - width
+                                              - height
+                                              - viewBox
+                                              - paths
                                       type:
                                         type: string
                                         enum:
@@ -25592,57 +25918,115 @@ paths:
                                 - type: object
                                   properties:
                                     props:
-                                      type: object
-                                      properties:
-                                        width:
-                                          type: number
-                                        height:
-                                          type: number
-                                        viewBox:
-                                          type: array
-                                          items:
-                                            type: number
-                                        paths:
-                                          type: array
-                                          items:
-                                            type: object
-                                            properties:
-                                              d:
-                                                type: string
-                                              fill:
-                                                type: string
-                                              stroke:
-                                                type: string
-                                              lineWidth:
+                                      oneOf:
+                                        - type: object
+                                          properties:
+                                            width:
+                                              type: number
+                                            height:
+                                              type: number
+                                            source:
+                                              oneOf:
+                                                - type: object
+                                                  properties:
+                                                    collection:
+                                                      type: string
+                                                      enum:
+                                                        - externals
+                                                        - internals
+                                                        - clients
+                                                        - users
+                                                    filename:
+                                                      type: string
+                                                  required:
+                                                    - collection
+                                                    - filename
+                                                - type: object
+                                                  properties:
+                                                    collection:
+                                                      type: string
+                                                      enum:
+                                                        - inline
+                                                    file:
+                                                      type: string
+                                                  required:
+                                                    - collection
+                                                    - file
+                                            draw:
+                                              type: number
+                                            x:
+                                              type: number
+                                            y:
+                                              type: number
+                                            rotation:
+                                              type: number
+                                            scale:
+                                              type: number
+                                            scaleX:
+                                              type: number
+                                            scaleY:
+                                              type: number
+                                            opacity:
+                                              type: number
+                                            blur:
+                                              type: number
+                                          required:
+                                            - width
+                                            - height
+                                            - source
+                                        - type: object
+                                          properties:
+                                            width:
+                                              type: number
+                                            height:
+                                              type: number
+                                            viewBox:
+                                              type: array
+                                              items:
                                                 type: number
-                                              fillRule:
-                                                type: string
-                                                enum:
-                                                  - nonzero
-                                                  - evenodd
-                                            required:
-                                              - d
-                                        x:
-                                          type: number
-                                        y:
-                                          type: number
-                                        rotation:
-                                          type: number
-                                        scale:
-                                          type: number
-                                        scaleX:
-                                          type: number
-                                        scaleY:
-                                          type: number
-                                        opacity:
-                                          type: number
-                                        blur:
-                                          type: number
-                                      required:
-                                        - width
-                                        - height
-                                        - viewBox
-                                        - paths
+                                            paths:
+                                              type: array
+                                              items:
+                                                type: object
+                                                properties:
+                                                  d:
+                                                    type: string
+                                                  fill:
+                                                    type: string
+                                                  stroke:
+                                                    type: string
+                                                  lineWidth:
+                                                    type: number
+                                                  fillRule:
+                                                    type: string
+                                                    enum:
+                                                      - nonzero
+                                                      - evenodd
+                                                required:
+                                                  - d
+                                            draw:
+                                              type: number
+                                            x:
+                                              type: number
+                                            y:
+                                              type: number
+                                            rotation:
+                                              type: number
+                                            scale:
+                                              type: number
+                                            scaleX:
+                                              type: number
+                                            scaleY:
+                                              type: number
+                                            opacity:
+                                              type: number
+                                            blur:
+                                              type: number
+                                          required:
+                                            - width
+                                            - height
+                                            - viewBox
+                                            - paths
                                     type:
                                       type: string
                                       enum:
@@ -26724,14 +27108,14 @@ paths:
                               type: string
                             sv:
                               type: string
+                        order:
+                          type: number
                         configuration:
                           oneOf:
                             - type:
                                 - "null"
                             - type: object
                               additionalProperties: true
-                        order:
-                          type: number
                         answerTemplateSlug:
                           type: string
                         instruction:
@@ -26844,8 +27228,8 @@ paths:
                       required:
                         - id
                         - title
-                        - configuration
                         - order
+                        - configuration
                         - answerTemplateSlug
                         - instruction
                         - isRequired
