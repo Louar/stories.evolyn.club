@@ -3,6 +3,7 @@
 	import PolicyConsent from '$lib/components/app/policy-consent/policy-consent.svelte';
 	import { ModeWatcher } from 'mode-watcher';
 
+	import { MediaCollection } from '$lib/db/schemas/0-utils.js';
 	import { Toaster } from 'svelte-sonner';
 	import './layout.css';
 
@@ -18,12 +19,17 @@
 	{/if}
 
 	{#if client?.favicon?.collection?.length && client.favicon?.filename?.length}
-		<link rel="icon" href="/api/media/{client.favicon.collection}/{client.favicon.filename}" />
-		<link
-			rel="apple-touch-icon"
-			sizes="180x180"
-			href="/api/media/{client.favicon.collection}/{client.favicon.filename}"
-		/>
+		{#if client.favicon.collection === MediaCollection.externals}
+			<link rel="icon" href={client.favicon.filename} />
+			<link rel="apple-touch-icon" sizes="180x180" href={client.favicon.filename} />
+		{:else}
+			<link rel="icon" href="/api/media/{client.favicon.collection}/{client.favicon.filename}" />
+			<link
+				rel="apple-touch-icon"
+				sizes="180x180"
+				href="/api/media/{client.favicon.collection}/{client.favicon.filename}"
+			/>
+		{/if}
 	{:else}
 		<link rel="icon" href="/stories-logo.svg" />
 		<link rel="apple-touch-icon" sizes="180x180" href="/stories-logo.svg" />
