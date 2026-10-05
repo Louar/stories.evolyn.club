@@ -409,10 +409,27 @@
 			frames = evenlySpaced(track.values.length, trackDelay, trackDelay + span);
 		}
 
-		if (frames.at(-1)! > layerDuration - 1) {
-			throw new Error(
-				`Animation '${property}' ends at local frame ${frames.at(-1)}, but the layer only has ${layerDuration} frames.`
-			);
+		const lastVisibleFrame = layerDuration - 1;
+		let values = track.values;
+		if (frames[0] > lastVisibleFrame) return [];
+		if (frames.at(-1)! > lastVisibleFrame) {
+			const firstOutsideIndex = frames.findIndex((frame) => frame > lastVisibleFrame);
+			const previousIndex = firstOutsideIndex - 1;
+			const previousFrame = frames[previousIndex];
+			const nextFrame = frames[firstOutsideIndex];
+			const clippedFrames = frames.slice(0, firstOutsideIndex);
+			const clippedValues = values.slice(0, firstOutsideIndex);
+
+			if (previousFrame !== lastVisibleFrame) {
+				const interpolate = compileInterpolator(values[previousIndex], values[firstOutsideIndex]);
+				clippedFrames.push(lastVisibleFrame);
+				clippedValues.push(
+					interpolate((lastVisibleFrame - previousFrame) / (nextFrame - previousFrame))
+				);
+			}
+
+			frames = clippedFrames;
+			values = clippedValues;
 		}
 
 		return properties.map((resolvedProperty) => {
@@ -429,10 +446,10 @@
 				}
 			}
 
-			const segments = track.values.slice(0, -1).map((from, index) => ({
+			const segments = values.slice(0, -1).map((from, index) => ({
 				fromFrame: frames[index],
 				toFrame: frames[index + 1],
-				interpolate: compileInterpolator(from, track.values[index + 1])
+				interpolate: compileInterpolator(from, values[index + 1])
 			}));
 
 			const resolve = (value: unknown) =>
@@ -441,9 +458,9 @@
 			return {
 				path,
 				sample(frame) {
-					if (frame <= frames[0]) return resolve(track.values[0]);
+					if (frame <= frames[0]) return resolve(values[0]);
 					const lastIndex = frames.length - 1;
-					if (frame >= frames[lastIndex]) return resolve(track.values[lastIndex]);
+					if (frame >= frames[lastIndex]) return resolve(values[lastIndex]);
 
 					const segment = segments.find(
 						(candidate) => frame >= candidate.fromFrame && frame <= candidate.toFrame
