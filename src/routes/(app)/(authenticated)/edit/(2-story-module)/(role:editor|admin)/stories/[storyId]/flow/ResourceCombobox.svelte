@@ -59,10 +59,12 @@
 							onSelect={() => select(item.value)}
 						>
 							<CheckIcon class="size-4 {item.value === value ? 'opacity-100' : 'opacity-0'}" />
-							<div class="min-w-0">
+							<div class="min-w-0 flex-1">
 								<p class="truncate">{item.label}</p>
 								{#if item.description}
-									<p class="truncate text-xs text-muted-foreground">{item.description}</p>
+									<p class="whitespace-normal break-words text-xs text-muted-foreground">
+										{item.description}
+									</p>
 								{/if}
 							</div>
 						</Command.Item>

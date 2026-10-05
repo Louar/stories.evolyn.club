@@ -116,7 +116,11 @@
 		}))
 	);
 	let taxonomyItems = $derived(
-		EDITORS.taxonomies.map((item) => ({ value: item.id, label: item.name?.en ?? item.slug }))
+		EDITORS.taxonomies.map((item) => ({
+			value: item.id,
+			label: item.name?.en ?? item.slug,
+			description: item.slug
+		}))
 	);
 	let quiz = $derived(EDITORS.quizzes.find((item) => item.id === draft.quizTemplateId));
 	let selectedVideo = $derived(EDITORS.videos.find((item) => item.id === draft.videoId));
