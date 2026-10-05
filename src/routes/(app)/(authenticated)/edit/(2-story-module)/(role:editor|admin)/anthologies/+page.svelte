@@ -210,13 +210,11 @@
 			filterFn
 		},
 		{
-			accessorKey: 'thumbnail',
+			id: 'thumbnail',
+			accessorFn: (row) =>
+				fileCellMediaToFileCellData(translateLocalizedMediaField(row.thumbnail, UI.language) ?? null),
 			header: 'Thumbnail',
 			size: 240,
-			cell: ({ row }) =>
-				fileCellMediaToFileCellData(
-					translateLocalizedMediaField(row.original.thumbnail, UI.language) ?? null
-				),
 			meta: {
 				cell: { variant: 'file-or-url', accept: 'image/*', maxFiles: 1, multiple: false },
 				setValue: setThumbnail,
