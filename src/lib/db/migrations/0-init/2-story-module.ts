@@ -457,6 +457,7 @@ export const InitStoryModule: Migration = {
 			)
 			.addColumn('slug', 'text', (col) => col.notNull())
 			.addColumn('name', 'jsonb', (col) => col.notNull())
+			.addColumn('order', 'smallint')
 			.addColumn('thumbnail', 'jsonb')
 			.addColumn('description', 'jsonb')
 			.addColumn('visualization', sql`anthology_visualization`, (col) =>

@@ -213,6 +213,7 @@ classDiagram
   class Anthology {
       slug: string
       name: Translatable
+      order: number?
       thumbnail: TranslatableMedia?
       description: Translatable?
       visualization: AnthologyVisualization

@@ -28,6 +28,7 @@ export const schema = z.object({
 	id: z.string().min(1).optional(),
 	slug: z.string().min(1),
 	name: z.preprocess(parseJsonString, translatableValidator),
+	order: z.number().nullable().default(null),
 	thumbnail: z.preprocess(parseJsonString, translatableMediaValidator.nullable()).default(null),
 	description: z.preprocess(parseJsonString, translatableValidator.nullable()).default(null),
 	visualization: z.enum(Object.values(AnthologyVisualization)).default(AnthologyVisualization.grid),

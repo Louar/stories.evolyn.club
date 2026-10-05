@@ -68,6 +68,7 @@ export const findOneAnthologyBySlug = async (
 		.select((eb) => [
 			'anthology.id',
 			'anthology.slug',
+			'anthology.order',
 			'anthology.visualization',
 			selectLocalizedMediaField(eb, 'anthology.thumbnail', language).as('thumbnail'),
 			selectLocalizedField(eb, 'anthology.description', language).as('description'),
@@ -102,6 +103,7 @@ export const findManyPublicAnthologies = async (clientId: string, language?: Lan
 		.select((eb) => [
 			'anthology.id',
 			'anthology.slug',
+			'anthology.order',
 			'anthology.visualization',
 			selectLocalizedMediaField(eb, 'anthology.thumbnail', language).as('thumbnail'),
 			selectLocalizedField(eb, 'anthology.description', language).as('description'),
@@ -115,6 +117,7 @@ export const findManyPublicAnthologies = async (clientId: string, language?: Lan
 				.select(sql<number>`count(*)::integer`.as('storyCount'))
 				.as('storyCount')
 		])
+		.orderBy(sql`anthology."order" asc nulls last`)
 		.orderBy('anthology.updatedAt', 'desc')
 		.execute();
 

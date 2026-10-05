@@ -26,6 +26,7 @@ const anthologyDescriptionSchema = z.preprocess(
 const anthologyFieldsSchema = z.object({
 	slug: z.string().min(1),
 	nameRaw: z.preprocess(formObjectPreprocessor, translatableValidator),
+	order: z.number().nullable(),
 	thumbnail: anthologyThumbnailSchema.default(null),
 	description: anthologyDescriptionSchema.default(null),
 	visualization: z.enum(Object.values(AnthologyVisualization)),
@@ -36,6 +37,7 @@ const anthologyFieldsSchema = z.object({
 });
 
 export const anthologyCreateSchema = anthologyFieldsSchema.extend({
+	order: anthologyFieldsSchema.shape.order.default(null),
 	visualization: anthologyFieldsSchema.shape.visualization.default(AnthologyVisualization.grid),
 	configuration: anthologyFieldsSchema.shape.configuration.default(null),
 	isPublished: anthologyFieldsSchema.shape.isPublished.default(false),

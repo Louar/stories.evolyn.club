@@ -167,6 +167,12 @@
 		},
 		{ accessorKey: 'slug', header: 'Slug', meta: { cell: { variant: 'text-short' } }, filterFn },
 		{
+			accessorKey: 'order',
+			header: 'Order',
+			meta: { cell: { variant: 'number' } },
+			filterFn
+		},
+		{
 			id: 'stories',
 			accessorFn: (row) => row.positions.length,
 			header: 'Stories',
@@ -286,6 +292,7 @@
 		dataAdapter,
 		defaultRow: () => ({
 			nameRaw: { en: 'New anthology' },
+			order: null,
 			thumbnail: null,
 			description: null,
 			visualization: AnthologyVisualization.grid,
@@ -404,7 +411,7 @@
 		{table}
 		height={gridHeight}
 		display="grid"
-		cardFields={['nameRaw', 'slug', 'description', 'visualization', 'isPublished', 'isPublic']}
+		cardFields={['nameRaw', 'slug', 'order', 'description', 'visualization', 'isPublished', 'isPublic']}
 	>
 		{#snippet card(anthology, fields)}
 			{@const thumbnail = translateLocalizedMediaField(anthology.thumbnail, UI.language)}

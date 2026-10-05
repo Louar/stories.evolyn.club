@@ -17,7 +17,11 @@
 
 	let authclient = $derived(data.authclient);
 	let client = $derived(data.client);
-	let anthologies = $derived(data.anthologies);
+	let anthologies = $derived(
+		[...data.anthologies].sort(
+			(a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER)
+		)
+	);
 	let user = $derived(data.authusr);
 	let title = $derived(client.name ?? 'Client information');
 	let clientInitials = $derived(client.name?.slice(0, 1).toUpperCase() ?? '?');
