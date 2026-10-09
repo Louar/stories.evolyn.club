@@ -2536,6 +2536,7 @@ export function useDataGrid<TData extends RowData>(
 				replaceData([...getData(), ...result.rows]);
 			}
 			if (result.rows.length > 0) {
+				table.resetRowSelection();
 				clearSelection();
 			}
 			const duplicatedCount = result.rows.length;
