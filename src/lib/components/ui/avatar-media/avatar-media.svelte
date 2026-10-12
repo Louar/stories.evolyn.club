@@ -10,17 +10,17 @@
 	};
 	let { src, fallback, class: className, ...restProps }: Props = $props();
 
-	let isLoading: boolean = $state(true);
+	// let isLoading: boolean = $state(true);
 	let source: string | null = $state(null);
-	let extension: string = $state('(null)');
+	// let extension: string = $state('(null)');
 
 	$effect(() => {
-		extension = src?.filename?.split('.')?.at(-1) || '(null)';
+		// extension = src?.filename?.split('.')?.at(-1) || '(null)';
 		if (src?.collection?.length && src?.filename?.length) load(src.collection, src.filename);
 	});
 
 	const load = async (collection: MediaCollection, filename: string) => {
-		isLoading = true;
+		// isLoading = true;
 		let url = `/api/media/${collection}/${filename}`;
 		if (collection === 'externals') {
 			source = filename;
@@ -35,19 +35,19 @@
 				//
 			}
 		}
-		isLoading = false;
+		// isLoading = false;
 	};
 </script>
 
 <Avatar.Root
 	class={cn(
-		'@container-size relative aspect-square border border-muted-foreground shadow-xs',
+		'@container-size relative aspect-square rounded-md border shadow-xs',
 		className
 	)}
 	{...restProps}
 >
-	<Avatar.Image src={source} class="rounded-full object-cover" />
-	<Avatar.Fallback class={cn('border text-[60cqi] text-muted-foreground', className)}
+	<Avatar.Image src={source} class="object-cover" />
+	<Avatar.Fallback class="text-[60cqi] text-muted-foreground"
 		>{fallback || '?'}</Avatar.Fallback
 	>
 </Avatar.Root>

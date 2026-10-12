@@ -92,7 +92,8 @@ export const CELL_VARIANTS = [
 	'url',
 	'actions',
 	'file',
-	'file-or-url'
+	'file-or-url',
+	'file-with-library-or-url'
 ] as const;
 
 // Default cell variant

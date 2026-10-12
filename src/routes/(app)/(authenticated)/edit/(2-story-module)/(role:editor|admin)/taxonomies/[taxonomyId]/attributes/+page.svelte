@@ -89,7 +89,7 @@
 			cell: ({ row }) => fileCellMediaToFileCellData(row.original.image),
 			meta: {
 				cell: {
-					variant: 'file-or-url',
+					variant: 'file-with-library-or-url',
 					accept: 'image/*',
 					maxFiles: 1,
 					multiple: false

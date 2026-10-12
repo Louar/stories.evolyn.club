@@ -114,7 +114,7 @@
 			cell: ({ row }) => fileCellMediaToFileCellData(row.original.logo),
 			meta: {
 				cell: {
-					variant: 'file-or-url',
+					variant: 'file-with-library-or-url',
 					accept: 'image/*',
 					maxFiles: 1,
 					multiple: false
@@ -128,7 +128,7 @@
 			cell: ({ row }) => fileCellMediaToFileCellData(row.original.favicon),
 			meta: {
 				cell: {
-					variant: 'file-or-url',
+					variant: 'file-with-library-or-url',
 					accept: 'image/*',
 					maxFiles: 1,
 					multiple: false
@@ -142,7 +142,7 @@
 			cell: ({ row }) => fileCellMediaToFileCellData(row.original.splash),
 			meta: {
 				cell: {
-					variant: 'file-or-url',
+					variant: 'file-with-library-or-url',
 					accept: 'image/*',
 					maxFiles: 1,
 					multiple: false
@@ -156,7 +156,7 @@
 			cell: ({ row }) => fileCellMediaToFileCellData(row.original.hero),
 			meta: {
 				cell: {
-					variant: 'file-or-url',
+					variant: 'file-with-library-or-url',
 					accept: 'image/*',
 					maxFiles: 1,
 					multiple: false

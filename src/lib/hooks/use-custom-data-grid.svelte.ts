@@ -104,6 +104,7 @@ import type {
 	DataGridClearResult,
 	DataGridCreateResult,
 	DataGridDataAdapter,
+	DataGridDeleteConfirmationOptions,
 	DataGridDeleteDialogState,
 	DataGridDeleteResult,
 	DataGridDuplicateTarget,
@@ -351,6 +352,7 @@ export interface UseDataGridOptions<TData extends RowData> extends DataGridStatu
 	) => DataGridDeleteResult | boolean | Promise<DataGridDeleteResult | boolean>;
 	/** Disable when onRowsDelete provides its own confirmation dialog. */
 	enableDeleteConfirmation?: boolean;
+	deleteConfirmation?: DataGridDeleteConfirmationOptions;
 	/**
 	 * Duplicates persisted rows and their owned child relations. Returned rows are appended to the grid.
 	 * Pass `true` to use `dataAdapter.duplicate`.
@@ -464,6 +466,7 @@ export function useDataGrid<TData extends RowData>(
 		onRowChange: onRowChangeProp,
 		onRowsDelete: onRowsDeleteProp,
 		enableDeleteConfirmation = true,
+		deleteConfirmation,
 		onRowsDuplicate: onRowsDuplicateProp,
 		rowDuplicateTargets: rowDuplicateTargetsProp = [],
 		onDownload: onDownloadProp,
@@ -798,7 +801,7 @@ export function useDataGrid<TData extends RowData>(
 						(rowId) => rowIdentities.getSequenceKey(rowId),
 						(key, mutation) => sequenceRowMutation(key, mutation),
 						dataAdapter.delete
-							? ({ row }, rowId) => dataAdapter.delete!({ row, rowId })
+							? ({ row }, rowId) => dataAdapter.delete!({ row, rowId, force: deleteDialog.force })
 							: undefined,
 						(temporary) => {
 							const temporaryIdSet = new SvelteSet(temporary.map(({ rowId }) => rowId));
@@ -1550,7 +1553,8 @@ export function useDataGrid<TData extends RowData>(
 	let deleteDialog = $state<DataGridDeleteDialogState>({
 		open: false,
 		rowCount: 0,
-		isDeleting: false
+		isDeleting: false,
+		force: false
 	});
 	let pendingDeleteRowIds: string[] = [];
 
@@ -2333,7 +2337,11 @@ export function useDataGrid<TData extends RowData>(
 			const row = rows[rowIndex];
 			if (!row) continue;
 			const meta = table.getColumn(columnId)?.columnDef.meta;
-			const isFileCell = meta?.cell?.variant === 'file' || meta?.cell?.variant === 'file-or-url';
+			const isFileCell =
+				meta?.cell?.variant === 'file' ||
+				meta?.cell?.variant === 'file-or-url' ||
+				meta?.cell?.variant === 'file-with-library-or-url';
+			const retainsLibraryMedia = meta?.cell?.variant === 'file-with-library-or-url';
 			const emptyValue = isFileCell
 				? null
 				: typeof meta?.clipboard?.emptyValue === 'function'
@@ -2345,7 +2353,8 @@ export function useDataGrid<TData extends RowData>(
 			const value = cloneEditValue(snapshot.value);
 			cells.push({
 				key: cellKey,
-				value: isFileCell ? value : null,
+				// Library-aware cells only detach references; assets are deleted from the library page.
+				value: isFileCell && !retainsLibraryMedia ? value : null,
 				context: {
 					rowIndex,
 					rowId,
@@ -2447,7 +2456,8 @@ export function useDataGrid<TData extends RowData>(
 		deleteDialog = {
 			open: enableDeleteConfirmation,
 			rowCount: pendingDeleteRowIds.length,
-			isDeleting: false
+			isDeleting: false,
+			force: false
 		};
 		if (!enableDeleteConfirmation) void confirmRowsDelete();
 	}
@@ -2461,7 +2471,7 @@ export function useDataGrid<TData extends RowData>(
 		);
 		if (rowIndices.length === 0) {
 			pendingDeleteRowIds = [];
-			deleteDialog = { open: false, rowCount: 0, isDeleting: false };
+			deleteDialog = { open: false, rowCount: 0, isDeleting: false, force: false };
 			return;
 		}
 
@@ -2479,7 +2489,7 @@ export function useDataGrid<TData extends RowData>(
 				);
 			}
 			pendingDeleteRowIds = [];
-			deleteDialog = { open: false, rowCount: 0, isDeleting: false };
+			deleteDialog = { open: false, rowCount: 0, isDeleting: false, force: false };
 		} catch (error) {
 			deleteDialog = { ...deleteDialog, isDeleting: false };
 			toast.error(error instanceof Error ? error.message : 'Failed to delete selected rows');
@@ -3268,14 +3278,19 @@ export function useDataGrid<TData extends RowData>(
 			expectedSnapshots?: ReadonlyMap<string, { generation: number; value: unknown }>
 		) => handleDataUpdate(updates, false, expectedSnapshots, true),
 		onRowsDeleteRequest: requestRowsDelete,
+		deleteConfirmation,
 		onDeleteDialogOpenChange: (open: boolean) => {
 			if (deleteDialog.isDeleting) return;
 			if (!open) pendingDeleteRowIds = [];
 			deleteDialog = {
 				...deleteDialog,
 				open,
-				...(open ? {} : { rowCount: 0 })
+				...(open ? {} : { rowCount: 0, force: false })
 			};
+		},
+		onDeleteDialogForceChange: (force: boolean) => {
+			if (deleteDialog.isDeleting || !deleteConfirmation?.force) return;
+			deleteDialog = { ...deleteDialog, force };
 		},
 		onRowsDeleteConfirm: confirmRowsDelete,
 		onRowsDuplicate: resolvedOnRowsDuplicate ? duplicateSelectedRows : undefined,

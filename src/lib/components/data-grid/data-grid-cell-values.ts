@@ -6,6 +6,7 @@ export function getEmptyCellValue(variant: CellVariant): unknown {
 	switch (variant) {
 		case 'file':
 		case 'file-or-url':
+		case 'file-with-library-or-url':
 			return null;
 		case 'select-multiple':
 			return [];
@@ -45,7 +46,8 @@ export function parseCellValue(text: string, variant: CellVariant): unknown {
 		variant === 'json-yaml' ||
 		variant === 'select-multiple' ||
 		variant === 'file' ||
-		variant === 'file-or-url'
+		variant === 'file-or-url' ||
+		variant === 'file-with-library-or-url'
 	) {
 		try {
 			return JSON.parse(text);

@@ -179,6 +179,8 @@
 				return { icon: FileIcon, label: 'File' };
 			case 'file-or-url':
 				return { icon: FileSymlinkIcon, label: 'File or URL' };
+			case 'file-with-library-or-url':
+				return { icon: FileSymlinkIcon, label: 'Library, file or URL' };
 			case 'json-yaml':
 				return { icon: Terminal, label: 'YAML' };
 			default:

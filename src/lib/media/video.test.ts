@@ -13,7 +13,7 @@ it('gives YouTube a disposable mount rather than the framework-owned container',
 		return player;
 	});
 	vi.stubGlobal('window', {
-		location: { origin: 'http://localhost:5174' },
+		location: { origin: 'http://localhost:5175' },
 		YT: { Player }
 	});
 	vi.stubGlobal('document', {
@@ -37,7 +37,7 @@ it('gives YouTube a disposable mount rather than the framework-owned container',
 		mount,
 		expect.objectContaining({
 			videoId: 'HZG50cFJNNQ',
-			playerVars: expect.objectContaining({ origin: 'http://localhost:5174', end: 6 })
+			playerVars: expect.objectContaining({ origin: 'http://localhost:5175', end: 6 })
 		})
 	);
 	expect(result).toBe(player);

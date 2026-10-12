@@ -76,7 +76,7 @@ export type CellOpts<TData = unknown> =
 			actions: DataGridCellAction<TData>[] | ((row: TData) => DataGridCellAction<TData>[]);
 	  }
 	| {
-			variant: 'file' | 'file-or-url';
+			variant: 'file' | 'file-or-url' | 'file-with-library-or-url';
 			maxFileSize?: number;
 			maxFiles?: number;
 			accept?: string;
@@ -125,6 +125,10 @@ export interface DataGridMutationContext<TData> {
 	rowId: string;
 }
 
+export interface DataGridDeleteContext<TData> extends DataGridMutationContext<TData> {
+	force: boolean;
+}
+
 export interface DataGridDuplicateContext<TData> extends DataGridMutationContext<TData> {
 	targetId?: string;
 }
@@ -142,7 +146,7 @@ export interface DataGridDataAdapter<TData> {
 	/** Duplicates one persisted row, including any owned child relations. */
 	duplicate?: (params: DataGridDuplicateContext<TData>) => Promise<TData>;
 	update?: (params: DataGridMutationContext<TData> & { changes: Partial<TData> }) => Promise<TData>;
-	delete?: (params: DataGridMutationContext<TData>) => Promise<boolean>;
+	delete?: (params: DataGridDeleteContext<TData>) => Promise<boolean>;
 	download?: (params: { rows: TData[]; rowIds: string[] }) => Promise<void>;
 }
 
@@ -161,6 +165,16 @@ export interface DataGridDeleteDialogState {
 	open: boolean;
 	rowCount: number;
 	isDeleting: boolean;
+	force: boolean;
+}
+
+export interface DataGridDeleteConfirmationOptions {
+	itemLabel?: { singular: string; plural: string };
+	description?: string | ((rowCount: number) => string);
+	force?: {
+		label: string;
+		description?: string;
+	};
 }
 
 export interface DataGridPreferencesController {
@@ -419,8 +433,10 @@ declare module '@tanstack/table-core' {
 			expectedSnapshots?: ReadonlyMap<string, { generation: number; value: unknown }>
 		) => Promise<DataGridMutationResult[]>;
 		deleteDialog?: DataGridDeleteDialogState;
+		deleteConfirmation?: DataGridDeleteConfirmationOptions;
 		onRowsDeleteRequest?: (rowIndices: number[]) => void;
 		onDeleteDialogOpenChange?: (open: boolean) => void;
+		onDeleteDialogForceChange?: (force: boolean) => void;
 		onRowsDeleteConfirm?: () => Promise<void>;
 		onRowsDuplicate?: (targetId?: string) => Promise<DataGridCreateResult<TData> | void>;
 		getRowDuplicateTargets?: () => readonly DataGridDuplicateTarget[];

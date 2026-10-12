@@ -177,7 +177,7 @@ export class StoryEvent {
   watchTimePercentage: number;
 }
 
-const allowedOrigins = ['http://localhost:5174', 'https://stories.example.com'];
+const allowedOrigins = ['http://localhost:5175', 'https://stories.example.com'];
 
 window.addEventListener('message', (event: MessageEvent) => {
   if (!allowedOrigins.includes(event.origin)) {

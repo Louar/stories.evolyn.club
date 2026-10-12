@@ -6,6 +6,7 @@ export { default as DateTimeCell } from './date-time-cell.svelte';
 export { default as InputWithSuggestionsCell } from './input-with-suggestions-cell.svelte';
 export { default as FileCell } from './file-cell.svelte';
 export { default as FileOrUrlCell } from './file-or-url-cell.svelte';
+export { default as FileWithLibraryOrUrlCell } from './file-with-library-or-url-cell.svelte';
 export { default as JdmExpressionCell } from './jdm-expression-cell.svelte';
 export { default as JsonYamlCell } from './json-yaml-cell.svelte';
 export { default as NumberCell } from './number-cell.svelte';

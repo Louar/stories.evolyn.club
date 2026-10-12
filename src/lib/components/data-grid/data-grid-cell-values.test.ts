@@ -12,6 +12,7 @@ describe('data grid cell values', () => {
 	it('uses variant-aware empty values', () => {
 		expect(getEmptyCellValue('file')).toBeNull();
 		expect(getEmptyCellValue('file-or-url')).toBeNull();
+		expect(getEmptyCellValue('file-with-library-or-url')).toBeNull();
 		expect(getEmptyCellValue('select-multiple')).toEqual([]);
 		expect(getEmptyCellValue('checkbox')).toBe(false);
 		expect(getEmptyCellValue('number')).toBeNull();

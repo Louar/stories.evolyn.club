@@ -12,6 +12,7 @@
 	import InputWithSuggestionsCell from './cells/input-with-suggestions-cell.svelte';
 	import FileCell from './cells/file-cell.svelte';
 	import FileOrUrlCell from './cells/file-or-url-cell.svelte';
+	import FileWithLibraryOrUrlCell from './cells/file-with-library-or-url-cell.svelte';
 	import JdmExpressionCell from './cells/jdm-expression-cell.svelte';
 	import JsonYamlCell from './cells/json-yaml-cell.svelte';
 	import NumberCell from './cells/number-cell.svelte';
@@ -363,6 +364,18 @@
 	/>
 {:else if variant === 'file-or-url'}
 	<FileOrUrlCell
+		{cell}
+		{table}
+		{rowIndex}
+		{columnId}
+		{isEditing}
+		{isFocused}
+		{isSelected}
+		{readOnly}
+		{cellValue}
+	/>
+{:else if variant === 'file-with-library-or-url'}
+	<FileWithLibraryOrUrlCell
 		{cell}
 		{table}
 		{rowIndex}

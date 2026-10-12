@@ -89,6 +89,16 @@
 						{/snippet}
 					</Sidebar.MenuButton>
 				</Sidebar.MenuItem>
+				<Sidebar.MenuItem class="px-2">
+					<Sidebar.MenuButton
+						onclick={() => sidebar?.setOpenMobile(false)}
+						isActive={page.url.pathname?.startsWith('/edit/images')}
+					>
+						{#snippet child({ props })}
+							<a href={resolve('/edit/images')} {...props}>Images</a>
+						{/snippet}
+					</Sidebar.MenuButton>
+				</Sidebar.MenuItem>
 			</Sidebar.Menu>
 		</Sidebar.Group>
 		<Sidebar.Group class="p-0">

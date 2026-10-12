@@ -394,7 +394,7 @@ const DEFAULT_INFO = {
 		},
 		{
 			name: 'Development',
-			url: 'http://localhost:5174/api'
+			url: 'http://localhost:5175/api'
 		}
 	],
 	components: {

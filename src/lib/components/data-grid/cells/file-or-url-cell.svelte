@@ -1,9 +1,13 @@
 <script lang="ts" generics="TData extends RowData">
-	import type { RowData } from '../data-grid-table.js';
 	import {
 		hasFileUploadHandler,
 		isAcknowledgedCellValueCurrent
 	} from '$lib/components/data-grid/data-grid-actions.js';
+	import {
+		clientMediaToFileCellData,
+		selectLibraryFile,
+		type ClientMediaLibraryItem
+	} from '$lib/components/data-grid/data-grid-media-library.js';
 	import {
 		getFileCellItems,
 		isDeletableUploadedMedia,
@@ -19,12 +23,15 @@
 	import { AvatarMedia } from '$lib/components/ui/avatar-media/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Command from '$lib/components/ui/command/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { PopoverContent } from '$lib/components/ui/popover/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
+	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import { MediaCollection } from '$lib/db/schemas/0-utils.js';
 	import { useBadgeOverflow } from '$lib/hooks/use-badge-overflow.svelte.js';
 	import { cn } from '$lib/utils.js';
+	import CheckIcon from '@lucide/svelte/icons/check';
 	import FileIcon from '@lucide/svelte/icons/file';
 	import FileArchive from '@lucide/svelte/icons/file-archive';
 	import FileImage from '@lucide/svelte/icons/file-image';
@@ -42,6 +49,7 @@
 	import { toast } from 'svelte-sonner';
 	import { SvelteMap } from 'svelte/reactivity';
 	import DataGridCellWrapper from '../data-grid-cell-wrapper.svelte';
+	import type { RowData } from '../data-grid-table.js';
 
 	let {
 		cell,
@@ -52,8 +60,9 @@
 		isFocused,
 		isSelected,
 		readOnly = false,
-		cellValue
-	}: CellVariantProps<TData> = $props();
+		cellValue,
+		enableLibrary = false
+	}: CellVariantProps<TData> & { enableLibrary?: boolean } = $props();
 
 	const initialCellValue = $derived.by(() => {
 		const files = getFileCellItems(cellValue);
@@ -75,6 +84,9 @@
 	let fileInputRef = $state<HTMLInputElement | null>(null);
 	let dropzoneRef = $state<HTMLButtonElement | null>(null);
 	let urlInputRef = $state<HTMLInputElement | null>(null);
+	let libraryItems = $state<ClientMediaLibraryItem[] | null>(null);
+	let libraryLoading = $state(false);
+	let libraryError = $state<string | null>(null);
 	const cellOpts = $derived(cell.column.columnDef.meta?.cell);
 	const sideOffset = $derived(-(containerRef?.clientHeight ?? 0));
 
@@ -84,6 +96,7 @@
 	const accept = $derived(fileCellOpts?.accept);
 	const multiple = $derived(fileCellOpts?.multiple ?? true);
 	const canUploadFiles = $derived(hasFileUploadHandler(table.options.meta?.onFilesUpload));
+	const editorTab = $derived(enableLibrary ? 'library' : canUploadFiles ? 'upload' : 'url');
 
 	const acceptedTypes = $derived(accept ? accept.split(',').map((t) => t.trim()) : null);
 	const acceptsImages = $derived(acceptedTypes?.includes('image/*') ?? false);
@@ -104,6 +117,7 @@
 			editingSessionActive = true;
 			editingSessionGeneration++;
 			filesState = cloneInitialFiles();
+			if (enableLibrary) libraryItems = null;
 			urlValue = '';
 			error = null;
 		} else if (!isEditing && editingSessionActive) {
@@ -112,6 +126,10 @@
 			filesState = cloneInitialFiles();
 			urlValue = '';
 		}
+	});
+
+	$effect(() => {
+		if (isEditing && enableLibrary) void loadLibrary();
 	});
 
 	onDestroy(() => {
@@ -176,7 +194,43 @@
 	}
 
 	function requiresServerDelete(file: FileCellItem): boolean {
+		if (enableLibrary && file.collection === MediaCollection.clients) return false;
 		return isDeletableUploadedMedia(file);
+	}
+
+	async function loadLibrary() {
+		if (!enableLibrary || libraryItems || libraryLoading) return;
+		libraryLoading = true;
+		libraryError = null;
+		try {
+			const response = await fetch('/api/clients/media');
+			if (!response.ok) throw new Error('The media library could not be loaded');
+			libraryItems = (await response.json()) as ClientMediaLibraryItem[];
+		} catch (cause) {
+			libraryError =
+				cause instanceof Error ? cause.message : 'The media library could not be loaded';
+		} finally {
+			libraryLoading = false;
+		}
+	}
+
+	function addLibraryItem(item: ClientMediaLibraryItem) {
+		if (readOnly) return;
+		const current = filesState ?? [];
+		const updated = selectLibraryFile(current, item, { multiple, maxFiles });
+		const unchanged =
+			updated.length === current.length &&
+			updated.every(
+				(file, index) =>
+					file.collection === current[index]?.collection &&
+					file.filename === current[index]?.filename
+			);
+		if (unchanged) {
+			if (maxFiles && current.length >= maxFiles)
+				showTemporaryError(`Maximum ${maxFiles} files allowed`);
+			return;
+		}
+		syncFiles(updated);
 	}
 
 	function showTemporaryError(message: string, description?: string) {
@@ -754,12 +808,12 @@
 									{@const FileIcon = getFileIcon(file.filename)}
 									<div class="flex items-start gap-2 rounded-md border bg-muted/40 p-2">
 										<div
-											class="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-background"
+											class="flex size-11 shrink-0 items-center justify-center overflow-hidden bg-background"
 										>
 											{#if file.isUploading}
 												<LoaderCircleIcon class="size-4 animate-spin text-muted-foreground" />
 											{:else if isImagePreview(file)}
-												<AvatarMedia src={file} class="size-full rounded-none" />
+												<AvatarMedia src={file} class="size-full rounded-md" />
 											{:else}
 												<FileIcon class="size-4 text-muted-foreground" />
 											{/if}
@@ -807,59 +861,114 @@
 						</section>
 						<Separator />
 					{/if}
-					{#if canUploadFiles}
-						<button
-							type="button"
-							aria-label="Drop files here or click to browse"
-							data-dragging={isDragging ? '' : undefined}
-							data-invalid={error ? '' : undefined}
-							disabled={isUploading}
-							class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed p-6 transition-colors outline-none hover:bg-accent/30 focus-visible:border-ring/50 data-dragging:border-primary/30 data-dragging:bg-accent/30 data-invalid:border-destructive data-invalid:ring-destructive/20"
-							{@attach attachRef(setDropzoneRef)}
-							onclick={handleDropzoneClick}
-							ondragenter={handleDropzoneDragEnter}
-							ondragleave={handleDropzoneDragLeave}
-							ondragover={handleDropzoneDragOver}
-							ondrop={handleDropzoneDrop}
-							onkeydown={handleDropzoneKeyDown}
+					<Tabs.Root value={editorTab}>
+						<Tabs.List
+							class="grid w-full {enableLibrary && canUploadFiles ? 'grid-cols-3' : 'grid-cols-2'}"
 						>
-							<Upload class="size-8 text-muted-foreground" />
-							<div class="text-center text-sm">
-								<p class="font-medium">
-									{isDragging ? 'Drop files here' : 'Drag files here'}
-								</p>
-								<p class="text-xs text-muted-foreground">or click to browse</p>
+							{#if enableLibrary}<Tabs.Trigger value="library">Library</Tabs.Trigger>{/if}
+							{#if canUploadFiles}<Tabs.Trigger value="upload">Upload</Tabs.Trigger>{/if}
+							<Tabs.Trigger value="url">URL</Tabs.Trigger>
+						</Tabs.List>
+
+						{#if enableLibrary}
+							<Tabs.Content value="library" class="min-h-44 rounded-md border">
+								<Command.Root>
+									<Command.Input placeholder="Search media library..." />
+									<Command.List class="max-h-52">
+										{#if libraryLoading}
+											<div class="p-4 text-center text-sm text-muted-foreground">
+												Loading images...
+											</div>
+										{:else if libraryError}
+											<div class="p-4 text-center text-sm text-destructive">{libraryError}</div>
+										{:else}
+											<Command.Empty>No images found.</Command.Empty>
+											<Command.Group>
+												{#each libraryItems ?? [] as item (item.id)}
+													{@const selected = filesState?.some(
+														(file) =>
+															file.collection === MediaCollection.clients &&
+															file.filename === item.name
+													)}
+													<Command.Item
+														value={`${item.name} ${item.description ?? ''}`}
+														onSelect={() => addLibraryItem(item)}
+														class="gap-3"
+													>
+														<AvatarMedia
+															src={clientMediaToFileCellData(item)}
+															class="size-9 shrink-0 rounded-sm"
+														/>
+														<div class="min-w-0 flex-1">
+															<p class="truncate text-xs font-medium">
+																{item.description || item.name}
+															</p>
+															<p class="truncate text-xs text-muted-foreground">{item.name}</p>
+														</div>
+														<CheckIcon
+															class={cn('size-4', selected ? 'opacity-100' : 'opacity-0')}
+														/>
+													</Command.Item>
+												{/each}
+											</Command.Group>
+										{/if}
+									</Command.List>
+								</Command.Root>
+							</Tabs.Content>
+						{/if}
+
+						{#if canUploadFiles}
+							<Tabs.Content value="upload">
+								<button
+									type="button"
+									aria-label="Drop files here or click to browse"
+									data-dragging={isDragging ? '' : undefined}
+									data-invalid={error ? '' : undefined}
+									disabled={isUploading}
+									class="flex w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed p-5 transition-colors outline-none hover:bg-accent/30 focus-visible:border-ring/50 data-dragging:border-primary/30 data-dragging:bg-accent/30 data-invalid:border-destructive data-invalid:ring-destructive/20"
+									{@attach attachRef(setDropzoneRef)}
+									onclick={handleDropzoneClick}
+									ondragenter={handleDropzoneDragEnter}
+									ondragleave={handleDropzoneDragLeave}
+									ondragover={handleDropzoneDragOver}
+									ondrop={handleDropzoneDrop}
+									onkeydown={handleDropzoneKeyDown}
+								>
+									<Upload class="size-7 text-muted-foreground" />
+									<p class="text-sm font-medium">
+										{isDragging ? 'Drop files here' : 'Drag or browse'}
+									</p>
+									<p class="text-xs text-muted-foreground">
+										{maxFileSize ? `Max ${formatFileSize(maxFileSize)}` : 'Select files to upload'}
+									</p>
+								</button>
+								<input
+									type="file"
+									{multiple}
+									{accept}
+									class="sr-only"
+									{@attach attachRef(setFileInputRef)}
+									onchange={handleFileInputChange}
+								/>
+							</Tabs.Content>
+						{/if}
+
+						<Tabs.Content value="url" class="pt-2">
+							<div class="flex gap-2">
+								<Input
+									type="url"
+									placeholder="https://"
+									aria-label="Media URL"
+									bind:value={urlValue}
+									{@attach attachRef(setUrlInputRef)}
+									onkeydown={handleUrlKeyDown}
+								/>
+								<Button type="button" variant="secondary" disabled={isUploading} onclick={addUrl}
+									>Add URL</Button
+								>
 							</div>
-							<p class="text-xs text-muted-foreground">
-								{maxFileSize
-									? `Max size: ${formatFileSize(maxFileSize)}${maxFiles ? ` • Max ${maxFiles} file(s)` : ''}`
-									: maxFiles
-										? `Max ${maxFiles} file(s)`
-										: 'Select files to upload'}
-							</p>
-						</button>
-						<input
-							type="file"
-							{multiple}
-							{accept}
-							class="sr-only"
-							{@attach attachRef(setFileInputRef)}
-							onchange={handleFileInputChange}
-						/>
-					{/if}
-					<div class="flex gap-2">
-						<Input
-							type="url"
-							placeholder="https://"
-							aria-label="Media URL"
-							bind:value={urlValue}
-							{@attach attachRef(setUrlInputRef)}
-							onkeydown={handleUrlKeyDown}
-						/>
-						<Button type="button" variant="secondary" disabled={isUploading} onclick={addUrl}
-							>Add URL</Button
-						>
-					</div>
+						</Tabs.Content>
+					</Tabs.Root>
 				</div>
 			</PopoverContent>
 		</PopoverPrimitive.Root>
