@@ -26,6 +26,9 @@
 	const options = $derived.by(() =>
 		cellOpts?.variant === 'select-single' ? cellOpts.options : []
 	);
+	const isDetailed = $derived(
+		cellOpts?.variant === 'select-single' && cellOpts.presentation === 'detailed'
+	);
 
 	let wrapperRef = $state<HTMLDivElement | null>(null);
 	let inputRef = $state<HTMLInputElement | null>(null);
@@ -128,7 +131,10 @@
 				data-grid-cell-editor=""
 				align="start"
 				{sideOffset}
-				class="-mt-px -ml-px w-64 rounded-none p-0"
+				class={cn(
+					'-mt-px -ml-px rounded-none p-0',
+					isDetailed ? 'w-[min(28rem,calc(100vw-2rem))]' : 'w-64'
+				)}
 				onOpenAutoFocus={handleOpenAutoFocus}
 				customAnchor={wrapperRef}
 				onkeydown={handleWrapperKeyDown}
@@ -152,18 +158,40 @@
 						<Command.Group class="max-h-75 scroll-py-1 overflow-x-hidden overflow-y-auto">
 							{#each options as option (option.value)}
 								{@const isItemSelected = option.value === nextValue}
-								<Command.Item value={option.value} onSelect={() => commit(option.value)}>
+								{@const OptionIcon = option.icon}
+								<Command.Item
+									value={[option.value, option.title, option.summary, option.details]
+										.filter(Boolean)
+										.join(' ')}
+									class={isDetailed ? 'items-start gap-3 px-3 py-2.5' : undefined}
+									onSelect={() => commit(option.value)}
+								>
 									<CheckIcon
 										class={cn(
 											'mt-0.5 size-4 shrink-0 self-start',
 											isItemSelected ? 'opacity-100' : 'opacity-0'
 										)}
 									/>
-									<div class="grow">
-										<p class="line-clamp-1 text-sm">{option.title}</p>
+									{#if OptionIcon}
+										<div
+											class={cn(
+												'flex shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground',
+												isDetailed ? 'size-10 [&_svg]:size-5' : 'size-6 [&_svg]:size-4'
+											)}
+										>
+											<OptionIcon />
+										</div>
+									{/if}
+									<div class="min-w-0 grow">
+										<p class={cn('text-sm', !isDetailed && 'line-clamp-1')}>{option.title}</p>
 										{#if option.summary?.length}
-											<p class="line-clamp-2 text-xs text-muted-foreground">
+											<p class={cn('text-xs text-muted-foreground', !isDetailed && 'line-clamp-2')}>
 												{option.summary}
+											</p>
+										{/if}
+										{#if isDetailed && option.details?.length}
+											<p class="mt-1 font-mono text-[0.6875rem] text-muted-foreground/80">
+												{option.details}
 											</p>
 										{/if}
 									</div>

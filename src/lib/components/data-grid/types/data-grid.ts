@@ -26,6 +26,7 @@ export type RowHeightValue = DataGridRowHeight;
 export interface CellSelectOption {
 	title: string;
 	summary?: string | null;
+	details?: string | null;
 	value: string;
 	icon?: Component;
 	count?: number;
@@ -64,7 +65,11 @@ export type CellOpts<TData = unknown> =
 	| { variant: 'input-with-suggestions'; options: CellSelectOption[] }
 	| { variant: 'number'; min?: number; max?: number; step?: number }
 	| { variant: 'select-icon' }
-	| { variant: 'select-single'; options: CellSelectOption[] }
+	| {
+			variant: 'select-single';
+			options: CellSelectOption[];
+			presentation?: 'default' | 'detailed';
+	  }
 	| { variant: 'select-multiple'; options: CellSelectOption[] }
 	| { variant: 'checkbox' }
 	| { variant: 'date' }
