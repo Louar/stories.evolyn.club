@@ -52,11 +52,47 @@
 	let isEnded = $state(false);
 	let isCompleted = $state(false);
 	let visit = $state(0);
+	let activityTemplate = $state('watchStory');
+	const legacyEmbedOrigins = new Set(['https://healthyw8.gamebus.eu', 'http://localhost:8100']);
+	const getEmbeddingOrigin = () => {
+		try {
+			return new URL(document.referrer).origin;
+		} catch {
+			return undefined;
+		}
+	};
+	const usesLegacyEmbedProtocol = () => {
+		const origin = getEmbeddingOrigin();
+		return origin !== undefined && legacyEmbedOrigins.has(origin);
+	};
 
 	onMount(() => {
 		initPlayerEvents(story.id);
 		pid = story?.parts?.[0]?.id;
 		start = new Date().getTime();
+
+		if (window.parent !== window && !usesLegacyEmbedProtocol()) {
+			const embeddingOrigin = getEmbeddingOrigin();
+			const handleMessage = (event: MessageEvent<unknown>) => {
+				if (event.source !== window.parent) return;
+				if (embeddingOrigin && event.origin !== embeddingOrigin) return;
+				if (!event.data || typeof event.data !== 'object') return;
+
+				const message = event.data as {
+					type?: unknown;
+					data?: { activityTemplates?: Array<{ slug?: unknown }> };
+				};
+				if (message.type !== 'TASK') return;
+
+				const slug = message.data?.activityTemplates?.[0]?.slug;
+				if (typeof slug === 'string' && slug.length > 0) activityTemplate = slug;
+			};
+
+			window.addEventListener('message', handleMessage);
+			window.parent.postMessage({ type: 'IFRAME_READY' }, '*');
+
+			return () => window.removeEventListener('message', handleMessage);
+		}
 	});
 
 	const restart = () => {
@@ -172,17 +208,40 @@
 			watchTimePercentage
 		);
 		if (completed) STORIES.completed[story.id] = true;
-		parent.postMessage(
-			{
-				isCompleted: completed,
-				start,
-				end: new Date().getTime(),
-				watchTime,
-				watchTimePercentage,
-				events
-			},
-			'*'
-		);
+		const endedAt = new Date().getTime();
+		if (window.parent !== window) {
+			if (usesLegacyEmbedProtocol()) {
+				window.parent.postMessage(
+					{
+						isCompleted: completed,
+						start,
+						end: endedAt,
+						watchTime,
+						watchTimePercentage,
+						events
+					},
+					'*'
+				);
+			} else {
+				window.parent.postMessage(
+					{
+						type: 'ACTIVITY',
+						data: {
+							template: activityTemplate,
+							start: new Date(start ?? endedAt).toISOString(),
+							end: new Date(endedAt).toISOString(),
+							properties: [
+								{
+									template: 'duration',
+									obj: { value: watchTime, unit: 'seconds' }
+								}
+							]
+						}
+					},
+					'*'
+				);
+			}
+		}
 		isCompleted = completed;
 		isEnded = true;
 		if (completed && onnext) onnext();
