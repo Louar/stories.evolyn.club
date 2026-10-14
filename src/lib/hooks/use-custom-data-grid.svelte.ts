@@ -1545,6 +1545,7 @@ export function useDataGrid<TData extends RowData>(
 	});
 
 	// Paste dialog state
+	let pasteStartPosition: CellPosition | null = null;
 	let pasteDialog = $state<PasteDialogState>({
 		open: false,
 		rowsNeeded: 0,
@@ -2201,6 +2202,8 @@ export function useDataGrid<TData extends RowData>(
 			const rowsNeeded = startPos.rowIndex + lines.length - rows.length;
 
 			if (rowsNeeded > 0 && resolvedOnRowsAdd) {
+				// Opening the dialog moves focus away from the grid; retain the paste anchor.
+				pasteStartPosition = startPos;
 				pasteDialog = {
 					open: true,
 					rowsNeeded,
@@ -3393,7 +3396,7 @@ export function useDataGrid<TData extends RowData>(
 		onPasteWithExpansion: async () => {
 			if (resolvedOnRowsAdd) {
 				const cols = getNavigableColumns();
-				const startPos = focusedCell ? resolvePosition(focusedCell) : null;
+				const startPos = pasteStartPosition ? resolvePosition(pasteStartPosition) : null;
 				if (!startPos) return;
 				const lines = parseClipboardRows(pasteDialog.clipboardText);
 				const existingRowIds = table
@@ -3419,7 +3422,7 @@ export function useDataGrid<TData extends RowData>(
 		},
 		onPasteWithoutExpansion: () => {
 			const cols = getNavigableColumns();
-			const startPos = focusedCell ? resolvePosition(focusedCell) : null;
+			const startPos = pasteStartPosition ? resolvePosition(pasteStartPosition) : null;
 			if (!startPos) return;
 			const startColIndex = cols.findIndex((c) => c.id === startPos.columnId);
 			performPaste(pasteDialog.clipboardText, startPos, startColIndex);

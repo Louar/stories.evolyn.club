@@ -17,6 +17,7 @@
 		entityLabel?: string;
 		maxCount?: number;
 		onSuccess?: () => void | Promise<void>;
+		beforeGenerate?: (count: number) => Promise<Record<string, unknown> | null>;
 		class?: string;
 	} & PopoverPrimitive.ContentProps;
 	let {
@@ -24,6 +25,7 @@
 		entityLabel = 'records',
 		maxCount = 1000,
 		onSuccess,
+		beforeGenerate,
 		align = 'end',
 		class: className
 	}: Props = $props();
@@ -75,10 +77,12 @@
 		errors = [];
 		const submissionId = submission.start();
 		try {
+			const extra = beforeGenerate ? await beforeGenerate(validated.data.count) : {};
+			if (extra === null) return;
 			const res = await fetch(endpoint, {
 				method: 'POST',
 				headers: { 'content-type': 'application/json' },
-				body: JSON.stringify({ count: validated.data.count })
+				body: JSON.stringify({ count: validated.data.count, ...extra })
 			});
 
 			if (!res.ok) {
