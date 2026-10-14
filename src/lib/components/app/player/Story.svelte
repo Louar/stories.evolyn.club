@@ -53,6 +53,7 @@
 	let isCompleted = $state(false);
 	let visit = $state(0);
 	let activityTemplate = $state('watchStory');
+	let taxonomyWatchDurationMs = $state(0);
 	const legacyEmbedOrigins = new Set(['https://healthyw8.gamebus.eu', 'http://localhost:8100']);
 	const getEmbeddingOrigin = () => {
 		try {
@@ -176,6 +177,8 @@
 		logic: TaxonomyLogic,
 		performance: GamePerformance
 	) => {
+		if (!canNavigate(partId, expectedVisit)) return;
+		taxonomyWatchDurationMs += performance.duration;
 		const matchesRange = (value: number, range: [number | null, number | null] | null) =>
 			range === null ||
 			((range[0] === null || value >= range[0]) && (range[1] === null || value <= range[1]));
@@ -197,7 +200,8 @@
 
 	const end = (completed = true) => {
 		if (isEnded || !isActiveStory) return;
-		const watchTime = Math.round(Object.values(PLAYERS.watchDurations)?.reduce((a, b) => a + b, 0));
+		const playerWatchDuration = Object.values(PLAYERS.watchDurations).reduce((a, b) => a + b, 0);
+		const watchTime = Math.round(playerWatchDuration + taxonomyWatchDurationMs / 1000);
 		const percentages = Object.values(PLAYERS.watchTimePercentages);
 		const watchTimePercentage = percentages.length
 			? Math.round(percentages.reduce((a, b) => a + b, 0) / percentages.length)
