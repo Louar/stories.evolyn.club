@@ -497,7 +497,7 @@ export function useDataGrid<TData extends RowData>(
 	let dataOverride = $state.raw<TData[] | null>(null);
 	let overrideBase: TData[] | null = null;
 	let searchRevision = $state(0);
-	let searchFilterEnabled = $state(false);
+	let searchFilterEnabled = $state(true);
 	let searchFocusRequest = $state(0);
 	let searchFilterMatchQuery = $state('');
 	const searchMatchRowIdSet = new SvelteSet<string>();
@@ -3849,14 +3849,6 @@ export function useDataGrid<TData extends RowData>(
 	// Search callbacks - these are stable slugs
 	function handleSearchOpenChange(open: boolean) {
 		searchOpen = open;
-		if (!open) {
-			searchQuery = '';
-			searchMatches = [];
-			searchMatchSet.clear();
-			searchMatchRowIdSet.clear();
-			searchFilterMatchQuery = '';
-			matchIndex = 0;
-		}
 	}
 
 	function handleSearchQueryChange(query: string) {

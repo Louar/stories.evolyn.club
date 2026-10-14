@@ -108,7 +108,12 @@
 			return;
 		}
 
-		if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+		if (
+			(event.ctrlKey || event.metaKey) &&
+			event.shiftKey &&
+			!event.altKey &&
+			event.code === 'KeyL'
+		) {
 			commit();
 			return;
 		}

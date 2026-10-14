@@ -135,9 +135,16 @@
 			return;
 		}
 
-		if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-			clearDebounce();
-			commit();
+		if (
+			event.code === 'KeyL' &&
+			event.shiftKey &&
+			(((event.ctrlKey || event.metaKey) && !event.altKey) ||
+				(!(event.ctrlKey || event.metaKey) && event.altKey))
+		) {
+			if (event.ctrlKey || event.metaKey) {
+				clearDebounce();
+				commit();
+			}
 			return;
 		}
 
@@ -229,7 +236,7 @@
 			align="start"
 			side="bottom"
 			{sideOffset}
-			class="shiki-bg-transparent max-h-[60vh] w-100 overflow-y-auto rounded-none bg-transparent p-0 hidden-scrollbar"
+			class="shiki-bg-transparent max-h-[60vh] w-100 hidden-scrollbar overflow-y-auto rounded-none bg-transparent p-0"
 			onOpenAutoFocus={handleOpenAutoFocus}
 			customAnchor={wrapperRef}
 		>

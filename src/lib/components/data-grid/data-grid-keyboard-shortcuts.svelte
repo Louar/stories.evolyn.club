@@ -35,6 +35,7 @@
 
 	const isMac = browser ? /Mac|iPhone|iPad|iPod/.test(navigator.userAgent) : false;
 	const modKey = isMac ? '⌘' : 'Ctrl';
+	const altKey = isMac ? 'Option' : 'Alt';
 
 	function onOpenChange(isOpen: boolean) {
 		open = isOpen;
@@ -106,8 +107,8 @@
 		{
 			title: 'Translating',
 			shortcuts: [
-				{ keys: [modKey, 'Shift', 'L'], description: 'Toggle the language selector' },
-				{ keys: [modKey, 'K'], description: 'Cycle the selected language' }
+				{ keys: [modKey, 'Shift', 'L'], description: 'Cycle the selected language' },
+				{ keys: [altKey, 'Shift', 'L'], description: 'Toggle the language selector' }
 			]
 		},
 		{

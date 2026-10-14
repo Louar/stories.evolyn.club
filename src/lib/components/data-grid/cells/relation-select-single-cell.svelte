@@ -26,6 +26,9 @@
 	const options = $derived.by(() =>
 		cellOpts?.variant === 'relation-select-single' ? cellOpts.options : []
 	);
+	const isDetailed = $derived(
+		cellOpts?.variant === 'relation-select-single' && cellOpts.presentation === 'detailed'
+	);
 
 	let wrapperRef = $state<HTMLDivElement | null>(null);
 	let inputRef = $state<HTMLInputElement | null>(null);
@@ -33,16 +36,14 @@
 	const sideOffset = $derived.by(() => -(wrapperRef?.clientHeight ?? 0));
 
 	let searchValue = $state('');
+	let pendingValue = $state<string | null | undefined>(undefined);
+	const previousValue = $derived((cellValue as string) ?? null);
+	const nextValue = $derived(
+		isEditing ? (pendingValue === undefined ? previousValue : pendingValue) : previousValue
+	);
 
-	// svelte-ignore state_referenced_locally
-	let previousValue: string | null = $state((cellValue as string) ?? null);
-	// svelte-ignore state_referenced_locally
-	let nextValue: string | null = $state((cellValue as string) ?? null);
-
-	const displayLabel = $derived.by(() => {
-		const opt = options.find((o) => o.value === nextValue);
-		return opt?.title ?? nextValue;
-	});
+	const selectedOption = $derived(options.find((option) => option.value === nextValue));
+	const displayLabel = $derived(selectedOption?.title ?? nextValue);
 
 	function commit(value: string | null) {
 		if (readOnly) return;
@@ -51,14 +52,16 @@
 		if (!value) return;
 
 		// toggle back to null if selecting the original value again
-		nextValue = value === previousValue ? null : value;
+		pendingValue = value === previousValue ? null : value;
 
-		meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value: nextValue });
+		meta?.onDataUpdate?.({ rowIndex, rowId: cell.row.id, columnId, value: pendingValue });
 		meta?.onCellEditingStop?.();
 	}
 
 	function handleOpenAutoFocus(event: Event) {
 		event.preventDefault();
+		pendingValue = undefined;
+		searchValue = '';
 		inputRef?.focus({ preventScroll: true });
 	}
 
@@ -70,7 +73,7 @@
 	function handleWrapperKeyDown(event: KeyboardEvent) {
 		if (isEditing && event.key === 'Escape') {
 			event.preventDefault();
-			nextValue = previousValue;
+			pendingValue = undefined;
 			meta?.onCellEditingCancel?.();
 			return;
 		}
@@ -93,20 +96,6 @@
 		}
 	}
 
-	// Reset transient state when leaving edit mode
-	$effect(() => {
-		if (!isEditing) {
-			searchValue = '';
-			// keep nextValue as-is (it represents the latest committed/optimistic value),
-			// but refresh previousValue from the prop source for the next edit session
-			previousValue = (cellValue as string) ?? null;
-			if (nextValue !== previousValue) nextValue = previousValue;
-		} else {
-			// snapshot starting value for "toggle-to-null" + cancel
-			previousValue = (cellValue as string) ?? null;
-			nextValue = previousValue;
-		}
-	});
 </script>
 
 <DataGridCellWrapper
@@ -121,14 +110,22 @@
 	onkeydown={handleWrapperKeyDown}
 >
 	{#if !isEditing}
-		<span data-slot="grid-cell-content">{displayLabel}</span>
+		<span data-slot="grid-cell-content">
+			{displayLabel}
+			{#if isDetailed && selectedOption?.summary}
+				<span class="text-muted-foreground">- {selectedOption.summary}</span>
+			{/if}
+		</span>
 	{:else}
 		<PopoverPrimitive.Root open={isEditing} onOpenChange={handleOpenChange}>
 			<Popover.Content
 				data-grid-cell-editor=""
 				align="start"
 				{sideOffset}
-				class="-mt-px -ml-px w-64 rounded-none p-0"
+				class={cn(
+					'-mt-px -ml-px rounded-none p-0',
+					isDetailed ? 'w-[min(28rem,calc(100vw-2rem))]' : 'w-64'
+				)}
 				onOpenAutoFocus={handleOpenAutoFocus}
 				customAnchor={wrapperRef}
 				onkeydown={handleWrapperKeyDown}
@@ -153,7 +150,10 @@
 							{#each options as option (option.value)}
 								{@const isItemSelected = option.value === nextValue}
 								<Command.Item
-									value="{option.value} {option.title}"
+									value={[option.value, option.title, option.summary, option.details]
+										.filter(Boolean)
+										.join(' ')}
+									class={isDetailed ? 'items-start gap-3 px-3 py-2.5' : undefined}
 									onSelect={() => commit(option.value)}
 								>
 									<CheckIcon
@@ -162,11 +162,16 @@
 											isItemSelected ? 'opacity-100' : 'opacity-0'
 										)}
 									/>
-									<div class="grow">
-										<p class="line-clamp-1 text-sm">{option.title}</p>
+									<div class="min-w-0 grow">
+										<p class={cn('text-sm', !isDetailed && 'line-clamp-1')}>{option.title}</p>
 										{#if option.summary?.length}
-											<p class="line-clamp-2 text-xs text-muted-foreground">
+											<p class={cn('text-xs text-muted-foreground', !isDetailed && 'line-clamp-2')}>
 												{option.summary}
+											</p>
+										{/if}
+										{#if isDetailed && option.details?.length}
+											<p class="mt-1 font-mono text-[0.6875rem] text-muted-foreground/80">
+												{option.details}
 											</p>
 										{/if}
 									</div>

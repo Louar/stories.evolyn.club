@@ -61,7 +61,11 @@ export type CellOpts<TData = unknown> =
 	  }
 	| { variant: 'badge-item'; url?: string }
 	| { variant: 'relation-follow'; url?: string; icon?: Component }
-	| { variant: 'relation-select-single'; options: CellSelectOption[] }
+	| {
+			variant: 'relation-select-single';
+			options: CellSelectOption[];
+			presentation?: 'default' | 'detailed';
+	  }
 	| { variant: 'input-with-suggestions'; options: CellSelectOption[] }
 	| { variant: 'number'; min?: number; max?: number; step?: number }
 	| { variant: 'select-icon' }

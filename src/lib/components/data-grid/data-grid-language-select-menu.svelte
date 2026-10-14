@@ -36,16 +36,16 @@
 	});
 
 	function handleKeyDown(event: KeyboardEvent) {
-		if (!(event.ctrlKey || event.metaKey)) return;
+		if (event.code !== 'KeyL' || !event.shiftKey) return;
 
-		if (event.key.toLowerCase() === 'k') {
+		if ((event.ctrlKey || event.metaKey) && !event.altKey) {
 			event.preventDefault();
 			const currentIndex = languages.indexOf(UI.language);
 			UI.language = languages[(currentIndex + 1) % languages.length];
 			return;
 		}
 
-		if (event.shiftKey && event.key.toLowerCase() === 'l') {
+		if (!(event.ctrlKey || event.metaKey) && event.altKey) {
 			event.preventDefault();
 			open = !open;
 		}

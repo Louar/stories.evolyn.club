@@ -110,6 +110,12 @@
 	function onKeyDown(event: KeyboardEvent) {
 		event.stopPropagation();
 
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			onSearchOpenChange(false);
+			return;
+		}
+
 		if (event.key === 'Enter') {
 			event.preventDefault();
 			if (event.shiftKey) {
