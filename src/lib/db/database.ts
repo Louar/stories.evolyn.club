@@ -1,5 +1,19 @@
-import { POSTGRES_DB, POSTGRES_HOST, POSTGRES_MAX, POSTGRES_PASSWORD, POSTGRES_PORT, POSTGRES_USER } from '$app/env/private';
-import { CamelCasePlugin, HandleEmptyInListsPlugin, Kysely, PostgresDialect, replaceWithNoncontingentExpression } from 'kysely';
+import {
+  POSTGRES_DB,
+  POSTGRES_HOST,
+  POSTGRES_MAX,
+  POSTGRES_PASSWORD,
+  POSTGRES_PORT,
+  POSTGRES_USER
+} from '$app/env/private';
+import { building } from '$app/environment';
+import {
+  CamelCasePlugin,
+  HandleEmptyInListsPlugin,
+  Kysely,
+  PostgresDialect,
+  replaceWithNoncontingentExpression
+} from 'kysely';
 import pg from 'pg';
 import { migrate } from './migrator';
 import type { Schema } from './schema';
@@ -8,8 +22,8 @@ const { Pool } = pg;
 
 // Map bigint to number
 pg.types.setTypeParser(20, (val) => {
-  return parseInt(val, 10)
-})
+  return parseInt(val, 10);
+});
 
 const dialect = new PostgresDialect({
   pool: new Pool({
@@ -18,9 +32,9 @@ const dialect = new PostgresDialect({
     user: POSTGRES_USER,
     password: POSTGRES_PASSWORD,
     port: POSTGRES_PORT,
-    max: POSTGRES_MAX,
+    max: POSTGRES_MAX
   })
-})
+});
 
 const kysely = new Kysely<Schema>({
   dialect,
@@ -32,10 +46,15 @@ const kysely = new Kysely<Schema>({
   ]
 });
 
-try {
-  await migrate(kysely);
-} catch (e) {
-  console.error(e);
+// Build analysis imports this module without a running database.
+if (!building) {
+  try {
+    await migrate(kysely);
+  } catch (e) {
+    // Never serve legacy permissions when a security migration has failed.
+    await kysely.destroy();
+    throw e;
+  }
 }
 
 export const db = kysely;
